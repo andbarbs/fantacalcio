@@ -8,6 +8,7 @@ public class FantaTeam {
     // Getters
     public FantaLega getLega() {
         return lega;
+
     }
 
     public int getPunti() {

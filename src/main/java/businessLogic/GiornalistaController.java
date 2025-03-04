@@ -6,4 +6,3 @@ public class GiornalistaController {
     }
     public void getMyGiocatoriDaValutare() {}
 }
-

@@ -1,10 +1,11 @@
 package domainModel;
 
 public class Giocatore {
-    private String ruolo;
+    public static enum Ruolo {PORTIERE, DIFENSORE, CENTROCAMPISTA, ATTACCANTE}
+    private Ruolo ruolo;
 
     // Getter
-    public String getRuolo() {
+    public Ruolo getRuolo() {
         return ruolo;
     }
 }
