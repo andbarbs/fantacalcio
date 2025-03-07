@@ -1,13 +1,19 @@
 package domainModel;
 
 public class FantaLega {
-    private String admin;
-    private String nomeLega;
-    private String giornalista;
-    private String codiceLega;
+    private final Utente admin;
+    private final String nomeLega;
+    private final Testata testata;
+    private final String codiceLega;
 
+    public FantaLega(Utente admin, String nomeLega, Testata testata, String codiceLega) {
+        this.admin = admin;
+        this.nomeLega = nomeLega;
+        this.testata = testata;
+        this.codiceLega = codiceLega;
+    }
     // Getters
-    public String getAdmin() {
+    public Utente getAdmin() {
         return admin;
     }
 
@@ -15,8 +21,8 @@ public class FantaLega {
         return nomeLega;
     }
 
-    public String getGiornalista() {
-        return giornalista;
+    public Testata getTestata() {
+        return testata;
     }
 
     public String getCodiceLega() {
