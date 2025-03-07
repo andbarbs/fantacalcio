@@ -1,6 +1,20 @@
 package businessLogic;
 
+import ORM.GiocatoreDAO;
+import ORM.TeamDAO;
+import View.ListoneView;
+
 public class FantaAllenatoreController {
+    private ListoneView listoneView;
+    private GiocatoreDAO giocatoreDAO;
+    private TeamDAO teamDAO;
+
+
+    public FantaAllenatoreController(ListoneView listoneView, GiocatoreDAO giocatoreDAO) {
+        this.listoneView = listoneView;
+        this.giocatoreDAO = giocatoreDAO;
+    }
+
     public void getMatchesCurrentLeague() {}
     public void getSchieramenti(String match, String team) {}
     public void getTeamsCurrentLeague() {}
@@ -13,6 +27,8 @@ public class FantaAllenatoreController {
     public void creaProposta(String giocatoreProposto, String giocatoreRichiesto) {}
     public void accettaProposta(String proposta) {}
     public void creaLega(String nomeLega) {}
-    public void getListoneGiocatori() {}
+    public void showListone() {
+        listoneView.showAll(giocatoreDAO.getAllGiocatori());
+    }
 }
 
