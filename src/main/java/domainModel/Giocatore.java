@@ -1,5 +1,7 @@
 package domainModel;
 
+import java.util.Objects;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,6 +22,8 @@ public class Giocatore {
     
     private String name;
     private String surname;
+    
+    public Giocatore() {}
 
     public Giocatore(Ruolo ruolo, String name, String surname) {
         this.ruolo = ruolo;
@@ -27,9 +31,12 @@ public class Giocatore {
         this.surname = surname;
     }
 
-    public Giocatore() {}
-
     // Getter
+    
+    public Long getId() {
+		return id;
+	}
+    
     public Ruolo getRuolo() {
         return ruolo;
     }
@@ -41,5 +48,23 @@ public class Giocatore {
     public String getSurname() {
         return surname;
     }
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, ruolo, surname);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Giocatore other = (Giocatore) obj;
+		return Objects.equals(name, other.name) && ruolo == other.ruolo && Objects.equals(surname, other.surname);
+	}
+   
 }
 

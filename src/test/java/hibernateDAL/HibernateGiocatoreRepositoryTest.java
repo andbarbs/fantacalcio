@@ -1,29 +1,23 @@
 package hibernateDAL;
 
-
-
 import static org.assertj.core.api.Assertions.*;
-
-import java.util.EnumSet;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import domainModel.Giocatore;
+import domainModel.Giocatore.Ruolo;
 
 class HibernateGiocatoreRepositoryTest {
 
-	private static StandardServiceRegistry serviceRegistry;
-	private static Metadata metadata;
 	private static SessionFactory sessionFactory;
 
 	private HibernateGiocatoreRepository giocatoreRepository;
@@ -31,11 +25,11 @@ class HibernateGiocatoreRepositoryTest {
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
-			serviceRegistry = new StandardServiceRegistryBuilder()
+			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 				.configure("hibernate-test.cfg.xml")
 				.build();
 
-			metadata = new MetadataSources(serviceRegistry)
+			Metadata metadata = new MetadataSources(serviceRegistry)
 			.addAnnotatedClass(Giocatore.class)
 			.getMetadataBuilder()
 			.build();
@@ -46,33 +40,13 @@ class HibernateGiocatoreRepositoryTest {
 			throw new ExceptionInInitializerError(ex);
 		}
 	}
-
-//	@BeforeEach
-//	void setup() {
-//		// H2-specific schema dropping to ensure tests work on a fresh database
-//		// without having to recreate the SessionFactory instance
-//		sessionFactory.inTransaction(
-//				session -> session.createMutationQuery("TRUNCATE SCHEMA public AND COMMIT").executeUpdate());
-//		
-//		// Instantiates the SUT using the class-bound SessionFactory
-//		giocatoreRepository = new HibernateGiocatoreRepository(sessionFactory);
-//	}
 	
 	@BeforeEach
-	void setup() {
-		
-		System.out.println("executing the beforeEach step");
-		// Hibernate native schema dropping to ensure tests work on a fresh database
-		// without having to recreate the SessionFactory instance
-		SchemaExport schemaExport = new SchemaExport();
+	void setup() {		
+		// ensures tests work on empty tables without having to recreate a SessionFactory instance
+		sessionFactory.getSchemaManager().truncateMappedObjects();
 
-		// Drop the existing schema
-		schemaExport.drop(EnumSet.of(TargetType.DATABASE), metadata);
-
-		// Recreate the schema
-		schemaExport.create(EnumSet.of(TargetType.DATABASE), metadata);
-
-		// Instantiates the SUT using the class-bound SessionFactory
+		// Instantiates the SUT using the static SessionFactory
 		giocatoreRepository = new HibernateGiocatoreRepository(sessionFactory);
 	}
 
@@ -82,9 +56,22 @@ class HibernateGiocatoreRepositoryTest {
 	}
 	
 	@Test
+	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
-		System.out.println("actually executing test method!!!");
 		assertThat(giocatoreRepository.getAllGiocatori()).isEmpty();
+	}
+	
+	@Test
+	@DisplayName("getAllGiocatori() when two players have been persisted")
+	public void testTwoPlayersExist(){		
+		Giocatore buffon = new Giocatore(Ruolo.PORTIERE, "Gigi", "Buffon");
+		Giocatore messi = new Giocatore(Ruolo.ATTACCANTE, "Lionel", "Messi");
+		
+		sessionFactory.inTransaction(session -> {
+			session.persist(buffon);
+			session.persist(messi);});
+		
+		assertThat(giocatoreRepository.getAllGiocatori()).containsExactly(buffon, messi);
 	}
 
 	
