@@ -1,4 +1,4 @@
-package ORM;
+package businessLogic.DAL;
 
 import domainModel.FantaLega;
 import domainModel.FantaTeam;

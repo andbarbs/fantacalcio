@@ -1,9 +1,9 @@
 package businessLogic;
 
-import ORM.GiocatoreDAO;
-import ORM.TeamDAO;
 import View.ClassificaView;
 import View.ListoneView;
+import businessLogic.DAL.GiocatoreRepository;
+import businessLogic.DAL.TeamDAO;
 import domainModel.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Iterator;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.when;
 class FantaAllenatoreControllerTest {
 
     @Mock
-    private GiocatoreDAO giocatoreDAO;
+    private GiocatoreRepository giocatoreDAO;
 
     @Mock
     private ListoneView listoneView;
@@ -49,7 +50,7 @@ class FantaAllenatoreControllerTest {
 
     @Test
     public void testListone() {
-        Iterator<Giocatore> players = asList(new Giocatore()).iterator();
+        List<Giocatore> players = asList(new Giocatore());
         when(giocatoreDAO.getAllGiocatori()).thenReturn(players);
         fantaAllenatoreController.showListone();
         verify(listoneView).showAll(players);

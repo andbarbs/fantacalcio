@@ -1,10 +1,9 @@
 package View;
 
-import domainModel.FantaTeam;
 import domainModel.Giocatore;
 
-import java.util.Iterator;
+import java.util.List;
 
 public interface ListoneView {
-    void showAll(Iterator<Giocatore> giocatori);
+    void showAll(List<Giocatore> giocatori);
 }

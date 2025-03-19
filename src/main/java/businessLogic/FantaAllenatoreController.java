@@ -1,19 +1,19 @@
 package businessLogic;
 
-import ORM.GiocatoreDAO;
-import ORM.TeamDAO;
 import View.ClassificaView;
 import View.ListoneView;
+import businessLogic.DAL.GiocatoreRepository;
+import businessLogic.DAL.TeamDAO;
 import domainModel.FantaLega;
 
 public class FantaAllenatoreController {
     private final ListoneView listoneView;
-    private final GiocatoreDAO giocatoreDAO;
+    private final GiocatoreRepository giocatoreDAO;
     private final TeamDAO teamDAO;
     private final ClassificaView classificaView;
 
 
-    public FantaAllenatoreController(ListoneView listoneView, GiocatoreDAO giocatoreDAO, TeamDAO teamDAO, ClassificaView classificaView) {
+    public FantaAllenatoreController(ListoneView listoneView, GiocatoreRepository giocatoreDAO, TeamDAO teamDAO, ClassificaView classificaView) {
         this.listoneView = listoneView;
         this.giocatoreDAO = giocatoreDAO;
         this.teamDAO = teamDAO;
