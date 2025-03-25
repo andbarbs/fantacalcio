@@ -22,4 +22,5 @@ public class HibernateGiocatoreRepository implements GiocatoreRepository {
 		return Arrays.asList();
 	}
 
+
 }
