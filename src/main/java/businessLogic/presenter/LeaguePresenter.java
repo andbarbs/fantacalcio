@@ -1,8 +1,8 @@
 package businessLogic.presenter;
 
-import model.League;
-import businessLogic.DAL.repository.LeagueRepository;
-import view.LeagueView;
+import domainModel.League;
+import businessLogic.abstractDAL.repository.LeagueRepository;
+import businessLogic.abstractView.LeagueView;
 
 public class LeaguePresenter {
 	

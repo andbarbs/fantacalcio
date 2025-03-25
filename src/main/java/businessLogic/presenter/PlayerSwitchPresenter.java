@@ -1,8 +1,8 @@
 package businessLogic.presenter;
 
-import model.Proposal;
-import businessLogic.DAL.repository.ProposalRepository;
-import view.PlayerSwitchView;
+import domainModel.Proposal;
+import businessLogic.abstractDAL.repository.ProposalRepository;
+import businessLogic.abstractView.PlayerSwitchView;
 
 public class PlayerSwitchPresenter {
 

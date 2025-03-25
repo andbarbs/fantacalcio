@@ -1,7 +1,7 @@
 package businessLogic.presenter;
 
-import businessLogic.DAL.repository.MatchRepository;
-import view.MatchView;
+import businessLogic.abstractDAL.repository.MatchRepository;
+import businessLogic.abstractView.MatchView;
 
 public class MatchPresenter {
 

@@ -2,14 +2,14 @@ package domainModel;
 
 public class Contratto {
     private FantaTeam team;
-    private Giocatore giocatore;
+    private Player player;
 
     // Getters
     public FantaTeam getTeam() {
         return team;
     }
 
-    public Giocatore getGiocatore() {
-        return giocatore;
+    public Player getGiocatore() {
+        return player;
     }
 }

@@ -1,7 +1,7 @@
 package businessLogic.presenter;
 
-import businessLogic.DAL.repository.MatchRepository;
-import view.MatchCalendarView;
+import businessLogic.abstractDAL.repository.MatchRepository;
+import businessLogic.abstractView.MatchCalendarView;
 
 public class MatchCalendarPresenter {
 	

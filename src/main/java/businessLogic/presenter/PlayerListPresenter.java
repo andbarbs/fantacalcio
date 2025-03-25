@@ -1,7 +1,7 @@
 package businessLogic.presenter;
 
-import businessLogic.DAL.repository.PlayerRepository;
-import view.PlayerView;
+import businessLogic.abstractDAL.repository.PlayerRepository;
+import businessLogic.abstractView.PlayerView;
 
 public class PlayerListPresenter {
 

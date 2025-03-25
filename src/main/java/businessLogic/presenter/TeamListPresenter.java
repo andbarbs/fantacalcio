@@ -1,7 +1,7 @@
 package businessLogic.presenter;
 
-import businessLogic.DAL.repository.TeamRepository;
-import view.TeamListView;
+import businessLogic.abstractDAL.repository.TeamRepository;
+import businessLogic.abstractView.TeamListView;
 
 public class TeamListPresenter {
 

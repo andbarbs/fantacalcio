@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-import businessLogic.DAL.GiocatoreRepository;
-import domainModel.Giocatore;
+import businessLogic.abstractDAL.GiocatoreRepository;
+import domainModel.Player;
 
 public class HibernateGiocatoreRepository implements GiocatoreRepository {
 
@@ -17,7 +17,7 @@ public class HibernateGiocatoreRepository implements GiocatoreRepository {
 	}
 
 	@Override
-	public List<Giocatore> getAllGiocatori() {
+	public List<Player> getAllGiocatori() {
 		// TODO Auto-generated method stub
 		return Arrays.asList();
 	}
