@@ -2,15 +2,15 @@ package presenter;
 
 import model.Proposal;
 import repository.ProposalRepository;
-import view.PlayerSwitchView;
+import view.ProposalView;
 
-public class PlayerSwitchPresenter {
+public class ProposalPresenter {
 
-	private PlayerSwitchView playerSwitchView;
+	private ProposalView proposalView;
 	private ProposalRepository proposalRepository;
 
-	public PlayerSwitchPresenter(PlayerSwitchView playerSwitchView, ProposalRepository proposalRepository) {
-		this.playerSwitchView = playerSwitchView;
+	public ProposalPresenter(ProposalView proposalView, ProposalRepository proposalRepository) {
+		this.proposalView = proposalView;
 		this.proposalRepository = proposalRepository;
 	}
 	
@@ -20,10 +20,10 @@ public class PlayerSwitchPresenter {
 	
 	// non so come fare questi 2
 	public void addProposal(Proposal proposal) {
-		playerSwitchView.addProposal(proposal);
+		proposalView.addProposal(proposal);
 	}
 	
 	public void acceptProposal(Proposal proposal) {
-		playerSwitchView.acceptProposal(proposal);
+		proposalView.acceptProposal(proposal);
 	}
 }

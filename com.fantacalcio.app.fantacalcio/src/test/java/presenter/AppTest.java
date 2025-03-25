@@ -1,4 +1,4 @@
-package com.fantacalcio.app.fantacalcio;
+package presenter;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

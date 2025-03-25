@@ -2,7 +2,7 @@ package view;
 
 import model.Proposal;
 
-public interface PlayerSwitchView {
+public interface ProposalView {
 
 	void addProposal(Proposal proposal);
 
