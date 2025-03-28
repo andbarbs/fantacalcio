@@ -1,6 +1,5 @@
 package hibernateDAL;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
@@ -18,12 +17,8 @@ public class HibernateGiocatoreRepository implements GiocatoreRepository {
 
 	@Override
 	public List<Giocatore> getAllGiocatori() {
-		List<Giocatore> result = new ArrayList<Giocatore>();
-		sessionFactory.inTransaction(session -> 
-			session.createSelectionQuery("from Giocatore", Giocatore.class)
-					.getResultList()
-					.forEach(result::add));
-		return result;
+		return sessionFactory.fromTransaction(
+				session -> session.createSelectionQuery("from Giocatore", Giocatore.class).getResultList());
 	}
 
 }
