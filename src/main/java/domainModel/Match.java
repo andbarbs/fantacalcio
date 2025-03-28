@@ -1,36 +1,36 @@
 package domainModel;
 
 public class Match {
-    private String data;
-    private String squadra1;
-    private String squadra2;
-    private String risultato;
-    private String moduloSquadra1;
-    private String moduloSquadra2;
+    private String date;
+    private String team1;
+    private String Team2;
+    private String result;
+    private String Team1Formation;
+    private String Team2Formation;
 
     // Getters
-    public String getData() {
-        return data;
+    public String getDate() {
+        return date;
     }
 
-    public String getSquadra1() {
-        return squadra1;
+    public String getTeam1() {
+        return team1;
     }
 
-    public String getSquadra2() {
-        return squadra2;
+    public String getTeam2() {
+        return Team2;
     }
 
-    public String getRisultato() {
-        return risultato;
+    public String getResult() {
+        return result;
     }
 
-    public String getModuloSquadra1() {
-        return moduloSquadra1;
+    public String getTeam1Formation() {
+        return Team1Formation;
     }
 
-    public String getModuloSquadra2() {
-        return moduloSquadra2;
+    public String getTeam2Formation() {
+        return Team2Formation;
     }
 }
 

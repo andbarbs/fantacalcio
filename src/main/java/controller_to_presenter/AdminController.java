@@ -3,19 +3,19 @@ package controller_to_presenter;
 public class AdminController{
 
 	/*
-	public void getGiornalisti() {
+	public void getNewspaper() {
 	}
 
-	public void assegnaGiornalistaCurrentLega() {
+	public void setJournalist() {
 	}
 
-	public void generaCalendarioCurrentLega() {
+	public void generateCalendar() {
 	}
 
-	public void assegnaGiocatoreCurrentLeague(String team, String giocatore) {
+	public void setPlayerToTeam(String team, String giocatore) {
 	}
 
-	public void calcolaVotiGiornataCurrentLeague() {
+	public void calculateGrades() {
 	}
 	*/
 }

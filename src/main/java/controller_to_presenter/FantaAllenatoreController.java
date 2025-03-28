@@ -11,16 +11,16 @@ public class FantaAllenatoreController {
 			this.classificaView = classificaView;
 		}
 
-		public void getSchieramenti(String match, String team) {
+		public void getLineUps(String match, String team) {
 		}
 
-		public void getRosa(String team) {
+		public void getSquad(String team) {
 		}
 
-		public void getMyGiocatori(String ruolo) {
+		public void getMyPlayers(String ruolo) {
 		}
 
-		public void salvaProssimaFormazione(String modulo, String... giocatori) {
+		public void saveNextFormation(String modulo, String... giocatori) {
 		}
 
 	}

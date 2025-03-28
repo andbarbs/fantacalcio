@@ -1,4 +1,4 @@
 package domainModel;
 
-public class Utente {
+public class User {
 }
