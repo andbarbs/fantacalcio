@@ -2,6 +2,7 @@ package domainModel;
 
 import java.util.Objects;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,10 +18,14 @@ public class Giocatore {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;    
     
+    @Basic(optional=false)
     @Enumerated(EnumType.STRING)
     private Ruolo ruolo;
     
+    @Basic(optional=false)
     private String name;
+    
+    @Basic(optional=false)
     private String surname;
     
     public Giocatore() {}
