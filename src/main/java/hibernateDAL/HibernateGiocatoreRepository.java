@@ -7,17 +7,15 @@ import org.hibernate.SessionFactory;
 import businessLogic.DAL.GiocatoreRepository;
 import domainModel.Giocatore;
 
-public class HibernateGiocatoreRepository implements GiocatoreRepository {
-
-	private SessionFactory sessionFactory;
+public class HibernateGiocatoreRepository extends HibernateEntityRepository implements GiocatoreRepository {
 
 	public HibernateGiocatoreRepository(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+		super(sessionFactory);
 	}
 
 	@Override
 	public List<Giocatore> getAllGiocatori() {
-		return sessionFactory.fromTransaction(
+		return getSessionFactory().fromTransaction(
 				session -> session.createSelectionQuery("from Giocatore", Giocatore.class).getResultList());
 	}
 
