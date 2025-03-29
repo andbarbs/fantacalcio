@@ -46,9 +46,6 @@ class HibernateMatchDayRepositoryTest {
 	void setup() {		
 		// ensures tests work on empty tables without having to recreate a SessionFactory instance
 		sessionFactory.getSchemaManager().truncateMappedObjects();
-		
-		// wipes out second-level cache <-- CONSIDER DISABLING IT!
-		sessionFactory.getCache().evictAllRegions();
 
 		// Instantiates the SUT using the static SessionFactory
 		matchDayRepository = new HibernateMatchDayRepository(sessionFactory);
