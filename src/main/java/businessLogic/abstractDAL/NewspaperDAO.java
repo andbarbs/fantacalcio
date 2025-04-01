@@ -2,8 +2,8 @@ package businessLogic.abstractDAL;
 
 import java.util.Iterator;
 
-public interface Testata {
-    Iterator<Testata> getAllTestata();
+public interface NewspaperDAO {
+    Iterator<NewspaperDAO> getAllNewspapers();
     void save();
 
 }

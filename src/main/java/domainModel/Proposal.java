@@ -1,26 +1,26 @@
 package domainModel;
 
 public class Proposal {
-    private FantaTeam teamProponente;
-    private FantaTeam teamRicevente;
-    private Player playerProposto;
-    private Player playerRichiesto;
+    private FantaTeam ProposingTeam;
+    private FantaTeam ReceivingTeam;
+    private Player OfferedPlayer;
+    private Player RequestedPlayer;
 
     // Getters
-    public FantaTeam getTeamProponente() {
-        return teamProponente;
+    public FantaTeam getProposingTeam() {
+        return ProposingTeam;
     }
 
-    public FantaTeam getTeamRicevente() {
-        return teamRicevente;
+    public FantaTeam getReceivingTeam() {
+        return ReceivingTeam;
     }
 
     public Player getGiocatoreProposto() {
-        return playerProposto;
+        return OfferedPlayer;
     }
 
     public Player getGiocatoreRichiesto() {
-        return playerRichiesto;
+        return RequestedPlayer;
     }
 }
 

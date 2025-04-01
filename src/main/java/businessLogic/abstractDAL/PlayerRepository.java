@@ -4,6 +4,6 @@ import domainModel.Player;
 
 import java.util.List;
 
-public interface GiocatoreRepository {
-    List<Player> getAllGiocatori();
+public interface PlayerRepository {
+    List<Player> getAllPlayers();
 }

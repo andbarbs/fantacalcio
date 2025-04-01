@@ -1,6 +1,6 @@
 package domainModel;
 
-public class Contratto {
+public class Contract {
     private FantaTeam team;
     private Player player;
 

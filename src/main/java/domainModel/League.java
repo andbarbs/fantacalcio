@@ -1,31 +1,31 @@
 package domainModel;
 
 public class League {
-    private final Utente admin;
-    private final String nomeLega;
-    private final Testata testata;
-    private final String codiceLega;
+    private final User admin;
+    private final String name;
+    private final NewsPaper newsPaper;
+    private final String leagueCode;
 
-    public League(Utente admin, String nomeLega, Testata testata, String codiceLega) {
+    public League(User admin, String name, NewsPaper newsPaper, String leagueCode) {
         this.admin = admin;
-        this.nomeLega = nomeLega;
-        this.testata = testata;
-        this.codiceLega = codiceLega;
+        this.name = name;
+        this.newsPaper = newsPaper;
+        this.leagueCode = leagueCode;
     }
     // Getters
-    public Utente getAdmin() {
+    public User getAdmin() {
         return admin;
     }
 
     public String getName() {
-        return nomeLega;
+        return name;
     }
 
-    public Testata getTestata() {
-        return testata;
+    public NewsPaper getTestata() {
+        return newsPaper;
     }
 
-    public String getCodiceLega() {
-        return codiceLega;
+    public String getLeagueCode() {
+        return leagueCode;
     }
 }

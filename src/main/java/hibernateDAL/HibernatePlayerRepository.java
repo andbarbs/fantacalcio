@@ -5,19 +5,19 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-import businessLogic.abstractDAL.GiocatoreRepository;
+import businessLogic.abstractDAL.PlayerRepository;
 import domainModel.Player;
 
-public class HibernateGiocatoreRepository implements GiocatoreRepository {
+public class HibernatePlayerRepository implements PlayerRepository {
 
 	private SessionFactory sessionFactory;
 
-	public HibernateGiocatoreRepository(SessionFactory sessionFactory) {
+	public HibernatePlayerRepository(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
 
 	@Override
-	public List<Player> getAllGiocatori() {
+	public List<Player> getAllPlayers() {
 		// TODO Auto-generated method stub
 		return Arrays.asList();
 	}

@@ -26,7 +26,7 @@ class HibernatePlayerRepositoryTest {
 	private static Metadata metadata;
 	private static SessionFactory sessionFactory;
 
-	private HibernateGiocatoreRepository giocatoreRepository;
+	private HibernatePlayerRepository playerRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -73,7 +73,7 @@ class HibernatePlayerRepositoryTest {
 		schemaExport.create(EnumSet.of(TargetType.DATABASE), metadata);
 
 		// Instantiates the SUT using the class-bound SessionFactory
-		giocatoreRepository = new HibernateGiocatoreRepository(sessionFactory);
+		playerRepository = new HibernatePlayerRepository(sessionFactory);
 	}
 
 	@AfterAll
@@ -84,7 +84,7 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	public void testNoPlayersExist(){
 		System.out.println("actually executing test method!!!");
-		assertThat(giocatoreRepository.getAllGiocatori()).isEmpty();
+		assertThat(playerRepository.getAllPlayers()).isEmpty();
 	}
 
 	

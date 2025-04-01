@@ -1,22 +1,28 @@
 package businessLogic;
 
+import domainModel.FantaTeam;
+import domainModel.League;
+import domainModel.User;
+
+import java.time.LocalDateTime;
+
 public class SessionBean {
-    private String utente;
-    private String lega;
-    private String team;
+    private User user;
+    private League league;
+    private FantaTeam team;
     private boolean isAdmin;
-    private String data;
+    private LocalDateTime date;
 
     // Getters
-    public String getUtente() {
-        return utente;
+    public User getUser() {
+        return user;
     }
 
-    public String getLega() {
-        return lega;
+    public League getLeague() {
+        return league;
     }
 
-    public String getTeam() {
+    public FantaTeam getTeam() {
         return team;
     }
 
@@ -24,8 +30,8 @@ public class SessionBean {
         return isAdmin;
     }
 
-    public String getData() {
-        return data;
+    public LocalDateTime getDate() {
+        return date;
     }
 }
 
