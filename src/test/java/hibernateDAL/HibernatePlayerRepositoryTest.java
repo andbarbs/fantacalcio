@@ -1,6 +1,10 @@
 package hibernateDAL;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -16,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import domainModel.Player;
 import domainModel.Player.Role;
 
-class HibernateGiocatoreRepositoryTest {
+class HibernatePlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
@@ -74,6 +78,32 @@ class HibernateGiocatoreRepositoryTest {
 		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
 	}
 
+	@Test
+	@DisplayName("addPlayer() with a legit new player")
+	public void testAddPlayerSucceeds() {
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+//		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+
+		assertTrue(playerRepository.addPlayer(buffon));
+		
+		List<Player> result = sessionFactory.fromTransaction(
+				session -> session.createSelectionQuery("from Player", Player.class).getResultList());
+		
+		assertThat(result).containsExactly(buffon);
+	}
+	
+	@Test
+	@DisplayName("addPlayer() with an already existing player")
+	public void testAddPlayerFails() {
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+//		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+		
+		sessionFactory.inTransaction(session -> session.persist(buffon));
+		
+		System.out.println("buffon nel db");
+
+		assertFalse(playerRepository.addPlayer(buffon));
+	}
 	
 
 }
