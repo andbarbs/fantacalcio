@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -20,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import domainModel.Player;
 import domainModel.Player.Role;
 
+@DisplayName("tests for HibernatePlayerRepository")
 class HibernatePlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
@@ -79,28 +79,22 @@ class HibernatePlayerRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("addPlayer() with a legit new player")
-	public void testAddPlayerSucceeds() {
+	@DisplayName("addPlayer() with a non-persisted player")
+	public void testAddNonPersistedPlayer() {
 		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
-//		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
 
-		assertTrue(playerRepository.addPlayer(buffon));
-		
-		List<Player> result = sessionFactory.fromTransaction(
-				session -> session.createSelectionQuery("from Player", Player.class).getResultList());
-		
-		assertThat(result).containsExactly(buffon);
+		assertTrue(playerRepository.addPlayer(buffon));		
+		assertThat(sessionFactory.fromTransaction((Session session) -> 
+					session.createSelectionQuery("from Player", Player.class).getResultList()))
+				.containsExactly(buffon);
 	}
 	
 	@Test
-	@DisplayName("addPlayer() with an already existing player")
-	public void testAddPlayerFails() {
+	@DisplayName("addPlayer() does not add an already persisted player")
+	public void testAddAlreadyPersistedPlayer() {
 		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
-//		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
 		
 		sessionFactory.inTransaction(session -> session.persist(buffon));
-		
-		System.out.println("buffon nel db");
 
 		assertFalse(playerRepository.addPlayer(buffon));
 	}
