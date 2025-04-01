@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-import businessLogic.DAL.MatchDayRepository;
+import businessLogic.abstractDAL.repository.MatchDayRepository;
 import domainModel.MatchDaySerieA;
 
 public class HibernateMatchDayRepository extends HibernateEntityRepository implements MatchDayRepository {

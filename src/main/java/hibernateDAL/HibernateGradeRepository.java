@@ -3,7 +3,7 @@ package hibernateDAL;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
-import businessLogic.DAL.GradeRepository;
+import businessLogic.abstractDAL.repository.GradeRepository;
 import domainModel.Grade;
 import domainModel.Grade_;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -25,7 +25,7 @@ public class HibernateGradeRepository extends HibernateEntityRepository implemen
 			CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
 			Root<Grade> gradeRoot = query.from(Grade.class);
 
-			gradeRoot.fetch(Grade_.giocatore, JoinType.INNER);
+			gradeRoot.fetch(Grade_.player, JoinType.INNER);
 			gradeRoot.fetch(Grade_.matchDay, JoinType.INNER);
 
 			query.select(gradeRoot);

@@ -13,14 +13,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import domainModel.Giocatore;
-import domainModel.Giocatore.Ruolo;
+import domainModel.Player;
+import domainModel.Player.Role;
 
 class HibernateGiocatoreRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
-	private HibernateGiocatoreRepository giocatoreRepository;
+	private HibernatePlayerRepository playerRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -30,7 +30,7 @@ class HibernateGiocatoreRepositoryTest {
 				.build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
-			.addAnnotatedClass(Giocatore.class)
+			.addAnnotatedClass(Player.class)
 			.getMetadataBuilder()
 			.build();
 
@@ -47,7 +47,7 @@ class HibernateGiocatoreRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
 		// Instantiates the SUT using the static SessionFactory
-		giocatoreRepository = new HibernateGiocatoreRepository(sessionFactory);
+		playerRepository = new HibernatePlayerRepository(sessionFactory);
 	}
 
 	@AfterAll
@@ -58,20 +58,20 @@ class HibernateGiocatoreRepositoryTest {
 	@Test
 	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
-		assertThat(giocatoreRepository.getAllGiocatori()).isEmpty();
+		assertThat(playerRepository.findAll()).isEmpty();
 	}
 	
 	@Test
 	@DisplayName("getAllGiocatori() when two players have been persisted")
 	public void testTwoPlayersExist(){		
-		Giocatore buffon = new Giocatore(Ruolo.PORTIERE, "Gigi", "Buffon");
-		Giocatore messi = new Giocatore(Ruolo.ATTACCANTE, "Lionel", "Messi");
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
 		
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
 			session.persist(messi);});
 		
-		assertThat(giocatoreRepository.getAllGiocatori()).containsExactly(buffon, messi);
+		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
 	}
 
 	

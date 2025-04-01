@@ -1,9 +1,9 @@
 package View;
 
-import domainModel.Giocatore;
+import domainModel.Player;
 
 import java.util.List;
 
 public interface ListoneView {
-    void showAll(List<Giocatore> giocatori);
+    void showAll(List<Player> giocatori);
 }

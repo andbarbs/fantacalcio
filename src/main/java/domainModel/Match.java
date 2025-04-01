@@ -1,45 +1,36 @@
 package domainModel;
 
 public class Match {
-    private MatchDaySerieA matchDay;
-    private String squadra1;
-    private String squadra2;
-    private String risultato;
-    private String moduloSquadra1;
-    private String moduloSquadra2;    
+    private String date;
+    private String team1;
+    private String Team2;
+    private String result;
+    private String Team1Formation;
+    private String Team2Formation;
 
-    public Match(MatchDaySerieA matchDay, String squadra1, String squadra2, String risultato, String moduloSquadra1,
-			String moduloSquadra2) {
-		this.matchDay = matchDay;
-		this.squadra1 = squadra1;
-		this.squadra2 = squadra2;
-		this.risultato = risultato;
-		this.moduloSquadra1 = moduloSquadra1;
-		this.moduloSquadra2 = moduloSquadra2;
-	}
-
-    public String getSquadra1() {
-        return squadra1;
+    // Getters
+    public String getDate() {
+        return date;
     }
 
-    public String getSquadra2() {
-        return squadra2;
+    public String getTeam1() {
+        return team1;
     }
 
-    public String getRisultato() {
-        return risultato;
+    public String getTeam2() {
+        return Team2;
     }
 
-    public String getModuloSquadra1() {
-        return moduloSquadra1;
+    public String getResult() {
+        return result;
     }
 
-    public String getModuloSquadra2() {
-        return moduloSquadra2;
+    public String getTeam1Formation() {
+        return Team1Formation;
     }
 
-	public MatchDaySerieA getMatchDay() {
-		return matchDay;
-	}
+    public String getTeam2Formation() {
+        return Team2Formation;
+    }
 }
 

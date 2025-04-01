@@ -18,7 +18,7 @@ public class Grade {
     private Long id;  
 	
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Giocatore giocatore;
+	private Player player;
 	
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private MatchDaySerieA matchDay;
@@ -34,8 +34,8 @@ public class Grade {
 
 	Grade() {}
 	
-	public Grade(Giocatore giocatore, MatchDaySerieA matchDay, double mark, int goals, int assists) {
-		this.giocatore = giocatore;
+	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists) {
+		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
 		this.goals = goals;
@@ -46,8 +46,8 @@ public class Grade {
 		return mark;
 	}
 
-	public Giocatore getGiocatore() {
-		return giocatore;
+	public Player getGiocatore() {
+		return player;
 	}
 
 	public int getGoals() {
@@ -60,7 +60,7 @@ public class Grade {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(assists, giocatore, goals, mark, matchDay);
+		return Objects.hash(assists, player, goals, mark, matchDay);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class Grade {
 		if (getClass() != obj.getClass())
 			return false;
 		Grade other = (Grade) obj;
-		return assists == other.assists && Objects.equals(giocatore, other.giocatore) && goals == other.goals
+		return assists == other.assists && Objects.equals(player, other.player) && goals == other.goals
 				&& Double.doubleToLongBits(mark) == Double.doubleToLongBits(other.mark)
 				&& Objects.equals(matchDay, other.matchDay);
 	}	
