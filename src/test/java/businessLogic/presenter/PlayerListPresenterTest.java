@@ -1,0 +1,54 @@
+package businessLogic.presenter;
+
+import static org.mockito.Mockito.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import businessLogic.abstractDAL.repository.PlayerRepository;
+import businessLogic.abstractView.PlayerView;
+import domainModel.Player;
+
+public class PlayerListPresenterTest {
+
+	PlayerListPresenter playerPresenter;
+	PlayerView playerView;
+	PlayerRepository playerRepository;
+	List<Player> players;
+	
+	@Before
+	public void setup() {
+		playerView = mock(PlayerView.class);
+		playerRepository = mock(PlayerRepository.class);
+		playerPresenter = new PlayerListPresenter(playerView, playerRepository);
+		players = new ArrayList<Player>();
+	}
+
+	@Test
+	public void testAllPlayersWithNoPlayers() {
+		when(playerRepository.findAll()).thenReturn(players);
+		playerPresenter.allPlayers();
+		verify(playerView).showAllPlayers(players);
+	}
+	
+	@Test
+	public void testAllPlayersWithSomePlayers() {
+		players.add(new Player());
+		players.add(new Player());
+		when(playerRepository.findAll()).thenReturn(players);
+		playerPresenter.allPlayers();
+		verify(playerView).showAllPlayers(players);
+	}
+	
+	/*
+	@Test
+	public void testShowPlayersWithSurname() {
+		when(playerRepository.findBySurname("")).thenReturn(players);
+		playerPresenter.showPlayersWithSurname("");
+		verify(playerView).showPlayersBySurname(players);
+	}
+	*/
+	
+}

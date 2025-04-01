@@ -8,5 +8,7 @@ public interface PlayerView extends View {
 
 	void showAllPlayers(List<Player> players);
 
+	void showPlayersBySurname(List<Player> bySurname);
+
 	// void showPlayerById(Player player);
 }

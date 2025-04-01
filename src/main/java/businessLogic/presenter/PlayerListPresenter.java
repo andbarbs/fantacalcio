@@ -17,10 +17,8 @@ public class PlayerListPresenter {
 		playerView.showAllPlayers(playerRepository.findAll());
 	}
 
-	/*
-	public void showPlayersWithId(int id) {
-		playerView.showPlayerById(playerRepository.findById(id));
+	public void showPlayersWithSurname(String surname) {
+		playerView.showPlayersBySurname(playerRepository.findBySurname(surname));
 	}
-	*/
 
 }
