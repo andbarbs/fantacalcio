@@ -84,8 +84,6 @@ class HibernateGradeRepositoryTest {
 			session.persist(voto1);
 			session.persist(voto2);});
 		
-		System.out.println("we got to the assertion!!");
-		
 		assertThat(gradeRepository.getAllGrades()).containsExactly(voto1, voto2);
 	}
 
