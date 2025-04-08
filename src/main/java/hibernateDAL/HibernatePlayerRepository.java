@@ -31,12 +31,6 @@ public class HibernatePlayerRepository extends HibernateEntityRepository impleme
 	}
 
 	@Override
-	public Player findById(int id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean addPlayer(Player newPlayer) {		
 		return getSessionFactory().fromTransaction(session -> 
 		{
