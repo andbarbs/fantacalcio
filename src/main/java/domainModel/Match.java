@@ -1,36 +1,51 @@
 package domainModel;
 
+import jakarta.persistence.*;
+
+import java.util.Objects;
+
+@Entity
 public class Match {
-    private String date;
-    private String team1;
-    private String Team2;
-    private String result;
-    private String Team1Formation;
-    private String Team2Formation;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private MatchDaySerieA matchDaySerieA;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private FantaTeam team1;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private FantaTeam Team2;
 
     // Getters
-    public String getDate() {
-        return date;
+    public Match() {}
+
+    public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
+        this.matchDaySerieA = matchDaySerieA;
+        this.team1 = team1;
+        Team2 = team2;
     }
 
-    public String getTeam1() {
+    public FantaTeam getTeam1() {
         return team1;
     }
 
-    public String getTeam2() {
+    public FantaTeam getTeam2() {
         return Team2;
     }
 
-    public String getResult() {
-        return result;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Match match = (Match) o;
+        return Objects.equals(matchDaySerieA, match.matchDaySerieA) && Objects.equals(team1, match.team1) && Objects.equals(Team2, match.Team2);
     }
 
-    public String getTeam1Formation() {
-        return Team1Formation;
-    }
-
-    public String getTeam2Formation() {
-        return Team2Formation;
+    @Override
+    public int hashCode() {
+        return Objects.hash(matchDaySerieA, team1, Team2);
     }
 }
 
