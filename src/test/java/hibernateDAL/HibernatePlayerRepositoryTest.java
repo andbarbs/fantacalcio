@@ -98,6 +98,35 @@ class HibernatePlayerRepositoryTest {
 
 		assertFalse(playerRepository.addPlayer(buffon));
 	}
+
+	@Test
+	@DisplayName("findBySurname when the player does not exist")
+	public void testFindBySurnameDoesNotExist(){
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+
+		sessionFactory.inTransaction(session -> {
+			session.persist(buffon);
+			session.persist(messi);});
+
+		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
+	}
+
+	@Test
+	@DisplayName("findBySurname when the players exist")
+	public void testFindBySurnameExist(){
+		Player marcus = new Player(Role.STRIKER, "Marcus", "Thuram");
+		Player kephren = new Player(Role.MIDFIELDER, "Kephren", "Thuram");
+		Player eljif = new Player(Role.MIDFIELDER, "Eljif", "Elmas");
+
+
+		sessionFactory.inTransaction(session -> {
+			session.persist(marcus);
+			session.persist(kephren);
+			session.persist(eljif);});
+
+		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
+	}
 	
 
 }

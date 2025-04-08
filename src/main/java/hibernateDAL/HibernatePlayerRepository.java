@@ -52,8 +52,18 @@ public class HibernatePlayerRepository extends HibernateEntityRepository impleme
 
 	@Override
 	public List<Player> findBySurname(String surname) {
-		// TODO Auto-generated method stub
-		return null;
+		return getSessionFactory().fromTransaction(session ->
+		{
+			CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+			CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
+			Root<Player> root = criteriaQuery.from(Player.class);
+
+			criteriaQuery.select(root).where(criteriaBuilder.and(
+					criteriaBuilder.equal(root.get(Player_.surname), surname)));
+
+			return session.createQuery(criteriaQuery).getResultList();
+		});
+
 	}
 
 }
