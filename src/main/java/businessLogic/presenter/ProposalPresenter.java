@@ -1,6 +1,5 @@
 package businessLogic.presenter;
 
-import domainModel.Player;
 import domainModel.Proposal;
 import businessLogic.abstractView.ProposalView;
 
@@ -11,10 +10,12 @@ public class ProposalPresenter {
 		this.proposalView = playerSwitchView;
 	}
 	
+	/*
 	// si devono mostrare i giocatori da scambiare: si usa una playerListView/Presenter???
 	public void startProposal(Player myPlayer, Player hisPlayer) {
 		
 	}
+	*/
 	
 	// non so come fare questi 2
 	public void addProposal(Proposal proposal) {

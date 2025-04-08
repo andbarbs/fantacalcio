@@ -15,16 +15,14 @@ public class LeaguePresenter {
 	}
 	
 	public void createLeague(League league) {
-		League existingLeague = leagueRepository.getLeagueByName(league.getName());
-		if (existingLeague != null)
+		if (leagueRepository.add(league))
+			leagueView.newLeagueCreated(league);
+		else
 			leagueView.showError(league.getName() + " già esistente");
-		
-		leagueRepository.add(league);
-		leagueView.newLeagueCreated(existingLeague);
 	}
 	
-	public void joinLeague(String leagueName) {
-		leagueView.joinLeague(leagueRepository.getLeagueByName(leagueName));
+	public void joinLeague(String leagueCode) {
+		leagueView.joinLeague(leagueRepository.getLeagueByCode(leagueCode));
 	}
 
 }

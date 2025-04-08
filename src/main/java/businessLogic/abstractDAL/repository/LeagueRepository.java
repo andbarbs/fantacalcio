@@ -4,8 +4,8 @@ import domainModel.League;
 
 public interface LeagueRepository {
 
-	League getLeagueByName(String leagueName);
+	League getLeagueByCode(String leagueCode);
 
-	void add(League league);
+	boolean add(League league);
 
 }

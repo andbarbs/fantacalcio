@@ -17,7 +17,7 @@ public class PlayerListPresenterTest {
 	PlayerView playerView;
 	PlayerRepository playerRepository;
 	List<Player> players;
-	
+
 	@BeforeEach
 	public void setup() {
 		playerView = mock(PlayerView.class);
@@ -27,28 +27,17 @@ public class PlayerListPresenterTest {
 	}
 
 	@Test
-	public void testAllPlayersWithNoPlayers() {
+	public void testAllPlayers() {
 		when(playerRepository.findAll()).thenReturn(players);
 		playerPresenter.allPlayers();
 		verify(playerView).showAllPlayers(players);
 	}
-	
-	@Test
-	public void testAllPlayersWithSomePlayers() {
-		players.add(new Player());
-		players.add(new Player());
-		when(playerRepository.findAll()).thenReturn(players);
-		playerPresenter.allPlayers();
-		verify(playerView).showAllPlayers(players);
-	}
-	
-	/*
+
 	@Test
 	public void testShowPlayersWithSurname() {
-		when(playerRepository.findBySurname("")).thenReturn(players);
-		playerPresenter.showPlayersWithSurname("");
+		when(playerRepository.findBySurname("Rossi")).thenReturn(players);
+		playerPresenter.showPlayersWithSurname("Rossi");
 		verify(playerView).showPlayersBySurname(players);
 	}
-	*/
-	
+
 }

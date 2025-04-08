@@ -10,5 +10,4 @@ public interface PlayerView extends View {
 
 	void showPlayersBySurname(List<Player> bySurname);
 
-	// void showPlayerById(Player player);
 }
