@@ -11,13 +11,13 @@ public class League {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(optional=false, fetch=FetchType.LAZY)
+    @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private User admin;
 
     @Basic(optional=false)
     private String name;
 
-    @OneToOne(optional=false, fetch=FetchType.LAZY)
+    @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private NewsPaper newsPaper;
 
     @Basic(optional=false)
