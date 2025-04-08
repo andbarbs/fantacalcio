@@ -32,14 +32,18 @@ public class Grade {
 	@Basic(optional=false)
 	private int assists;
 
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private NewsPaper newsPaper;
+
 	public Grade() {}
 	
-	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists) {
+	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists, NewsPaper newsPaper) {
 		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
 		this.goals = goals;
 		this.assists = assists;
+		this.newsPaper = newsPaper;
 	}
 
 	public double getMark() {
@@ -56,6 +60,10 @@ public class Grade {
 
 	public int getAssists() {
 		return assists;
+	}
+
+	public NewsPaper getNewsPaper() {
+		return newsPaper;
 	}
 
 	@Override
