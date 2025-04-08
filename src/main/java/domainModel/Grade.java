@@ -32,7 +32,7 @@ public class Grade {
 	@Basic(optional=false)
 	private int assists;
 
-	Grade() {}
+	public Grade() {}
 	
 	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists) {
 		this.player = player;
