@@ -1,29 +1,27 @@
 package hibernateDAL;
 
-
-
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.EnumSet;
-
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import domainModel.Player;
+import domainModel.Player.Role;
 
+@DisplayName("tests for HibernatePlayerRepository")
 class HibernatePlayerRepositoryTest {
 
-	private static StandardServiceRegistry serviceRegistry;
-	private static Metadata metadata;
 	private static SessionFactory sessionFactory;
 
 	private HibernatePlayerRepository playerRepository;
@@ -31,11 +29,11 @@ class HibernatePlayerRepositoryTest {
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
-			serviceRegistry = new StandardServiceRegistryBuilder()
+			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 				.configure("hibernate-test.cfg.xml")
 				.build();
 
-			metadata = new MetadataSources(serviceRegistry)
+			Metadata metadata = new MetadataSources(serviceRegistry)
 			.addAnnotatedClass(Player.class)
 			.getMetadataBuilder()
 			.build();
@@ -46,33 +44,13 @@ class HibernatePlayerRepositoryTest {
 			throw new ExceptionInInitializerError(ex);
 		}
 	}
-
-//	@BeforeEach
-//	void setup() {
-//		// H2-specific schema dropping to ensure tests work on a fresh database
-//		// without having to recreate the SessionFactory instance
-//		sessionFactory.inTransaction(
-//				session -> session.createMutationQuery("TRUNCATE SCHEMA public AND COMMIT").executeUpdate());
-//		
-//		// Instantiates the SUT using the class-bound SessionFactory
-//		giocatoreRepository = new HibernateGiocatoreRepository(sessionFactory);
-//	}
 	
 	@BeforeEach
-	void setup() {
-		
-		System.out.println("executing the beforeEach step");
-		// Hibernate native schema dropping to ensure tests work on a fresh database
-		// without having to recreate the SessionFactory instance
-		SchemaExport schemaExport = new SchemaExport();
+	void setup() {		
+		// ensures tests work on empty tables without having to recreate a SessionFactory instance
+		sessionFactory.getSchemaManager().truncateMappedObjects();
 
-		// Drop the existing schema
-		schemaExport.drop(EnumSet.of(TargetType.DATABASE), metadata);
-
-		// Recreate the schema
-		schemaExport.create(EnumSet.of(TargetType.DATABASE), metadata);
-
-		// Instantiates the SUT using the class-bound SessionFactory
+		// Instantiates the SUT using the static SessionFactory
 		playerRepository = new HibernatePlayerRepository(sessionFactory);
 	}
 
@@ -82,11 +60,44 @@ class HibernatePlayerRepositoryTest {
 	}
 	
 	@Test
+	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
-		System.out.println("actually executing test method!!!");
-		assertThat(playerRepository.getAllPlayers()).isEmpty();
+		assertThat(playerRepository.findAll()).isEmpty();
+	}
+	
+	@Test
+	@DisplayName("getAllGiocatori() when two players have been persisted")
+	public void testTwoPlayersExist(){		
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+		
+		sessionFactory.inTransaction(session -> {
+			session.persist(buffon);
+			session.persist(messi);});
+		
+		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
 	}
 
+	@Test
+	@DisplayName("addPlayer() with a non-persisted player")
+	public void testAddNonPersistedPlayer() {
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+
+		assertTrue(playerRepository.addPlayer(buffon));		
+		assertThat(sessionFactory.fromTransaction((Session session) -> 
+					session.createSelectionQuery("from Player", Player.class).getResultList()))
+				.containsExactly(buffon);
+	}
+	
+	@Test
+	@DisplayName("addPlayer() does not add an already persisted player")
+	public void testAddAlreadyPersistedPlayer() {
+		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		
+		sessionFactory.inTransaction(session -> session.persist(buffon));
+
+		assertFalse(playerRepository.addPlayer(buffon));
+	}
 	
 
 }

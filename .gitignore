@@ -36,4 +36,8 @@ build/
 ### Mac OS ###
 .DS_Store
 /bin/
+<<<<<<< HEAD
 /.apt_generated_tests/
+=======
+/.apt_generated_tests/
+>>>>>>> refs/remotes/origin/hibernate_experiments
