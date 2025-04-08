@@ -1,22 +1,33 @@
 package domainModel;
 
 public class FantaTeam {
-    private FantaLega lega;
-    private int punti;
-    private Utente proprietario;
+    private final String name;
+    private final League league;
+    private int points;
+    private final User fantaManager;
+
+    public FantaTeam(String name, League league, int points, User fantaManager) {
+        this.name = name;
+        this.league = league;
+        this.points = points;
+        this.fantaManager = fantaManager;
+    }
 
     // Getters
-    public FantaLega getLega() {
-        return lega;
-
+    public League getLeague() {
+        return league;
     }
 
-    public int getPunti() {
-        return punti;
+    public int getPoints() {
+        return points;
     }
 
-    public Utente getProprietario() {
-        return proprietario;
+    public User getFantaManager() {
+        return fantaManager;
+    }
+
+    public String getName() {
+        return name;
     }
 }
 
