@@ -22,7 +22,7 @@ public class MatchDaySerieA {
 	@Basic(optional=false)
 	private LocalDate date;
 	
-	public MatchDaySerieA() {}
+	MatchDaySerieA() {}
 	
 	public MatchDaySerieA(String name, LocalDate date) {
 		this.name = name;

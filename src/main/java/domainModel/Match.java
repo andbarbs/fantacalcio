@@ -19,14 +19,15 @@ public class Match {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private FantaTeam Team2;
 
-    // Getters
-    public Match() {}
+    Match() {}
 
     public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
         this.matchDaySerieA = matchDaySerieA;
         this.team1 = team1;
         Team2 = team2;
     }
+
+    // Getters
 
     public FantaTeam getTeam1() {
         return team1;
