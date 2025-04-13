@@ -4,23 +4,16 @@ import java.util.Objects;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Player {
-    public static enum Role {GOALKEEPER, DEFENDER, MIDFIELDER, STRIKER}
+public abstract class Player {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;    
-    
-    @Basic(optional=false)
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private Long id;
     
     @Basic(optional=false)
     private String name;
@@ -28,18 +21,14 @@ public class Player {
     @Basic(optional=false)
     private String surname;
     
-    public Player() {}
+    Player() {}
 
-    public Player(Role role, String name, String surname) {
-        this.role = role;
+    Player(String name, String surname) {
         this.name = name;
         this.surname = surname;
     }
 
     // Getter
-    public Role getRuolo() {
-        return role;
-    }
 
     public String getName() {
         return name;
@@ -51,7 +40,7 @@ public class Player {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, role, surname);
+		return Objects.hash(name, surname);
 	}
 
 	@Override
@@ -63,8 +52,48 @@ public class Player {
 		if (getClass() != obj.getClass())
 			return false;
 		Player other = (Player) obj;
-		return Objects.equals(name, other.name) && role == other.role && Objects.equals(surname, other.surname);
+		return Objects.equals(name, other.name) && Objects.equals(surname, other.surname);
 	}
+	
+	@Entity
+    public static class Goalkeeper extends Player {
+		
+		Goalkeeper () {}
+		
+		public Goalkeeper(String name, String surname) {
+			super(name, surname);
+	    }
+    }
+	
+	@Entity
+    public static class Defender extends Player {
+		
+		Defender () {}
+		
+		public Defender(String name, String surname) {
+			super(name, surname);
+	    }
+    }
+	
+	@Entity
+    public static class Midfielder extends Player {
+		
+		Midfielder() {}
+
+		public Midfielder(String name, String surname) {
+			super(name, surname);
+	    }
+    }
+	
+	@Entity
+    public static class Striker extends Player {
+		
+		Striker() {}
+		
+		public Striker(String name, String surname) {
+			super(name, surname);
+	    }
+    }
     
     
 }

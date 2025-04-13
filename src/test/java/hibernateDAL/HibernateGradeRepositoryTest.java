@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import domainModel.Grade;
 import domainModel.MatchDaySerieA;
 import domainModel.Player;
-import domainModel.Player.Role;
 
 class HibernateGradeRepositoryTest {
 
@@ -36,6 +35,7 @@ class HibernateGradeRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(Grade.class)
 					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(NewsPaper.class)
 					.getMetadataBuilder()
@@ -74,7 +74,7 @@ class HibernateGradeRepositoryTest {
 		MatchDaySerieA day1 = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12));
 		MatchDaySerieA day2 = new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 8, 12));
 		NewsPaper gazzetta = new NewsPaper("Gazzetta");
-		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player buffon = new Player.Goalkeeper("Gigi", "Buffon");
 		
 		Grade voto1 = new Grade(buffon, day1, 6.0, 0, 1, gazzetta);
 		Grade voto2 = new Grade(buffon, day2, 8.0, 2, 1, gazzetta);

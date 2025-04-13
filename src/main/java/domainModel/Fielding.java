@@ -5,14 +5,11 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class Fielding {
+public abstract class Fielding {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Basic(optional = false)
-    private boolean starter;
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private Player player;
@@ -20,19 +17,15 @@ public class Fielding {
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private LineUp lineUp;
 
-    public Fielding() {}
-    public Fielding(boolean starter, Player player, LineUp lineUp) {
-        this.starter = starter;
+    Fielding() {}
+    
+    Fielding(Player player, LineUp lineUp) {
         this.player = player;
         this.lineUp = lineUp;
     }
 
     // Getters
-
-    public boolean isStarter() {
-        return starter;
-    }
-
+    
     public Player getPlayer() {
         return player;
     }
@@ -45,12 +38,34 @@ public class Fielding {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Fielding fielding = (Fielding) o;
-        return starter == fielding.starter && Objects.equals(player, fielding.player) && Objects.equals(lineUp, fielding.lineUp);
+        return Objects.equals(player, fielding.player) && Objects.equals(lineUp, fielding.lineUp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(starter, player, lineUp);
+        return Objects.hash(player, lineUp);
+    }
+    
+    @Entity
+    public static abstract class StarterFielding extends Fielding {
+    	
+    	StarterFielding() {}
+        
+    	StarterFielding(Player player, LineUp lineUp) {
+            super(player, lineUp);
+        }
+    }
+    
+    @Entity
+    public static class SubstituteFielding extends Fielding {
+    	
+    	SubstituteFielding() {}
+        
+    	public SubstituteFielding(Player player, LineUp lineUp) {
+            super(player, lineUp);
+        }
+
+
     }
 }
 

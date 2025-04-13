@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import domainModel.Player;
-import domainModel.Player.Role;
+import static domainModel.Player.*;
 
 @DisplayName("tests for HibernatePlayerRepository")
 class HibernatePlayerRepositoryTest {
@@ -34,9 +34,13 @@ class HibernatePlayerRepositoryTest {
 				.build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
-			.addAnnotatedClass(Player.class)
-			.getMetadataBuilder()
-			.build();
+			        .addAnnotatedClass(Player.class)
+			        .addAnnotatedClass(Player.Goalkeeper.class)
+			        .addAnnotatedClass(Player.Defender.class)
+			        .addAnnotatedClass(Player.Midfielder.class)
+			        .addAnnotatedClass(Player.Striker.class)
+			        .getMetadataBuilder()
+			        .build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -68,8 +72,8 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("getAllGiocatori() when two players have been persisted")
 	public void testTwoPlayersExist(){		
-		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
-		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+		Player buffon = new Goalkeeper("Gigi", "Buffon");
+		Player messi = new Striker("Lionel", "Messi");
 		
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -81,7 +85,7 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("addPlayer() with a non-persisted player")
 	public void testAddNonPersistedPlayer() {
-		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player buffon = new Goalkeeper("Gigi", "Buffon");
 
 		assertTrue(playerRepository.addPlayer(buffon));		
 		assertThat(sessionFactory.fromTransaction((Session session) -> 
@@ -92,7 +96,7 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("addPlayer() does not add an already persisted player")
 	public void testAddAlreadyPersistedPlayer() {
-		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
+		Player buffon = new Goalkeeper("Gigi", "Buffon");
 		
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
@@ -102,8 +106,8 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("findBySurname when the player does not exist")
 	public void testFindBySurnameDoesNotExist(){
-		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
-		Player messi = new Player(Role.STRIKER, "Lionel", "Messi");
+		Player buffon = new Goalkeeper("Gigi", "Buffon");
+		Player messi = new Striker("Lionel", "Messi");
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -115,9 +119,9 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("findBySurname when the players exist")
 	public void testFindBySurnameExist(){
-		Player marcus = new Player(Role.STRIKER, "Marcus", "Thuram");
-		Player kephren = new Player(Role.MIDFIELDER, "Kephren", "Thuram");
-		Player eljif = new Player(Role.MIDFIELDER, "Eljif", "Elmas");
+		Player marcus = new Striker("Marcus", "Thuram");
+		Player kephren = new Striker("Kephren", "Thuram");
+		Player eljif = new Striker("Eljif", "Elmas");
 
 
 		sessionFactory.inTransaction(session -> {

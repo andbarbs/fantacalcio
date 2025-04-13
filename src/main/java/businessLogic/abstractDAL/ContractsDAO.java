@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 public interface ContractsDAO {
     Iterator<Contract> getSquad(FantaTeam team);
-    Iterator<Contract> getContracts(FantaTeam team, Player.Role role);
+    Iterator<Contract> getContracts(FantaTeam team);
     void save(FantaTeam team, Player player);
     void delete(Contract contract);
 }
