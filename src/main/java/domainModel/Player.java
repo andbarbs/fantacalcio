@@ -86,11 +86,11 @@ public abstract class Player {
     }
 	
 	@Entity
-    public static class Striker extends Player {
+    public static class Forward extends Player {
 		
-		Striker() {}
+		Forward() {}
 		
-		public Striker(String name, String surname) {
+		public Forward(String name, String surname) {
 			super(name, surname);
 	    }
     }

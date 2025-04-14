@@ -7,7 +7,7 @@ import java.util.Set;
 import domainModel.Fielding.StarterFielding;
 import domainModel.Player.Defender;
 import domainModel.Player.Midfielder;
-import domainModel.Player.Striker;
+import domainModel.Player.Forward;
 
 @Entity
 public abstract class LineUp {
@@ -81,7 +81,7 @@ public abstract class LineUp {
 
     		ForwardFielding() {}
             
-    		public ForwardFielding(Striker player, LineUp lineUp) {
+    		public ForwardFielding(Forward player, LineUp lineUp) {
                 super(player, lineUp);
             }
     	}

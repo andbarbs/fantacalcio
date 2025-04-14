@@ -38,7 +38,7 @@ class HibernatePlayerRepositoryTest {
 			        .addAnnotatedClass(Player.Goalkeeper.class)
 			        .addAnnotatedClass(Player.Defender.class)
 			        .addAnnotatedClass(Player.Midfielder.class)
-			        .addAnnotatedClass(Player.Striker.class)
+			        .addAnnotatedClass(Player.Forward.class)
 			        .getMetadataBuilder()
 			        .build();
 
@@ -73,7 +73,7 @@ class HibernatePlayerRepositoryTest {
 	@DisplayName("getAllGiocatori() when two players have been persisted")
 	public void testTwoPlayersExist(){		
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
-		Player messi = new Striker("Lionel", "Messi");
+		Player messi = new Forward("Lionel", "Messi");
 		
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -107,7 +107,7 @@ class HibernatePlayerRepositoryTest {
 	@DisplayName("findBySurname when the player does not exist")
 	public void testFindBySurnameDoesNotExist(){
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
-		Player messi = new Striker("Lionel", "Messi");
+		Player messi = new Forward("Lionel", "Messi");
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -119,9 +119,9 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("findBySurname when the players exist")
 	public void testFindBySurnameExist(){
-		Player marcus = new Striker("Marcus", "Thuram");
-		Player kephren = new Striker("Kephren", "Thuram");
-		Player eljif = new Striker("Eljif", "Elmas");
+		Player marcus = new Forward("Marcus", "Thuram");
+		Player kephren = new Forward("Kephren", "Thuram");
+		Player eljif = new Forward("Eljif", "Elmas");
 
 
 		sessionFactory.inTransaction(session -> {

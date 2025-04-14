@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import domainModel.Player.Defender;
 import domainModel.Player.Midfielder;
-import domainModel.Player.Striker;
+import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel._433LineUp._443LineUpBuilder;
 
@@ -26,9 +26,9 @@ class _433LineUpTest {
 		builder.withMidfielders(new Midfielder("tizio1", "bomba"), 
 				new Midfielder("tizio2", "bomba"), 
 				new Midfielder("tizio3", "bomba"));
-		builder.withForwards(new Striker("caio1", "bomba"), 
-				new Striker("caio2", "bomba"), 
-				new Striker("caio3", "bomba"));
+		builder.withForwards(new Forward("caio1", "bomba"), 
+				new Forward("caio2", "bomba"), 
+				new Forward("caio3", "bomba"));
 		builder.withSubstitutes(List.of(new Goalkeeper("gigi", "buffon")));
 		
 		_433LineUp lineUp = builder.build();
@@ -45,9 +45,9 @@ class _433LineUpTest {
 				new Defender("ciccio2", "bomba"),
 				new Defender("ciccio3", "bomba"),
 				new Defender("ciccio4", "bomba"),
-				new Striker("caio1", "bomba"),
-				new Striker("caio2", "bomba"),
-				new Striker("caio3", "bomba"),
+				new Forward("caio1", "bomba"),
+				new Forward("caio2", "bomba"),
+				new Forward("caio3", "bomba"),
 				new Goalkeeper("gigi", "buffon"));		
 	}
 

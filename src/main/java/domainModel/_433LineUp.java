@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import domainModel.Player.Defender;
 import domainModel.Player.Midfielder;
-import domainModel.Player.Striker;
+import domainModel.Player.Forward;
 
 public class _433LineUp extends LineUp.ThreePositionLineUp {
 
@@ -44,7 +44,7 @@ public class _433LineUp extends LineUp.ThreePositionLineUp {
 		}
 
 		// Fluent method to add forwards.
-		public _443LineUpBuilder withForwards(Striker striker1, Striker striker2, Striker striker3) {
+		public _443LineUpBuilder withForwards(Forward striker1, Forward striker2, Forward striker3) {
 			this.fieldings.addAll(List.of(striker1, striker2, striker3).stream()
 					.map(fwd -> new LineUp.ThreePositionLineUp.ForwardFielding(fwd, lineUp))
 					.collect(Collectors.toList()));
