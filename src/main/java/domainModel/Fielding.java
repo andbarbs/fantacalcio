@@ -57,15 +57,41 @@ public abstract class Fielding {
     }
     
     @Entity
-    public static class SubstituteFielding extends Fielding {
+    public static abstract class SubstituteFielding extends Fielding {    	
     	
-    	SubstituteFielding() {}
+    	private int benchPosition;
+
+		SubstituteFielding() {}
         
-    	public SubstituteFielding(Player player, LineUp lineUp) {
+    	SubstituteFielding(Player player, LineUp lineUp, int benchPosition) {
             super(player, lineUp);
+			this.benchPosition = benchPosition;
         }
 
+		public int getBenchPosition() {
+			return benchPosition;
+		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + Objects.hash(benchPosition);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SubstituteFielding other = (SubstituteFielding) obj;
+			return benchPosition == other.benchPosition;
+		}
+		
     }
 }
 
