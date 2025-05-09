@@ -8,4 +8,6 @@ public interface MatchCalendarView {
 
 	void showCalendar(List<Match> everyMatch);
 
+	void showMatch(Match clickedMatch);
+
 }

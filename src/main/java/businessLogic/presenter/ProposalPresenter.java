@@ -1,5 +1,6 @@
 package businessLogic.presenter;
 
+import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Player;
 import domainModel.Proposal;
@@ -20,6 +21,10 @@ public class ProposalPresenter {
 		this.contractRepository = contractRepository;
 	}
 
+	public void showAllProposals(League actualLeague, FantaTeam myTeam) {
+		proposalView.showAllProposals(proposalRepository.getMyProposals(actualLeague, myTeam));
+	}
+	
 	public void addProposal(League actualLeague, Player player1, Player player2) {
 		Proposal proposal = contractRepository.getProposal(actualLeague, player1, player2);
 		proposalView.addProposal(proposal);

@@ -1,7 +1,10 @@
 package businessLogic.presenter;
 
+import java.util.List;
+
 import businessLogic.abstractDAL.repository.TeamRepository;
 import businessLogic.abstractView.LeagueTableView;
+import domainModel.FantaTeam;
 import domainModel.League;
 
 public class StandingsPresenter {
@@ -15,6 +18,8 @@ public class StandingsPresenter {
 	}
 	
 	public void showLeagueTable(League actualLeague) {
-		leagueTableView.showLeagueTable(teamRepository.getAllTeams(actualLeague)); // poi dovrà essere chiamato il SessionBean
+		List<FantaTeam> teams = teamRepository.getAllTeams(actualLeague);
+		// sort teams before passing to the View
+		leagueTableView.showLeagueTable(teams); // poi dovrà essere chiamato il SessionBean
 	}
 }
