@@ -9,34 +9,33 @@ import org.junit.jupiter.api.Test;
 
 import businessLogic.SessionBean;
 import businessLogic.abstractDAL.repository.TeamRepository;
-import businessLogic.abstractView.LeagueTableView;
+import businessLogic.abstractView.TeamListView;
 import domainModel.FantaTeam;
 import domainModel.League;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StandingsPresenterTest {
+public class TeamListPresenterTest {
 
-    private StandingsPresenter leagueTablePresenter;
-    private LeagueTableView leagueTableView;
+    private TeamListPresenter teamListPresenter;
+    private TeamListView teamListView;
     private TeamRepository teamRepository;
     private List<FantaTeam> teams;
 
     @BeforeEach
     public void setup() {
-        leagueTableView = mock(LeagueTableView.class);
+        teamListView = mock(TeamListView.class);
         teamRepository = mock(TeamRepository.class);
-        leagueTablePresenter = new StandingsPresenter(leagueTableView, teamRepository);
+        teamListPresenter = new TeamListPresenter(teamListView, teamRepository);
         teams = new ArrayList<>();
     }
 
     @Test
-    public void testShowLeagueTable() {
-    	League fakeLeague = null;
-        when(teamRepository.getAllTeams(fakeLeague)).thenReturn(teams);
-        leagueTablePresenter.showLeagueTable(fakeLeague);
-        verify(leagueTableView).showLeagueTable(teams);
+    public void testAllTeams() {
+        League fakeLeague = null;
+		when(teamRepository.getAllTeams(fakeLeague)).thenReturn(teams);
+        teamListPresenter.allTeams(fakeLeague);
+        verify(teamListView).showAllTeams(teams);
     }
 }
-

@@ -8,4 +8,6 @@ public interface ProposalView {
 
 	void acceptProposal(Proposal proposal);
 
+	void rejectProposal(Proposal proposal);
+
 }

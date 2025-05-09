@@ -4,34 +4,48 @@ import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.User;
 
-import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class SessionBean {
-    private User user;
-    private League league;
-    private FantaTeam team;
-    private boolean isAdmin;
-    private LocalDateTime date;
+	private User user;
+	private League league;
+	private FantaTeam team;
+	private boolean isAdmin;
 
-    // Getters
-    public User getUser() {
-        return user;
-    }
+	private static SessionBean instance = null;
 
-    public League getLeague() {
-        return league;
-    }
+	private SessionBean(User user, League league, FantaTeam team, boolean isAdmin) {
+		this.user = user;
+		this.league = league;
+		this.team = team;
+		this.isAdmin = isAdmin;
+	}
 
-    public FantaTeam getTeam() {
-        return team;
-    }
+	public static void initInstance(User user, League league, FantaTeam team, boolean isAdmin) {
+		instance = new SessionBean(user, league, team, isAdmin);
+	}
 
-    public boolean getIsAdmin() {
-        return isAdmin;
-    }
+	public static SessionBean getInstance() {
+		if (Objects.isNull(instance))
+			throw new IllegalStateException();
+		return instance;
+	}
 
-    public LocalDateTime getDate() {
-        return date;
-    }
+	// Getters
+	public User getUser() {
+		return user;
+	}
+
+	public League getLeague() {
+		return league;
+	}
+
+	public FantaTeam getTeam() {
+		return team;
+	}
+
+	public boolean getIsAdmin() {
+		return isAdmin;
+	}
+
 }
-
