@@ -2,7 +2,7 @@ package hibernateDAL;
 
 import org.hibernate.SessionFactory;
 
-public class HibernateEntityRepository {
+public abstract class HibernateEntityRepository {
 
 	private final SessionFactory sessionFactory;
 	
