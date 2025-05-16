@@ -27,7 +27,7 @@ public class TeamListPresenterTest {
     public void setup() {
         teamListView = mock(TeamListView.class);
         teamRepository = mock(TeamRepository.class);
-        teamListPresenter = new TeamListPresenter(teamListView, teamRepository);
+        teamListPresenter = new TeamListPresenter(teamListView, teamRepository, null);
         teams = new ArrayList<>();
     }
 

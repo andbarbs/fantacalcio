@@ -29,7 +29,7 @@ public class PlayerListPresenterTest {
 	@Test
 	public void testAllPlayers() {
 		when(playerRepository.findAll()).thenReturn(players);
-		playerPresenter.allPlayers();
+		playerPresenter.showAllPlayers();
 		verify(playerView).showAllPlayers(players);
 	}
 
