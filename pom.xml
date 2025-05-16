@@ -41,6 +41,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<version>5.12.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-core</artifactId>
 		</dependency>

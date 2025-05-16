@@ -9,8 +9,8 @@ import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
-public class LineUpSelectorFrameTest  {
+@RunWith(GUITestRunner.class)
+public class LineUpSelectorFrameTest extends AssertJSwingJUnitTestCase  {
 	
 	private FrameFixture window;
 	
@@ -18,17 +18,17 @@ public class LineUpSelectorFrameTest  {
 	
 	
 
-//	@Override
-//	protected void onSetUp() {
-//		GuiActionRunner.execute(() -> {
-//			view = new LineUpSelectorFrame();
-//			return view;
-//		});
-//		window = new FrameFixture(robot(), view);
-//		window.show();		
-//	}
+	@Override
+	protected void onSetUp() {
+		GuiActionRunner.execute(() -> {
+			view = new LineUpSelectorFrame();
+			return view;
+		});
+		window = new FrameFixture(robot(), view);
+		window.show();		
+	}
 	
-	@Test 
+	@Test @GUITest
 	public void test() {
 		window.label(JLabelMatcher.withText("seleziona formazione"));
 	}
