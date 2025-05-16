@@ -16,12 +16,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import domainModel.MatchDaySerieA;
+import jakarta.persistence.EntityManager;
 
 class HibernateMatchDayRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
-	private HibernateMatchDayRepository matchDayRepository;
+	private JpaMatchDayRepository matchDayRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -48,7 +49,7 @@ class HibernateMatchDayRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
 		// Instantiates the SUT using the static SessionFactory
-		matchDayRepository = new HibernateMatchDayRepository(sessionFactory);
+		matchDayRepository = new JpaMatchDayRepository(sessionFactory);
 	}
 
 	@AfterAll
@@ -59,7 +60,9 @@ class HibernateMatchDayRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchDays() on an empty table")
 	public void testNoMatchDaysExist(){
-		assertThat(matchDayRepository.getAllMatchDays()).isEmpty();
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(matchDayRepository.getAllMatchDays(repositorySession)).isEmpty();
+		repositorySession.close();	
 	}
 	
 	@Test
@@ -72,7 +75,9 @@ class HibernateMatchDayRepositoryTest {
 			session.persist(day1);
 			session.persist(day2);});
 		
-		assertThat(matchDayRepository.getAllMatchDays()).containsExactly(day1, day2);
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(matchDayRepository.getAllMatchDays(repositorySession)).containsExactly(day1, day2);
+		repositorySession.close();	
 	}
 
 }

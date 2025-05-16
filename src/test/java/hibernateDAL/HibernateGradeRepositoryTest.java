@@ -20,12 +20,13 @@ import domainModel.Grade;
 import domainModel.MatchDaySerieA;
 import domainModel.Player;
 import domainModel.Player.Role;
+import jakarta.persistence.EntityManager;
 
 class HibernateGradeRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
-	private HibernateGradeRepository gradeRepository;
+	private JpaGradeRepository gradeRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -54,7 +55,7 @@ class HibernateGradeRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
 		// Instantiates the SUT using the static SessionFactory
-		gradeRepository = new HibernateGradeRepository(sessionFactory);
+		gradeRepository = new JpaGradeRepository(sessionFactory);
 	}
 
 	@AfterAll
@@ -65,7 +66,9 @@ class HibernateGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllGrades() on an empty table")
 	public void testNoGradesExist(){
-		assertThat(gradeRepository.getAllGrades()).isEmpty();
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(gradeRepository.getAllGrades(repositorySession)).isEmpty();
+		repositorySession.close();
 	}
 	
 	@Test
@@ -88,7 +91,9 @@ class HibernateGradeRepositoryTest {
 			session.persist(voto1);
 			session.persist(voto2);});
 		
-		assertThat(gradeRepository.getAllGrades()).containsExactly(voto1, voto2);
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(gradeRepository.getAllGrades(repositorySession)).containsExactly(voto1, voto2);
+		repositorySession.close();
 	}
 
 }

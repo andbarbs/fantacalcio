@@ -1,14 +1,14 @@
 package businessLogic.presenter;
 
-import businessLogic.abstractDAL.repository.PlayerRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaPlayerRepository;
 import businessLogic.abstractView.PlayerView;
 
 public class PlayerListPresenter {
 
 	private PlayerView playerView;
-	private PlayerRepository playerRepository;
+	private AbstractJpaPlayerRepository playerRepository;
 
-	public PlayerListPresenter(PlayerView playerView, PlayerRepository playerRepository) {
+	public PlayerListPresenter(PlayerView playerView, AbstractJpaPlayerRepository playerRepository) {
 		this.playerView = playerView;
 		this.playerRepository = playerRepository;
 	}

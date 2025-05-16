@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractDAL.repository.PlayerRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaPlayerRepository;
 import businessLogic.abstractView.PlayerView;
 import domainModel.Player;
 
@@ -15,13 +15,13 @@ public class PlayerListPresenterTest {
 
 	PlayerListPresenter playerPresenter;
 	PlayerView playerView;
-	PlayerRepository playerRepository;
+	AbstractJpaPlayerRepository playerRepository;
 	List<Player> players;
 
 	@BeforeEach
 	public void setup() {
 		playerView = mock(PlayerView.class);
-		playerRepository = mock(PlayerRepository.class);
+		playerRepository = mock(AbstractJpaPlayerRepository.class);
 		playerPresenter = new PlayerListPresenter(playerView, playerRepository);
 		players = new ArrayList<Player>();
 	}

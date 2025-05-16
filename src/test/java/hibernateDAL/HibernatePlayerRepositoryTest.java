@@ -18,13 +18,14 @@ import org.junit.jupiter.api.Test;
 
 import domainModel.Player;
 import domainModel.Player.Role;
+import jakarta.persistence.EntityManager;
 
 @DisplayName("tests for HibernatePlayerRepository")
 class HibernatePlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
-	private HibernatePlayerRepository playerRepository;
+	private JpaPlayerRepository playerRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -51,7 +52,7 @@ class HibernatePlayerRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
 		// Instantiates the SUT using the static SessionFactory
-		playerRepository = new HibernatePlayerRepository(sessionFactory);
+		playerRepository = new JpaPlayerRepository();
 	}
 
 	@AfterAll
@@ -62,7 +63,7 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
-		assertThat(playerRepository.findAll()).isEmpty();
+		assertThat(playerRepository.findAll(sessionFactory.createEntityManager())).isEmpty();
 	}
 	
 	@Test
@@ -75,15 +76,22 @@ class HibernatePlayerRepositoryTest {
 			session.persist(buffon);
 			session.persist(messi);});
 		
-		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(playerRepository.findAll(repositorySession)).containsExactly(buffon, messi);
+		repositorySession.close();	
 	}
 
 	@Test
 	@DisplayName("addPlayer() with a non-persisted player")
 	public void testAddNonPersistedPlayer() {
 		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
-
-		assertTrue(playerRepository.addPlayer(buffon));		
+		
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		repositorySession.getTransaction().begin(); // Start the transaction
+		assertTrue(playerRepository.addPlayer(repositorySession, buffon));		
+		repositorySession.getTransaction().commit(); // Commit the transaction to flush changes
+		repositorySession.close();	
+		
 		assertThat(sessionFactory.fromTransaction((Session session) -> 
 					session.createSelectionQuery("from Player", Player.class).getResultList()))
 				.containsExactly(buffon);
@@ -96,7 +104,9 @@ class HibernatePlayerRepositoryTest {
 		
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
-		assertFalse(playerRepository.addPlayer(buffon));
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertFalse(playerRepository.addPlayer(repositorySession, buffon));
+		repositorySession.close();	
 	}
 
 	@Test
@@ -109,7 +119,9 @@ class HibernatePlayerRepositoryTest {
 			session.persist(buffon);
 			session.persist(messi);});
 
-		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(playerRepository.findBySurname(repositorySession, "Thuram")).isEmpty();
+		repositorySession.close();	
 	}
 
 	@Test
@@ -125,7 +137,9 @@ class HibernatePlayerRepositoryTest {
 			session.persist(kephren);
 			session.persist(eljif);});
 
-		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
+		EntityManager repositorySession = sessionFactory.createEntityManager();
+		assertThat(playerRepository.findBySurname(repositorySession, "Thuram")).containsExactlyInAnyOrder(marcus, kephren);
+		repositorySession.close();	
 	}
 	
 
