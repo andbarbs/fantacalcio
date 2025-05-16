@@ -1,5 +1,7 @@
 package businessLogic.abstractView;
 
+import java.util.List;
+
 import domainModel.Proposal;
 
 public interface ProposalView {
@@ -7,5 +9,9 @@ public interface ProposalView {
 	void addProposal(Proposal proposal);
 
 	void acceptProposal(Proposal proposal);
+
+	void rejectProposal(Proposal proposal);
+
+	void showAllProposals(List<Proposal> myProposals);
 
 }

@@ -13,7 +13,7 @@ public class PlayerListPresenter {
 		this.playerRepository = playerRepository;
 	}
 
-	public void allPlayers() {
+	public void showAllPlayers() {
 		playerView.showAllPlayers(playerRepository.findAll());
 	}
 

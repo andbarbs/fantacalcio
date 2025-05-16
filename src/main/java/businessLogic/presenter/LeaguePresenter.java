@@ -22,7 +22,7 @@ public class LeaguePresenter {
 	}
 	
 	public void joinLeague(String leagueCode) {
-		leagueView.joinLeague(leagueRepository.getLeagueByCode(leagueCode));
+		leagueView.joinLeague(leagueRepository.getLeagueByCode(leagueCode)); // la lega nel SessionBean deve essere modificata
 	}
 
 }

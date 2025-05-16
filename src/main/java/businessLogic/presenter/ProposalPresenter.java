@@ -1,28 +1,42 @@
 package businessLogic.presenter;
 
+import domainModel.FantaTeam;
+import domainModel.League;
+import domainModel.Player;
 import domainModel.Proposal;
+import businessLogic.SessionBean;
+import businessLogic.abstractDAL.repository.ContractRepository;
+import businessLogic.abstractDAL.repository.ProposalRepository;
 import businessLogic.abstractView.ProposalView;
 
 public class ProposalPresenter {
 
 	private ProposalView proposalView;
-	public ProposalPresenter(ProposalView playerSwitchView) {
-		this.proposalView = playerSwitchView;
+	private ProposalRepository proposalRepository;
+	private ContractRepository contractRepository;
+
+	public ProposalPresenter(ProposalView proposalView, ProposalRepository proposalRepository, ContractRepository contractRepository) {
+		this.proposalView = proposalView;
+		this.proposalRepository = proposalRepository;
+		this.contractRepository = contractRepository;
+	}
+
+	public void showAllProposals(League actualLeague, FantaTeam myTeam) {
+		proposalView.showAllProposals(proposalRepository.getMyProposals(actualLeague, myTeam));
 	}
 	
-	/*
-	// si devono mostrare i giocatori da scambiare: si usa una playerListView/Presenter???
-	public void startProposal(Player myPlayer, Player hisPlayer) {
-		
-	}
-	*/
-	
-	// non so come fare questi 2
-	public void addProposal(Proposal proposal) {
+	public void addProposal(League actualLeague, Player player1, Player player2) {
+		Proposal proposal = contractRepository.getProposal(actualLeague, player1, player2);
 		proposalView.addProposal(proposal);
 	}
-	
+
 	public void acceptProposal(Proposal proposal) {
+		proposalRepository.acceptedProposal(proposal);
 		proposalView.acceptProposal(proposal);
+	}
+	
+	public void rejectProposal(Proposal proposal) {
+		proposalRepository.rejectedProposal(proposal);
+		proposalView.rejectProposal(proposal);
 	}
 }

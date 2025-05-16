@@ -2,6 +2,7 @@ package businessLogic.presenter;
 
 import businessLogic.abstractDAL.repository.MatchRepository;
 import businessLogic.abstractView.MatchCalendarView;
+import domainModel.Match;
 
 public class MatchCalendarPresenter {
 	
@@ -25,8 +26,8 @@ public class MatchCalendarPresenter {
 		matchCalendarView.showCalendar(matchRepository.getFutureMatches());
 	}
 	
-	public void showMatchDetails() {
-		// si usa una matchView/Presenter???
+	public void showMatch(Match clickedMatch) {
+		matchCalendarView.showMatch(clickedMatch);
 	}
 
 }

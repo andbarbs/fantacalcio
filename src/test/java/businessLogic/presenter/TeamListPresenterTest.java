@@ -7,33 +7,35 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import businessLogic.SessionBean;
 import businessLogic.abstractDAL.repository.TeamRepository;
-import businessLogic.abstractView.LeagueTableView;
+import businessLogic.abstractView.TeamListView;
 import domainModel.FantaTeam;
+import domainModel.League;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LeagueTablePresenterTest {
+public class TeamListPresenterTest {
 
-    private LeagueTablePresenter leagueTablePresenter;
-    private LeagueTableView leagueTableView;
+    private TeamListPresenter teamListPresenter;
+    private TeamListView teamListView;
     private TeamRepository teamRepository;
     private List<FantaTeam> teams;
 
     @BeforeEach
     public void setup() {
-        leagueTableView = mock(LeagueTableView.class);
+        teamListView = mock(TeamListView.class);
         teamRepository = mock(TeamRepository.class);
-        leagueTablePresenter = new LeagueTablePresenter(leagueTableView, teamRepository);
+        teamListPresenter = new TeamListPresenter(teamListView, teamRepository);
         teams = new ArrayList<>();
     }
 
     @Test
-    public void testShowLeagueTable() {
-        when(teamRepository.getAllTeams()).thenReturn(teams);
-        leagueTablePresenter.showLeagueTable();
-        verify(leagueTableView).showLeagueTable(teams);
+    public void testAllTeams() {
+        League fakeLeague = null;
+		when(teamRepository.getAllTeams(fakeLeague)).thenReturn(teams);
+        teamListPresenter.allTeams(fakeLeague);
+        verify(teamListView).showAllTeams(teams);
     }
 }
-
