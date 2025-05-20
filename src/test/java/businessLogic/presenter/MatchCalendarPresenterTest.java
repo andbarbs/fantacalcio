@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractDAL.repository.MatchRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaMatchRepository;
 import businessLogic.abstractView.MatchCalendarView;
 import domainModel.Match;
 
@@ -18,13 +18,13 @@ public class MatchCalendarPresenterTest {
 
     private MatchCalendarPresenter matchCalendarPresenter;
     private MatchCalendarView matchCalendarView;
-    private MatchRepository matchRepository;
+    private AbstractJpaMatchRepository matchRepository;
     private List<Match> matches;
 
     @BeforeEach
     public void setup() {
         matchCalendarView = mock(MatchCalendarView.class);
-        matchRepository = mock(MatchRepository.class);
+        matchRepository = mock(AbstractJpaMatchRepository.class);
         matchCalendarPresenter = new MatchCalendarPresenter(matchCalendarView, matchRepository);
         matches = new ArrayList<>();
     }

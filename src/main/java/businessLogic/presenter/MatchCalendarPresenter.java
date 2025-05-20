@@ -1,15 +1,15 @@
 package businessLogic.presenter;
 
-import businessLogic.abstractDAL.repository.MatchRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaMatchRepository;
 import businessLogic.abstractView.MatchCalendarView;
 import domainModel.Match;
 
 public class MatchCalendarPresenter {
 	
 	private MatchCalendarView matchCalendarView;
-	private MatchRepository matchRepository;
+	private AbstractJpaMatchRepository matchRepository;
 
-	public MatchCalendarPresenter(MatchCalendarView matchCalendarView, MatchRepository matchRepository) {
+	public MatchCalendarPresenter(MatchCalendarView matchCalendarView, AbstractJpaMatchRepository matchRepository) {
 		this.matchCalendarView = matchCalendarView;
 		this.matchRepository = matchRepository;
 	}
