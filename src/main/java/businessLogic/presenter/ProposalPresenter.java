@@ -4,25 +4,24 @@ import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Player;
 import domainModel.Proposal;
-import businessLogic.SessionBean;
 import businessLogic.abstractDAL.repository.ContractRepository;
-import businessLogic.abstractDAL.repository.ProposalRepository;
+import businessLogic.abstractDAL.repository.AbstarctJpaProposalRepository;
 import businessLogic.abstractView.ProposalView;
 
 public class ProposalPresenter {
 
 	private ProposalView proposalView;
-	private ProposalRepository proposalRepository;
+	private AbstarctJpaProposalRepository abstarctJpaProposalRepository;
 	private ContractRepository contractRepository;
 
-	public ProposalPresenter(ProposalView proposalView, ProposalRepository proposalRepository, ContractRepository contractRepository) {
+	public ProposalPresenter(ProposalView proposalView, AbstarctJpaProposalRepository abstarctJpaProposalRepository, ContractRepository contractRepository) {
 		this.proposalView = proposalView;
-		this.proposalRepository = proposalRepository;
+		this.abstarctJpaProposalRepository = abstarctJpaProposalRepository;
 		this.contractRepository = contractRepository;
 	}
 
 	public void showAllProposals(League actualLeague, FantaTeam myTeam) {
-		proposalView.showAllProposals(proposalRepository.getMyProposals(actualLeague, myTeam));
+		proposalView.showAllProposals(abstarctJpaProposalRepository.getMyProposals(, actualLeague, myTeam));
 	}
 	
 	public void addProposal(League actualLeague, Player player1, Player player2) {
@@ -31,12 +30,12 @@ public class ProposalPresenter {
 	}
 
 	public void acceptProposal(Proposal proposal) {
-		proposalRepository.acceptedProposal(proposal);
+		abstarctJpaProposalRepository.acceptedProposal(, proposal);
 		proposalView.acceptProposal(proposal);
 	}
 	
 	public void rejectProposal(Proposal proposal) {
-		proposalRepository.rejectedProposal(proposal);
+		abstarctJpaProposalRepository.rejectedProposal(, proposal);
 		proposalView.rejectProposal(proposal);
 	}
 }

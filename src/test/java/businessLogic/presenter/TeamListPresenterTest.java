@@ -7,8 +7,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.SessionBean;
-import businessLogic.abstractDAL.repository.TeamRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaTeamRepository;
 import businessLogic.abstractView.TeamListView;
 import domainModel.FantaTeam;
 import domainModel.League;
@@ -20,21 +19,21 @@ public class TeamListPresenterTest {
 
     private TeamListPresenter teamListPresenter;
     private TeamListView teamListView;
-    private TeamRepository teamRepository;
+    private AbstractJpaTeamRepository abstractJpaTeamRepository;
     private List<FantaTeam> teams;
 
     @BeforeEach
     public void setup() {
         teamListView = mock(TeamListView.class);
-        teamRepository = mock(TeamRepository.class);
-        teamListPresenter = new TeamListPresenter(teamListView, teamRepository, null);
+        abstractJpaTeamRepository = mock(AbstractJpaTeamRepository.class);
+        teamListPresenter = new TeamListPresenter(teamListView, abstractJpaTeamRepository, null);
         teams = new ArrayList<>();
     }
 
     @Test
     public void testAllTeams() {
         League fakeLeague = null;
-		when(teamRepository.getAllTeams(fakeLeague)).thenReturn(teams);
+		when(abstractJpaTeamRepository.getAllTeams(, fakeLeague, )).thenReturn(teams);
         teamListPresenter.allTeams(fakeLeague);
         verify(teamListView).showAllTeams(teams);
     }

@@ -67,7 +67,7 @@ class HibernateGradeRepositoryTest {
 	@DisplayName("getAllGrades() on an empty table")
 	public void testNoGradesExist(){
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(gradeRepository.getAllGrades(repositorySession)).isEmpty();
+		assertThat(gradeRepository.getAllMatchGrades(repositorySession, , )).isEmpty();
 		repositorySession.close();
 	}
 	
@@ -92,7 +92,7 @@ class HibernateGradeRepositoryTest {
 			session.persist(voto2);});
 		
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(gradeRepository.getAllGrades(repositorySession)).containsExactly(voto1, voto2);
+		assertThat(gradeRepository.getAllMatchGrades(repositorySession, , )).containsExactly(voto1, voto2);
 		repositorySession.close();
 	}
 

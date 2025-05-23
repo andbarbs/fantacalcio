@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import businessLogic.abstractDAL.repository.ContractRepository;
-import businessLogic.abstractDAL.repository.ProposalRepository;
+import businessLogic.abstractDAL.repository.AbstarctJpaProposalRepository;
 import businessLogic.abstractView.ProposalView;
 import domainModel.League;
 import domainModel.Proposal;
@@ -15,16 +15,16 @@ import domainModel.Player;
 class ProposalPresenterTest {
 
 	private ProposalPresenter proposalPresenter;
-	private ProposalRepository proposalRepository;
+	private AbstarctJpaProposalRepository abstarctJpaProposalRepository;
 	private ContractRepository contractRepository;
 	private ProposalView proposalView;
 	
 	@BeforeEach
 	public void setup() {
 		contractRepository = mock(ContractRepository.class);
-		proposalRepository = mock(ProposalRepository.class);
+		abstarctJpaProposalRepository = mock(AbstarctJpaProposalRepository.class);
 		proposalView = mock(ProposalView.class);
-		proposalPresenter = new ProposalPresenter(proposalView, proposalRepository, contractRepository);
+		proposalPresenter = new ProposalPresenter(proposalView, abstarctJpaProposalRepository, contractRepository);
 	}
 	
 	@Test
@@ -42,7 +42,7 @@ class ProposalPresenterTest {
 	void testAcceptProposal() {
 		Proposal proposal = new Proposal();
 		proposalPresenter.acceptProposal(proposal);
-		verify(proposalRepository).acceptedProposal(proposal);
+		verify(abstarctJpaProposalRepository).acceptedProposal(, proposal);
 		verify(proposalView).acceptProposal(proposal);
 	}
 	
@@ -50,7 +50,7 @@ class ProposalPresenterTest {
 	void testRejectProposal() {
 		Proposal proposal = new Proposal();
 		proposalPresenter.rejectProposal(proposal);
-		verify(proposalRepository).rejectedProposal(proposal);
+		verify(abstarctJpaProposalRepository).rejectedProposal(, proposal);
 		verify(proposalView).rejectProposal(proposal);
 	}
 

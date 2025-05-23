@@ -1,7 +1,9 @@
 package hibernateDAL;
 
-import java.util.List;
+import java.util.Set;
 
+import domainModel.League;
+import domainModel.Match;
 import org.hibernate.SessionFactory;
 import businessLogic.abstractDAL.repository.AbstractJpaGradeRepository;
 import domainModel.Grade;
@@ -18,7 +20,7 @@ public class JpaGradeRepository implements AbstractJpaGradeRepository {
 	}
 	
 	@Override
-	public List<Grade> getAllGrades(EntityManager session) {
+	public Set<Grade> getAllMatchGrades(EntityManager session, Match match, League league) {
 		CriteriaBuilder builder = session.getCriteriaBuilder();
 		CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
 		Root<Grade> gradeRoot = query.from(Grade.class);

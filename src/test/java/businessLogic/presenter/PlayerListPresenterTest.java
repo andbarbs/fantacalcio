@@ -28,14 +28,14 @@ public class PlayerListPresenterTest {
 
 	@Test
 	public void testAllPlayers() {
-		when(playerRepository.findAll()).thenReturn(players);
+		when(playerRepository.findAll(playerPresenter.session)).thenReturn(players);// vedi playerListPresenter
 		playerPresenter.showAllPlayers();
 		verify(playerView).showAllPlayers(players);
 	}
 
 	@Test
 	public void testShowPlayersWithSurname() {
-		when(playerRepository.findBySurname("Rossi")).thenReturn(players);
+		when(playerRepository.findBySurname(playerPresenter.session,"Rossi")).thenReturn(players); // vedi playerListPresenter
 		playerPresenter.showPlayersWithSurname("Rossi");
 		verify(playerView).showPlayersBySurname(players);
 	}

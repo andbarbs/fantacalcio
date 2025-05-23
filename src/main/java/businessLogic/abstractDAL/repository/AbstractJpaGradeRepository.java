@@ -1,10 +1,12 @@
 package businessLogic.abstractDAL.repository;
 
-import java.util.List;
+import java.util.Set;
 
 import domainModel.Grade;
+import domainModel.League;
+import domainModel.Match;
 import jakarta.persistence.EntityManager;
 
 public interface AbstractJpaGradeRepository {
-	List<Grade> getAllGrades(EntityManager session);
+	Set<Grade> getAllMatchGrades(EntityManager session, Match match, League league);
 }
