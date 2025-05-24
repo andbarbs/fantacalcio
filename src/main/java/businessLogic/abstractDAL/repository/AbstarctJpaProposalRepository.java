@@ -15,4 +15,8 @@ public interface AbstarctJpaProposalRepository {
 
 	List<Proposal> getMyProposals(EntityManager em, League actualLeague, FantaTeam myTeam);
 
+	boolean proposalExists(EntityManager em, Proposal proposal);
+
+	boolean saveProposal(EntityManager em, Proposal proposal);
+
 }

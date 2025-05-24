@@ -7,13 +7,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import businessLogic.abstractDAL.repository.AbstarctJpaProposalRepository;
-import businessLogic.abstractDAL.repository.AbstractJpaGradeRepository;
-import businessLogic.abstractDAL.repository.AbstractJpaTeamRepository;
+import businessLogic.abstractDAL.repository.*;
 import domainModel.*;
 import org.hibernate.SessionFactory;
 
-import businessLogic.abstractDAL.repository.AbstractJpaMatchRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -25,12 +22,15 @@ public class Service {
 	private AbstractJpaTeamRepository teamRepository;
 	private AbstractJpaGradeRepository gradeRepository;
 	private AbstarctJpaProposalRepository proposalRepository;
+	private AbstractJpaContractRepository contractRepository;
 
-	public Service(SessionFactory sessionFactory, AbstractJpaMatchRepository matchRepository, AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository) {
+	public Service(SessionFactory sessionFactory, AbstractJpaMatchRepository matchRepository, AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository, AbstarctJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
 		this.sessionFactory = sessionFactory;
 		this.matchRepository = matchRepository;
 		this.teamRepository = teamRepository;
 		this.gradeRepository = gradeRepository;
+		this.proposalRepository = proposalRepository;
+		this.contractRepository = contractRepository;
 	}
 
 	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
@@ -58,11 +58,28 @@ public class Service {
 	}
 
 	public boolean acceptProposal(Proposal proposal) {
-		return fromSession(sessionFactory, em -> proposalRepository.acceptedProposal(em, proposal));
+		return fromSession(sessionFactory, em -> proposalRepository.acceptedProposal(em, proposal));// come gestiamo lo swap dei contartti?
 	}
 
 	public boolean rejectProposal(Proposal proposal) {
 		return fromSession(sessionFactory, em -> proposalRepository.rejectedProposal(em, proposal));
+	}
+
+	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam, FantaTeam opponentTeam) {
+		if(requestedPlayer.getClass().equals(offeredPlayer.getClass())) {
+			Contract requestedContract = fromSession(sessionFactory, em -> contractRepository.getContract(em, opponentTeam, requestedPlayer));
+			Contract offeredContract = fromSession(sessionFactory, em -> contractRepository.getContract(em, myTeam, offeredPlayer));
+			Proposal newProposal = new Proposal(offeredContract, requestedContract, Proposal.Status.PENDING);
+			if(fromSession(sessionFactory, em -> proposalRepository.proposalExists(em, newProposal)) == false) {
+				return fromSession(sessionFactory, em->proposalRepository.saveProposal(em, newProposal));
+			}
+			else {
+				throw new IllegalArgumentException("The proposal already exists");
+
+			}
+		} else {
+			throw new IllegalArgumentException("The player doesn't have the same role");
+		}
 	}
 
 	

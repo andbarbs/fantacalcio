@@ -4,7 +4,7 @@ import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Player;
 import domainModel.Proposal;
-import businessLogic.abstractDAL.repository.ContractRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaContractRepository;
 import businessLogic.abstractDAL.repository.AbstarctJpaProposalRepository;
 import businessLogic.abstractView.ProposalView;
 
@@ -12,12 +12,12 @@ public class ProposalPresenter {
 
 	private ProposalView proposalView;
 	private AbstarctJpaProposalRepository abstarctJpaProposalRepository;
-	private ContractRepository contractRepository;
+	private AbstractJpaContractRepository abstractJpaContractRepository;
 
-	public ProposalPresenter(ProposalView proposalView, AbstarctJpaProposalRepository abstarctJpaProposalRepository, ContractRepository contractRepository) {
+	public ProposalPresenter(ProposalView proposalView, AbstarctJpaProposalRepository abstarctJpaProposalRepository, AbstractJpaContractRepository abstractJpaContractRepository) {
 		this.proposalView = proposalView;
 		this.abstarctJpaProposalRepository = abstarctJpaProposalRepository;
-		this.contractRepository = contractRepository;
+		this.abstractJpaContractRepository = abstractJpaContractRepository;
 	}
 
 	public void showAllProposals(League actualLeague, FantaTeam myTeam) {
@@ -25,7 +25,7 @@ public class ProposalPresenter {
 	}
 	
 	public void addProposal(League actualLeague, Player player1, Player player2) {
-		Proposal proposal = contractRepository.getProposal(actualLeague, player1, player2);
+		Proposal proposal = abstractJpaContractRepository.getProposal(actualLeague, player1, player2);
 		proposalView.addProposal(proposal);
 	}
 

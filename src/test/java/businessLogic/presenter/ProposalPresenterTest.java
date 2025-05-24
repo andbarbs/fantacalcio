@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractDAL.repository.ContractRepository;
+import businessLogic.abstractDAL.repository.AbstractJpaContractRepository;
 import businessLogic.abstractDAL.repository.AbstarctJpaProposalRepository;
 import businessLogic.abstractView.ProposalView;
 import domainModel.League;
@@ -16,15 +16,15 @@ class ProposalPresenterTest {
 
 	private ProposalPresenter proposalPresenter;
 	private AbstarctJpaProposalRepository abstarctJpaProposalRepository;
-	private ContractRepository contractRepository;
+	private AbstractJpaContractRepository abstractJpaContractRepository;
 	private ProposalView proposalView;
 	
 	@BeforeEach
 	public void setup() {
-		contractRepository = mock(ContractRepository.class);
+		abstractJpaContractRepository = mock(AbstractJpaContractRepository.class);
 		abstarctJpaProposalRepository = mock(AbstarctJpaProposalRepository.class);
 		proposalView = mock(ProposalView.class);
-		proposalPresenter = new ProposalPresenter(proposalView, abstarctJpaProposalRepository, contractRepository);
+		proposalPresenter = new ProposalPresenter(proposalView, abstarctJpaProposalRepository, abstractJpaContractRepository);
 	}
 	
 	@Test
@@ -33,7 +33,7 @@ class ProposalPresenterTest {
 		League league = new League();
 		Player player1 = new Player();
 		Player player2 = new Player();
-		when(contractRepository.getProposal(league, player1, player2)).thenReturn(proposal);
+		when(abstractJpaContractRepository.getProposal(league, player1, player2)).thenReturn(proposal);
 		proposalPresenter.addProposal(league, player1, player2);
 		verify(proposalView).addProposal(proposal);
 	}
