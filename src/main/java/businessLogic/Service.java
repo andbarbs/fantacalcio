@@ -66,20 +66,22 @@ public class Service {
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam, FantaTeam opponentTeam) {
-		if(requestedPlayer.getClass().equals(offeredPlayer.getClass())) {
-			Contract requestedContract = fromSession(sessionFactory, em -> contractRepository.getContract(em, opponentTeam, requestedPlayer));
-			Contract offeredContract = fromSession(sessionFactory, em -> contractRepository.getContract(em, myTeam, offeredPlayer));
-			Proposal newProposal = new Proposal(offeredContract, requestedContract, Proposal.Status.PENDING);
-			if(fromSession(sessionFactory, em -> proposalRepository.proposalExists(em, newProposal)) == false) {
-				return fromSession(sessionFactory, em->proposalRepository.saveProposal(em, newProposal));
-			}
-			else {
-				throw new IllegalArgumentException("The proposal already exists");
-
-			}
-		} else {
-			throw new IllegalArgumentException("The player doesn't have the same role");
+		if (!requestedPlayer.getClass().equals(offeredPlayer.getClass())) {
+			throw new IllegalArgumentException("The players don't have the same role");
 		}
+
+		return fromSession(sessionFactory, em -> {
+			Contract requestedContract = contractRepository.getContract(em, opponentTeam, requestedPlayer);
+			Contract offeredContract = contractRepository.getContract(em, myTeam, offeredPlayer);
+
+			Proposal newProposal = new Proposal(offeredContract, requestedContract, Proposal.Status.PENDING);
+
+			if (proposalRepository.proposalExists(em, newProposal)) {
+				throw new IllegalArgumentException("The proposal already exists");
+			}
+
+			return proposalRepository.saveProposal(em, newProposal);
+		});
 	}
 
 	
