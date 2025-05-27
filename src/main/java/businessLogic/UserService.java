@@ -36,21 +36,39 @@ public class UserService {
 		this.contractRepository = contractRepository;
 	}
 	
+	
 	// League
 	
 	public League existingLeague(String leagueName) {
 		return fromSession(sessionFactory, em -> leagueRepository.getLeagueByCode(em, leagueName));
 	}
 	
+	
 	// Matches
 
 	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
 	    return fromSession(sessionFactory, em -> matchRepository.getAllMatches(em, league));
 	}
+	
+	// TODO getPlayedMatches da implementare
+	public Map<MatchDaySerieA, Set<Match>> getPlayedMatches(League league) {
+	    return fromSession(sessionFactory, em -> matchRepository.getAllMatches(em, league));
+	}
+	
+	// TODO getFutureMatches da implementare
+	public Map<MatchDaySerieA, Set<Match>> getFutureMatches(League league) {
+	    return fromSession(sessionFactory, em -> matchRepository.getAllMatches(em, league));
+	}
+	
+	
+	// Teams
 
 	public Set<FantaTeam> getAllFantaTeams(League league) {
 		return fromSession(sessionFactory, em -> teamRepository.getAllTeams(em, league));
 	}
+	
+	
+	// Standings
 
 	public List<FantaTeam> getStandings(League league) {
 		Set<FantaTeam> teams = getAllFantaTeams(league);
@@ -59,17 +77,20 @@ public class UserService {
 				.sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
 				.collect(Collectors.toList());
 	}
+	
+	
+	// Grades
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
 		return fromSession(sessionFactory, em -> gradeRepository.getAllMatchGrades(em, match , league ));
 	}
+	
+	
+	// Proposals
 
 	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
 		return fromSession(sessionFactory, em -> proposalRepository.getMyProposals(em, league, team) );
 	}
-
-	
-	// Proposals
 	
 	public boolean acceptProposal(Proposal proposal) {
 		return fromSession(sessionFactory, em -> proposalRepository.acceptedProposal(em, proposal));// come gestiamo lo swap dei contartti?
@@ -98,6 +119,8 @@ public class UserService {
 		});
 	}
 
+	
+	
 	
 	static <T> T fromSession(EntityManagerFactory factory, Function<EntityManager, T> work) {
 	    EntityManager em = factory.createEntityManager();
