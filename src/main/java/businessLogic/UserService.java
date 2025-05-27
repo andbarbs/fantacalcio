@@ -18,6 +18,7 @@ import jakarta.persistence.EntityTransaction;
 public class UserService {
 	
 	private SessionFactory sessionFactory;
+	private AbstractJpaLeagueRepository leagueRepository;
 	private AbstractJpaMatchRepository matchRepository;
 	private AbstractJpaTeamRepository teamRepository;
 	private AbstractJpaGradeRepository gradeRepository;
@@ -25,14 +26,23 @@ public class UserService {
 	private AbstractJpaContractRepository contractRepository;
 
 	protected UserService() {}
-	public UserService(SessionFactory sessionFactory, AbstractJpaMatchRepository matchRepository, AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository, AbstractJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
+	public UserService(SessionFactory sessionFactory, AbstractJpaLeagueRepository leagueRepository, AbstractJpaMatchRepository matchRepository, AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository, AbstractJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
 		this.sessionFactory = sessionFactory;
+		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
 		this.teamRepository = teamRepository;
 		this.gradeRepository = gradeRepository;
 		this.proposalRepository = proposalRepository;
 		this.contractRepository = contractRepository;
 	}
+	
+	// League
+	
+	public League existingLeague(String leagueName) {
+		return fromSession(sessionFactory, em -> leagueRepository.getLeagueByCode(em, leagueName));
+	}
+	
+	// Matches
 
 	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
 	    return fromSession(sessionFactory, em -> matchRepository.getAllMatches(em, league));
@@ -58,6 +68,9 @@ public class UserService {
 		return fromSession(sessionFactory, em -> proposalRepository.getMyProposals(em, league, team) );
 	}
 
+	
+	// Proposals
+	
 	public boolean acceptProposal(Proposal proposal) {
 		return fromSession(sessionFactory, em -> proposalRepository.acceptedProposal(em, proposal));// come gestiamo lo swap dei contartti?
 	}
