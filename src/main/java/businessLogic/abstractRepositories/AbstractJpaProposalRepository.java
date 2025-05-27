@@ -9,7 +9,7 @@ import jakarta.persistence.EntityManager;
 
 public interface AbstractJpaProposalRepository {
 
-	boolean acceptedProposal(EntityManager em, Proposal proposal);
+	void acceptProposal(EntityManager em, Proposal proposal);
 
 	boolean rejectedProposal(EntityManager em, Proposal proposal);
 

@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,23 @@ public class UserService {
 		}
 	}
 
+	static void inSession(EntityManagerFactory factory, Consumer<EntityManager> work) {
+		EntityManager em = factory.createEntityManager();
+		EntityTransaction transaction = em.getTransaction();
+		try {
+			transaction.begin();
+			work.accept(em);
+			transaction.commit();
+		} catch (Exception e) {
+			if (transaction.isActive()) {
+				transaction.rollback();
+			}
+			throw e;
+		} finally {
+			em.close();
+		}
+	}
+
 	// League
 
 	public League existingLeague(String leagueName) {
@@ -93,9 +111,9 @@ public class UserService {
 		return fromSession(sessionFactory, em -> proposalRepository.getMyProposals(em, league, team));
 	}
 
-	public boolean acceptProposal(Proposal proposal) {
+	public void acceptProposal(Proposal proposal) {
 		// come gestiamo lo swap dei contratti?
-		return fromSession(sessionFactory, em -> proposalRepository.acceptedProposal(em, proposal));
+		inSession(sessionFactory, em -> proposalRepository.acceptProposal(em, proposal));
 	}
 
 	public boolean rejectProposal(Proposal proposal) {
@@ -112,7 +130,7 @@ public class UserService {
 			Contract requestedContract = contractRepository.getContract(em, opponentTeam, requestedPlayer);
 			Contract offeredContract = contractRepository.getContract(em, myTeam, offeredPlayer);
 
-			Proposal newProposal = new Proposal(offeredContract, requestedContract, Proposal.Status.PENDING);
+			Proposal newProposal = new Proposal.PendingProposal(offeredContract, requestedContract);
 
 			if (proposalRepository.proposalExists(em, newProposal)) {
 				throw new IllegalArgumentException("The proposal already exists");
