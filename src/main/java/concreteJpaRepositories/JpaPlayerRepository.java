@@ -3,6 +3,7 @@ package concreteJpaRepositories;
 import java.util.List;
 
 import businessLogic.abstractRepositories.AbstractJpaPlayerRepository;
+import domainModel.FantaTeam;
 import domainModel.Player;
 import domainModel.Player_;
 import jakarta.persistence.EntityManager;
@@ -52,6 +53,12 @@ public class JpaPlayerRepository implements AbstractJpaPlayerRepository {
 				criteriaBuilder.equal(root.get(Player_.surname), surname)));
 
 		return session.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<Player> findByTeam(EntityManager session, FantaTeam team) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

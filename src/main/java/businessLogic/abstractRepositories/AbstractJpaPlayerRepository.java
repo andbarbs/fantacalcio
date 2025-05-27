@@ -2,6 +2,7 @@ package businessLogic.abstractRepositories;
 
 import java.util.List;
 
+import domainModel.FantaTeam;
 import domainModel.Player;
 import jakarta.persistence.EntityManager;
 
@@ -12,4 +13,6 @@ public interface AbstractJpaPlayerRepository {
 	public boolean addPlayer(EntityManager session, Player newPlayer);
 
 	public List<Player> findBySurname(EntityManager session, String surname);
+	
+	public List<Player> findByTeam(EntityManager session, FantaTeam team);
 }
