@@ -10,4 +10,6 @@ public interface AbstractJpaTeamRepository {
 
 	public Set<FantaTeam> getAllTeams(EntityManager em, League league);
 
+	public boolean saveTeam(EntityManager em, FantaTeam team);
+
 }
