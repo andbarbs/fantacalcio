@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import businessLogic.abstractRepositories.*;
 import domainModel.*;
-import org.hibernate.SessionFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -18,7 +17,7 @@ import jakarta.persistence.EntityTransaction;
 
 public class UserService {
 
-	private SessionFactory sessionFactory;
+	private EntityManagerFactory entityManagerFactory;
 	private AbstractJpaLeagueRepository leagueRepository;
 	private AbstractJpaMatchRepository matchRepository;
 	private AbstractJpaPlayerRepository playerRepository;
@@ -30,11 +29,11 @@ public class UserService {
 	protected UserService() {
 	}
 
-	public UserService(SessionFactory sessionFactory, AbstractJpaLeagueRepository leagueRepository,
-			AbstractJpaMatchRepository matchRepository, AbstractJpaPlayerRepository playerRepository,
-			AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository,
-			AbstractJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
-		this.sessionFactory = sessionFactory;
+	public UserService(EntityManagerFactory entityManagerFactory, AbstractJpaLeagueRepository leagueRepository,
+					   AbstractJpaMatchRepository matchRepository, AbstractJpaPlayerRepository playerRepository,
+					   AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository,
+					   AbstractJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
+		this.entityManagerFactory = entityManagerFactory;
 		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
 		this.playerRepository = playerRepository;
@@ -82,42 +81,42 @@ public class UserService {
 	// League
 
 	public League existingLeague(String leagueName) {
-		return fromSession(sessionFactory, em -> leagueRepository.getLeagueByCode(em, leagueName));
+		return fromSession(entityManagerFactory, em -> leagueRepository.getLeagueByCode(em, leagueName));
 	}
 
 	// Matches
 
 	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
-		return fromSession(sessionFactory, em -> matchRepository.getAllMatches(em, league));
+		return fromSession(entityManagerFactory, em -> matchRepository.getAllMatches(em, league));
 	}
 
 	// Players
 
 	public List<Player> getAllPlayers() {
-		return fromSession(sessionFactory, em -> playerRepository.findAll(em));
+		return fromSession(entityManagerFactory, em -> playerRepository.findAll(em));
 	}
 
 	public List<Player> getPlayersBySurname(String surname) {
-		return fromSession(sessionFactory, em -> playerRepository.findBySurname(em, surname));
+		return fromSession(entityManagerFactory, em -> playerRepository.findBySurname(em, surname));
 	}
 	
 	public List<Player> getPlayersByTeam(FantaTeam team) {
-		return fromSession(sessionFactory, em -> playerRepository.findByTeam(em, team));
+		return fromSession(entityManagerFactory, em -> playerRepository.findByTeam(em, team));
 	}
 
 	// Proposals
 
 	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
-		return fromSession(sessionFactory, em -> proposalRepository.getMyProposals(em, league, team));
+		return fromSession(entityManagerFactory, em -> proposalRepository.getMyProposals(em, league, team));
 	}
 
 	public void acceptProposal(Proposal proposal) {
 		// come gestiamo lo swap dei contratti?
-		inSession(sessionFactory, em -> proposalRepository.acceptProposal(em, proposal));
+		inSession(entityManagerFactory, em -> proposalRepository.acceptProposal(em, proposal));
 	}
 
 	public boolean rejectProposal(Proposal proposal) {
-		return fromSession(sessionFactory, em -> proposalRepository.rejectedProposal(em, proposal));
+		return fromSession(entityManagerFactory, em -> proposalRepository.rejectedProposal(em, proposal));
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam,
@@ -126,7 +125,7 @@ public class UserService {
 			throw new IllegalArgumentException("The players don't have the same role");
 		}
 
-		return fromSession(sessionFactory, em -> {
+		return fromSession(entityManagerFactory, em -> {
 			Contract requestedContract = contractRepository.getContract(em, opponentTeam, requestedPlayer);
 			Contract offeredContract = contractRepository.getContract(em, myTeam, offeredPlayer);
 
@@ -152,13 +151,13 @@ public class UserService {
 	// Teams
 
 	public Set<FantaTeam> getAllFantaTeams(League league) {
-		return fromSession(sessionFactory, em -> teamRepository.getAllTeams(em, league));
+		return fromSession(entityManagerFactory, em -> teamRepository.getAllTeams(em, league));
 	}
 
 	// Grades
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
-		return fromSession(sessionFactory, em -> gradeRepository.getAllMatchGrades(em, match, league));
+		return fromSession(entityManagerFactory, em -> gradeRepository.getAllMatchGrades(em, match, league));
 	}
 
 }
