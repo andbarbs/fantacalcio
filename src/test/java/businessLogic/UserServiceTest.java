@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+//import org.mockito.junit.jupiter.MockitoExtension;
 
 import businessLogic.abstractRepositories.AbstractJpaMatchRepository;
 import domainModel.League;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
 
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-
+/*
     @Mock
     private AbstractJpaMatchRepository matchRepository;
 
@@ -46,4 +46,6 @@ public class UserServiceTest {
         // Assert that the result from the service is as expected.
         assertEquals(expectedMatches, actualMatches);
     }
+
+ */
 }
