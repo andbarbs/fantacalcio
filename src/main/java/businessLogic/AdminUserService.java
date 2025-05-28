@@ -3,6 +3,10 @@ package businessLogic;
 public class AdminUserService extends UserService {
 
 
+	public AdminUserService(TransactionManager transactionManager) {
+		super(transactionManager);
+	}
+
 	public void getNewspaper() {
 	}
 

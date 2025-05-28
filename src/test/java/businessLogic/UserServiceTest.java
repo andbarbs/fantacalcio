@@ -1,40 +1,80 @@
 package businessLogic;
 
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiFunction;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import businessLogic.abstractRepositories.AbstractJpaMatchRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.AdditionalAnswers.answer;
+
+
+import businessLogic.abstractRepositories.*;
+import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
+import domainModel.NewsPaper;
+import domainModel.User;
+import jakarta.persistence.EntityManager;
 
-//@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-/*
+
     @Mock
     private AbstractJpaMatchRepository matchRepository;
+    @Mock
+    private AbstractJpaLeagueRepository leagueRepository;
+    @Mock
+    private AbstractJpaPlayerRepository playerRepository;
+    @Mock
+    private AbstractJpaTeamRepository teamRepository;
+    @Mock
+    private AbstractJpaGradeRepository gradeRepository;
+    @Mock
+    private AbstractJpaProposalRepository proposalRepository;
+    @Mock
+    private AbstractJpaContractRepository contractRepository;
 
-    // Assume MatchService uses the static fromSession/inSession method internally.
-    // There might also be other dependencies like the EntityManagerFactory.
     @InjectMocks
+    private TransactionContext context;
+    
+    @Mock
+    EntityManager jpaEntityManager;
+    
+    @Mock
+    TransactionManager transactionManager;
+    
     private UserService userService;
+    
+	@BeforeEach
+	public void setup() {
+		// garantisce che la lambda passata a TransactionManager venga eseguita su Context e EntityManager mockati
+		when(transactionManager.fromTransaction(any()))
+				.thenAnswer(answer(
+						(BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)));
+		doAnswer(answer((BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)))
+			.when(transactionManager).inTransaction(any());
+		userService = new UserService(transactionManager);
+	}
 
     @Test
     void testGetAllMatches_delegatesToRepository() {
-        League league = new League(); // your test league instance
+        League league = new League(new User(), "testLeague", new NewsPaper(), "001");
+        MatchDaySerieA matchDay = new MatchDaySerieA("giornata1", LocalDate.of(2020, 01, 01));
         Map<MatchDaySerieA, Set<Match>> expectedMatches = new HashMap<>();
-        // Populate your expectedMatches map for testing logic
+        expectedMatches.put(matchDay, new HashSet<Match>(List.of(
+        		new Match(matchDay, new FantaTeam(), new FantaTeam()))));
 
-        // Stub the repository call.
-        // As long as fromSession returns the value produced by matchRepository.getAllMatches,
-        // you can simply simulate that dependency.
+        // Stub the repository call
         when(matchRepository.getAllMatches(any(), eq(league))).thenReturn(expectedMatches);
 
         // Call the service method.
@@ -47,5 +87,5 @@ public class UserServiceTest {
         assertEquals(expectedMatches, actualMatches);
     }
 
- */
+ 
 }
