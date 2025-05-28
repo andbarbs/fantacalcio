@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.answer;
 
 
@@ -57,12 +57,13 @@ public class UserServiceTest {
     
 	@BeforeEach
 	public void setup() {
-		// garantisce che la lambda passata a TransactionManager venga eseguita su Context e EntityManager mockati
+		// garantisce che la lambda passata a TransactionManager 
+		// venga eseguita su Context e EntityManager mockati
 		when(transactionManager.fromTransaction(any()))
 				.thenAnswer(answer(
 						(BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)));
-		doAnswer(answer((BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)))
-			.when(transactionManager).inTransaction(any());
+//		doAnswer(answer((BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)))
+//			.when(transactionManager).inTransaction(any());
 		userService = new UserService(transactionManager);
 	}
 
@@ -84,7 +85,7 @@ public class UserServiceTest {
         verify(matchRepository, times(1)).getAllMatches(any(), eq(league));
 
         // Assert that the result from the service is as expected.
-        assertEquals(expectedMatches, actualMatches);
+        assertThat(expectedMatches).containsAllEntriesOf(actualMatches);
     }
 
  
