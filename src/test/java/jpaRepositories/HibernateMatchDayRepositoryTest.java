@@ -1,4 +1,4 @@
-package concreteJpaRepositories;
+package jpaRepositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +23,8 @@ class HibernateMatchDayRepositoryTest {
 	private static SessionFactory sessionFactory;
 
 	private JpaMatchDayRepository matchDayRepository;
+
+	private EntityManager entityManager;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -49,7 +51,8 @@ class HibernateMatchDayRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
 		// Instantiates the SUT using the static SessionFactory
-		matchDayRepository = new JpaMatchDayRepository(sessionFactory);
+		entityManager = sessionFactory.createEntityManager();
+		matchDayRepository = new JpaMatchDayRepository(entityManager);
 	}
 
 	@AfterAll

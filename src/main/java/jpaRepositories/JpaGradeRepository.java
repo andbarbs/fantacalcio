@@ -1,26 +1,28 @@
-package concreteJpaRepositories;
+package jpaRepositories;
 
 import java.util.List;
 
 import domainModel.League;
 import domainModel.Match;
-import org.hibernate.SessionFactory;
 import businessLogic.abstractRepositories.GradeRepository;
 import domainModel.Grade;
 import domainModel.Grade_;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
-public class JpaGradeRepository implements GradeRepository {
+public class JpaGradeRepository extends BaseJpaRepository implements GradeRepository {
 
-	public JpaGradeRepository(SessionFactory sessionFactory) {
+	public JpaGradeRepository(EntityManager em) {
+		super(em);
 	}
-	
+
 	@Override
 	public List<Grade> getAllMatchGrades(Match match, League league) {
-		CriteriaBuilder builder = session.getCriteriaBuilder();
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
 		Root<Grade> gradeRoot = query.from(Grade.class);
 
@@ -29,7 +31,7 @@ public class JpaGradeRepository implements GradeRepository {
 
 		query.select(gradeRoot);
 		
-		return session.createQuery(query).getResultList();
+		return entityManager.createQuery(query).getResultList();
 //		return getSessionFactory().fromTransaction(session -> 
 //		{
 //			CriteriaBuilder builder = session.getCriteriaBuilder();

@@ -1,4 +1,4 @@
-package concreteJpaRepositories;
+package jpaRepositories;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,6 +27,8 @@ class HibernatePlayerRepositoryTest {
 
 	private JpaPlayerRepository playerRepository;
 
+	private EntityManager entityManager;
+
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
@@ -51,8 +53,8 @@ class HibernatePlayerRepositoryTest {
 		// ensures tests work on empty tables without having to recreate a SessionFactory instance
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
-		// Instantiates the SUT using the static SessionFactory
-		playerRepository = new JpaPlayerRepository();
+		entityManager = sessionFactory.createEntityManager();
+		playerRepository = new JpaPlayerRepository(entityManager);
 	}
 
 	@AfterAll
@@ -86,11 +88,10 @@ class HibernatePlayerRepositoryTest {
 	public void testAddNonPersistedPlayer() {
 		Player buffon = new Player(Role.GOALKEEPER, "Gigi", "Buffon");
 		
-		EntityManager repositorySession = sessionFactory.createEntityManager();
-		repositorySession.getTransaction().begin(); // Start the transaction
+		entityManager.getTransaction().begin(); // Start the transaction
 		assertTrue(playerRepository.addPlayer(buffon));		
-		repositorySession.getTransaction().commit(); // Commit the transaction to flush changes
-		repositorySession.close();	
+		entityManager.getTransaction().commit(); // Commit the transaction to flush changes
+		entityManager.close();	
 		
 		assertThat(sessionFactory.fromTransaction((Session session) -> 
 					session.createSelectionQuery("from Player", Player.class).getResultList()))

@@ -1,4 +1,4 @@
-package concreteJpaRepositories;
+package jpaRepositories;
 
 import java.util.List;
 
@@ -6,28 +6,33 @@ import businessLogic.abstractRepositories.PlayerRepository;
 import domainModel.FantaTeam;
 import domainModel.Player;
 import domainModel.Player_;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
-public class JpaPlayerRepository implements PlayerRepository {
+public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepository {
 
-	public JpaPlayerRepository() {
+
+	public JpaPlayerRepository(EntityManager em) {
+		super(em);
 	}
 
 	@Override
 	public List<Player> findAll() {
-		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 		criteriaQuery.select(root);
 
-		return session.createQuery(criteriaQuery).getResultList();		
+		return entityManager.createQuery(criteriaQuery).getResultList();		
 	}
 
 	@Override
-	public boolean addPlayer(Player newPlayer) {		
-		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+	public boolean addPlayer(Player newPlayer) {
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 
@@ -35,8 +40,8 @@ public class JpaPlayerRepository implements PlayerRepository {
 				criteriaBuilder.equal(root.get(Player_.name), newPlayer.getName()), 
 				criteriaBuilder.equal(root.get(Player_.surname), newPlayer.getSurname())));
 
-		if (session.createQuery(criteriaQuery).getResultList().isEmpty()) {
-			session.persist(newPlayer);
+		if (entityManager.createQuery(criteriaQuery).getResultList().isEmpty()) {
+			entityManager.persist(newPlayer);
 			return true;
 		}
 		return false;
@@ -44,14 +49,15 @@ public class JpaPlayerRepository implements PlayerRepository {
 
 	@Override
 	public List<Player> findBySurname(String surname) {
-		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 
 		criteriaQuery.select(root).where(criteriaBuilder.and(
 				criteriaBuilder.equal(root.get(Player_.surname), surname)));
 
-		return session.createQuery(criteriaQuery).getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override
