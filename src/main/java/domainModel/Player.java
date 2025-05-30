@@ -58,7 +58,7 @@ public abstract class Player {
 	@Entity
     public static class Goalkeeper extends Player {
 		
-		Goalkeeper () {}
+		protected Goalkeeper () {}
 		
 		public Goalkeeper(String name, String surname) {
 			super(name, surname);
@@ -68,7 +68,7 @@ public abstract class Player {
 	@Entity
     public static class Defender extends Player {
 		
-		Defender () {}
+		protected Defender () {}
 		
 		public Defender(String name, String surname) {
 			super(name, surname);
@@ -78,7 +78,7 @@ public abstract class Player {
 	@Entity
     public static class Midfielder extends Player {
 		
-		Midfielder() {}
+		protected Midfielder() {}
 
 		public Midfielder(String name, String surname) {
 			super(name, surname);
@@ -88,7 +88,7 @@ public abstract class Player {
 	@Entity
     public static class Forward extends Player {
 		
-		Forward() {}
+		protected Forward() {}
 		
 		public Forward(String name, String surname) {
 			super(name, surname);
