@@ -35,7 +35,7 @@ public class Grade {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private NewsPaper newsPaper;
 
-	public Grade() {}
+	protected Grade() {}
 	
 	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists, NewsPaper newsPaper) {
 		this.player = player;

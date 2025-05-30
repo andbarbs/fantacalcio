@@ -22,7 +22,7 @@ public class FantaTeam {
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private User fantaManager;
 
-    public FantaTeam() {}
+    protected FantaTeam() {}
     public FantaTeam(String name, League league, int points, User fantaManager) {
         this.name = name;
         this.league = league;

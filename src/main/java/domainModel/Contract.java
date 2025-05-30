@@ -17,7 +17,7 @@ public class Contract {
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private Player player;
 
-    public Contract() {}
+    protected Contract() {}
 
     public Contract(FantaTeam team, Player player) {
         this.team = team;

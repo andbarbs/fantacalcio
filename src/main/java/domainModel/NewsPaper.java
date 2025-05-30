@@ -14,7 +14,7 @@ public class NewsPaper {
     @Basic(optional=false)
     String name;
 
-    public NewsPaper() {}
+    protected NewsPaper() {}
     public NewsPaper(String name) {
         this.name = name;
     }

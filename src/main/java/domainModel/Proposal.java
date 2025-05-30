@@ -22,7 +22,7 @@ public class Proposal {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public Proposal() {}
+    protected Proposal() {}
 
     public Proposal(Contract offedredContract, Contract requestedContract, Status status) {
         this.offedredContract = offedredContract;

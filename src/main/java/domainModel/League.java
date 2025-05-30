@@ -23,7 +23,7 @@ public class League {
     @Basic(optional=false)
     private String leagueCode;
 
-    public League() {}
+    protected League() {}
     public League(User admin, String name, NewsPaper newsPaper, String leagueCode) {
         this.admin = admin;
         this.name = name;

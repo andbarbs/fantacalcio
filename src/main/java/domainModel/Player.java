@@ -21,7 +21,7 @@ public abstract class Player {
     @Basic(optional=false)
     private String surname;
     
-    Player() {}
+    protected Player() {}
 
     Player(String name, String surname) {
         this.name = name;

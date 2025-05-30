@@ -19,7 +19,7 @@ public class Match {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private FantaTeam Team2;
 
-    Match() {}
+    protected Match() {}
 
     public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
         this.matchDaySerieA = matchDaySerieA;

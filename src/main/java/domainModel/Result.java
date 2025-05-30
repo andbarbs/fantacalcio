@@ -22,7 +22,7 @@ public class Result {
     @Basic(optional = false)
     int Team2Goals;
 
-    public Result() {}
+    protected Result() {}
 
     public Result(double team1Points, double team2Points, int team1Goals, int team2Goals) {
         Team1Points = team1Points;

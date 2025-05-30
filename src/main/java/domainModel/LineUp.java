@@ -31,7 +31,7 @@ public abstract class LineUp {
     @OneToMany(mappedBy = Fielding_.LINE_UP)
     private Set<Fielding> fieldings;
 
-    LineUp() {}
+    protected LineUp() {}
     
     LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
 		this.match = match;
@@ -87,7 +87,7 @@ public abstract class LineUp {
 	@Entity
     public static class GoalkeeperStarterFielding extends StarterFielding {
 
-		GoalkeeperStarterFielding() {}
+		protected GoalkeeperStarterFielding() {}
         
 		public GoalkeeperStarterFielding(Goalkeeper player, LineUp lineUp) {
             super(player, lineUp);
@@ -97,7 +97,7 @@ public abstract class LineUp {
 	@Entity
     public static class DefenderStarterFielding extends StarterFielding {
 
-		DefenderStarterFielding() {}
+		protected DefenderStarterFielding() {}
         
 		public DefenderStarterFielding(Defender player, LineUp lineUp) {
             super(player, lineUp);
@@ -107,7 +107,7 @@ public abstract class LineUp {
 	@Entity
     public static class MidfielderStarterFielding extends StarterFielding {
 
-		MidfielderStarterFielding() {}
+		protected MidfielderStarterFielding() {}
         
 		public MidfielderStarterFielding(Midfielder player, LineUp lineUp) {
             super(player, lineUp);
@@ -117,7 +117,7 @@ public abstract class LineUp {
 	@Entity
     public static class ForwardStarterFielding extends StarterFielding {
 
-		ForwardStarterFielding() {}
+		protected ForwardStarterFielding() {}
         
 		public ForwardStarterFielding(Forward player, LineUp lineUp) {
             super(player, lineUp);
@@ -127,7 +127,7 @@ public abstract class LineUp {
 	@Entity
     public static class GoalkeeperSubstituteFielding extends SubstituteFielding {
 
-		GoalkeeperSubstituteFielding() {}
+		protected GoalkeeperSubstituteFielding() {}
         
 		public GoalkeeperSubstituteFielding(Goalkeeper player, LineUp lineUp, int benchPosition) {
             super(player, lineUp, benchPosition);
@@ -137,7 +137,7 @@ public abstract class LineUp {
 	@Entity
     public static class DefenderSubstituteFielding extends SubstituteFielding {
 
-		DefenderSubstituteFielding() {}
+		protected DefenderSubstituteFielding() {}
         
 		public DefenderSubstituteFielding(Defender player, LineUp lineUp, int benchPosition) {
             super(player, lineUp, benchPosition);
@@ -147,7 +147,7 @@ public abstract class LineUp {
 	@Entity
     public static class MidfielderSubstituteFielding extends SubstituteFielding {
 
-		MidfielderSubstituteFielding() {}
+		protected MidfielderSubstituteFielding() {}
         
 		public MidfielderSubstituteFielding(Midfielder player, LineUp lineUp, int benchPosition) {
             super(player, lineUp, benchPosition);
@@ -157,7 +157,7 @@ public abstract class LineUp {
 	@Entity
     public static class ForwardSubstituteFielding extends SubstituteFielding {
 
-		ForwardSubstituteFielding() {}
+		protected ForwardSubstituteFielding() {}
         
 		public ForwardSubstituteFielding(Forward player, LineUp lineUp, int benchPosition) {
             super(player, lineUp, benchPosition);
