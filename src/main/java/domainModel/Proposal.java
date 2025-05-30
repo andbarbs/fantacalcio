@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class Proposal {
-    public static enum Status {PENDING, ACCEPTED, REJECTED}
-
+public abstract class Proposal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,16 +16,11 @@ public class Proposal {
     @ManyToOne(optional = false, fetch = FetchType.LAZY )
     private Contract requestedContract;
 
-    @Basic(optional = false)
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
     protected Proposal() {}
 
-    public Proposal(Contract offedredContract, Contract requestedContract, Status status) {
+    protected Proposal(Contract offedredContract, Contract requestedContract) {
         this.offedredContract = offedredContract;
         this.requestedContract = requestedContract;
-        this.status = status;
     }
 
     public Contract getOffedredContract() {
@@ -38,20 +31,32 @@ public class Proposal {
         return requestedContract;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Proposal proposal = (Proposal) o;
-        return Objects.equals(offedredContract, proposal.offedredContract) && Objects.equals(requestedContract, proposal.requestedContract) && status == proposal.status;
+        return Objects.equals(offedredContract, proposal.offedredContract) && Objects.equals(requestedContract, proposal.requestedContract) ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(offedredContract, requestedContract, status);
+        return Objects.hash(offedredContract, requestedContract);
+    }
+
+    @Entity
+    public static class PendingProposal extends Proposal {
+        public PendingProposal() {}
+        public PendingProposal(Contract offedredContract, Contract requestedContract) {
+            super(offedredContract, requestedContract);
+        }
+    }
+
+    @Entity
+    public static class RejectedProposal extends Proposal {
+        public RejectedProposal() {}
+        public RejectedProposal(Contract offedredContract, Contract requestedContract) {
+            super(offedredContract, requestedContract);
+        }
     }
 }
 
