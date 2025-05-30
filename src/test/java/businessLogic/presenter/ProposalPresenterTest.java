@@ -5,8 +5,8 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractRepositories.ContractRepository;
-import businessLogic.abstractRepositories.ProposalRepository;
+import businessLogic.repositories.ContractRepository;
+import businessLogic.repositories.ProposalRepository;
 import presenters.abstractViews.ProposalView;
 import domainModel.League;
 import domainModel.Proposal;

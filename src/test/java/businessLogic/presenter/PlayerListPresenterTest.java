@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractRepositories.PlayerRepository;
+import businessLogic.repositories.PlayerRepository;
 import presenters.abstractViews.PlayerView;
 import domainModel.Player;
 import presenters.PlayerListPresenter;

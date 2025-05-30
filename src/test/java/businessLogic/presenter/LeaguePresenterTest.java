@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractRepositories.LeagueRepository;
+import businessLogic.repositories.LeagueRepository;
 import presenters.abstractViews.LeagueView;
 import domainModel.League;
 import presenters.LeaguePresenter;

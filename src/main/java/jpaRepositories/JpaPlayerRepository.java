@@ -2,7 +2,7 @@ package jpaRepositories;
 
 import java.util.List;
 
-import businessLogic.abstractRepositories.PlayerRepository;
+import businessLogic.repositories.PlayerRepository;
 import domainModel.FantaTeam;
 import domainModel.Player;
 import domainModel.Player_;

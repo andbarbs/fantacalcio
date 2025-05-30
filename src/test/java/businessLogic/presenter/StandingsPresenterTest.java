@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractRepositories.TeamRepository;
+import businessLogic.repositories.TeamRepository;
 import presenters.abstractViews.LeagueTableView;
 import domainModel.FantaTeam;
 import domainModel.League;

@@ -2,7 +2,7 @@ package jpaRepositories;
 
 import java.util.List;
 
-import businessLogic.abstractRepositories.MatchDayRepository;
+import businessLogic.repositories.MatchDayRepository;
 import domainModel.MatchDaySerieA;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;

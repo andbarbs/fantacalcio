@@ -2,9 +2,9 @@ package jpaRepositories;
 
 import java.util.List;
 
+import businessLogic.repositories.GradeRepository;
 import domainModel.League;
 import domainModel.Match;
-import businessLogic.abstractRepositories.GradeRepository;
 import domainModel.Grade;
 import domainModel.Grade_;
 import jakarta.persistence.EntityManager;

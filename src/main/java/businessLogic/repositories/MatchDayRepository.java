@@ -1,4 +1,4 @@
-package businessLogic.abstractRepositories;
+package businessLogic.repositories;
 
 import java.util.List;
 

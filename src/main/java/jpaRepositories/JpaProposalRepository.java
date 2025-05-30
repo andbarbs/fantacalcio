@@ -1,6 +1,5 @@
 package jpaRepositories;
 
-import businessLogic.abstractRepositories.ProposalRepository;
 import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Proposal;
@@ -11,6 +10,8 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
+
+import businessLogic.repositories.ProposalRepository;
 
 public class JpaProposalRepository extends BaseJpaRepository implements ProposalRepository {
 

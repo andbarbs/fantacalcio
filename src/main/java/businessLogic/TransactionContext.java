@@ -1,12 +1,12 @@
 package businessLogic;
 
-import businessLogic.abstractRepositories.ContractRepository;
-import businessLogic.abstractRepositories.GradeRepository;
-import businessLogic.abstractRepositories.LeagueRepository;
-import businessLogic.abstractRepositories.MatchRepository;
-import businessLogic.abstractRepositories.PlayerRepository;
-import businessLogic.abstractRepositories.ProposalRepository;
-import businessLogic.abstractRepositories.TeamRepository;
+import businessLogic.repositories.ContractRepository;
+import businessLogic.repositories.GradeRepository;
+import businessLogic.repositories.LeagueRepository;
+import businessLogic.repositories.MatchRepository;
+import businessLogic.repositories.PlayerRepository;
+import businessLogic.repositories.ProposalRepository;
+import businessLogic.repositories.TeamRepository;
 import jakarta.persistence.EntityManagerFactory;
 
 public class TransactionContext {
