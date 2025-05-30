@@ -17,7 +17,7 @@ public class User {
     @Basic(optional=false)
     public String password;
 
-    public User() {}
+    protected User() {}
     public User(String email, String password) {
         this.email = email;
         this.password = password;

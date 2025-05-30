@@ -17,7 +17,7 @@ public abstract class Fielding {
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private LineUp lineUp;
 
-    Fielding() {}
+    protected Fielding() {}
     
     Fielding(Player player, LineUp lineUp) {
         this.player = player;
@@ -49,7 +49,7 @@ public abstract class Fielding {
     @Entity
     public static abstract class StarterFielding extends Fielding {
     	
-    	StarterFielding() {}
+    	protected StarterFielding() {}
         
     	StarterFielding(Player player, LineUp lineUp) {
             super(player, lineUp);
@@ -61,7 +61,7 @@ public abstract class Fielding {
     	
     	private int benchPosition;
 
-		SubstituteFielding() {}
+		protected SubstituteFielding() {}
         
     	SubstituteFielding(Player player, LineUp lineUp, int benchPosition) {
             super(player, lineUp);
