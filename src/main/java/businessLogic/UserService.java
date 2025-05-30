@@ -20,48 +20,48 @@ public class UserService {
 
 	public League existingLeague(String leagueName) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getLeagueRepository().getLeagueByCode(em, leagueName));
+				(context) -> context.getLeagueRepository().getLeagueByCode(leagueName));
 	}
 
 	// Matches
 
 	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getMatchRepository().getAllMatches(em, league));
+				(context) -> context.getMatchRepository().getAllMatches(league));
 	}
 
 	// Players
 
 	public List<Player> getAllPlayers() {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getPlayerRepository().findAll(em));
+				(context) -> context.getPlayerRepository().findAll());
 	}
 
 	public List<Player> getPlayersBySurname(String surname) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getPlayerRepository().findBySurname(em, surname));
+				(context) -> context.getPlayerRepository().findBySurname(surname));
 	}
 	
 	public List<Player> getPlayersByTeam(FantaTeam team) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getPlayerRepository().findByTeam(em, team));
+				(context) -> context.getPlayerRepository().findByTeam(team));
 	}
 
 	// Proposals
 
 	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getProposalRepository().getMyProposals(em, league, team));
+				(context) -> context.getProposalRepository().getMyProposals(league, team));
 	}
 
 	public void acceptProposal(Proposal proposal) {
 		transactionManager.inTransaction(
-				(context, em) -> context.getProposalRepository().acceptProposal(em, proposal));
+				(context) -> context.getProposalRepository().acceptProposal(proposal));
 	}
 
 	public boolean rejectProposal(Proposal proposal) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getProposalRepository().rejectedProposal(em, proposal));
+				(context) -> context.getProposalRepository().rejectedProposal(proposal));
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam,
@@ -71,17 +71,17 @@ public class UserService {
 		}
 
 		return transactionManager.fromTransaction(
-				(context, em) -> {
-			Contract requestedContract = context.getContractRepository().getContract(em, opponentTeam, requestedPlayer);
-			Contract offeredContract = context.getContractRepository().getContract(em, myTeam, offeredPlayer);
+				(context) -> {
+			Contract requestedContract = context.getContractRepository().getContract(opponentTeam, requestedPlayer);
+			Contract offeredContract = context.getContractRepository().getContract(myTeam, offeredPlayer);
 
 			Proposal newProposal = new Proposal.PendingProposal(offeredContract, requestedContract);
 
-			if (context.getProposalRepository().proposalExists(em, newProposal)) {
+			if (context.getProposalRepository().proposalExists(newProposal)) {
 				throw new IllegalArgumentException("The proposal already exists");
 			}
 
-			return context.getProposalRepository().saveProposal(em, newProposal);
+			return context.getProposalRepository().saveProposal(newProposal);
 		});
 	}
 
@@ -98,14 +98,14 @@ public class UserService {
 
 	public Set<FantaTeam> getAllFantaTeams(League league) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getTeamRepository().getAllTeams(em, league));
+				(context) -> context.getTeamRepository().getAllTeams(league));
 	}
 
 	// Grades
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
 		return transactionManager.fromTransaction(
-				(context, em) -> context.getGradeRepository().getAllMatchGrades(em, match, league));
+				(context) -> context.getGradeRepository().getAllMatchGrades(match, league));
 	}
 
 }

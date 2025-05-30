@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import businessLogic.abstractRepositories.AbstractJpaMatchRepository;
+import businessLogic.abstractRepositories.MatchRepository;
 import presenters.abstractViews.MatchCalendarView;
 import domainModel.Match;
 import presenters.MatchCalendarPresenter;

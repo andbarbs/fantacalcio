@@ -1,15 +1,14 @@
 package businessLogic;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import jakarta.persistence.EntityManager;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 
 public interface TransactionManager {	
 	
-	public <T> T fromTransaction(BiFunction<TransactionContext, EntityManager, T> code);
+	public <T> T fromTransaction(Function<TransactionContext, T> code);
 	
-	public void inTransaction(BiConsumer<TransactionContext, EntityManager> code);
+	public void inTransaction(Consumer<TransactionContext> code);
 
 }

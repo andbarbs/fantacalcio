@@ -2,22 +2,21 @@ package concreteJpaRepositories;
 
 import java.util.List;
 
-import businessLogic.abstractRepositories.AbstractJpaPlayerRepository;
+import businessLogic.abstractRepositories.PlayerRepository;
 import domainModel.FantaTeam;
 import domainModel.Player;
 import domainModel.Player_;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
-public class JpaPlayerRepository implements AbstractJpaPlayerRepository {
+public class JpaPlayerRepository implements PlayerRepository {
 
 	public JpaPlayerRepository() {
 	}
 
 	@Override
-	public List<Player> findAll(EntityManager session) {
+	public List<Player> findAll() {
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
@@ -27,7 +26,7 @@ public class JpaPlayerRepository implements AbstractJpaPlayerRepository {
 	}
 
 	@Override
-	public boolean addPlayer(EntityManager session, Player newPlayer) {		
+	public boolean addPlayer(Player newPlayer) {		
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
@@ -44,7 +43,7 @@ public class JpaPlayerRepository implements AbstractJpaPlayerRepository {
 	}
 
 	@Override
-	public List<Player> findBySurname(EntityManager session, String surname) {
+	public List<Player> findBySurname(String surname) {
 		CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
@@ -56,7 +55,7 @@ public class JpaPlayerRepository implements AbstractJpaPlayerRepository {
 	}
 
 	@Override
-	public List<Player> findByTeam(EntityManager session, FantaTeam team) {
+	public List<Player> findByTeam(FantaTeam team) {
 		// TODO Auto-generated method stub
 		return null;
 	}

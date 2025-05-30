@@ -7,9 +7,8 @@ import java.util.Set;
 import domainModel.League;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
-import jakarta.persistence.EntityManager;
 
-public interface AbstractJpaMatchRepository {
+public interface MatchRepository {
 
 	Match getNextMatch();
 
@@ -21,6 +20,6 @@ public interface AbstractJpaMatchRepository {
 
 	List<Match> getFutureMatches();
 
-	Map<MatchDaySerieA, Set<Match>> getAllMatches(EntityManager session, League league);
+	Map<MatchDaySerieA, Set<Match>> getAllMatches(League league);
 
 }

@@ -5,22 +5,21 @@ import java.util.List;
 import domainModel.League;
 import domainModel.Match;
 import org.hibernate.SessionFactory;
-import businessLogic.abstractRepositories.AbstractJpaGradeRepository;
+import businessLogic.abstractRepositories.GradeRepository;
 import domainModel.Grade;
 import domainModel.Grade_;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
-public class JpaGradeRepository implements AbstractJpaGradeRepository {
+public class JpaGradeRepository implements GradeRepository {
 
 	public JpaGradeRepository(SessionFactory sessionFactory) {
 	}
 	
 	@Override
-	public List<Grade> getAllMatchGrades(EntityManager session, Match match, League league) {
+	public List<Grade> getAllMatchGrades(Match match, League league) {
 		CriteriaBuilder builder = session.getCriteriaBuilder();
 		CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
 		Root<Grade> gradeRoot = query.from(Grade.class);

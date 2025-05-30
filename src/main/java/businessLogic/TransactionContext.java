@@ -1,28 +1,28 @@
 package businessLogic;
 
-import businessLogic.abstractRepositories.AbstractJpaContractRepository;
-import businessLogic.abstractRepositories.AbstractJpaGradeRepository;
-import businessLogic.abstractRepositories.AbstractJpaLeagueRepository;
-import businessLogic.abstractRepositories.AbstractJpaMatchRepository;
-import businessLogic.abstractRepositories.AbstractJpaPlayerRepository;
-import businessLogic.abstractRepositories.AbstractJpaProposalRepository;
-import businessLogic.abstractRepositories.AbstractJpaTeamRepository;
+import businessLogic.abstractRepositories.ContractRepository;
+import businessLogic.abstractRepositories.GradeRepository;
+import businessLogic.abstractRepositories.LeagueRepository;
+import businessLogic.abstractRepositories.MatchRepository;
+import businessLogic.abstractRepositories.PlayerRepository;
+import businessLogic.abstractRepositories.ProposalRepository;
+import businessLogic.abstractRepositories.TeamRepository;
 import jakarta.persistence.EntityManagerFactory;
 
 public class TransactionContext {
 	private final EntityManagerFactory entityManagerFactory;
-	private final AbstractJpaLeagueRepository leagueRepository;
-	private final AbstractJpaMatchRepository matchRepository;
-	private final AbstractJpaPlayerRepository playerRepository;
-	private final AbstractJpaTeamRepository teamRepository;
-	private final AbstractJpaGradeRepository gradeRepository;
-	private final AbstractJpaProposalRepository proposalRepository;
-	private final AbstractJpaContractRepository contractRepository;
+	private final LeagueRepository leagueRepository;
+	private final MatchRepository matchRepository;
+	private final PlayerRepository playerRepository;
+	private final TeamRepository teamRepository;
+	private final GradeRepository gradeRepository;
+	private final ProposalRepository proposalRepository;
+	private final ContractRepository contractRepository;
 
-	public TransactionContext(EntityManagerFactory entityManagerFactory, AbstractJpaLeagueRepository leagueRepository,
-					   AbstractJpaMatchRepository matchRepository, AbstractJpaPlayerRepository playerRepository,
-					   AbstractJpaTeamRepository teamRepository, AbstractJpaGradeRepository gradeRepository,
-					   AbstractJpaProposalRepository proposalRepository, AbstractJpaContractRepository contractRepository) {
+	public TransactionContext(EntityManagerFactory entityManagerFactory, LeagueRepository leagueRepository,
+					   MatchRepository matchRepository, PlayerRepository playerRepository,
+					   TeamRepository teamRepository, GradeRepository gradeRepository,
+					   ProposalRepository proposalRepository, ContractRepository contractRepository) {
 		this.entityManagerFactory = entityManagerFactory;
 		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
@@ -37,31 +37,31 @@ public class TransactionContext {
 		return entityManagerFactory;
 	}
 
-	public AbstractJpaLeagueRepository getLeagueRepository() {
+	public LeagueRepository getLeagueRepository() {
 		return leagueRepository;
 	}
 
-	public AbstractJpaMatchRepository getMatchRepository() {
+	public MatchRepository getMatchRepository() {
 		return matchRepository;
 	}
 
-	public AbstractJpaPlayerRepository getPlayerRepository() {
+	public PlayerRepository getPlayerRepository() {
 		return playerRepository;
 	}
 
-	public AbstractJpaTeamRepository getTeamRepository() {
+	public TeamRepository getTeamRepository() {
 		return teamRepository;
 	}
 
-	public AbstractJpaGradeRepository getGradeRepository() {
+	public GradeRepository getGradeRepository() {
 		return gradeRepository;
 	}
 
-	public AbstractJpaProposalRepository getProposalRepository() {
+	public ProposalRepository getProposalRepository() {
 		return proposalRepository;
 	}
 
-	public AbstractJpaContractRepository getContractRepository() {
+	public ContractRepository getContractRepository() {
 		return contractRepository;
 	}
 	

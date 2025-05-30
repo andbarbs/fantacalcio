@@ -1,7 +1,8 @@
 package businessLogic;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -15,13 +16,13 @@ public class JpaTransactionManager implements TransactionManager {
 	}
 
 	@Override
-	public <T> T fromTransaction(BiFunction<TransactionContext, EntityManager, T> code) {
+	public <T> T fromTransaction(Function<TransactionContext, T> code) {
 		TransactionContext context = null;
 		EntityManager em = emFactory.createEntityManager();
 		EntityTransaction transaction = em.getTransaction();
 		try {
 			transaction.begin();
-			T result = code.apply(context, em);
+			T result = code.apply(context);
 			transaction.commit();
 			return result;
 		} catch (Exception e) {
@@ -35,9 +36,9 @@ public class JpaTransactionManager implements TransactionManager {
 	}
 
 	@Override
-	public void inTransaction(BiConsumer<TransactionContext, EntityManager> code) {
-		fromTransaction((context, em) -> {
-			code.accept(context, em);
+	public void inTransaction(Consumer<TransactionContext> code) {
+		fromTransaction((context) -> {
+			code.accept(context);
 			return true;
 		});
 	}

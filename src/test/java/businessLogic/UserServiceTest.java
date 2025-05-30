@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,19 +31,19 @@ import jakarta.persistence.EntityManager;
 public class UserServiceTest {
 
     @Mock
-    private AbstractJpaMatchRepository matchRepository;
+    private MatchRepository matchRepository;
     @Mock
-    private AbstractJpaLeagueRepository leagueRepository;
+    private LeagueRepository leagueRepository;
     @Mock
-    private AbstractJpaPlayerRepository playerRepository;
+    private PlayerRepository playerRepository;
     @Mock
-    private AbstractJpaTeamRepository teamRepository;
+    private TeamRepository teamRepository;
     @Mock
-    private AbstractJpaGradeRepository gradeRepository;
+    private GradeRepository gradeRepository;
     @Mock
-    private AbstractJpaProposalRepository proposalRepository;
+    private ProposalRepository proposalRepository;
     @Mock
-    private AbstractJpaContractRepository contractRepository;
+    private ContractRepository contractRepository;
 
     @InjectMocks
     private TransactionContext context;
@@ -61,7 +62,7 @@ public class UserServiceTest {
 		// venga eseguita su Context e EntityManager mockati
 		when(transactionManager.fromTransaction(any()))
 				.thenAnswer(answer(
-						(BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)));
+						(Function<TransactionContext, ?> code) -> code.apply(context)));
 //		doAnswer(answer((BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)))
 //			.when(transactionManager).inTransaction(any());
 		userService = new UserService(transactionManager);
@@ -76,13 +77,13 @@ public class UserServiceTest {
         		new Match(matchDay, new FantaTeam(), new FantaTeam()))));
 
         // Stub the repository call
-        when(matchRepository.getAllMatches(any(), eq(league))).thenReturn(expectedMatches);
+        when(matchRepository.getAllMatches(eq(league))).thenReturn(expectedMatches);
 
         // Call the service method.
         Map<MatchDaySerieA, Set<Match>> actualMatches = userService.getAllMatches(league);
 
         // Verify that the repository method was called once, and with the correct league.
-        verify(matchRepository, times(1)).getAllMatches(any(), eq(league));
+        verify(matchRepository, times(1)).getAllMatches(eq(league));
 
         // Assert that the result from the service is as expected.
         assertThat(expectedMatches).containsAllEntriesOf(actualMatches);

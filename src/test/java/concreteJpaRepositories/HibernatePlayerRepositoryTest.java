@@ -63,7 +63,7 @@ class HibernatePlayerRepositoryTest {
 	@Test
 	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
-		assertThat(playerRepository.findAll(sessionFactory.createEntityManager())).isEmpty();
+		assertThat(playerRepository.findAll()).isEmpty();
 	}
 	
 	@Test
@@ -77,7 +77,7 @@ class HibernatePlayerRepositoryTest {
 			session.persist(messi);});
 		
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(playerRepository.findAll(repositorySession)).containsExactly(buffon, messi);
+		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
 		repositorySession.close();	
 	}
 
@@ -88,7 +88,7 @@ class HibernatePlayerRepositoryTest {
 		
 		EntityManager repositorySession = sessionFactory.createEntityManager();
 		repositorySession.getTransaction().begin(); // Start the transaction
-		assertTrue(playerRepository.addPlayer(repositorySession, buffon));		
+		assertTrue(playerRepository.addPlayer(buffon));		
 		repositorySession.getTransaction().commit(); // Commit the transaction to flush changes
 		repositorySession.close();	
 		
@@ -105,7 +105,7 @@ class HibernatePlayerRepositoryTest {
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertFalse(playerRepository.addPlayer(repositorySession, buffon));
+		assertFalse(playerRepository.addPlayer(buffon));
 		repositorySession.close();	
 	}
 
@@ -120,7 +120,7 @@ class HibernatePlayerRepositoryTest {
 			session.persist(messi);});
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(playerRepository.findBySurname(repositorySession, "Thuram")).isEmpty();
+		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
 		repositorySession.close();	
 	}
 
@@ -138,7 +138,7 @@ class HibernatePlayerRepositoryTest {
 			session.persist(eljif);});
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(playerRepository.findBySurname(repositorySession, "Thuram")).containsExactlyInAnyOrder(marcus, kephren);
+		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
 		repositorySession.close();	
 	}
 	

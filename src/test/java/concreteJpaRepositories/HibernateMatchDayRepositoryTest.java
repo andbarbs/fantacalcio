@@ -61,7 +61,7 @@ class HibernateMatchDayRepositoryTest {
 	@DisplayName("getAllMatchDays() on an empty table")
 	public void testNoMatchDaysExist(){
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(matchDayRepository.getAllMatchDays(repositorySession)).isEmpty();
+		assertThat(matchDayRepository.getAllMatchDays()).isEmpty();
 		repositorySession.close();	
 	}
 	
@@ -76,7 +76,7 @@ class HibernateMatchDayRepositoryTest {
 			session.persist(day2);});
 		
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(matchDayRepository.getAllMatchDays(repositorySession)).containsExactly(day1, day2);
+		assertThat(matchDayRepository.getAllMatchDays()).containsExactly(day1, day2);
 		repositorySession.close();	
 	}
 

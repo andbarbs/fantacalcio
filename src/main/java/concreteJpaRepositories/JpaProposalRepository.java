@@ -1,23 +1,22 @@
 package concreteJpaRepositories;
 
-import businessLogic.abstractRepositories.AbstractJpaProposalRepository;
+import businessLogic.abstractRepositories.ProposalRepository;
 import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Proposal;
 import domainModel.Proposal_;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
 
-public class JpaProposalRepository implements AbstractJpaProposalRepository {
+public class JpaProposalRepository implements ProposalRepository {
 
     public JpaProposalRepository() {}
 
     @Override
-    public void acceptProposal(EntityManager em, Proposal proposal) {
+    public void acceptProposal(Proposal proposal) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaDelete<Proposal> delete = cb.createCriteriaDelete(Proposal.class);
         Root<Proposal> root = delete.from(Proposal.class);
@@ -34,22 +33,22 @@ public class JpaProposalRepository implements AbstractJpaProposalRepository {
 
 
     @Override
-    public boolean rejectedProposal(EntityManager em, Proposal proposal) {
+    public boolean rejectedProposal(Proposal proposal) {
         return false;
     }
 
     @Override
-    public List<Proposal> getMyProposals(EntityManager em, League actualLeague, FantaTeam myTeam) {
+    public List<Proposal> getMyProposals(League actualLeague, FantaTeam myTeam) {
         return List.of();
     }
 
     @Override
-    public boolean proposalExists(EntityManager em, Proposal proposal) {
+    public boolean proposalExists(Proposal proposal) {
         return false;
     }
 
     @Override
-    public boolean saveProposal(EntityManager em, Proposal proposal) {
+    public boolean saveProposal(Proposal proposal) {
         return false;
     }
 }
