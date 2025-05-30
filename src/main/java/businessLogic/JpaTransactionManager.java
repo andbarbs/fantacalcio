@@ -36,20 +36,9 @@ public class JpaTransactionManager implements TransactionManager {
 
 	@Override
 	public void inTransaction(BiConsumer<TransactionContext, EntityManager> code) {
-		TransactionContext context = null;
-		EntityManager em = emFactory.createEntityManager();
-		EntityTransaction transaction = em.getTransaction();
-		try {
-			transaction.begin();
+		fromTransaction((context, em) -> {
 			code.accept(context, em);
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction.isActive()) {
-				transaction.rollback();
-			}
-			throw e;
-		} finally {
-			em.close();
-		}		
+			return true;
+		});
 	}
 }
