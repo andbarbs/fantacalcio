@@ -25,7 +25,7 @@ public class Result {
     @OneToOne(optional = false)
 	private Match match;
 
-    Result() {}
+    protected Result() {}
 
     Result(double team1Points, double team2Points, int team1Goals, int team2Goals, Match match) {
     	this.match = match;

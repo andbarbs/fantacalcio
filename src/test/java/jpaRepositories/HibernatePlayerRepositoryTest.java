@@ -1,9 +1,10 @@
-package hibernateDAL;
+package jpaRepositories;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import domainModel.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -16,31 +17,33 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import domainModel.Player;
-import static domainModel.Player.*;
+import domainModel.Player.*;
+import jakarta.persistence.EntityManager;
 
 @DisplayName("tests for HibernatePlayerRepository")
 class HibernatePlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
-	private HibernatePlayerRepository playerRepository;
+	private JpaPlayerRepository playerRepository;
 
+	private EntityManager entityManager;
+//TODO aggiornare bootstrap di tutti i test hibernate
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-				.configure("hibernate-test.cfg.xml")
-				.build();
+					.configure("hibernate-test.cfg.xml")
+					.build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
-			        .addAnnotatedClass(Player.class)
-			        .addAnnotatedClass(Player.Goalkeeper.class)
-			        .addAnnotatedClass(Player.Defender.class)
-			        .addAnnotatedClass(Player.Midfielder.class)
-			        .addAnnotatedClass(Player.Forward.class)
-			        .getMetadataBuilder()
-			        .build();
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(Player.Midfielder.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.getMetadataBuilder()
+					.build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -48,38 +51,39 @@ class HibernatePlayerRepositoryTest {
 			throw new ExceptionInInitializerError(ex);
 		}
 	}
-	
+//TODO rivedere setup entity manager
 	@BeforeEach
-	void setup() {		
+	void setup() {
 		// ensures tests work on empty tables without having to recreate a SessionFactory instance
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 
-		// Instantiates the SUT using the static SessionFactory
-		playerRepository = new HibernatePlayerRepository(sessionFactory);
+		entityManager = sessionFactory.createEntityManager();
+		playerRepository = new JpaPlayerRepository(entityManager);
 	}
 
 	@AfterAll
 	static void tear() {
 		sessionFactory.close();
 	}
-	
+
 	@Test
 	@DisplayName("getAllGiocatori() on an empty table")
 	public void testNoPlayersExist(){
 		assertThat(playerRepository.findAll()).isEmpty();
 	}
-	
+
 	@Test
 	@DisplayName("getAllGiocatori() when two players have been persisted")
-	public void testTwoPlayersExist(){		
+	public void testTwoPlayersExist(){
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 		Player messi = new Forward("Lionel", "Messi");
-		
+
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
 			session.persist(messi);});
-		
+
 		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
+		entityManager.close();
 	}
 
 	@Test
@@ -87,20 +91,25 @@ class HibernatePlayerRepositoryTest {
 	public void testAddNonPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 
-		assertTrue(playerRepository.addPlayer(buffon));		
-		assertThat(sessionFactory.fromTransaction((Session session) -> 
-					session.createSelectionQuery("from Player", Player.class).getResultList()))
+		entityManager.getTransaction().begin(); // Start the transaction
+		assertTrue(playerRepository.addPlayer(buffon));
+		entityManager.getTransaction().commit(); // Commit the transaction to flush changes
+		entityManager.close();
+
+		assertThat(sessionFactory.fromTransaction((Session session) ->
+				session.createSelectionQuery("from Player", Player.class).getResultList()))
 				.containsExactly(buffon);
 	}
-	
+
 	@Test
 	@DisplayName("addPlayer() does not add an already persisted player")
 	public void testAddAlreadyPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
-		
+
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
 		assertFalse(playerRepository.addPlayer(buffon));
+		entityManager.close();
 	}
 
 	@Test
@@ -114,6 +123,8 @@ class HibernatePlayerRepositoryTest {
 			session.persist(messi);});
 
 		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
+		entityManager.close();
+
 	}
 
 	@Test
@@ -123,14 +134,14 @@ class HibernatePlayerRepositoryTest {
 		Player kephren = new Forward("Kephren", "Thuram");
 		Player eljif = new Forward("Eljif", "Elmas");
 
-
 		sessionFactory.inTransaction(session -> {
 			session.persist(marcus);
 			session.persist(kephren);
 			session.persist(eljif);});
 
 		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
+		entityManager.close();
 	}
-	
+
 
 }

@@ -69,11 +69,13 @@ public class UserServiceTest {
 
     @Test
     void testGetAllMatches_delegatesToRepository() {
-        League league = new League(new User(), "testLeague", new NewsPaper(), "001");
+        User user = new User("testMail", "password");
+        League league = new League(user, "testLeague", new NewsPaper("gazzetta"), "001");
         MatchDaySerieA matchDay = new MatchDaySerieA("giornata1", LocalDate.of(2020, 01, 01));
         Map<MatchDaySerieA, Set<Match>> expectedMatches = new HashMap<>();
         expectedMatches.put(matchDay, new HashSet<Match>(List.of(
-        		new Match(matchDay, new FantaTeam(), new FantaTeam()))));
+        		new Match(matchDay, new FantaTeam("TeamA", league, 10, user), new FantaTeam("TeamB", league, 10, user)))));
+        //TODO controlla che un user ha due team
 
         // Stub the repository call
         when(matchRepository.getAllMatches(eq(league))).thenReturn(expectedMatches);
