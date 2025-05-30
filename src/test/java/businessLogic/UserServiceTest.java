@@ -62,8 +62,6 @@ public class UserServiceTest {
 		when(transactionManager.fromTransaction(any()))
 				.thenAnswer(answer(
 						(Function<TransactionContext, ?> code) -> code.apply(context)));
-//		doAnswer(answer((BiFunction<TransactionContext, EntityManager, ?> code) -> code.apply(context, jpaEntityManager)))
-//			.when(transactionManager).inTransaction(any());
 		userService = new UserService(transactionManager);
 	}
 
