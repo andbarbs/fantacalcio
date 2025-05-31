@@ -50,7 +50,7 @@ class HibernatePlayerRepositoryTest {
 			throw new ExceptionInInitializerError(ex);
 		}
 	}
-//TODO rivedere setup entity manager
+
 	@BeforeEach
 	void setup() {
 		// ensures tests work on empty tables without having to recreate a SessionFactory instance
