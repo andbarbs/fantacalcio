@@ -4,20 +4,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class MultiPlayerSelector extends JFrame {
+public class MultiPlayerSelector_Indices extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
     // The global pool of players
-    private final String[] allPlayers = {"Messi", "Ronaldo", "Yamal"};
-    // A list to hold all our combo boxes' models so that we can update them together.
-    private final List<DefaultComboBoxModel<String>> comboBoxModels = new ArrayList<>();
-    
+    private final String[] allPlayers = {"Messi", "Ronaldo", "Yamal"};    
     private List<String> availablePlayers = new ArrayList<String>(List.of(allPlayers));
+    
+    private List<JComboBox<String>> cboxes = new ArrayList<>(3);
+    
+    private List<List<Integer>> masks = new ArrayList<>(3);
+    
 
-    public MultiPlayerSelector() {
+    public MultiPlayerSelector_Indices() {
         // Configure the frame
         setTitle("Football Player Selector");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,12 +36,16 @@ public class MultiPlayerSelector extends JFrame {
         for (int i = 0; i < 3; i++) {
             int ycoord = 10 + i * 40;
             
+            // creates current cbox mask
+            masks.add(i, IntStream.rangeClosed(1, allPlayers.length).boxed().collect(Collectors.toList()));
+            
             // Create a combo box and immediately update its model
             DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(allPlayers);
-            JComboBox<String> combo = new JComboBox<>();
-            combo.setModel(model);
+            cboxes.add(i, new JComboBox<>(model));            
+            JComboBox<String> combo = cboxes.get(i);
+            
+            // Sets up the current cbox
             combo.setBounds(27, ycoord, 175, 27);
-            // Set our custom renderer (same as before, but here with no placeholder text)
             combo.setRenderer(new DefaultListCellRenderer() {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -55,10 +64,7 @@ public class MultiPlayerSelector extends JFrame {
             // Start with no selection
             combo.setSelectedIndex(-1);
             // Add the combo box to our global tracking list.
-            comboBoxModels.add(model);
-            panel.add(combo);
-            
-            
+            panel.add(combo);            
             
             // Create the reset button for this combo
             JButton resetButton = new JButton("Reset");
@@ -70,31 +76,41 @@ public class MultiPlayerSelector extends JFrame {
             // Every time a selection occurs, update the associated reset button and update all combo models.
             combo.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    // Enable reset button if a selection exists
-					if (combo.getSelectedIndex() > -1) {
-						if (resetButton.isEnabled()) {
-							String oldSelection = null;
-							for (int j = 0; j < combo.getModel().getSize(); j++) {
-								if (!availablePlayers.contains(combo.getModel().getElementAt(j))) {
-										oldSelection = combo.getModel().getElementAt(j);
-										break;
-								}
+                public void actionPerformed(ActionEvent e) {                    
+					if (combo.getSelectedIndex() > -1) {   // a selection exists						
+						if (resetButton.isEnabled()) {     // a previous selection also existed
+							int pos = 0;
+							for (; pos < combo.getModel().getSize(); pos++) {
+								if (!availablePlayers.contains(combo.getModel().getElementAt(pos)))
+									break;
 							}
-							availablePlayers.add(oldSelection);
-							for (DefaultComboBoxModel<String> model : comboBoxModels) {
-								if (model != combo.getModel()) {
-									model.addElement(oldSelection);
+							availablePlayers.add(combo.getModel().getElementAt(pos)); // reinserts old
+							Integer prevSelection = Arrays.asList(allPlayers).indexOf(combo.getModel().getElementAt(pos)) + 1;
+							for (int i = 0; i < 3; i++) {
+								if (cboxes.get(i) != combo) {
+									List<Integer> mask = masks.get(i);
+									int insertionIndex = IntStream.range(0, mask.size())
+							                .filter(k -> mask.get(k) >= prevSelection)
+							                .findFirst()
+							                .orElse(mask.size());
+									mask.add(insertionIndex, prevSelection);
+									DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>)cboxes.get(i).getModel();
+									model.insertElementAt(allPlayers[prevSelection-1], insertionIndex);
 								}
 							}
 						}
 						resetButton.setEnabled(true);
+						Integer curSelection = Arrays.asList(allPlayers).indexOf(combo.getSelectedItem()) + 1;
 						availablePlayers.remove(combo.getSelectedItem());
-							for (DefaultComboBoxModel<String> model : comboBoxModels) {
-								if (model != combo.getModel()) {
-									model.removeElement(combo.getSelectedItem());
-								}
+						
+						for (int i = 0; i < 3; i++) {
+							if (cboxes.get(i) != combo) {
+								List<Integer> mask = masks.get(i);
+								mask.remove(curSelection);
+								DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>)cboxes.get(i).getModel();
+								model.removeElement(combo.getSelectedItem());
 							}
+						}
 					}
                 }
             });
@@ -103,14 +119,24 @@ public class MultiPlayerSelector extends JFrame {
             resetButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                	String oldSelection = (String) combo.getSelectedItem();
+                	int pos = combo.getSelectedIndex();
                     combo.setSelectedIndex(-1);
                     resetButton.setEnabled(false);
 //                    updateAllComboModels();
-                    for (DefaultComboBoxModel<String> model : comboBoxModels) {
-                    	if (model != combo.getModel()) {
-                    		model.addElement(oldSelection);
-                    	}                    		
+                    
+                    availablePlayers.add(combo.getModel().getElementAt(pos)); // reinserts old
+					Integer prevSelection = Arrays.asList(allPlayers).indexOf(combo.getModel().getElementAt(pos)) + 1;
+					for (int i = 0; i < 3; i++) {
+						if (cboxes.get(i) != combo) {
+							List<Integer> mask = masks.get(i);
+							int insertionIndex = IntStream.range(0, mask.size())
+					                .filter(k -> mask.get(k) >= prevSelection)
+					                .findFirst()
+					                .orElse(mask.size());
+							mask.add(insertionIndex, prevSelection);
+							DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>)cboxes.get(i).getModel();
+							model.insertElementAt(allPlayers[prevSelection-1], insertionIndex);
+						}
 					}
                 }
             });
@@ -118,11 +144,9 @@ public class MultiPlayerSelector extends JFrame {
 
         getContentPane().add(panel);
         setVisible(true);
-        // Ensure initial update so every combo has full options
-//        updateAllComboModels();
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MultiPlayerSelector());
+        SwingUtilities.invokeLater(() -> new MultiPlayerSelector_Indices());
     }
 }
