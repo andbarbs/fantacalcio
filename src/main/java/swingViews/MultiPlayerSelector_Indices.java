@@ -27,6 +27,26 @@ public class MultiPlayerSelector_Indices extends JFrame {
 		List<Integer> mask;
 		JComboBox<Player> cbox;
 		JButton resetButton;
+		
+		void evictFromComboBox(Integer toBeEvicted) {
+			if (currentSelection != toBeEvicted) {
+				int pos = mask.indexOf(toBeEvicted);
+				mask.remove(toBeEvicted);
+				DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>)cbox.getModel();
+				model.removeElementAt(pos);
+			}
+		}
+		void insertIntoComboBox(Integer indexToBeInserted, Player playerToBeInserted) {
+			if (!mask.contains(indexToBeInserted)) {
+				int insertionIndex = IntStream.range(0, mask.size())
+						.filter(k -> mask.get(k) >= indexToBeInserted)
+						.findFirst().orElse(mask.size());
+				mask.add(insertionIndex, indexToBeInserted);
+				DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>)
+						cbox.getModel();
+				model.insertElementAt(playerToBeInserted, insertionIndex);
+			}
+		}
 
 		CompetingComboState(int ycoord) {
 			// creates current cbox mask
@@ -77,18 +97,8 @@ public class MultiPlayerSelector_Indices extends JFrame {
 						
 						// a previous selection also existed
 						if (resetButton.isEnabled()) { 
-							int prevSelection = currentSelection;
 							for (int i = 0; i < 3; i++) {
-								List<Integer> mask = compStates.get(i).mask;
-								if (!mask.contains(prevSelection)) {
-									int insertionIndex = IntStream.range(0, mask.size())
-											.filter(k -> mask.get(k) >= prevSelection)
-											.findFirst().orElse(mask.size());
-									mask.add(insertionIndex, prevSelection);
-									DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>)
-											compStates.get(i).cbox.getModel();
-									model.insertElementAt(allPlayers.get(prevSelection - 1), insertionIndex);
-								}
+								compStates.get(i).insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
 							}
 						}
 						
@@ -98,13 +108,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 
 						// removes current selection from competing cboxes
 						for (int i = 0; i < 3; i++) {
-							if (compStates.get(i).currentSelection != currentSelection) {
-								int pos = compStates.get(i).mask.indexOf(currentSelection);
-								compStates.get(i).mask.remove(currentSelection);
-								DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>) 
-										compStates.get(i).cbox.getModel();
-								model.removeElementAt(pos);
-							}
+							compStates.get(i).evictFromComboBox(currentSelection);
 						}
 					}
 				}
@@ -121,16 +125,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 
 					// adds erased selection back into competing cboxes
 					for (int i = 0; i < 3; i++) {
-						List<Integer> mask = compStates.get(i).mask;
-						if (!mask.contains(clearedSelection)) {
-							int insertionIndex = IntStream.range(0, mask.size())
-									.filter(k -> mask.get(k) >= clearedSelection)
-									.findFirst().orElse(mask.size());
-							mask.add(insertionIndex, clearedSelection);
-							DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>) 
-									compStates.get(i).cbox.getModel();
-							model.insertElementAt(allPlayers.get(clearedSelection - 1), insertionIndex);
-						}
+						compStates.get(i).insertIntoComboBox(clearedSelection, allPlayers.get(clearedSelection - 1));
 					}
 				}
 			});
