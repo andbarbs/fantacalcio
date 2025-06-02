@@ -29,6 +29,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 		JButton resetButton;
 		
 		void evictFromComboBox(Integer toBeEvicted) {
+			// operates only on boxes where toBeEvicted is not selected
 			if (currentSelection != toBeEvicted) {
 				int pos = mask.indexOf(toBeEvicted);
 				mask.remove(toBeEvicted);
@@ -38,6 +39,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 		}
 		
 		void insertIntoComboBox(Integer indexToBeInserted, Player playerToBeInserted) {
+			// operates only on boxes from which toBeInserted is missing
 			if (!mask.contains(indexToBeInserted)) {
 				int insertionIndex = IntStream.range(0, mask.size())
 						.filter(k -> mask.get(k) >= indexToBeInserted)
