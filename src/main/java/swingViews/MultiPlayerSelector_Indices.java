@@ -36,6 +36,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 				model.removeElementAt(pos);
 			}
 		}
+		
 		void insertIntoComboBox(Integer indexToBeInserted, Player playerToBeInserted) {
 			if (!mask.contains(indexToBeInserted)) {
 				int insertionIndex = IntStream.range(0, mask.size())
