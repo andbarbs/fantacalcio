@@ -1,10 +1,14 @@
 package swingViews;
 
 import javax.swing.*;
+
+import domainModel.Player;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,21 +16,25 @@ public class MultiPlayerSelector_Indices extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	// The global pool of players
-	private final String[] allPlayers = { "Messi", "Ronaldo", "Yamal" };
+	private final List<Player> allPlayers = List.of(
+			new Player.Forward("Lionel", "Messi"), 
+			new Player.Forward("Cristiano", "Ronaldo"), 
+			new Player.Goalkeeper("Gigi", "Buffon"));
+
 
 	private class CompetingComboState {
 		Integer currentSelection;
 		List<Integer> mask;
-		JComboBox<String> cbox;
+		JComboBox<Player> cbox;
 		JButton resetButton;
 
 		CompetingComboState(int ycoord) {
 			// creates current cbox mask
 			this.currentSelection = -1;
-			this.mask = new ArrayList<Integer>(IntStream.rangeClosed(1, allPlayers.length).boxed().collect(Collectors.toList()));
+			this.mask = new ArrayList<Integer>(IntStream.rangeClosed(1, allPlayers.size()).boxed().collect(Collectors.toList()));
 
 			// Create a combo box and immediately update its model
-			this.cbox = new JComboBox<String>(new DefaultComboBoxModel<String>(allPlayers));
+			this.cbox = new JComboBox<Player>(new DefaultComboBoxModel<>(new Vector<>(allPlayers)));
 
 			// Sets up the current cbox
 			this.cbox.setBounds(27, ycoord, 175, 27);
@@ -36,13 +44,16 @@ public class MultiPlayerSelector_Indices extends JFrame {
 				@Override
 				public Component getListCellRendererComponent(JList<?> list, Object value, int index,
 						boolean isSelected, boolean cellHasFocus) {
-					JLabel label = (JLabel) 
-							super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
+							cellHasFocus);
 					// For the field display (index == -1) and null value, just show an empty string
-					if (index == -1 && value == null) 
+					if (index == -1 && value == null)
 						label.setText("");
-					else
-						label.setText(value == null ? "" : value.toString());
+					else {
+						Player p = (Player) value;
+						label.setText(p.getName() + " " + p.getSurname());
+					}
+
 					return label;
 				}
 			});
@@ -74,9 +85,9 @@ public class MultiPlayerSelector_Indices extends JFrame {
 											.filter(k -> mask.get(k) >= prevSelection)
 											.findFirst().orElse(mask.size());
 									mask.add(insertionIndex, prevSelection);
-									DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>)
+									DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>)
 											compStates.get(i).cbox.getModel();
-									model.insertElementAt(allPlayers[prevSelection - 1], insertionIndex);
+									model.insertElementAt(allPlayers.get(prevSelection - 1), insertionIndex);
 								}
 							}
 						}
@@ -90,7 +101,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 							if (compStates.get(i).currentSelection != currentSelection) {
 								int pos = compStates.get(i).mask.indexOf(currentSelection);
 								compStates.get(i).mask.remove(currentSelection);
-								DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) 
+								DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>) 
 										compStates.get(i).cbox.getModel();
 								model.removeElementAt(pos);
 							}
@@ -116,9 +127,9 @@ public class MultiPlayerSelector_Indices extends JFrame {
 									.filter(k -> mask.get(k) >= clearedSelection)
 									.findFirst().orElse(mask.size());
 							mask.add(insertionIndex, clearedSelection);
-							DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) 
+							DefaultComboBoxModel<Player> model = (DefaultComboBoxModel<Player>) 
 									compStates.get(i).cbox.getModel();
-							model.insertElementAt(allPlayers[clearedSelection - 1], insertionIndex);
+							model.insertElementAt(allPlayers.get(clearedSelection - 1), insertionIndex);
 						}
 					}
 				}
