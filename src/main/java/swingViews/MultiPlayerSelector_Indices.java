@@ -75,8 +75,8 @@ public class MultiPlayerSelector_Indices extends JFrame {
 						
 						// a previous selection also existed
 						if (currentSelection != -1) { 
-							for (int i = 0; i < compStates.size(); i++) {
-								compStates.get(i).insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
+							for (CompetingComboState compState : compStates) {
+								compState.insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
 							}
 						}
 						
@@ -97,8 +97,8 @@ public class MultiPlayerSelector_Indices extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// adds cleared selection back into competing cboxes
-					for (int i = 0; i < compStates.size(); i++) {
-						compStates.get(i).insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
+					for (CompetingComboState compState : compStates) {
+						compState.insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
 					}
 					
 					// clears the bookkeeping current selection
