@@ -20,7 +20,15 @@ public class MultiPlayerSelector_Indices extends JFrame {
 			new Player.Forward("Lionel", "Messi"), 
 			new Player.Forward("Cristiano", "Ronaldo"), 
 			new Player.Goalkeeper("Gigi", "Buffon"));
-
+	
+	/*
+	 * allows discriminating between user-initiated and model-initiated events
+	 * specifically, we found that a DefaultComboBoxModel will fire an
+	 * action-performed event on its associated JComboBox if: 
+	 * 		1) the model's contents are altered, and 
+	 * 		2) the selection in the JComboBox is affected, which unfortunately includes
+	 * 		   the circumstance where the JComboBox hasn't yet been assigned a user selection */
+	private boolean blockReentrantEvents = false;
 
 	private class CompetingComboState {
 		Integer currentSelection;
@@ -28,6 +36,8 @@ public class MultiPlayerSelector_Indices extends JFrame {
 		SwingPlayerSelector playerSelector;
 		
 		void evictFromComboBox(Integer toBeEvicted) {
+			blockReentrantEvents = true;
+			
 			// operates only on boxes where toBeEvicted is not selected
 			if (currentSelection != toBeEvicted) {
 				int pos = mask.indexOf(toBeEvicted);
@@ -36,9 +46,12 @@ public class MultiPlayerSelector_Indices extends JFrame {
 						(DefaultComboBoxModel<Player>)playerSelector.getComboBox().getModel();
 				model.removeElementAt(pos);
 			}
+			blockReentrantEvents = false;
 		}
 		
 		void insertIntoComboBox(Integer indexToBeInserted, Player playerToBeInserted) {
+			blockReentrantEvents = true;
+			
 			// operates only on boxes from which toBeInserted is missing
 			if (!mask.contains(indexToBeInserted)) {
 				int insertionIndex = IntStream.range(0, mask.size())
@@ -49,6 +62,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 						(DefaultComboBoxModel<Player>)playerSelector.getComboBox().getModel();
 				model.insertElementAt(playerToBeInserted, insertionIndex);
 			}
+			blockReentrantEvents = false;
 		}
 
 		CompetingComboState(SwingPlayerSelector playerSelector) {
@@ -69,9 +83,12 @@ public class MultiPlayerSelector_Indices extends JFrame {
 			cbox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					System.out.println("listener del cbox viene eseguito!");
 					
 					// a selection exists
-					if (cbox.getSelectedIndex() > -1) { 
+					if (!blockReentrantEvents && cbox.getSelectedIndex() > -1) { 
+						
+						System.out.println("siamo dentro if");
 						
 						// a previous selection also existed
 						if (currentSelection != -1) { 
@@ -88,6 +105,8 @@ public class MultiPlayerSelector_Indices extends JFrame {
 							System.out.printf("about to call evict(%d) with i = %d\n", currentSelection, i);
 							compStates.get(i).evictFromComboBox(currentSelection);
 						}
+						
+						System.out.println("\n\n");
 					}
 				}
 			});
