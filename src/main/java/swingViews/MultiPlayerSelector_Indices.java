@@ -77,7 +77,7 @@ public class MultiPlayerSelector_Indices extends JFrame {
 			
 			// fills the cbox with initial contents
 			cbox.setModel(new DefaultComboBoxModel<>(new Vector<>(allPlayers)));
-			cbox.setSelectedIndex(-1);
+			cbox.setSelectedIndex(-1); // this does NOT trigger the Listener - it hasn't been attached yet!!
 
 			// bookkeeping for user-triggered actions on the combo box
 			cbox.addActionListener(new ActionListener() {
