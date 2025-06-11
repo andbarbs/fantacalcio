@@ -1,12 +1,6 @@
 package businessLogic;
 
-import businessLogic.repositories.ContractRepository;
-import businessLogic.repositories.GradeRepository;
-import businessLogic.repositories.LeagueRepository;
-import businessLogic.repositories.MatchRepository;
-import businessLogic.repositories.PlayerRepository;
-import businessLogic.repositories.ProposalRepository;
-import businessLogic.repositories.TeamRepository;
+import businessLogic.repositories.*;
 import jakarta.persistence.EntityManagerFactory;
 
 public class TransactionContext {
@@ -18,11 +12,16 @@ public class TransactionContext {
 	private final GradeRepository gradeRepository;
 	private final ProposalRepository proposalRepository;
 	private final ContractRepository contractRepository;
+	private final ResultsRepository resultsRepository;
+	private final FieldingRepository fieldingRepository;
+	private final LineUpRepository lineUpRepository;
 
 	public TransactionContext(EntityManagerFactory entityManagerFactory, LeagueRepository leagueRepository,
-					   MatchRepository matchRepository, PlayerRepository playerRepository,
-					   TeamRepository teamRepository, GradeRepository gradeRepository,
-					   ProposalRepository proposalRepository, ContractRepository contractRepository) {
+							  MatchRepository matchRepository, PlayerRepository playerRepository,
+							  TeamRepository teamRepository, GradeRepository gradeRepository,
+							  ProposalRepository proposalRepository, ContractRepository contractRepository,
+							  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
+							  LineUpRepository lineUpRepository) {
 		this.entityManagerFactory = entityManagerFactory;
 		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
@@ -31,6 +30,9 @@ public class TransactionContext {
 		this.gradeRepository = gradeRepository;
 		this.proposalRepository = proposalRepository;
 		this.contractRepository = contractRepository;
+		this.resultsRepository = resultsRepository;
+		this.fieldingRepository = fieldingRepository;
+		this.lineUpRepository = lineUpRepository;
 	}
 
 	public EntityManagerFactory getEntityManagerFactory() {
@@ -64,6 +66,16 @@ public class TransactionContext {
 	public ContractRepository getContractRepository() {
 		return contractRepository;
 	}
-	
-	
+
+	public ResultsRepository getResultsRepository() {
+		return resultsRepository;
+	}
+
+	public FieldingRepository getFieldingRepository() {
+		return fieldingRepository;
+	}
+
+	public LineUpRepository getLineUpRepository() {
+		return lineUpRepository;
+	}
 }
