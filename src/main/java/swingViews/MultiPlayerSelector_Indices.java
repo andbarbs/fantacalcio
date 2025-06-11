@@ -116,8 +116,9 @@ public class MultiPlayerSelector_Indices extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// adds cleared selection back into competing cboxes
-					for (CompetingComboState compState : compStates) {
-						compState.insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
+					for (int i = 0; i < compStates.size(); i++) {
+						System.out.printf("about to call insert(%d) with i = %d\n", currentSelection, i);
+						compStates.get(i).insertIntoComboBox(currentSelection, allPlayers.get(currentSelection - 1));
 					}
 					
 					// clears the bookkeeping current selection
