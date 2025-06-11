@@ -22,26 +22,20 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 	private List<CompetingComboBox<E>> competitors;
 
 	private void evictFromComboBox(Integer toBeEvicted) {
-
-		// operates only on boxes where toBeEvicted is not selected
-		if (currentSelection != toBeEvicted) {
-			int pos = mask.indexOf(toBeEvicted);
-			mask.remove(pos);
-			DefaultComboBoxModel<E> model = (DefaultComboBoxModel<E>) this.getModel();
-			model.removeElementAt(pos);
-		}
+		int pos = mask.indexOf(toBeEvicted);
+		mask.remove(pos);
+		DefaultComboBoxModel<E> model = (DefaultComboBoxModel<E>) this.getModel();
+		model.removeElementAt(pos);
 	}
 
 	private void insertIntoComboBox(Integer indexToBeInserted, E playerToBeInserted) {
-
-		// operates only on boxes from which toBeInserted is missing
-		if (!mask.contains(indexToBeInserted)) {
-			int insertionIndex = IntStream.range(0, mask.size()).filter(k -> mask.get(k) >= indexToBeInserted)
-					.findFirst().orElse(mask.size());
-			mask.add(insertionIndex, indexToBeInserted);
-			DefaultComboBoxModel<E> model = (DefaultComboBoxModel<E>) this.getModel();
-			model.insertElementAt(playerToBeInserted, insertionIndex);
-		}
+		int insertionIndex = IntStream
+				.range(0, mask.size())
+				.filter(k -> mask.get(k) >= indexToBeInserted)
+				.findFirst().orElse(mask.size());
+		mask.add(insertionIndex, indexToBeInserted);
+		DefaultComboBoxModel<E> model = (DefaultComboBoxModel<E>) this.getModel();
+		model.insertElementAt(playerToBeInserted, insertionIndex);
 	}
 
 	public CompetingComboBox(List<CompetingComboBox<E>> competitorsList) {
@@ -76,7 +70,9 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 					// a previous selection also existed
 					if (currentSelection != -1) { 
 						for (CompetingComboBox<E> competitor : competitors) {
-							competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+							if (competitor != CompetingComboBox.this) {
+								competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+							}
 						}
 					}
 					
@@ -84,9 +80,10 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 					currentSelection = mask.get(getSelectedIndex());
 					
 					// removes current selection from competing cboxes
-					for (int i = 0; i < competitors.size(); i++) {
-						System.out.printf("about to call evict(%d) with i = %d\n", currentSelection, i);
-						competitorsList.get(i).evictFromComboBox(currentSelection);
+					for (CompetingComboBox<E> competitor : competitors) {
+						if (competitor != CompetingComboBox.this) {
+							competitor.evictFromComboBox(currentSelection);
+						}
 					}
 					
 					System.out.println("\n\n");
@@ -95,9 +92,10 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 				// this CBox's selection has been reset
 				else if (getSelectedIndex() == -1 && currentSelection != -1) {
 					// adds cleared selection back into competing cboxes
-					for (int i = 0; i < competitors.size(); i++) {
-						System.out.printf("about to call insert(%d) with i = %d\n", currentSelection, i);
-						competitors.get(i).insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+					for (CompetingComboBox<E> competitor : competitors) {
+						if (competitor != CompetingComboBox.this) {
+							competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+						}
 					}
 					
 					// clears the bookkeeping current selection
