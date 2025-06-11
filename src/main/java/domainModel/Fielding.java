@@ -47,23 +47,23 @@ public abstract class Fielding {
     }
     
     @Entity
-    public static abstract class StarterFielding extends Fielding {
+    public static class StarterFielding extends Fielding {
     	
     	protected StarterFielding() {}
         
-    	StarterFielding(Player player, LineUp lineUp) {
+    	public StarterFielding(Player player, LineUp lineUp) {
             super(player, lineUp);
         }
     }
     
     @Entity
-    public static abstract class SubstituteFielding extends Fielding {    	
+    public static class SubstituteFielding extends Fielding {
     	
     	private int benchPosition;
 
 		protected SubstituteFielding() {}
         
-    	SubstituteFielding(Player player, LineUp lineUp, int benchPosition) {
+    	public SubstituteFielding(Player player, LineUp lineUp, int benchPosition) {
             super(player, lineUp);
 			this.benchPosition = benchPosition;
         }
