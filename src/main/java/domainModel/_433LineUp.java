@@ -16,7 +16,7 @@ public class _433LineUp extends LineUp {
 	
 	protected _433LineUp() {}
 
-	private _433LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
+	_433LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
 		super(match, team, fieldings);
 	}
 

@@ -46,6 +46,24 @@ public abstract class Fielding {
         return Objects.hash(player, lineUp);
     }
     
+
+	public interface FieldingVisitor {
+		void visitStarterFielding(StarterFielding starterFielding);
+		void visitSubstituteFielding(SubstituteFielding substituteFielding);		
+	}
+	
+	public static class FieldingVisitorAdapter implements FieldingVisitor {
+
+		@Override
+		public void visitStarterFielding(StarterFielding starterFielding) {}
+
+		@Override
+		public void visitSubstituteFielding(SubstituteFielding substituteFielding) {}
+		
+	}
+    
+    public abstract void accept(FieldingVisitor visitor);
+    
     @Entity
     public static class StarterFielding extends Fielding {
     	
@@ -54,6 +72,11 @@ public abstract class Fielding {
     	public StarterFielding(Player player, LineUp lineUp) {
             super(player, lineUp);
         }
+
+		@Override
+		public void accept(FieldingVisitor visitor) {
+			visitor.visitStarterFielding(this);
+		}    	
     }
     
     @Entity
@@ -90,6 +113,11 @@ public abstract class Fielding {
 				return false;
 			SubstituteFielding other = (SubstituteFielding) obj;
 			return benchPosition == other.benchPosition;
+		}
+
+		@Override
+		public void accept(FieldingVisitor visitor) {
+			visitor.visitSubstituteFielding(this);
 		}
 		
     }

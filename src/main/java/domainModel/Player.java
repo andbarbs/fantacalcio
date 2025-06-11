@@ -55,6 +55,31 @@ public abstract class Player {
 		return Objects.equals(name, other.name) && Objects.equals(surname, other.surname);
 	}
 	
+	public static interface PlayerVisitor {
+		void visitGoalkeeper(Goalkeeper goalkeeper);
+		void visitDefender(Defender defender);
+		void visitMidfielder(Midfielder midfielder);
+		void visitForward(Forward forward);
+	}
+	
+	public static class PlayerVisitorAdapter implements PlayerVisitor {
+
+		@Override
+		public void visitGoalkeeper(Goalkeeper goalkeeper) {}
+
+		@Override
+		public void visitDefender(Defender defender) {}
+
+		@Override
+		public void visitMidfielder(Midfielder midfielder) {}
+
+		@Override
+		public void visitForward(Forward forward) {}
+		
+	}
+    
+    public abstract void accept(PlayerVisitor visitor);
+	
 	@Entity
     public static class Goalkeeper extends Player {
 		
@@ -63,6 +88,11 @@ public abstract class Player {
 		public Goalkeeper(String name, String surname) {
 			super(name, surname);
 	    }
+
+		@Override
+		public void accept(PlayerVisitor visitor) {
+			visitor.visitGoalkeeper(this);
+		}
     }
 	
 	@Entity
@@ -73,6 +103,11 @@ public abstract class Player {
 		public Defender(String name, String surname) {
 			super(name, surname);
 	    }
+
+		@Override
+		public void accept(PlayerVisitor visitor) {
+			visitor.visitDefender(this);
+		}
     }
 	
 	@Entity
@@ -83,6 +118,11 @@ public abstract class Player {
 		public Midfielder(String name, String surname) {
 			super(name, surname);
 	    }
+
+		@Override
+		public void accept(PlayerVisitor visitor) {
+			visitor.visitMidfielder(this);
+		}
     }
 	
 	@Entity
@@ -93,6 +133,11 @@ public abstract class Player {
 		public Forward(String name, String surname) {
 			super(name, surname);
 	    }
+
+		@Override
+		public void accept(PlayerVisitor visitor) {
+			visitor.visitForward(this);
+		}
     }
     
     
