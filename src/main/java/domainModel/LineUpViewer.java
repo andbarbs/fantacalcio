@@ -16,19 +16,26 @@ public class LineUpViewer {
         this.lineUp = lineUp;
     }
     
-    // Getters for starters
+    // helpers
+
+    private void visitFieldings(FieldingVisitor visitor) {
+    	for (Fielding fielding : lineUp.getFieldings()) {
+    		fielding.accept(visitor);
+    	}
+    }
     
-    // helper
-    private void visitStarterPlayers(PlayerVisitorAdapter playerVisitorAdapter) {
+    private void visitStarterPlayers(PlayerVisitor playerVisitor) {
     	FieldingVisitor visitor = new FieldingVisitorAdapter() {
     		@Override
     		public void visitStarterFielding(StarterFielding starterFielding) {
-    			starterFielding.getPlayer().accept(playerVisitorAdapter);
+    			starterFielding.getPlayer().accept(playerVisitor);
     		}
     	};
-    	visitSubstituteFieldings(visitor);
+    	visitFieldings(visitor);
     }
 
+    // Extractors for Starters
+    
 	public List<Goalkeeper> starterGoalkeepers() {
 		List<Goalkeeper> result = new ArrayList<Goalkeeper>();
 		visitStarterPlayers(new PlayerVisitorAdapter() {
@@ -74,20 +81,13 @@ public class LineUpViewer {
 		return result;
     }
     
-    // Getters for substitutes
-
-    // helper
-    private void visitSubstituteFieldings(FieldingVisitor visitor) {
-    	for (Fielding fielding : lineUp.getFieldings()) {
-    		fielding.accept(visitor);
-    	}
-    }
+    // Extractors for Substitutes
    
     public List<Goalkeeper> substituteGoalkeepers() {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Goalkeeper> benchMap = new TreeMap<>();
 
-        visitSubstituteFieldings(new FieldingVisitorAdapter() {
+        visitFieldings(new FieldingVisitorAdapter() {
             @Override
             public void visitSubstituteFielding(SubstituteFielding substituteFielding) {
                 substituteFielding.getPlayer().accept(new PlayerVisitorAdapter() {
@@ -106,7 +106,7 @@ public class LineUpViewer {
     public List<Defender> substituteDefenders() {
         Map<Integer, Defender> benchMap = new TreeMap<>();
 
-        visitSubstituteFieldings(new FieldingVisitorAdapter() {
+        visitFieldings(new FieldingVisitorAdapter() {
             @Override
             public void visitSubstituteFielding(SubstituteFielding substituteFielding) {
                 substituteFielding.getPlayer().accept(new PlayerVisitorAdapter() {
@@ -125,7 +125,7 @@ public class LineUpViewer {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Midfielder> benchMap = new TreeMap<>();
 
-        visitSubstituteFieldings(new FieldingVisitorAdapter() {
+        visitFieldings(new FieldingVisitorAdapter() {
             @Override
             public void visitSubstituteFielding(SubstituteFielding substituteFielding) {
                 substituteFielding.getPlayer().accept(new PlayerVisitorAdapter() {
@@ -144,7 +144,7 @@ public class LineUpViewer {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Forward> benchMap = new TreeMap<>();
 
-        visitSubstituteFieldings(new FieldingVisitorAdapter() {
+        visitFieldings(new FieldingVisitorAdapter() {
             @Override
             public void visitSubstituteFielding(SubstituteFielding substituteFielding) {
                 substituteFielding.getPlayer().accept(new PlayerVisitorAdapter() {
