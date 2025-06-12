@@ -18,6 +18,7 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.answer;
 
+import domainModel.Contract;
 import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Match;
@@ -70,9 +71,14 @@ public class UserServiceTest {
         User user = new User("testMail", "password");
         League league = new League(user, "testLeague", new NewsPaper("gazzetta"), "001");
         MatchDaySerieA matchDay = new MatchDaySerieA("giornata1", LocalDate.of(2020, 01, 01));
+        Set<Contract> contractsA = new HashSet<>();
+        Set<Contract> contractsB = new HashSet<>();
         Map<MatchDaySerieA, Set<Match>> expectedMatches = new HashMap<>();
         expectedMatches.put(matchDay, new HashSet<Match>(List.of(
-        		new Match(matchDay, new FantaTeam("TeamA", league, 10, user), new FantaTeam("TeamB", league, 10, user)))));
+        		new Match(
+        				matchDay, 
+        				new FantaTeam("TeamA", league, 10, user, contractsA), 
+        				new FantaTeam("TeamB", league, 10, user, contractsB)))));
         //TODO controlla che un user ha due team
 
         // Stub the repository call

@@ -29,7 +29,7 @@ public class Contract {
         return team;
     }
 
-    public Player getGiocatore() {
+    public Player getPlayer() {
         return player;
     }
 
