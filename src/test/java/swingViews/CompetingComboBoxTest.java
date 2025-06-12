@@ -100,18 +100,15 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         window.comboBox("combo3").requireItemCount(3);
 
         // Use AssertJSwing to simulate selecting item "A" in combo1.
-        window.comboBox("combo1").selectItem("A");
-
         // At this point, the listener in combo1 should remove "A" from its competitors.
         // We'll verify that combo2 and combo3 no longer contain "A"
+        window.comboBox("combo1").selectItem("A");
         assertThat(getComboBoxItems("combo2")).containsExactly("B", "C");
         assertThat(getComboBoxItems("combo3")).containsExactly("B", "C");
 
         // Now simulate resetting combo1's selection. Since it was the one that caused "A" to be removed,
         // clearing its selection should cause "A" to be reinserted into its competitors.
         GuiActionRunner.execute(() -> combo1.setSelectedIndex(-1));
-
-        // Re-fetch the model contents from the competitors.        
         assertThat(getComboBoxItems("combo2")).containsExactly("A", "B", "C");
         assertThat(getComboBoxItems("combo3")).containsExactly("A", "B", "C");
     }
@@ -119,7 +116,6 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     @Test
     @GUITest
     public void testSequentialSelectionsOnSameCombo() {
-        // Set the full contents in each combo on the EDT.
         GuiActionRunner.execute(() -> {
             List<String> sampleContents = Arrays.asList("A", "B", "C");
             combo1.setContents(sampleContents);
