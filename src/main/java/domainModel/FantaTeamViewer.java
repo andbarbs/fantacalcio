@@ -38,7 +38,7 @@ public class FantaTeamViewer {
 		return result;
 	}
 
-	public List<Defender> Defenders() {
+	public List<Defender> defenders() {
 		List<Defender> result = new ArrayList<Defender>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -49,7 +49,7 @@ public class FantaTeamViewer {
 		return result;
 	}
 	
-	public List<Midfielder> Midfielders() {
+	public List<Midfielder> midfielders() {
 		List<Midfielder> result = new ArrayList<Midfielder>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -60,7 +60,7 @@ public class FantaTeamViewer {
 		return result;
 	}
 	
-	public List<Forward> Forwards() {
+	public List<Forward> forwards() {
 		List<Forward> result = new ArrayList<Forward>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override

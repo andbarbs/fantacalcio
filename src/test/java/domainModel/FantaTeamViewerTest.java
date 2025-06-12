@@ -73,15 +73,15 @@ public class FantaTeamViewerTest {
             .containsExactlyInAnyOrder(keeper1, keeper2, keeper3, keeper4, keeper5);
 
         // Defenders
-        assertThat(viewer.Defenders())
+        assertThat(viewer.defenders())
             .containsExactlyInAnyOrder(defender1, defender2, defender3, defender4, defender5);
 
         // Midfielders
-        assertThat(viewer.Midfielders())
+        assertThat(viewer.midfielders())
             .containsExactlyInAnyOrder(midfielder1, midfielder2, midfielder3, midfielder4, midfielder5);
 
         // Forwards
-        assertThat(viewer.Forwards())
+        assertThat(viewer.forwards())
             .containsExactlyInAnyOrder(forward1, forward2, forward3, forward4, forward5);
     }
 }
