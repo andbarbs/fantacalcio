@@ -1,7 +1,7 @@
 package domainModel;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import domainModel.Player.Defender;
 import domainModel.Player.Forward;
@@ -27,8 +27,8 @@ public class FantaTeamViewer {
 
     // Extractors
     
-	public List<Goalkeeper> goalkeepers() {
-		List<Goalkeeper> result = new ArrayList<Goalkeeper>();
+	public Set<Goalkeeper> goalkeepers() {
+		Set<Goalkeeper> result = new HashSet<Goalkeeper>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
 			public void visitGoalkeeper(Goalkeeper goalkeeper) {
@@ -37,9 +37,9 @@ public class FantaTeamViewer {
 		});
 		return result;
 	}
-
-	public List<Defender> defenders() {
-		List<Defender> result = new ArrayList<Defender>();
+	
+	public Set<Defender> defenders() {
+		Set<Defender> result = new HashSet<Defender>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
 			public void visitDefender(Defender defender) {
@@ -49,8 +49,8 @@ public class FantaTeamViewer {
 		return result;
 	}
 	
-	public List<Midfielder> midfielders() {
-		List<Midfielder> result = new ArrayList<Midfielder>();
+	public Set<Midfielder> midfielders() {
+		Set<Midfielder> result = new HashSet<Midfielder>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
 			public void visitMidfielder(Midfielder midfielder) {
@@ -60,8 +60,8 @@ public class FantaTeamViewer {
 		return result;
 	}
 	
-	public List<Forward> forwards() {
-		List<Forward> result = new ArrayList<Forward>();
+	public Set<Forward> forwards() {
+		Set<Forward> result = new HashSet<Forward>();
 		visitPlayers(new PlayerVisitorAdapter() {
 			@Override
 			public void visitForward(Forward forward) {

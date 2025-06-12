@@ -1,8 +1,10 @@
 package domainModel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import domainModel.Fielding.*;
@@ -34,52 +36,52 @@ public class LineUpViewer {
     	visitFieldings(visitor);
     }
 
-    // Extractors for Starters
+ // Extractors for Starters
     
-	public List<Goalkeeper> starterGoalkeepers() {
-		List<Goalkeeper> result = new ArrayList<Goalkeeper>();
-		visitStarterPlayers(new PlayerVisitorAdapter() {
-			@Override
-			public void visitGoalkeeper(Goalkeeper goalkeeper) {
-				result.add(goalkeeper);
-			}
-		});
-		return result;
-	}
+ 	public Set<Goalkeeper> starterGoalkeepers() {
+ 		Set<Goalkeeper> result = new HashSet<Goalkeeper>();
+ 		visitStarterPlayers(new PlayerVisitorAdapter() {
+ 			@Override
+ 			public void visitGoalkeeper(Goalkeeper goalkeeper) {
+ 				result.add(goalkeeper);
+ 			}
+ 		});
+ 		return result;
+ 	}
 
 
-    public List<Defender> starterDefenders() {
-    	List<Defender> result = new ArrayList<Defender>();
-		visitStarterPlayers(new PlayerVisitorAdapter() {
-			@Override
-			public void visitDefender(Defender defender) {
-				result.add(defender);
-			}
-		});
-		return result;
-    }
+     public Set<Defender> starterDefenders() {
+     	Set<Defender> result = new HashSet<Defender>();
+ 		visitStarterPlayers(new PlayerVisitorAdapter() {
+ 			@Override
+ 			public void visitDefender(Defender defender) {
+ 				result.add(defender);
+ 			}
+ 		});
+ 		return result;
+     }
 
-    public List<Midfielder> starterMidfielders() {
-    	List<Midfielder> result = new ArrayList<Midfielder>();
-		visitStarterPlayers(new PlayerVisitorAdapter() {
-			@Override
-			public void visitMidfielder(Midfielder midfielder) {
-				result.add(midfielder);
-			}
-		});
-		return result;
-    }
+     public Set<Midfielder> starterMidfielders() {
+     	Set<Midfielder> result = new HashSet<Midfielder>();
+ 		visitStarterPlayers(new PlayerVisitorAdapter() {
+ 			@Override
+ 			public void visitMidfielder(Midfielder midfielder) {
+ 				result.add(midfielder);
+ 			}
+ 		});
+ 		return result;
+     }
 
-    public List<Forward> starterForwards() {
-    	List<Forward> result = new ArrayList<Forward>();
-		visitStarterPlayers(new PlayerVisitorAdapter() {
-			@Override
-			public void visitForward(Forward forward) {
-				result.add(forward);
-			}
-		});
-		return result;
-    }
+     public Set<Forward> starterForwards() {
+     	Set<Forward> result = new HashSet<Forward>();
+ 		visitStarterPlayers(new PlayerVisitorAdapter() {
+ 			@Override
+ 			public void visitForward(Forward forward) {
+ 				result.add(forward);
+ 			}
+ 		});
+ 		return result;
+     }
     
     // Extractors for Substitutes
    
