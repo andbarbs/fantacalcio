@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFrame;
 
@@ -179,6 +180,41 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         assertThat(getComboBoxItems("combo1")).containsExactly("A", "C");
         // combo3: model loses "B"
         assertThat(getComboBoxItems("combo3")).containsExactly("C");
+    }
+    
+    @Test @GUITest
+    public void testCyclicCompetitionWithSpectator_stressTest() {
+        // Set a content pool of 5 items.
+    	List<String> contents = Arrays.asList("A", "B", "C", "D", "E");
+    	
+        GuiActionRunner.execute(() -> {
+            combo1.setContents(contents);
+            combo2.setContents(contents);
+            combo3.setName("spectator");
+            combo3.setContents(contents);
+        });
+        
+        // make combo1 and combo2 cycle through the content pool, each taking 
+        // the next available item, so with (ind1, ind2) having values:
+        // (0, 1), (2, 3), (4, 0), (1, 2), (3, 4), winding back to (0, 1)
+        int ind1 = 0, ind2 = 1;
+		do {
+			int currentInd1 = ind1, currentInd2 = ind2;
+			window.comboBox("combo1").selectItem(contents.get(ind1));
+			window.comboBox("combo2").selectItem(contents.get(ind2));
+
+			assertThat(window.comboBox("combo1").target().getSelectedItem()).isEqualTo(contents.get(ind1));
+			assertThat(getComboBoxItems("combo1")).containsExactlyElementsOf(IntStream.range(0, contents.size())
+					.filter(i -> i != currentInd2).mapToObj(contents::get).collect(Collectors.toList()));
+			assertThat(window.comboBox("combo2").target().getSelectedItem()).isEqualTo(contents.get(ind2));
+			assertThat(getComboBoxItems("combo2")).containsExactlyElementsOf(IntStream.range(0, contents.size())
+					.filter(i -> i != currentInd1).mapToObj(contents::get).collect(Collectors.toList()));
+			assertThat(getComboBoxItems("spectator")).containsExactlyElementsOf(IntStream.range(0, contents.size())
+					.filter(i -> i != currentInd1 && i != currentInd2).mapToObj(contents::get).collect(Collectors.toList()));
+			
+			ind1 = (ind1 + 2) % contents.size();
+			ind2 = (ind2 + 2) % contents.size();
+		} while (ind1 != 0 && ind2 != 1);
     }
 
 }
