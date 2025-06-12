@@ -4,13 +4,6 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
-import domainModel.Fielding.StarterFielding;
-import domainModel.Fielding.SubstituteFielding;
-import domainModel.Player.Defender;
-import domainModel.Player.Midfielder;
-import domainModel.Player.Forward;
-import domainModel.Player.Goalkeeper;
-
 // coincides with ThreePositionLineUp by definition of the game
 
 @Entity
@@ -28,6 +21,7 @@ public abstract class LineUp {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private FantaTeam team;
     
+    // qui va inserito  CASCADING!!!
     @OneToMany(mappedBy = Fielding_.LINE_UP)
     private Set<Fielding> fieldings;
 
@@ -52,6 +46,11 @@ public abstract class LineUp {
     Set<Fielding> getFieldings() {
     	return fieldings;
     }
+	
+	// entry point for strongly-typed Player lookup
+	public LineUpViewer extract() {
+		return new LineUpViewer(this);
+	}
     
     /*
 	 * equals and hashCode do not include the fielding attribute to avoid infinite recursion

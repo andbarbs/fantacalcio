@@ -73,27 +73,27 @@ public class LineUpViewerTest {
         // --- Assertions using AssertJ ---
 
         // Starters should be present exactly once.
-        assertThat(viewer.getStarterGoalkeepers())
+        assertThat(viewer.starterGoalkeepers())
             .containsExactly(starterGK);
-        assertThat(viewer.getStarterDefenders())
+        assertThat(viewer.starterDefenders())
             .containsExactly(starterDef);
-        assertThat(viewer.getStarterMidfielders())
+        assertThat(viewer.starterMidfielders())
             .containsExactly(starterMid);
-        assertThat(viewer.getStarterForwards())
+        assertThat(viewer.starterForwards())
             .containsExactly(starterFwd);
 
         // Substitutes should appear sorted by benchPosition.
         // For goalkeepers: bench position order: 1 then 2.
-        assertThat(viewer.getSubstituteGoalkeepers())
+        assertThat(viewer.substituteGoalkeepers())
             .containsExactly(position1Glk, position2Glk);
         // For defenders: bench position order: 1 then 2.
-        assertThat(viewer.getSubstituteDefenders())
+        assertThat(viewer.substituteDefenders())
             .containsExactly(position1Def, position2Def);
         // For midfielders: only one substitute.
-        assertThat(viewer.getSubstituteMidfielders())
+        assertThat(viewer.substituteMidfielders())
             .containsExactly(subMid1);
         // For forwards: expected order is bench positions 1, 2, then 3.
-        assertThat(viewer.getSubstituteForwards())
+        assertThat(viewer.substituteForwards())
             .containsExactly(position1For, position2For, position3For);
     }
 }

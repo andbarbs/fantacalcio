@@ -29,7 +29,7 @@ public class LineUpViewer {
     	visitSubstituteFieldings(visitor);
     }
 
-	public List<Goalkeeper> getStarterGoalkeepers() {
+	public List<Goalkeeper> starterGoalkeepers() {
 		List<Goalkeeper> result = new ArrayList<Goalkeeper>();
 		visitStarterPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -41,7 +41,7 @@ public class LineUpViewer {
 	}
 
 
-    public List<Defender> getStarterDefenders() {
+    public List<Defender> starterDefenders() {
     	List<Defender> result = new ArrayList<Defender>();
 		visitStarterPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -52,7 +52,7 @@ public class LineUpViewer {
 		return result;
     }
 
-    public List<Midfielder> getStarterMidfielders() {
+    public List<Midfielder> starterMidfielders() {
     	List<Midfielder> result = new ArrayList<Midfielder>();
 		visitStarterPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -63,7 +63,7 @@ public class LineUpViewer {
 		return result;
     }
 
-    public List<Forward> getStarterForwards() {
+    public List<Forward> starterForwards() {
     	List<Forward> result = new ArrayList<Forward>();
 		visitStarterPlayers(new PlayerVisitorAdapter() {
 			@Override
@@ -83,7 +83,7 @@ public class LineUpViewer {
     	}
     }
    
-    public List<Goalkeeper> getSubstituteGoalkeepers() {
+    public List<Goalkeeper> substituteGoalkeepers() {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Goalkeeper> benchMap = new TreeMap<>();
 
@@ -103,7 +103,7 @@ public class LineUpViewer {
         return new ArrayList<>(benchMap.values());
     }
 
-    public List<Defender> getSubstituteDefenders() {
+    public List<Defender> substituteDefenders() {
         Map<Integer, Defender> benchMap = new TreeMap<>();
 
         visitSubstituteFieldings(new FieldingVisitorAdapter() {
@@ -121,7 +121,7 @@ public class LineUpViewer {
         return new ArrayList<>(benchMap.values());
     }
 
-    public List<Midfielder> getSubstituteMidfielders() {
+    public List<Midfielder> substituteMidfielders() {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Midfielder> benchMap = new TreeMap<>();
 
@@ -140,7 +140,7 @@ public class LineUpViewer {
         return new ArrayList<>(benchMap.values());
     }
 
-    public List<Forward> getSubstituteForwards() {
+    public List<Forward> substituteForwards() {
         // Use a TreeMap to auto-sort by benchPosition.
         Map<Integer, Forward> benchMap = new TreeMap<>();
 
