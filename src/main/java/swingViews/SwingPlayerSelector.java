@@ -12,13 +12,13 @@ public class SwingPlayerSelector extends JPanel {
 	
 	public static Dimension SWING_PLAYER_SELECTOR_DIM = new Dimension(240, 30);
 
-	public SwingPlayerSelector() {
+	public SwingPlayerSelector(JComboBox<Player> jComboBox) {
 		setBackground(Color.RED);
 		// Use absolute positioning so the controls keep their fixed layout.
 		setLayout(null);
 
 		// Create the combo box.
-		comboBox = new JComboBox<Player>();
+		comboBox = jComboBox;
 		// For now, we’ll let the composing class set its model.
 		// Position and size: adjust these as needed.
 		comboBox.setBounds(12, -1, 175, 27);
@@ -42,6 +42,7 @@ public class SwingPlayerSelector extends JPanel {
 			}
 		});
 		// Start with no selection
+		comboBox.setSelectedIndex(-1);
 		add(comboBox);
 		
 		// implements Combo Box -> Button interaction
@@ -64,13 +65,5 @@ public class SwingPlayerSelector extends JPanel {
 		// These values (240x30) are just an example.
 		setPreferredSize(new Dimension(204, 68));
 		setMinimumSize(SWING_PLAYER_SELECTOR_DIM);
-	}
-
-	public JComboBox<Player> getComboBox() {
-		return comboBox;
-	}
-
-	public JButton getResetButton() {
-		return resetButton;
 	}
 }
