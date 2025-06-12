@@ -1,127 +1,128 @@
 package swingViews;
 
 import javax.swing.*;
+
+import domainModel.Player;
+
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultiPlayerSelector extends JFrame {
+	private static final long serialVersionUID = 1L;
 
-    private static final long serialVersionUID = 1L;
+	// The global pool of players
+	private final List<Player> allPlayers = List.of(
+			new Player.Forward("Lionel", "Messi"), 
+			new Player.Forward("Cristiano", "Ronaldo"), 
+			new Player.Goalkeeper("Gigi", "Buffon"));
+	
+	
 
-    // The global pool of players
-    private final String[] allPlayers = {"Messi", "Ronaldo", "Yamal"};
-    // A list to hold all our combo boxes' models so that we can update them together.
-    private final List<DefaultComboBoxModel<String>> comboBoxModels = new ArrayList<>();
-    
-    private List<String> availablePlayers = new ArrayList<String>(List.of(allPlayers));
-
-    public MultiPlayerSelector() {
-        // Configure the frame
+	public MultiPlayerSelector() {
         setTitle("Football Player Selector");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 200);
-        setLocationRelativeTo(null);
-        // Use a null layout for simplicity (you might also use layout managers)
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
         
-        // Create three instances of (combo box + reset button)
-        for (int i = 0; i < 3; i++) {
-            int ycoord = 10 + i * 40;
-            
-            // Create a combo box and immediately update its model
-            DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(allPlayers);
-            JComboBox<String> combo = new JComboBox<>();
-            combo.setModel(model);
-            combo.setBounds(27, ycoord, 175, 27);
-            // Set our custom renderer (same as before, but here with no placeholder text)
-            combo.setRenderer(new DefaultListCellRenderer() {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, 
-                                                              int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    // For the field display (index == -1) and null value, just show an empty string.
-                    if (index == -1 && value == null) {
-                        label.setText("");
-                    } else {
-                        label.setText(value == null ? "" : value.toString());
-                    }
-                    return label;
-                }
-            });
-            // Start with no selection
-            combo.setSelectedIndex(-1);
-            // Add the combo box to our global tracking list.
-            comboBoxModels.add(model);
-            panel.add(combo);
-            
-            
-            
-            // Create the reset button for this combo
-            JButton resetButton = new JButton("Reset");
-            resetButton.setBounds(207, ycoord, 67, 27);
-            resetButton.setEnabled(false);
-            panel.add(resetButton);
+        // Set a minimum size for the whole unit, as suggested.
+        setMinimumSize(new Dimension(800, 600));
+        
+        // Create a JLayeredPane so that we can overlay components.
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setPreferredSize(new Dimension(800, 1100));
+        
+        // Create the background label with the football field image.
+        // In WindowBuilder you can adjust the file path or resource as needed.
+        JLabel background = new JLabel(new ImageIcon(getClass().getResource("/images/raster_field.png")));
+        // We'll use absolute bounds for the background image.
+        background.setBounds(0, 0, 788, 1100);
+        layeredPane.add(background, Integer.valueOf(0)); // lowest layer
+        
+        // Create a panel to hold our SwingPlayerSelector components.
+        // This panel will use null layout so we can position them freely.
+        JPanel selectorsPanel = new JPanel();
+        selectorsPanel.setBounds(81, 95, 622, 860);
+        selectorsPanel.setOpaque(false); // allow background to show
+        // Do not set null layout; we use GridBagLayout instead.
+        GridBagLayout gbl_selectorsPanel = new GridBagLayout();
+        selectorsPanel.setLayout(gbl_selectorsPanel);
 
-            // Add an ActionListener to the combo box:
-            // Every time a selection occurs, update the associated reset button and update all combo models.
-            combo.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // Enable reset button if a selection exists
-					if (combo.getSelectedIndex() > -1) {
-						if (resetButton.isEnabled()) {
-							String oldSelection = null;
-							for (int j = 0; j < combo.getModel().getSize(); j++) {
-								if (!availablePlayers.contains(combo.getModel().getElementAt(j))) {
-										oldSelection = combo.getModel().getElementAt(j);
-										break;
-								}
-							}
-							availablePlayers.add(oldSelection);
-							for (DefaultComboBoxModel<String> model : comboBoxModels) {
-								if (model != combo.getModel()) {
-									model.addElement(oldSelection);
-								}
-							}
-						}
-						resetButton.setEnabled(true);
-						availablePlayers.remove(combo.getSelectedItem());
-							for (DefaultComboBoxModel<String> model : comboBoxModels) {
-								if (model != combo.getModel()) {
-									model.removeElement(combo.getSelectedItem());
-								}
-							}
-					}
-                }
-            });
+        // Give the panel a preferred size so that GridBagLayout knows the space available.
+        selectorsPanel.setPreferredSize(new Dimension(800, 600));
+        
 
-            // The reset button simply clears the selection and updates the models.
-            resetButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                	String oldSelection = (String) combo.getSelectedItem();
-                    combo.setSelectedIndex(-1);
-                    resetButton.setEnabled(false);
-//                    updateAllComboModels();
-                    for (DefaultComboBoxModel<String> model : comboBoxModels) {
-                    	if (model != combo.getModel()) {
-                    		model.addElement(oldSelection);
-                    	}                    		
-					}
-                }
-            });
-        }
+        List<CompetingComboBox<Player>> competingCboxes = new ArrayList<>();
+        
+        CompetingComboBox<Player> cbox1 = new CompetingComboBox<Player>(competingCboxes);
+        competingCboxes.add(cbox1);
+        cbox1.setContents(allPlayers);
+        // Create and add selectors with updated GridBagConstraints:
+        SwingPlayerSelector selector1 = new SwingPlayerSelector(cbox1);
+        GridBagConstraints gbc_selector1 = new GridBagConstraints();
+        gbc_selector1.gridx = 0;
+        gbc_selector1.gridy = 0;
+        gbc_selector1.fill = GridBagConstraints.NONE;   // or BOTH if you want them to expand
+        gbc_selector1.anchor = GridBagConstraints.CENTER;
+        gbc_selector1.weightx = 1.0;   // allow horizontal growth
+        gbc_selector1.weighty = 1.0;   // allow vertical growth
+        gbc_selector1.insets = new Insets(10, 10, 10, 10); // optional padding
+        selectorsPanel.add(selector1, gbc_selector1);
 
-        getContentPane().add(panel);
+
+        CompetingComboBox<Player> cbox2 = new CompetingComboBox<Player>(competingCboxes);
+        competingCboxes.add(cbox2);
+        cbox2.setContents(allPlayers);
+        SwingPlayerSelector selector2 = new SwingPlayerSelector(cbox2);
+        GridBagConstraints gbc_selector2 = new GridBagConstraints();
+        gbc_selector2.gridx = 1;
+        gbc_selector2.gridy = 0;
+        gbc_selector2.fill = GridBagConstraints.NONE;
+        gbc_selector2.anchor = GridBagConstraints.CENTER;
+        gbc_selector2.weightx = 1.0;
+        gbc_selector2.weighty = 1.0;
+        gbc_selector2.insets = new Insets(10, 10, 10, 10);
+        selectorsPanel.add(selector2, gbc_selector2);
+
+
+        CompetingComboBox<Player> cbox3 = new CompetingComboBox<Player>(competingCboxes);
+        competingCboxes.add(cbox3);
+        cbox3.setContents(allPlayers);
+        SwingPlayerSelector selector3 = new SwingPlayerSelector(cbox3);
+        GridBagConstraints gbc_selector3 = new GridBagConstraints();
+        gbc_selector3.gridx = 0;
+        gbc_selector3.gridy = 1;
+        gbc_selector3.fill = GridBagConstraints.NONE;
+        gbc_selector3.anchor = GridBagConstraints.CENTER;
+        gbc_selector3.weightx = 1.0;
+        gbc_selector3.weighty = 1.0;
+        gbc_selector3.insets = new Insets(10, 10, 10, 10);
+        selectorsPanel.add(selector3, gbc_selector3);
+
+
+        CompetingComboBox<Player> cbox4 = new CompetingComboBox<Player>(competingCboxes);
+        competingCboxes.add(cbox4);
+        cbox4.setContents(allPlayers);
+        SwingPlayerSelector selector4 = new SwingPlayerSelector(cbox4);
+        GridBagConstraints gbc_selector4 = new GridBagConstraints();
+        gbc_selector4.gridx = 1;
+        gbc_selector4.gridy = 1;
+        gbc_selector4.fill = GridBagConstraints.NONE;
+        gbc_selector4.anchor = GridBagConstraints.CENTER;
+        gbc_selector4.weightx = 1.0;
+        gbc_selector4.weighty = 1.0;
+        gbc_selector4.insets = new Insets(10, 10, 10, 10);
+        selectorsPanel.add(selector4, gbc_selector4);
+
+        
+        layeredPane.add(selectorsPanel, Integer.valueOf(1)); // higher layer over background
+        // Finally add the layeredPane to the frame.
+        getContentPane().add(layeredPane);
+        
+        // Pack and display.
+        pack();
+        setLocationRelativeTo(null);
         setVisible(true);
-        // Ensure initial update so every combo has full options
-//        updateAllComboModels();
     }
-
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new MultiPlayerSelector());
     }
