@@ -113,8 +113,7 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         assertThat(getComboBoxItems("combo3")).containsExactly("A", "B", "C");
     }
     
-    @Test
-    @GUITest
+    @Test @GUITest
     public void testSequentialSelectionsOnSameCombo() {
         GuiActionRunner.execute(() -> {
             List<String> sampleContents = Arrays.asList("A", "B", "C");
@@ -147,8 +146,7 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         assertThat(getComboBoxItems("combo3")).containsExactly("A", "C");
     }
     
-    @Test
-    @GUITest
+    @Test @GUITest
     public void testCompetingBehaviorAcrossDifferentCombos() {
         GuiActionRunner.execute(() -> {
             List<String> sampleContents = Arrays.asList("A", "B", "C");
