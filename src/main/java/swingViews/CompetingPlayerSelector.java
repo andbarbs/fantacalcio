@@ -61,7 +61,7 @@ public class CompetingPlayerSelector extends JPanel {
 
 		// Set a fixed preferred and minimum size for this functional unit.
 		// These values (240x30) are just an example.
-		setPreferredSize(new Dimension(204, 68));
+		setPreferredSize(new Dimension(195, 68));
 		setMinimumSize(SWING_PLAYER_SELECTOR_DIM);
 	}
 
