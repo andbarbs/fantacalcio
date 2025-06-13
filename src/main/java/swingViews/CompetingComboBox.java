@@ -123,16 +123,12 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		this.competitors = Objects.requireNonNull(competitors);
 	}
 	
-	public static class CompetingComboBoxPool<E> extends ArrayList<CompetingComboBox<E>> {
-		private static final long serialVersionUID = 1L;
-
-		public void initializeCompetitionOnContents(List<E> contents) {
-			forEach(compCombo -> {
-				compCombo.setContents(contents);
-				compCombo.setCompetitors(this);
-			});
-		}
-		
+	public static <T> void initializeCompetition(
+			List<CompetingComboBox<T>> competitors, List<T> contents) {
+		competitors.forEach(compCombo -> {
+			compCombo.setContents(contents);
+			compCombo.setCompetitors(competitors);
+		});
 	}
 
 }
