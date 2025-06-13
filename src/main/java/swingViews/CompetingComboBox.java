@@ -105,7 +105,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		});
 	}
 	
-	public void setContents(List<E> contents) {		
+	void setContents(List<E> contents) {		
 		// initializes bookkeeping
 		contentPool = List.copyOf(contents);
 		currentSelection = -1;
@@ -119,8 +119,20 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		setSelectedIndex(-1); // this WILL trigger the Listener! - it HAS already been attached!!
 	}
 
-	public void setCompetitors(List<CompetingComboBox<E>> competitors) {
+	void setCompetitors(List<CompetingComboBox<E>> competitors) {
 		this.competitors = Objects.requireNonNull(competitors);
+	}
+	
+	public static class CompetingComboBoxPool<E> extends ArrayList<CompetingComboBox<E>> {
+		private static final long serialVersionUID = 1L;
+
+		public void initializeCompetitionOnContents(List<E> contents) {
+			forEach(compCombo -> {
+				compCombo.setContents(contents);
+				compCombo.setCompetitors(this);
+			});
+		}
+		
 	}
 
 }

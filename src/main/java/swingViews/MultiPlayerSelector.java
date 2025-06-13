@@ -3,9 +3,9 @@ package swingViews;
 import javax.swing.*;
 
 import domainModel.Player;
+import swingViews.CompetingComboBox.CompetingComboBoxPool;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MultiPlayerSelector extends JFrame {
@@ -50,10 +50,9 @@ public class MultiPlayerSelector extends JFrame {
         selectorsPanel.setPreferredSize(new Dimension(800, 600));
         
 
-        List<CompetingComboBox<Player>> competingCboxes = new ArrayList<>();
+        CompetingComboBoxPool<Player> competingCboxes = new CompetingComboBoxPool<Player>();
         
         CompetingPlayerSelector selector1 = new CompetingPlayerSelector();
-        selector1.getComboBox().setContents(allPlayers);
         competingCboxes.add(selector1.getComboBox());
         // Create and add selectors with updated GridBagConstraints:
         GridBagConstraints gbc_selector1 = new GridBagConstraints();
@@ -68,7 +67,6 @@ public class MultiPlayerSelector extends JFrame {
 
 
         CompetingPlayerSelector selector2 = new CompetingPlayerSelector();
-        selector2.getComboBox().setContents(allPlayers);
         competingCboxes.add(selector2.getComboBox());
         GridBagConstraints gbc_selector2 = new GridBagConstraints();
         gbc_selector2.gridx = 1;
@@ -82,7 +80,6 @@ public class MultiPlayerSelector extends JFrame {
 
 
         CompetingPlayerSelector selector3 = new CompetingPlayerSelector();
-        selector3.getComboBox().setContents(allPlayers);
         competingCboxes.add(selector3.getComboBox());
         GridBagConstraints gbc_selector3 = new GridBagConstraints();
         gbc_selector3.gridx = 0;
@@ -96,7 +93,6 @@ public class MultiPlayerSelector extends JFrame {
 
 
         CompetingPlayerSelector selector4 = new CompetingPlayerSelector();
-        selector4.getComboBox().setContents(allPlayers);
         competingCboxes.add(selector4.getComboBox());
         GridBagConstraints gbc_selector4 = new GridBagConstraints();
         gbc_selector4.gridx = 1;
@@ -108,7 +104,8 @@ public class MultiPlayerSelector extends JFrame {
         gbc_selector4.insets = new Insets(10, 10, 10, 10);
         selectorsPanel.add(selector4, gbc_selector4);
         
-        competingCboxes.forEach(compCombo -> compCombo.setCompetitors(competingCboxes));
+        // uses the CompetingComboBoxPool to initialize competition
+        competingCboxes.initializeCompetitionOnContents(allPlayers);
 
         
         layeredPane.add(selectorsPanel, Integer.valueOf(1)); // higher layer over background
