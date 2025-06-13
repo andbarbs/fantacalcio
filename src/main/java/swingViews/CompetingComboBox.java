@@ -52,7 +52,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		 * an event is fired on a ComboBox under these circumstances:
 		 * 		1) the user makes/updates their selection
 		 * 		
-		 * 		2) an entry is REMOVED from the underlying model, and no user selection exists
+		 * 		2) an entry is REMOVED from the underlying model AND no user selection exists
 		 * 
 		 * 		3) the selection is programmatically set to -1
 		 * 
@@ -62,41 +62,41 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("listener del cbox viene eseguito!");
 				
-				// this CBox has had a selection made
+				// this CBox has been given a selection
 				if (isPopupVisible() && getSelectedIndex() > -1) { 
 					
 					System.out.println("siamo dentro if");
 					
-					// a previous selection also existed
+					// adds back a previous selection to competitors
 					if (currentSelection != -1) { 
-						for (CompetingComboBox<E> competitor : competitors) {
+						competitors.forEach(competitor -> {
 							if (competitor != CompetingComboBox.this) {
 								competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
 							}
-						}
+						});
 					}
 					
-					// registers the current selection
+					// registers the bookkeeping current selection
 					currentSelection = mask.get(getSelectedIndex());
 					
-					// removes current selection from competing cboxes
-					for (CompetingComboBox<E> competitor : competitors) {
+					// removes current selection from competitors
+					competitors.forEach(competitor -> {
 						if (competitor != CompetingComboBox.this) {
 							competitor.evictFromComboBox(currentSelection);
 						}
-					}
+					});
 					
 					System.out.println("\n\n");
 				}
 				
-				// this CBox's selection has been reset
+				// this CBox's selection has been dropped
 				else if (getSelectedIndex() == -1 && currentSelection != -1) {
-					// adds cleared selection back into competing cboxes
-					for (CompetingComboBox<E> competitor : competitors) {
+					// adds cleared selection back to competitors
+					competitors.forEach(competitor -> {
 						if (competitor != CompetingComboBox.this) {
 							competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
 						}
-					}
+					});
 					
 					// clears the bookkeeping current selection
 					currentSelection = -1;
@@ -105,8 +105,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		});
 	}
 	
-	public void setContents(List<E> contents) {
-		
+	public void setContents(List<E> contents) {		
 		// initializes bookkeeping
 		contentPool = List.copyOf(contents);
 		currentSelection = -1;
@@ -115,6 +114,8 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 
 		// fills the cbox with initial contents
 		setModel(new DefaultComboBoxModel<>(new Vector<>(contents)));
+		
+		// sets the cbox's starting selection to none
 		setSelectedIndex(-1); // this WILL trigger the Listener! - it HAS already been attached!!
 	}
 
