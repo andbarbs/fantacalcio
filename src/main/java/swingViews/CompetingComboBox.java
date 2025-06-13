@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -19,7 +20,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 	private List<Integer> mask;
 
 	private List<E> contentPool;
-	private List<CompetingComboBox<E>> competitors;
+	private List<CompetingComboBox<E>> competitors = new ArrayList<>();
 
 	private void evictFromComboBox(Integer toBeEvicted) {
 		int pos = mask.indexOf(toBeEvicted);
@@ -118,7 +119,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 	}
 
 	public void setCompetitors(List<CompetingComboBox<E>> competitors) {
-		this.competitors = competitors;
+		this.competitors = Objects.requireNonNull(competitors);
 	}
 
 }

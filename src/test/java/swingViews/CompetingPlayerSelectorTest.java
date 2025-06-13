@@ -3,9 +3,6 @@ package swingViews;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 import org.assertj.swing.annotation.GUITest;
@@ -22,23 +19,21 @@ import org.junit.runner.RunWith;
 import domainModel.Player;
 
 @RunWith(GUITestRunner.class)
-public class SwingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
+public class CompetingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 
     private FrameFixture window;
 
     @Override
     public void onSetUp() {
         // Wrap the panel in a frame.
-		JFrame frame = GuiActionRunner.execute(() -> {
-			JComboBox<Player> comboBox = new JComboBox<Player>(
-					new Vector<>(List.of(
-							new Player.Goalkeeper("John", "Doe"), 
-							new Player.Defender("Jane", "Doe"))));
-			
+		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Construct the SwingPlayerSelector with the injected combo			
-			SwingPlayerSelector panel = new SwingPlayerSelector(comboBox);
+			CompetingPlayerSelector compPlayerSelector = new CompetingPlayerSelector();
+			compPlayerSelector.getComboBox().setContents(List.of(
+							new Player.Goalkeeper("Gigi", "Buffon"), 
+							new Player.Defender("Mario", "Rossi")));
 			JFrame f = new JFrame("Test Frame");
-			f.add(panel);
+			f.add(compPlayerSelector);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
