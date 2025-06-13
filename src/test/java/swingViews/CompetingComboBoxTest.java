@@ -49,23 +49,22 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         // Use GuiActionRunner.execute to ensure that the creation and
         // manipulation of Swing components happen on the Event Dispatch Thread.
         JFrame frame = GuiActionRunner.execute(() -> {
-            // Create an initially empty list; we will have each combo know about its competitors.
-            List<CompetingComboBox<String>> competitors = new ArrayList<>();
 
             // Instantiate the three combo boxes.
-            combo1 = new CompetingComboBox<>(competitors);
-            combo2 = new CompetingComboBox<>(competitors);
-            combo3 = new CompetingComboBox<>(competitors);
-
-            // Add the boxes to the shared competitors list. Order is important!
-            competitors.add(combo1);
-            competitors.add(combo2);
-            competitors.add(combo3);
-
+            combo1 = new CompetingComboBox<>();
+            combo2 = new CompetingComboBox<>();
+            combo3 = new CompetingComboBox<>();
+            
             // Give each combo box a name so that AssertJSwing can reference it.
             combo1.setName("combo1");
             combo2.setName("combo2");
             combo3.setName("combo3");
+
+            // Set each box's competitors
+            List<CompetingComboBox<String>> competitors = List.of(combo1, combo2, combo3);
+            combo1.setCompetitors(competitors);
+            combo2.setCompetitors(competitors);
+            combo3.setCompetitors(competitors);
 
             // Set up a simple frame that contains these combo boxes.
             JFrame frameContainer = new JFrame("Test Frame");

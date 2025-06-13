@@ -38,9 +38,8 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		model.insertElementAt(playerToBeInserted, insertionIndex);
 	}
 
-	public CompetingComboBox(List<CompetingComboBox<E>> competitorsList) {
+	public CompetingComboBox() {
 		super();
-		this.competitors = competitorsList;
 
 		// sets up the Combo without any contents
 		this.setModel(new DefaultComboBoxModel<E>());
@@ -116,6 +115,10 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		// fills the cbox with initial contents
 		setModel(new DefaultComboBoxModel<>(new Vector<>(contents)));
 		setSelectedIndex(-1); // this WILL trigger the Listener! - it HAS already been attached!!
+	}
+
+	public void setCompetitors(List<CompetingComboBox<E>> competitors) {
+		this.competitors = competitors;
 	}
 
 }
