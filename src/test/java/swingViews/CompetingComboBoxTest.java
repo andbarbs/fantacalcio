@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.ComboBoxModel;
@@ -61,7 +62,7 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
             combo3.setName("combo3");
 
             // Set each box's competitors
-            List<CompetingComboBox<String>> competitors = List.of(combo1, combo2, combo3);
+            Set<CompetingComboBox<String>> competitors = Set.of(combo1, combo2, combo3);
             combo1.setCompetitors(competitors);
             combo2.setCompetitors(competitors);
             combo3.setCompetitors(competitors);

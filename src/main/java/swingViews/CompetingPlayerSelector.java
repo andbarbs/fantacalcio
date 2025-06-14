@@ -55,7 +55,7 @@ public class CompetingPlayerSelector extends JPanel {
 		
 		// implements Button -> Combo Box interaction
 		resetButton.addActionListener(e -> {
-				getComboBox().setSelectedIndex(-1);
+				getCompetingComboBox().setSelectedIndex(-1);
 				resetButton.setEnabled(false);
 		});
 
@@ -65,7 +65,7 @@ public class CompetingPlayerSelector extends JPanel {
 		setMinimumSize(SWING_PLAYER_SELECTOR_DIM);
 	}
 
-	public CompetingComboBox<Player> getComboBox() {
+	public CompetingComboBox<Player> getCompetingComboBox() {
 		return comboBox;
 	}
 }

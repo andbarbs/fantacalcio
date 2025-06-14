@@ -29,7 +29,7 @@ public class CompetingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Construct the SwingPlayerSelector with the injected combo			
 			CompetingPlayerSelector compPlayerSelector = new CompetingPlayerSelector();
-			compPlayerSelector.getComboBox().setContents(List.of(
+			compPlayerSelector.getCompetingComboBox().setContents(List.of(
 							new Player.Goalkeeper("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
 			JFrame f = new JFrame("Test Frame");

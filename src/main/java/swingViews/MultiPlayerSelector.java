@@ -2,22 +2,18 @@ package swingViews;
 
 import javax.swing.*;
 
-import domainModel.Player;
-import swingViews.CompetingComboBox.CompetingComboBoxPool;
+import domainModel.Player.*;
+
+import static swingViews.CompetingComboBox.initializeCompetition;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MultiPlayerSelector extends JFrame {
-	private static final long serialVersionUID = 1L;
-
-	// The global pool of players
-	private final List<Player> allPlayers = List.of(
-			new Player.Forward("Lionel", "Messi"), 
-			new Player.Forward("Cristiano", "Ronaldo"), 
-			new Player.Goalkeeper("Gigi", "Buffon"));
-	
-	
+	private static final long serialVersionUID = 1L;	
 
 	public MultiPlayerSelector() {
         setTitle("Football Player Selector");
@@ -52,10 +48,8 @@ public class MultiPlayerSelector extends JFrame {
         selectorsPanel.setPreferredSize(new Dimension(800, 600));
         
 
-        CompetingComboBoxPool<Player> competingCboxes = new CompetingComboBoxPool<Player>();
-        
+        // Goalkeeper selectors
         CompetingPlayerSelector goalieSelector = new CompetingPlayerSelector();
-        competingCboxes.add(goalieSelector.getComboBox());
         // Create and add selectors with updated GridBagConstraints:
         GridBagConstraints gbc_goalieSelector = new GridBagConstraints();
         gbc_goalieSelector.gridx = 0;
@@ -67,6 +61,14 @@ public class MultiPlayerSelector extends JFrame {
         gbc_goalieSelector.insets = new Insets(10, 10, 10, 10); // optional padding
         selectorsPanel.add(goalieSelector, gbc_goalieSelector);
         
+		initializeCompetition(
+				Set.of(goalieSelector.getCompetingComboBox()),
+				List.of(new Goalkeeper("Gigi", "Buffon"), 
+						new Goalkeeper("Manuel", "Neuer"),
+						new Goalkeeper("Jan", "Oblak"), 
+						new Goalkeeper("Alisson", "Becker")));
+        
+        // Defender selectors
         JPanel defendersPanel = new JPanel();
         defendersPanel.setOpaque(false);
         defendersPanel.setBackground(new Color(238, 238, 238));
@@ -81,7 +83,7 @@ public class MultiPlayerSelector extends JFrame {
         gbl_defendersPanel.rowHeights = new int[]{0, 0, 0};
         gbl_defendersPanel.columnWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0, Double.MIN_VALUE};
         gbl_defendersPanel.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-        defendersPanel.setLayout(gbl_defendersPanel);
+        defendersPanel.setLayout(gbl_defendersPanel);        
         
         CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector();
         GridBagConstraints gbc_defSelector1 = new GridBagConstraints();
@@ -110,6 +112,20 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector4.gridy = 1;
         defendersPanel.add(defSelector4, gbc_defSelector4);
         
+		initializeCompetition(
+				Stream.of(defSelector1, defSelector2, defSelector3, defSelector4)
+                	.map(CompetingPlayerSelector::getCompetingComboBox)
+                	.collect(Collectors.toSet()),
+                List.of(
+                	    new Defender("Sergio", "Ramos"),
+                	    new Defender("Virgil", "van Dijk"),
+                	    new Defender("Gerard", "Piqué"),
+                	    new Defender("Thiago", "Silva"),
+                	    new Defender("Giorgio", "Chiellini")
+                	));
+        
+        
+        // Midfielder selectors
         JPanel midfieldersPanel = new JPanel();
         midfieldersPanel.setOpaque(false);
         GridBagConstraints gbc_midfieldersPanel = new GridBagConstraints();
@@ -147,6 +163,17 @@ public class MultiPlayerSelector extends JFrame {
         gbc_midSelector3.gridy = 0;
         midfieldersPanel.add(midSelector3, gbc_midSelector3);
         
+		initializeCompetition(
+				Stream.of(midSelector1, midSelector2, midSelector3)
+                	.map(CompetingPlayerSelector::getCompetingComboBox)
+                	.collect(Collectors.toSet()),
+				List.of(new Midfielder("Luka", "Modrić"), 
+						new Midfielder("Kevin", "De Bruyne"),
+						new Midfielder("N'Golo", "Kanté"), 
+						new Midfielder("Andrés", "Iniesta"),
+						new Midfielder("Toni", "Kroos")));
+        
+        // Forwards selector
         JPanel forwardsPanel = new JPanel();
         forwardsPanel.setOpaque(false);
         GridBagConstraints gbc_forwardsPanel = new GridBagConstraints();
@@ -183,11 +210,16 @@ public class MultiPlayerSelector extends JFrame {
         gbc_forwSelector3.gridx = 2;
         gbc_forwSelector3.gridy = 0;
         forwardsPanel.add(forwSelector3, gbc_forwSelector3);
-        competingCboxes.add(forwSelector3.getComboBox());
         
-        // uses the CompetingComboBoxPool to initialize competition
-        competingCboxes.initializeCompetitionOnContents(allPlayers);
-
+		initializeCompetition(
+				Stream.of(forwSelector1, forwSelector2, forwSelector3)
+					.map(CompetingPlayerSelector::getCompetingComboBox)
+					.collect(Collectors.toSet()),
+				List.of(new Forward("Lionel", "Messi"), 
+						new Forward("Cristiano", "Ronaldo"),
+						new Forward("Neymar", "Jr"), 
+						new Forward("Kylian", "Mbappé"),
+						new Forward("Robert", "Lewandowski")));
         
         layeredPane.add(selectorsPanel, Integer.valueOf(1)); // higher layer over background
         // Finally add the layeredPane to the frame.
