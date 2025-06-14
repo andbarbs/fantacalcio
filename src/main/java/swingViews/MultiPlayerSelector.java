@@ -79,14 +79,15 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defendersPanel.gridy = 1;
         selectorsPanel.add(defendersPanel, gbc_defendersPanel);
         GridBagLayout gbl_defendersPanel = new GridBagLayout();
-        gbl_defendersPanel.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
+        gbl_defendersPanel.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
         gbl_defendersPanel.rowHeights = new int[]{0, 0, 0};
-        gbl_defendersPanel.columnWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0, Double.MIN_VALUE};
+        gbl_defendersPanel.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
         gbl_defendersPanel.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
         defendersPanel.setLayout(gbl_defendersPanel);        
         
         CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector();
         GridBagConstraints gbc_defSelector1 = new GridBagConstraints();
+        gbc_defSelector1.gridwidth = 2;
         gbc_defSelector1.insets = new Insets(0, 0, 5, 5);
         gbc_defSelector1.gridx = 1;
         gbc_defSelector1.gridy = 0;
@@ -94,13 +95,15 @@ public class MultiPlayerSelector extends JFrame {
         
         CompetingPlayerSelector defSelector2 = new CompetingPlayerSelector();
         GridBagConstraints gbc_defSelector2 = new GridBagConstraints();
+        gbc_defSelector2.gridwidth = 2;
         gbc_defSelector2.insets = new Insets(0, 0, 5, 5);
-        gbc_defSelector2.gridx = 2;
+        gbc_defSelector2.gridx = 3;
         gbc_defSelector2.gridy = 0;
         defendersPanel.add(defSelector2, gbc_defSelector2);
         
         CompetingPlayerSelector defSelector3 = new CompetingPlayerSelector();
         GridBagConstraints gbc_defSelector3 = new GridBagConstraints();
+        gbc_defSelector3.gridwidth = 2;
         gbc_defSelector3.insets = new Insets(0, 0, 0, 5);
         gbc_defSelector3.gridx = 0;
         gbc_defSelector3.gridy = 1;
@@ -108,6 +111,7 @@ public class MultiPlayerSelector extends JFrame {
         
         CompetingPlayerSelector defSelector4 = new CompetingPlayerSelector();
         GridBagConstraints gbc_defSelector4 = new GridBagConstraints();
+        gbc_defSelector4.gridwidth = 2;
         gbc_defSelector4.gridx = 4;
         gbc_defSelector4.gridy = 1;
         defendersPanel.add(defSelector4, gbc_defSelector4);
@@ -183,14 +187,15 @@ public class MultiPlayerSelector extends JFrame {
         selectorsPanel.add(forwardsPanel, gbc_forwardsPanel);
         GridBagLayout gbl_forwardsPanel = new GridBagLayout();
         gbl_forwardsPanel.columnWidths = new int[]{0, 0, 0, 0};
-        gbl_forwardsPanel.rowHeights = new int[]{0, 0};
+        gbl_forwardsPanel.rowHeights = new int[]{0, 0, 0, 0};
         gbl_forwardsPanel.columnWeights = new double[]{1.0, 1.0, 1.0, Double.MIN_VALUE};
-        gbl_forwardsPanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+        gbl_forwardsPanel.rowWeights = new double[]{1.0, 1.0, 1.0, Double.MIN_VALUE};
         forwardsPanel.setLayout(gbl_forwardsPanel);
         
         CompetingPlayerSelector forwSelector1 = new CompetingPlayerSelector();
         GridBagConstraints gbc_forwSelector1 = new GridBagConstraints();
-        gbc_forwSelector1.insets = new Insets(0, 0, 0, 5);
+        gbc_forwSelector1.gridheight = 2;
+        gbc_forwSelector1.insets = new Insets(0, 0, 5, 5);
         gbc_forwSelector1.fill = GridBagConstraints.HORIZONTAL;
         gbc_forwSelector1.gridx = 0;
         gbc_forwSelector1.gridy = 0;
@@ -198,15 +203,18 @@ public class MultiPlayerSelector extends JFrame {
         
         CompetingPlayerSelector forwSelector2 = new CompetingPlayerSelector();
         GridBagConstraints gbc_forwSelector2 = new GridBagConstraints();
+        gbc_forwSelector2.gridheight = 2;
         gbc_forwSelector2.insets = new Insets(0, 0, 0, 5);
         gbc_forwSelector2.fill = GridBagConstraints.HORIZONTAL;
         gbc_forwSelector2.gridx = 1;
-        gbc_forwSelector2.gridy = 0;
+        gbc_forwSelector2.gridy = 1;
         forwardsPanel.add(forwSelector2, gbc_forwSelector2);
 
 
         CompetingPlayerSelector forwSelector3 = new CompetingPlayerSelector();
         GridBagConstraints gbc_forwSelector3 = new GridBagConstraints();
+        gbc_forwSelector3.gridheight = 2;
+        gbc_forwSelector3.insets = new Insets(0, 0, 5, 0);
         gbc_forwSelector3.gridx = 2;
         gbc_forwSelector3.gridy = 0;
         forwardsPanel.add(forwSelector3, gbc_forwSelector3);
