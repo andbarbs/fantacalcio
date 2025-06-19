@@ -37,17 +37,17 @@ public class LineUpViewer {
     }
 
  // Extractors for Starters
-    
- 	public Set<Goalkeeper> starterGoalkeepers() {
- 		Set<Goalkeeper> result = new HashSet<Goalkeeper>();
- 		visitStarterPlayers(new PlayerVisitorAdapter() {
- 			@Override
- 			public void visitGoalkeeper(Goalkeeper goalkeeper) {
- 				result.add(goalkeeper);
- 			}
- 		});
- 		return result;
- 	}
+
+    public Set<Goalkeeper> starterGoalkeepers() {
+        Set<Goalkeeper> result = new HashSet<Goalkeeper>();
+        visitStarterPlayers(new PlayerVisitorAdapter() {
+            @Override
+            public void visitGoalkeeper(Goalkeeper goalkeeper) {
+                result.add(goalkeeper);
+            }
+        });
+        return result;
+    }
 
 
      public Set<Defender> starterDefenders() {

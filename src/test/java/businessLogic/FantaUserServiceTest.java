@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 
+import domainModel.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,17 +19,11 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.answer;
 
-import domainModel.Contract;
-import domainModel.FantaTeam;
-import domainModel.League;
-import domainModel.Match;
-import domainModel.MatchDaySerieA;
-import domainModel.NewsPaper;
-import domainModel.User;
+import domainModel.FantaUser;
 import jakarta.persistence.EntityManager;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class FantaUserServiceTest {
 
     @Mock
     private MatchRepository matchRepository;
@@ -68,8 +63,8 @@ public class UserServiceTest {
 
     @Test
     void testGetAllMatches_delegatesToRepository() {
-        User user = new User("testMail", "password");
-        League league = new League(user, "testLeague", new NewsPaper("gazzetta"), "001");
+        FantaUser fantaUser = new FantaUser("testMail", "password");
+        League league = new League(fantaUser, "testLeague", new NewsPaper("gazzetta"), "001");
         MatchDaySerieA matchDay = new MatchDaySerieA("giornata1", LocalDate.of(2020, 01, 01));
         Set<Contract> contractsA = new HashSet<>();
         Set<Contract> contractsB = new HashSet<>();
@@ -77,8 +72,8 @@ public class UserServiceTest {
         expectedMatches.put(matchDay, new HashSet<Match>(List.of(
         		new Match(
         				matchDay, 
-        				new FantaTeam("TeamA", league, 10, user, contractsA), 
-        				new FantaTeam("TeamB", league, 10, user, contractsB)))));
+        				new FantaTeam("TeamA", league, 10, fantaUser, contractsA),
+        				new FantaTeam("TeamB", league, 10, fantaUser, contractsB)))));
         //TODO controlla che un user ha due team
 
         // Stub the repository call

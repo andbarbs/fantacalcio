@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class User {
+public class FantaUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,8 +17,8 @@ public class User {
     @Basic(optional=false)
     public String password;
 
-    protected User() {}
-    public User(String email, String password) {
+    protected FantaUser() {}
+    public FantaUser(String email, String password) {
         this.email = email;
         this.password = password;
     }
@@ -26,8 +26,8 @@ public class User {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(email, user.email) && Objects.equals(password, user.password);
+        FantaUser fantaUser = (FantaUser) o;
+        return Objects.equals(email, fantaUser.email) && Objects.equals(password, fantaUser.password);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package businessLogic;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import domainModel.*;
@@ -21,6 +18,10 @@ public class UserService {
 	public League existingLeague(String leagueName) {
 		return transactionManager.fromTransaction(
 				(context) -> context.getLeagueRepository().getLeagueByCode(leagueName));
+	}
+
+	public void joinLeague(FantaTeam fantaTeam) {
+		 transactionManager.inTransaction((context) -> context.getTeamRepository().saveTeam(fantaTeam));
 	}
 
 	// Matches
@@ -107,5 +108,56 @@ public class UserService {
 		return transactionManager.fromTransaction(
 				(context) -> context.getGradeRepository().getAllMatchGrades(match, league));
 	}
+
+	//Results
+
+	public Result getResultByMatch(League league, Match match) {
+		return transactionManager.fromTransaction((context)-> context.getResultsRepository().getResult(match));
+
+	}
+	//TODO spostarlo nell'admin service
+// va nell'admin
+/*	public void saveResult(Result result) {
+		transactionManager.inTransaction((context) -> context.getResultsRepository().saveResult(result));
+	}
+*/
+	public Optional<LineUp> getLineUpByMatch(League league, Match match, FantaTeam fantaTeam) {
+		return transactionManager.fromTransaction((context) ->
+				context.getLineUpRepository().getLineUpByMatchAndTeam(league, match, fantaTeam));
+    }
+
+	public void saveLineUp(LineUp lineUp){
+		transactionManager.inTransaction((context)-> {
+			FantaTeam team = lineUp.getTeam();
+			LineUpViewer lineUpViewer = lineUp.extract();
+			FantaTeamViewer teamViewer = new FantaTeamViewer(team);
+
+			// Collect all players from the LineUp
+			Set<Player> allPlayers = new HashSet<>();
+			allPlayers.addAll(lineUpViewer.starterGoalkeepers());
+			allPlayers.addAll(lineUpViewer.starterDefenders());
+			allPlayers.addAll(lineUpViewer.starterMidfielders());
+			allPlayers.addAll(lineUpViewer.starterForwards());
+			allPlayers.addAll(lineUpViewer.substituteGoalkeepers());
+			allPlayers.addAll(lineUpViewer.substituteDefenders());
+			allPlayers.addAll(lineUpViewer.substituteMidfielders());
+			allPlayers.addAll(lineUpViewer.substituteForwards());
+
+			// Collect all players contracted to the team
+			Set<Player> teamPlayers = new HashSet<>();
+			teamPlayers.addAll(teamViewer.goalkeepers());
+			teamPlayers.addAll(teamViewer.defenders());
+			teamPlayers.addAll(teamViewer.midfielders());
+			teamPlayers.addAll(teamViewer.forwards());
+
+			// Validate ownership
+			for (Player player : allPlayers) {
+				if (!teamPlayers.contains(player)) {
+					throw new IllegalArgumentException("Player " + player + " does not belong to FantaTeam " + team.getName());
+				}
+			}
+			context.getLineUpRepository().saveLineUp(lineUp);});
+	}
+
 
 }

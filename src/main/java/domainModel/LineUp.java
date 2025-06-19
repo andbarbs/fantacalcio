@@ -1,6 +1,7 @@
 package domainModel;
 
 import jakarta.persistence.*;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,13 +17,15 @@ public abstract class LineUp {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Match match;
+	@JoinColumn(name = LineUp_.MATCH)
+	private Match match;
     
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private FantaTeam team;
+	@JoinColumn(name = LineUp_.TEAM)
+	private FantaTeam team;
     
     // qui va inserito  CASCADING!!!
-    @OneToMany(mappedBy = Fielding_.LINE_UP)
+	@OneToMany(mappedBy = Fielding_.LINE_UP, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Fielding> fieldings;
 
     protected LineUp() {}

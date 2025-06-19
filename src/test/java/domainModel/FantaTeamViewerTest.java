@@ -52,7 +52,7 @@ public class FantaTeamViewerTest {
         Set<Contract> contracts = new HashSet<>();
 
         // Create FantaTeam (with new League() and new User() for simplicity)
-        FantaTeam team = new FantaTeam("Elite Team", new League(), 0, new User(), contracts);
+        FantaTeam team = new FantaTeam("Elite Team", new League(), 0, new FantaUser(), contracts);
 
         // Add contracts.
         contracts.addAll(Stream.of(

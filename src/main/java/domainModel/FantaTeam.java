@@ -21,14 +21,14 @@ public class FantaTeam {
     private int points;
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    private User fantaManager;
+    private FantaUser fantaManager;
     
     // qui va inserito  CASCADING!!!
     @OneToMany(mappedBy = Contract_.TEAM)
     private Set<Contract> contracts;
 
     protected FantaTeam() {}
-    public FantaTeam(String name, League league, int points, User fantaManager, Set<Contract> contracts) {
+    public FantaTeam(String name, League league, int points, FantaUser fantaManager, Set<Contract> contracts) {
         this.name = name;
         this.league = league;
         this.points = points;
@@ -45,7 +45,7 @@ public class FantaTeam {
         return points;
     }
 
-    public User getFantaManager() {
+    public FantaUser getFantaManager() {
         return fantaManager;
     }
 
@@ -56,7 +56,11 @@ public class FantaTeam {
     public Set<Contract> getContracts() {
 		return contracts;
 	}
-    
+
+    public void setContracts(Set<Contract> contracts) {
+        this.contracts = contracts;
+    }
+
     // entry point for strongly-typed Player lookup
     public FantaTeamViewer extract() {
     	return new FantaTeamViewer(this);
