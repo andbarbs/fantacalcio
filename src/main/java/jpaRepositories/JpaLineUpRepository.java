@@ -30,6 +30,7 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
 
     }
 
+    // TODO la Lega in argomento è necessaria? (un Team appartiene ad una sola lega)
     @Override
     public Optional<LineUp> getLineUpByMatchAndTeam(League league, Match match, FantaTeam fantaTeam) {
         EntityManager em = getEntityManager();

@@ -15,10 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
 
 class JpaLineUpRepositoryTest {
 
@@ -111,18 +108,16 @@ class JpaLineUpRepositoryTest {
 				m1, m2, m3, m4,
 				f1, f2, f3, f4
 		);
+		
 		players.forEach(entityManager::persist);
 
 		// Contracts and FantaTeam
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, null);
-		Set<Contract> contracts = players.stream()
-				.map(p -> new Contract(team, p)) // temporary null, patched below
-				.collect(Collectors.toSet());
-		team.setContracts(contracts);
-
+		Set<Contract> contracts = new HashSet<Contract>();
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, contracts);
+		players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
 
 		entityManager.persist(team);
-		contracts.forEach(entityManager::persist);
+		contracts.forEach(entityManager::persist);   // no cascading on FantaTeam?
 
 		// Opponent and Match
 		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
@@ -134,8 +129,8 @@ class JpaLineUpRepositoryTest {
 		Match match = new Match(matchDay, team, opponent);
 		entityManager.persist(match);
 
-		// Build LineUp with starters and substitutes
-		_433LineUp lineUp = new _433LineUp._443LineUpBuilder(match, team)
+		// Build LineUp with starters and substitutes, save and commit
+		lineUpRepository.saveLineUp(new _433LineUp._443LineUpBuilder(match, team)
 				.withGoalkeeper(gk1)
 				.withDefenders(d1, d2, d3, d4)
 				.withMidfielders(m1, m2, m3)
@@ -144,54 +139,57 @@ class JpaLineUpRepositoryTest {
 				.withSubstituteDefenders(List.of(d5))
 				.withSubstituteMidfielders(List.of(m4))
 				.withSubstituteForwards(List.of(f4))
-				.build();
-
-		// Save and commit
-		lineUpRepository.saveLineUp(lineUp);
+				.build());
 		entityManager.getTransaction().commit();
-		entityManager.clear();
+		entityManager.clear();   // the Session is not closed! SUT instance is still used for verifications
 
 		// Verify
 		Optional<LineUp> retrieved = lineUpRepository.getLineUpByMatchAndTeam(league, match, team);
 		assertThat(retrieved).isPresent();
-		LineUp persisted = retrieved.get();
+		
+		LineUp persistedLineUp = retrieved.get();
+		assertThat(persistedLineUp.getMatch()).isEqualTo(match);
+		assertThat(persistedLineUp.getTeam()).isEqualTo(team);
 
-		assertThat(persisted.getMatch()).isEqualTo(match);
-		assertThat(persisted.getTeam()).isEqualTo(team);
-
-		// Extract the LineUpViewer instance
-		LineUpViewer viewer = lineUp.extract();
-
-		// Validate starters:
-		// Since there's only one goalkeeper, using containsExactly is fine.
-		assertThat(viewer.starterGoalkeepers()).containsExactly(gk1);
-		// For defenders, midfielders, and forwards which are returned as Sets,
-		// the order is not guaranteed; therefore, containsExactlyInAnyOrder is safer.
-		assertThat(viewer.starterDefenders()).containsExactlyInAnyOrder(d1, d2, d3, d4);
-		assertThat(viewer.starterMidfielders()).containsExactlyInAnyOrder(m1, m2, m3);
-		assertThat(viewer.starterForwards()).containsExactlyInAnyOrder(f1, f2, f3);
+		// Validate starters
+		assertThat(persistedLineUp.extract().starterGoalkeepers()).containsExactly(gk1);
+		assertThat(persistedLineUp.extract().starterDefenders()).containsExactlyInAnyOrder(d1, d2, d3, d4);
+		assertThat(persistedLineUp.extract().starterMidfielders()).containsExactlyInAnyOrder(m1, m2, m3);
+		assertThat(persistedLineUp.extract().starterForwards()).containsExactlyInAnyOrder(f1, f2, f3);
 
 		// Validate substitutes (which are returned as Lists, and ordering may be significant)
-		assertThat(viewer.substituteGoalkeepers()).containsExactly(gk2);
-		assertThat(viewer.substituteDefenders()).containsExactly(d5);
-		assertThat(viewer.substituteMidfielders()).containsExactly(m4);
-		assertThat(viewer.substituteForwards()).containsExactly(f4);
+		assertThat(persistedLineUp.extract().substituteGoalkeepers()).containsExactly(gk2);
+		assertThat(persistedLineUp.extract().substituteDefenders()).containsExactly(d5);
+		assertThat(persistedLineUp.extract().substituteMidfielders()).containsExactly(m4);
+		assertThat(persistedLineUp.extract().substituteForwards()).containsExactly(f4);
 	}
-
-	}
-/*
+	
 	@Test
 	@DisplayName("getLineUpByMatchAndTeam should return empty if no lineup exists")
 	void testGetLineUpByMatchAndTeamEmpty() {
 		entityManager.getTransaction().begin();
 
-		League league = new League("Serie A");
-		Match match = new Match(1, "Matchday 1", league);
-		FantaTeam team = new FantaTeam("Team B", league);
-
+		// League and manager
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		entityManager.persist(manager);
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		entityManager.persist(newsPaper);
+		League league = new League(manager, "Serie A", newsPaper, "code");
 		entityManager.persist(league);
-		entityManager.persist(match);
+
+		// Contracts and FantaTeam
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, new HashSet<Contract>());
 		entityManager.persist(team);
+
+		// Opponent and Match
+		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
+		entityManager.persist(opponent);
+
+		MatchDaySerieA matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
+		entityManager.persist(matchDay);
+
+		Match match = new Match(matchDay, team, opponent);
+		entityManager.persist(match);
 
 		entityManager.getTransaction().commit();
 
@@ -199,4 +197,3 @@ class JpaLineUpRepositoryTest {
 		assertThat(result).isEmpty();
 	}
 }
-*/
