@@ -16,10 +16,15 @@ public class UserService {
 	}
 
 	// League
-//TODO aggiungi getLeaguesByUser
 	public Optional<League> existingLeague(String leagueCode) {
 		return transactionManager.fromTransaction(
 				(context) -> context.getLeagueRepository().getLeagueByCode(leagueCode));
+	}
+
+	public Set<League> getLeaguesByUser(FantaUser user) {
+		return transactionManager.fromTransaction((context) ->
+			context.getLeagueRepository().getLeaguesByUser(user));
+
 	}
 
 	public void createLeague(String leagueName, FantaUser fantaUser, NewsPaper newsPaper, String leagueCode) {
