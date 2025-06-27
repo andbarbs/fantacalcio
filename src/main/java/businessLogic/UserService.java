@@ -169,7 +169,7 @@ public class UserService {
 				}
 			}
 			
-			if(getLineUpByMatch(team.getLeague(), match, team) != null)
+			if(getLineUpByMatch(team.getLeague(), match, team).isPresent())
 				context.getLineUpRepository().deleteLineUp(lineUp);
 			
 			context.getLineUpRepository().saveLineUp(lineUp);});
