@@ -33,6 +33,25 @@ public class UserService {
 				(context) -> context.getMatchRepository().getAllMatches(league));
 	}
 
+	public Match getNextMatch(League league, FantaTeam fantaTeam, LocalDate date) {
+		return transactionManager.fromTransaction((context) -> {
+			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
+			if (previousMatchDay.isPresent()) {
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league, fantaTeam);
+				Optional<Result> result = context.getResultsRepository().getResult(previousMatch);
+				if(result.isEmpty()){
+					throw new RuntimeException("The results for the previous match have not been calculated yet");
+				}
+			}
+			Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
+			if(nextMatchDay.isEmpty()){
+				throw new RuntimeException("The league ended");
+			}else{
+				return context.getMatchRepository().getMatchByMatchDay(nextMatchDay.get(), league, fantaTeam);
+			}
+		});
+	}
+
 	// Players
 
 	public List<Player> getAllPlayers() {
@@ -113,7 +132,7 @@ public class UserService {
 
 	//Results
 
-	public Result getResultByMatch(League league, Match match) {
+	public Optional<Result> getResultByMatch(League league, Match match) {
 		return transactionManager.fromTransaction((context)-> context.getResultsRepository().getResult(match));
 
 	}
@@ -169,7 +188,7 @@ public class UserService {
 				}
 			}
 			
-			if(getLineUpByMatch(team.getLeague(), match, team) != null)
+			if(getLineUpByMatch(team.getLeague(), match, team).isPresent())
 				context.getLineUpRepository().deleteLineUp(lineUp);
 			
 			context.getLineUpRepository().saveLineUp(lineUp);});
