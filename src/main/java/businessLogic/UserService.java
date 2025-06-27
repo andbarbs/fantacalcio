@@ -1,5 +1,7 @@
 package businessLogic;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,11 +128,21 @@ public class UserService {
 				context.getLineUpRepository().getLineUpByMatchAndTeam(league, match, fantaTeam));
     }
 
-	public void saveLineUp(LineUp lineUp){
+	public void saveLineUp(LineUp lineUp, LocalDate today){
 		transactionManager.inTransaction((context)-> {
+			
+			DayOfWeek day = today.getDayOfWeek();
+			
+			Match match = lineUp.getMatch();
+			if(today.isAfter(match.getMatchDaySerieA().getDate()))
+				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
+			
+			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
+				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
+			
 			FantaTeam team = lineUp.getTeam();
 			LineUpViewer lineUpViewer = lineUp.extract();
-			FantaTeamViewer teamViewer = new FantaTeamViewer(team);
+			FantaTeamViewer teamViewer = new FantaTeamViewer(team);	
 
 			// Collect all players from the LineUp
 			Set<Player> allPlayers = new HashSet<>();
@@ -156,6 +168,10 @@ public class UserService {
 					throw new IllegalArgumentException("Player " + player + " does not belong to FantaTeam " + team.getName());
 				}
 			}
+			
+			if(getLineUpByMatch(team.getLeague(), match, team) != null)
+				context.getLineUpRepository().deleteLineUp(lineUp);
+			
 			context.getLineUpRepository().saveLineUp(lineUp);});
 	}
 
