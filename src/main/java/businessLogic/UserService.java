@@ -16,10 +16,22 @@ public class UserService {
 	}
 
 	// League
-
-	public League existingLeague(String leagueName) {
+//TODO aggiungi getLeaguesByUser
+	public Optional<League> existingLeague(String leagueCode) {
 		return transactionManager.fromTransaction(
-				(context) -> context.getLeagueRepository().getLeagueByCode(leagueName));
+				(context) -> context.getLeagueRepository().getLeagueByCode(leagueCode));
+	}
+
+	public void createLeague(String leagueName, FantaUser fantaUser, NewsPaper newsPaper, String leagueCode) {
+		transactionManager.inTransaction((context) -> {
+			if(existingLeague(leagueCode).isEmpty()) {
+				League league = new League(fantaUser, leagueName, newsPaper, leagueCode);
+				context.getLeagueRepository().addLeague(league);
+			}else{
+				throw new IllegalArgumentException("A league with the same league code already exists");
+			}
+
+		});
 	}
 
 	public void joinLeague(FantaTeam fantaTeam) {

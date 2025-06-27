@@ -2,10 +2,12 @@ package businessLogic.repositories;
 
 import domainModel.League;
 
+import java.util.Optional;
+
 public interface LeagueRepository {
 
-	League getLeagueByCode(String leagueCode);
+	Optional<League> getLeagueByCode(String leagueCode);
 
-	boolean add(League league);
+	boolean addLeague(League league);
 
 }
