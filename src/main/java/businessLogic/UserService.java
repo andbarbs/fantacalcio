@@ -113,7 +113,7 @@ public class UserService {
 
 	//Results
 
-	public Result getResultByMatch(League league, Match match) {
+	public Optional<Result>  getResultByMatch(League league, Match match) {
 		return transactionManager.fromTransaction((context)-> context.getResultsRepository().getResult(match));
 
 	}
@@ -135,7 +135,7 @@ public class UserService {
 			
 			Match match = lineUp.getMatch();
 			if(today.isAfter(match.getMatchDaySerieA().getDate()))
-				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
+				throw new UnsupportedOperationException("Can't modify the lineup after the end of the match");
 			
 			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
