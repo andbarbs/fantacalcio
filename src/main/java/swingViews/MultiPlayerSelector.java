@@ -148,7 +148,6 @@ public class MultiPlayerSelector extends JFrame {
         CompetingPlayerSelector midSelector1 = new CompetingPlayerSelector();
         GridBagConstraints gbc_midSelector1 = new GridBagConstraints();
         gbc_midSelector1.insets = new Insets(0, 0, 0, 5);
-        gbc_midSelector1.fill = GridBagConstraints.HORIZONTAL;
         gbc_midSelector1.gridx = 0;
         gbc_midSelector1.gridy = 0;
         midfieldersPanel.add(midSelector1, gbc_midSelector1);
@@ -156,7 +155,6 @@ public class MultiPlayerSelector extends JFrame {
         CompetingPlayerSelector midSelector2 = new CompetingPlayerSelector();
         GridBagConstraints gbc_midSelector2 = new GridBagConstraints();
         gbc_midSelector2.insets = new Insets(0, 0, 0, 5);
-        gbc_midSelector2.fill = GridBagConstraints.HORIZONTAL;
         gbc_midSelector2.gridx = 1;
         gbc_midSelector2.gridy = 0;
         midfieldersPanel.add(midSelector2, gbc_midSelector2);
@@ -196,7 +194,6 @@ public class MultiPlayerSelector extends JFrame {
         GridBagConstraints gbc_forwSelector1 = new GridBagConstraints();
         gbc_forwSelector1.gridheight = 2;
         gbc_forwSelector1.insets = new Insets(0, 0, 5, 5);
-        gbc_forwSelector1.fill = GridBagConstraints.HORIZONTAL;
         gbc_forwSelector1.gridx = 0;
         gbc_forwSelector1.gridy = 0;
         forwardsPanel.add(forwSelector1, gbc_forwSelector1);
@@ -205,7 +202,6 @@ public class MultiPlayerSelector extends JFrame {
         GridBagConstraints gbc_forwSelector2 = new GridBagConstraints();
         gbc_forwSelector2.gridheight = 2;
         gbc_forwSelector2.insets = new Insets(0, 0, 0, 5);
-        gbc_forwSelector2.fill = GridBagConstraints.HORIZONTAL;
         gbc_forwSelector2.gridx = 1;
         gbc_forwSelector2.gridy = 1;
         forwardsPanel.add(forwSelector2, gbc_forwSelector2);
