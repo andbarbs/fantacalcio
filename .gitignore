@@ -36,6 +36,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+
 /bin/
 /.apt_generated_tests/
 /failed-gui-tests/
