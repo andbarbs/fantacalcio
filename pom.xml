@@ -155,13 +155,14 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>src/test/gui-resources</source>
+								<source>src/test/test-gui-resources</source>
 							</sources>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
+		
 		<resources>
 			<!-- default Maven resource folder, gets treated with exclusion in Eclipse -->
 			<resource> <directory>src/main/resources</directory> </resource>
@@ -177,7 +178,7 @@
 			<testResource> <directory>src/test/resources</directory> </testResource>
 			<!-- test GUI assets without exclusion -->
 			<testResource>
-				<directory>src/test/gui-resources</directory>
+				<directory>src/test/test-gui-resources</directory>
 				<targetPath>images</targetPath>
 				<filtering>false</filtering>
 			</testResource>
