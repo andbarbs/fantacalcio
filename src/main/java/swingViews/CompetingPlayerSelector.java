@@ -55,6 +55,25 @@ public class CompetingPlayerSelector extends JPanel {
 		panel.setLayout(gbl_panel);
 		
 		comboBox = new CompetingComboBox<Player>();
+		comboBox.setRenderer(new DefaultListCellRenderer() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
+						cellHasFocus);
+				// For the field display (index == -1) and null value, just show an empty string
+				if (index == -1 && value == null)
+					label.setText("");
+				else {
+					Player p = (Player) value;
+					label.setText(p.getName() + " " + p.getSurname());
+				}
+
+				return label;
+			}
+		});
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
 		gbc_comboBox.anchor = GridBagConstraints.SOUTH;
 		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
