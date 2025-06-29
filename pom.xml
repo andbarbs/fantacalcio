@@ -28,7 +28,8 @@
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
-				<version>5.9.2</version> <!-- or another version compatible with Mockito's requirements -->
+				<version>5.9.2</version> <!-- or another version compatible with
+				Mockito's requirements -->
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -91,6 +92,7 @@
 
 	<build>
 		<plugins>
+			<!-- 1. Compile + JPA‐Metamodel generation -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -107,7 +109,29 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<!-- 2. Add that generated folder as a “real” source root for both CLI & m2e -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>add-generated-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>
+									${project.build.directory}/generated-sources/annotations</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
 
 </project>
