@@ -49,6 +49,10 @@ public class CompetingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
         // Get the fixtures for the combo box and reset button.
         JComboBoxFixture comboBoxFixture = window.comboBox();
         JButtonFixture resetButtonFixture = window.button(JButtonMatcher.withText("Reset"));
+        
+        // Verify the appearance of combo options
+        assertThat(comboBoxFixture.contents()).containsExactly(
+        		"Gigi Buffon", "Mario Rossi");
 
         // Initially, no selection has been made so the reset button should be disabled.
         assertThat(comboBoxFixture.target().getSelectedIndex()).isEqualTo(-1);
