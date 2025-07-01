@@ -92,7 +92,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 				}
 				
 				// this CBox's selection has been dropped
-				else if (getSelectedIndex() == -1 && currentSelection != -1) {
+				else if (getSelectedIndex() == -1 && currentSelection != null && currentSelection != -1) {
 					// adds cleared selection back to competitors
 					competitors.forEach(competitor -> {
 						if (competitor != CompetingComboBox.this) {
