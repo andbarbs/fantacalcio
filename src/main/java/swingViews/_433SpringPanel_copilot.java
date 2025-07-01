@@ -18,6 +18,8 @@ public class _433SpringPanel_copilot extends JPanel {
 	    private Map<String, JPanel> slots = new LinkedHashMap<>();
 
 	    public _433SpringPanel_copilot() {
+	    	setOpaque(false);
+	    	
 	        layout = new SpringLayout();
 	        setLayout(layout);
 
@@ -65,7 +67,6 @@ public class _433SpringPanel_copilot extends JPanel {
 	        SpringLayout.Constraints gCons = layout.getConstraints(slots.get("goalie"));
 	        gCons.setX(Spring.scale(widthS, 0.5f));
 	        gCons.setY(Spring.scale(heightS, 0.90f));
-	        setSlotSize(gCons, 0.10f, 0.08f, widthS, heightS);
 
 	        // defenders: 4 slots, convex arc
 	        String[] defs = {"def1","def2","def3","def4"};
@@ -83,7 +84,6 @@ public class _433SpringPanel_copilot extends JPanel {
 	            SpringLayout.Constraints c = layout.getConstraints(slot);
 	            c.setX(Spring.scale(widthS, relX));
 	            c.setY(Spring.scale(heightS, relY));
-	            setSlotSize(c, 0.10f, 0.08f, widthS, heightS);
 	        }
 
 	        // midfielders: straight line
@@ -94,7 +94,6 @@ public class _433SpringPanel_copilot extends JPanel {
 	            SpringLayout.Constraints c = layout.getConstraints(slots.get(mids[i]));
 	            c.setX(Spring.scale(widthS, midXs[i]));
 	            c.setY(Spring.scale(heightS, midY));
-	            setSlotSize(c, 0.10f, 0.08f, widthS, heightS);
 	        }
 
 	        // forwards: concave arc
@@ -109,20 +108,11 @@ public class _433SpringPanel_copilot extends JPanel {
 	            SpringLayout.Constraints c = layout.getConstraints(slots.get(fwds[i]));
 	            c.setX(Spring.scale(widthS, fwdXs[i]));
 	            c.setY(Spring.scale(heightS, relY));
-	            setSlotSize(c, 0.10f, 0.08f, widthS, heightS);
 	        }
 	        
 	        for (JPanel slot : slots.values()) {
 	        	  slot.setBorder(BorderFactory.createLineBorder(Color.RED));
 	        	}
-	    }
-
-	    // helper to size a slot as a % of parent dims
-	    private void setSlotSize(SpringLayout.Constraints c,
-	                             float wRatio, float hRatio,
-	                             Spring widthS, Spring heightS) {
-	        c.setWidth (Spring.scale(widthS, wRatio));
-	        c.setHeight(Spring.scale(heightS, hRatio));
 	    }
 
 	    // your getters (unchanged)
