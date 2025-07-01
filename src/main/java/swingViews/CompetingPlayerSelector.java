@@ -15,7 +15,7 @@ public class CompetingPlayerSelector extends JPanel {
 
 		// Set a fixed preferred and minimum size for this functional unit.
 		// These values (240x30) are just an example.
-		setPreferredSize(new Dimension(141, 230));
+		setPreferredSize(SWING_PLAYER_SELECTOR_DIM);
 		setMinimumSize(SWING_PLAYER_SELECTOR_DIM);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 1, 0 };
@@ -30,23 +30,30 @@ public class CompetingPlayerSelector extends JPanel {
 		gbc_layeredPane.gridx = 0;
 		gbc_layeredPane.gridy = 0;
 		add(layeredPane, gbc_layeredPane);
-
-		JLabel figureLabel = new JLabel("");
-		figureLabel.setIcon(new ImageIcon(getClass().getResource("/images/player_figure_120x225.png")));
-		figureLabel.setBounds(12, 0, 120, 225);
-		layeredPane.add(figureLabel);
+		GridBagLayout gbl_layeredPane = new GridBagLayout();
+		gbl_layeredPane.columnWidths = new int[] { 143, 0 };
+		gbl_layeredPane.rowHeights = new int[] { 231, 0 };
+		gbl_layeredPane.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_layeredPane.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		layeredPane.setLayout(gbl_layeredPane);
 
 		JLabel headLabel = new JLabel("");
 		layeredPane.setLayer(headLabel, 1);
-		headLabel.setBounds(12, 0, 120, 225);
-		layeredPane.add(headLabel);
+		GridBagConstraints gbc_headLabel = new GridBagConstraints();
+		gbc_headLabel.anchor = GridBagConstraints.NORTH;
+		gbc_headLabel.gridx = 0;
+		gbc_headLabel.gridy = 0;
+		layeredPane.add(headLabel, gbc_headLabel);
 		headLabel.setIcon(new ImageIcon(getClass().getResource("/images/ronaldo_head_120x225.png")));
 
 		JPanel panel = new JPanel();
 		layeredPane.setLayer(panel, 2);
 		panel.setOpaque(false);
-		panel.setBounds(0, 0, 143, 231);
-		layeredPane.add(panel);
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 0;
+		layeredPane.add(panel, gbc_panel);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[] { 0, 0 };
 		gbl_panel.rowHeights = new int[] { 0, 27, 0 };
@@ -97,6 +104,14 @@ public class CompetingPlayerSelector extends JPanel {
 			getCompetingComboBox().setSelectedIndex(-1);
 			resetButton.setEnabled(false);
 		});
+
+		JLabel figureLabel = new JLabel("");
+		figureLabel.setIcon(new ImageIcon(getClass().getResource("/images/player_figure_120x225.png")));
+		GridBagConstraints gbc_figureLabel = new GridBagConstraints();
+		gbc_figureLabel.anchor = GridBagConstraints.NORTH;
+		gbc_figureLabel.gridx = 0;
+		gbc_figureLabel.gridy = 0;
+		layeredPane.add(figureLabel, gbc_figureLabel);
 	}
 
 	public CompetingComboBox<Player> getCompetingComboBox() {
