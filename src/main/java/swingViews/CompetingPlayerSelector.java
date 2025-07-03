@@ -1,41 +1,61 @@
 package swingViews;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
 import domainModel.Player;
 
 public class CompetingPlayerSelector extends JPanel {
+
 	private static final long serialVersionUID = 1L;
 
-	public static Dimension SWING_PLAYER_SELECTOR_DIM = new Dimension(141, 230);
+	// path to the pngs for the Icons
+	private static final String FIGURE_PNG_PATH = "/images/player_figure_120x225.png";
+	private static final String HEAD_PNG_PATH = "/images/ronaldo_head_120x225.png";
+
 	private CompetingComboBox<Player> comboBox;
 
+	// WB-compatible constructor
 	public CompetingPlayerSelector() {
+		initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
+				new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
+	}
+
+	private void initializeFromIcon(ImageIcon figureIcon, ImageIcon headIcon) {
 		setBackground(Color.RED);
 
-		// Set a fixed preferred and minimum size for this functional unit.
-		// These values (240x30) are just an example.
-		setPreferredSize(SWING_PLAYER_SELECTOR_DIM);
-		setMinimumSize(SWING_PLAYER_SELECTOR_DIM);
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 1, 0 };
-		gridBagLayout.rowHeights = new int[] { 1, 0 };
-		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
-		setLayout(gridBagLayout);
+		// sets the CompetingPlayerSelector Panel's own GridBagLayout
+		GridBagLayout rootGBL = new GridBagLayout();
+		rootGBL.columnWidths = new int[] { 1, 0 };
+		rootGBL.rowHeights = new int[] { 1, 0 };
+		rootGBL.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		rootGBL.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		setLayout(rootGBL);
 
+		// sets up the JLayeredPane overlaying labels and controls
 		JLayeredPane layeredPane = new JLayeredPane();
 		GridBagConstraints gbc_layeredPane = new GridBagConstraints();
 		gbc_layeredPane.fill = GridBagConstraints.BOTH;
 		gbc_layeredPane.gridx = 0;
 		gbc_layeredPane.gridy = 0;
 		add(layeredPane, gbc_layeredPane);
-		GridBagLayout gbl_layeredPane = new GridBagLayout();
-		gbl_layeredPane.columnWidths = new int[] { 143, 0 };
-		gbl_layeredPane.rowHeights = new int[] { 231, 0 };
-		gbl_layeredPane.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
-		gbl_layeredPane.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
-		layeredPane.setLayout(gbl_layeredPane);
+		GridBagLayout layeredPaneGBL = new GridBagLayout();
+		layeredPaneGBL.columnWidths = new int[] { 1, 0 };
+		layeredPaneGBL.rowHeights = new int[] { 1, 0 };
+		layeredPaneGBL.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		layeredPaneGBL.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		layeredPane.setLayout(layeredPaneGBL);
+
+		JLabel figureLabel = new JLabel("");
+		figureLabel.setIcon(figureIcon);
+		GridBagConstraints gbc_figureLabel = new GridBagConstraints();
+		gbc_figureLabel.anchor = GridBagConstraints.NORTH;
+		gbc_figureLabel.gridx = 0;
+		gbc_figureLabel.gridy = 0;
+		layeredPane.add(figureLabel, gbc_figureLabel);
 
 		JLabel headLabel = new JLabel("");
 		layeredPane.setLayer(headLabel, 1);
@@ -44,7 +64,7 @@ public class CompetingPlayerSelector extends JPanel {
 		gbc_headLabel.gridx = 0;
 		gbc_headLabel.gridy = 0;
 		layeredPane.add(headLabel, gbc_headLabel);
-		headLabel.setIcon(new ImageIcon(getClass().getResource("/images/ronaldo_head_120x225.png")));
+		headLabel.setIcon(headIcon);
 
 		JPanel panel = new JPanel();
 		layeredPane.setLayer(panel, 2);
@@ -58,7 +78,7 @@ public class CompetingPlayerSelector extends JPanel {
 		gbl_panel.columnWidths = new int[] { 0, 0 };
 		gbl_panel.rowHeights = new int[] { 0, 27, 0 };
 		gbl_panel.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_panel.rowWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
+		gbl_panel.rowWeights = new double[] { 5.0, 1.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
 		comboBox = new CompetingComboBox<Player>();
@@ -92,6 +112,7 @@ public class CompetingPlayerSelector extends JPanel {
 		JButton resetButton = new JButton("Reset");
 		resetButton.setEnabled(false);
 		GridBagConstraints gbc_resetButton = new GridBagConstraints();
+		gbc_resetButton.anchor = GridBagConstraints.NORTH;
 		gbc_resetButton.gridx = 0;
 		gbc_resetButton.gridy = 1;
 		panel.add(resetButton, gbc_resetButton);
@@ -104,14 +125,23 @@ public class CompetingPlayerSelector extends JPanel {
 			getCompetingComboBox().setSelectedIndex(-1);
 			resetButton.setEnabled(false);
 		});
+	}
 
-		JLabel figureLabel = new JLabel("");
-		figureLabel.setIcon(new ImageIcon(getClass().getResource("/images/player_figure_120x225.png")));
-		GridBagConstraints gbc_figureLabel = new GridBagConstraints();
-		gbc_figureLabel.anchor = GridBagConstraints.NORTH;
-		gbc_figureLabel.gridx = 0;
-		gbc_figureLabel.gridy = 0;
-		layeredPane.add(figureLabel, gbc_figureLabel);
+	// rescaling-augmented constructor available to clients
+	public CompetingPlayerSelector(Dimension availableWindow) throws IOException {
+		// 1. Load original images
+		BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
+		BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
+
+		// 2. Compute target width & height, preserving original aspect ratio
+		int ow = origFigure.getWidth(), oh = origFigure.getHeight();
+		double scale = Math.min(availableWindow.width / (double) ow, availableWindow.height / (double) oh);
+		int tw = (int) (ow * scale), th = (int) (oh * scale);
+
+		// 3. Invoke Icon initializer using scaled instances
+		initializeFromIcon(
+				new ImageIcon(origFigure.getScaledInstance(tw, th, Image.SCALE_SMOOTH)),
+				new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
 	}
 
 	public CompetingComboBox<Player> getCompetingComboBox() {
