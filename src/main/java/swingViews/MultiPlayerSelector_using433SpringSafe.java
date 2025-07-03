@@ -45,11 +45,9 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		layeredPane.setLayer(background, 0);
         
         // Create a panel to hold our SwingPlayerSelector components.
-        _433SpringSafe selectorsPanel = new _433SpringSafe();
+        SchemeSpringPanel selectorsPanel = new _433SpringSafe();
         selectorsPanel.setBorder(new LineBorder(new Color(255, 0, 0), 8));
 		GridBagConstraints gbc_selectorsPanel = new GridBagConstraints();
-		gbc_selectorsPanel.weighty = 1.0;
-		gbc_selectorsPanel.weightx = 1.0;
 		gbc_selectorsPanel.fill = GridBagConstraints.BOTH;
 		gbc_selectorsPanel.anchor = GridBagConstraints.NORTH;
 		gbc_selectorsPanel.gridx = 0;

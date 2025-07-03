@@ -9,29 +9,18 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 
-public class _433SpringSafe extends JPanel {
+public class _433SpringSafe extends SchemeSpringPanel {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	private static final float slotWidthRatio = 0.217f;
 	private static final float slotHeightRatio = 0.193f;
 	
-	private JPanel forw3;
-	private JPanel def3;
-	private JPanel def1;
-	private JPanel mid2;
-	private JPanel goalie;
-	private JPanel forw2;
-	private JPanel mid1;
-	private JPanel forw1;
-	private JPanel def4;
-	private JPanel def2;
-	private JPanel mid3;
-
 	/**
 	 * Create the panel.
 	 */
 	public _433SpringSafe() {
+		setOpaque(false);
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 
@@ -168,38 +157,5 @@ public class _433SpringSafe extends JPanel {
 			window.setVisible(true);
 
 		});
-	}
-	public JPanel getForw3() {
-		return forw3;
-	}
-	public JPanel getDef3() {
-		return def3;
-	}
-	public JPanel getDef1() {
-		return def1;
-	}
-	public JPanel getMid2() {
-		return mid2;
-	}
-	public JPanel getGoalie() {
-		return goalie;
-	}
-	public JPanel getForw2() {
-		return forw2;
-	}
-	public JPanel getMid1() {
-		return mid1;
-	}
-	public JPanel getForw1() {
-		return forw1;
-	}
-	public JPanel getDef4() {
-		return def4;
-	}
-	public JPanel getDef2() {
-		return def2;
-	}
-	public JPanel getMid3() {
-		return mid3;
 	}
 }
