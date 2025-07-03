@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-public class SpringSchemePanel extends JPanel {
+public abstract class SpringSchemePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
