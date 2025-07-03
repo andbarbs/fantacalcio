@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
-import java.awt.Toolkit;
 
 public class _433SpringSafe extends JPanel {
 
@@ -16,6 +15,18 @@ public class _433SpringSafe extends JPanel {
 
 	private static final float slotWidthRatio = 0.217f;
 	private static final float slotHeightRatio = 0.193f;
+	
+	private JPanel forw3;
+	private JPanel def3;
+	private JPanel def1;
+	private JPanel mid2;
+	private JPanel goalie;
+	private JPanel forw2;
+	private JPanel mid1;
+	private JPanel forw1;
+	private JPanel def4;
+	private JPanel def2;
+	private JPanel mid3;
 
 	/**
 	 * Create the panel.
@@ -35,7 +46,7 @@ public class _433SpringSafe extends JPanel {
 		Spring slotHeight = Spring.scale(panelHeight, slotHeightRatio);
 
 		// creates Goalie slot
-		JPanel goalie = new JPanel();
+		goalie = new JPanel();
 		add(goalie);
 		Spring goalieYoffset = Spring.scale(panelHeight, 0.02f);
 		layout.getConstraints(goalie).setConstraint(SpringLayout.NORTH, goalieYoffset);
@@ -50,7 +61,7 @@ public class _433SpringSafe extends JPanel {
 		Spring widthNibbleAfterDefenders = Spring.scale(widthAfterDefenders, 0.125f);
 		Spring defendersArcOffset = Spring.scale(panelHeight, 0.06f);
 		
-		JPanel def2 = new JPanel();
+		def2 = new JPanel();
 		add(def2);
 		layout.getConstraints(def2).setY(Spring.sum(slotHeight, Spring.scale(goalieYoffset, 2f)));
 		layout.putConstraint(SpringLayout.EAST, def2, Spring.scale(widthNibbleAfterDefenders, -1f),
@@ -59,7 +70,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(def2).setHeight(slotHeight);
 		def2.setBackground(new Color(102, 204, 51));
 		
-		JPanel def3 = new JPanel();
+		def3 = new JPanel();
 		add(def3);
 		layout.getConstraints(def3).setY(layout.getConstraints(def2).getY());
 		layout.putConstraint(SpringLayout.WEST, def3, widthNibbleAfterDefenders,
@@ -68,7 +79,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(def3).setHeight(slotHeight);
 		def3.setBackground(new Color(102, 204, 51));
 		
-		JPanel def1 = new JPanel();
+		def1 = new JPanel();
 		add(def1);
 		layout.getConstraints(def1).setX(Spring.scale(widthAfterDefenders, 0.125f));
 		layout.getConstraints(def1).setY(Spring.sum(defendersArcOffset, layout.getConstraints(def2).getY()));
@@ -76,7 +87,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(def1).setHeight(slotHeight);	
 		def1.setBackground(new Color(102, 204, 51));
 		
-		JPanel def4 = new JPanel();
+		def4 = new JPanel();
 		add(def4);
 		layout.getConstraints(def4).setWidth(slotWidth);
 		layout.getConstraints(def4).setHeight(slotHeight);	
@@ -88,7 +99,7 @@ public class _433SpringSafe extends JPanel {
 		// creates Midfielder slots
 		Spring widthNibbleAfterMids = Spring.scale(Spring.sum(panelWidth, Spring.scale(slotWidth, -3f)), 1f / 6f);
 		
-		JPanel mid1 = new JPanel();
+		mid1 = new JPanel();
 		add(mid1);
 		layout.getConstraints(mid1).setX(widthNibbleAfterMids);
 		layout.putConstraint(SpringLayout.NORTH, mid1, goalieYoffset, SpringLayout.VERTICAL_CENTER, this);
@@ -96,7 +107,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(mid1).setHeight(slotHeight);	
 		mid1.setBackground(new Color(221, 0, 0));
 		
-		JPanel mid2 = new JPanel();
+		mid2 = new JPanel();
 		add(mid2);
 		layout.getConstraints(mid2).setY(layout.getConstraints(mid1).getY());
 		layout.putConstraint(SpringLayout.WEST, mid2, Spring.scale(widthNibbleAfterMids, 2f), SpringLayout.EAST, mid1);
@@ -104,7 +115,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(mid2).setHeight(slotHeight);	
 		mid2.setBackground(new Color(221, 0, 0));
 		
-		JPanel mid3 = new JPanel();
+		mid3 = new JPanel();
 		add(mid3);
 		layout.getConstraints(mid3).setY(layout.getConstraints(mid1).getY());
 		layout.putConstraint(SpringLayout.WEST, mid3, Spring.scale(widthNibbleAfterMids, 2f), SpringLayout.EAST, mid2);
@@ -116,7 +127,7 @@ public class _433SpringSafe extends JPanel {
 		Spring forwsBaseY = Spring.sum(layout.getConstraints(mid1).getConstraint(SpringLayout.SOUTH), widthNibbleAfterMids);
 		Spring forwArcHeight = goalieYoffset;
 		
-		JPanel forw1 = new JPanel();
+		forw1 = new JPanel();
 		add(forw1);
 		layout.getConstraints(forw1).setX(layout.getConstraints(mid1).getX());
 		layout.getConstraints(forw1).setY(forwsBaseY);
@@ -124,7 +135,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(forw1).setHeight(slotHeight);	
 		forw1.setBackground(new Color(0, 0, 0));
 		
-		JPanel forw2 = new JPanel();
+		forw2 = new JPanel();
 		add(forw2);
 		layout.getConstraints(forw2).setX(layout.getConstraints(mid2).getX());
 		layout.getConstraints(forw2).setY(Spring.sum(forwsBaseY, forwArcHeight));
@@ -132,7 +143,7 @@ public class _433SpringSafe extends JPanel {
 		layout.getConstraints(forw2).setHeight(slotHeight);	
 		forw2.setBackground(new Color(0, 0, 0));
 		
-		JPanel forw3 = new JPanel();
+		forw3 = new JPanel();
 		add(forw3);
 		layout.getConstraints(forw3).setX(layout.getConstraints(mid3).getX());
 		layout.getConstraints(forw3).setY(forwsBaseY);
@@ -144,10 +155,9 @@ public class _433SpringSafe extends JPanel {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
 			JFrame window = new JFrame("testing Safe Spring");
-			Toolkit theKit = window.getToolkit(); // Get the window toolkit
-			Dimension wndSize = theKit.getScreenSize(); // Get screen size
 
 			// Set the position to screen center & size to half screen size
+			Dimension wndSize = window.getToolkit().getScreenSize(); // Get screen size
 			window.setLocation(new Point(wndSize.width / 4, wndSize.height / 4));
 			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			window.setContentPane(new _433SpringSafe(new Dimension(500, 700)));
@@ -156,5 +166,38 @@ public class _433SpringSafe extends JPanel {
 			window.setVisible(true);
 
 		});
+	}
+	public JPanel getForw3() {
+		return forw3;
+	}
+	public JPanel getDef3() {
+		return def3;
+	}
+	public JPanel getDef1() {
+		return def1;
+	}
+	public JPanel getMid2() {
+		return mid2;
+	}
+	public JPanel getGoalie() {
+		return goalie;
+	}
+	public JPanel getForw2() {
+		return forw2;
+	}
+	public JPanel getMid1() {
+		return mid1;
+	}
+	public JPanel getForw1() {
+		return forw1;
+	}
+	public JPanel getDef4() {
+		return def4;
+	}
+	public JPanel getDef2() {
+		return def2;
+	}
+	public JPanel getMid3() {
+		return mid3;
 	}
 }
