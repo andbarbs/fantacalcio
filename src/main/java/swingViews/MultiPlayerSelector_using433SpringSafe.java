@@ -58,10 +58,11 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		
 		// derive rescaling hint for CompetingPlayerSelectors under current scheme panel
 		Dimension availableWindow = _433SpringSafe.getSlotDimensions(background.getPreferredSize());
-		System.out.printf("slot dimensions are: %s\n", availableWindow);
+		Dimension reducedAvailableWindow = // ensures selectors actually fit inside slots after insets
+				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
         // Goalkeeper selectors
-        CompetingPlayerSelector goalieSelector = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector goalieSelector = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getGoalie().add(goalieSelector);
         
 		initializeCompetition(
@@ -72,16 +73,16 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getDef1().add(defSelector1);
         
-        CompetingPlayerSelector defSelector2 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector defSelector2 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getDef2().add(defSelector2);
         
-        CompetingPlayerSelector defSelector3 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector defSelector3 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getDef3().add(defSelector3);
         
-        CompetingPlayerSelector defSelector4 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector defSelector4 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getDef4().add(defSelector4);
         
 		initializeCompetition(
@@ -98,13 +99,13 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
         
         
         // Midfielder selectors
-        CompetingPlayerSelector midSelector1 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector midSelector1 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getMid1().add(midSelector1);
         
-        CompetingPlayerSelector midSelector2 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector midSelector2 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getMid2().add(midSelector2);
         
-        CompetingPlayerSelector midSelector3 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector midSelector3 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getMid3().add(midSelector3);
         
 		initializeCompetition(
@@ -118,13 +119,13 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 						new Midfielder("Toni", "Kroos")));
         
         // Forward selectors
-		CompetingPlayerSelector forwSelector1 = new CompetingPlayerSelector(availableWindow);
+		CompetingPlayerSelector forwSelector1 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getForw1().add(forwSelector1);
         
-        CompetingPlayerSelector forwSelector2 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector forwSelector2 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getForw2().add(forwSelector2);
 
-        CompetingPlayerSelector forwSelector3 = new CompetingPlayerSelector(availableWindow);
+        CompetingPlayerSelector forwSelector3 = new CompetingPlayerSelector(reducedAvailableWindow);
         selectorsPanel.getForw3().add(forwSelector3);
         
 		initializeCompetition(
