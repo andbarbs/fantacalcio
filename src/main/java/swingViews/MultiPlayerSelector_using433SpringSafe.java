@@ -7,6 +7,7 @@ import domainModel.Player.*;
 import static swingViews.CompetingComboBox.initializeCompetition;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import javax.swing.border.LineBorder;
 public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 	private static final long serialVersionUID = 1L;	
 
-	public MultiPlayerSelector_using433SpringSafe() {
+	public MultiPlayerSelector_using433SpringSafe() throws IOException {
         setTitle("Football Player Selector");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -45,7 +46,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		layeredPane.setLayer(background, 0);
         
         // Create a panel to hold our SwingPlayerSelector components.
-        SchemeSpringPanel selectorsPanel = new _433SpringSafe();
+        SpringSchemePanel selectorsPanel = new _433SpringSafe();
         selectorsPanel.setBorder(new LineBorder(new Color(255, 0, 0), 8));
 		GridBagConstraints gbc_selectorsPanel = new GridBagConstraints();
 		gbc_selectorsPanel.fill = GridBagConstraints.BOTH;
@@ -54,10 +55,13 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		gbc_selectorsPanel.gridy = 0;
 		layeredPane.add(selectorsPanel, gbc_selectorsPanel);
 		layeredPane.setLayer(selectorsPanel, 1);
-        
+		
+		// derive rescaling hint for CompetingPlayerSelectors under current scheme panel
+		Dimension availableWindow = _433SpringSafe.getSlotDimensions(background.getPreferredSize());
+		System.out.printf("slot dimensions are: %s\n", availableWindow);
 
         // Goalkeeper selectors
-        CompetingPlayerSelector goalieSelector = new CompetingPlayerSelector();
+        CompetingPlayerSelector goalieSelector = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getGoalie().add(goalieSelector);
         
 		initializeCompetition(
@@ -68,16 +72,16 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector();
+        CompetingPlayerSelector defSelector1 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getDef1().add(defSelector1);
         
-        CompetingPlayerSelector defSelector2 = new CompetingPlayerSelector();
+        CompetingPlayerSelector defSelector2 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getDef2().add(defSelector2);
         
-        CompetingPlayerSelector defSelector3 = new CompetingPlayerSelector();
+        CompetingPlayerSelector defSelector3 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getDef3().add(defSelector3);
         
-        CompetingPlayerSelector defSelector4 = new CompetingPlayerSelector();
+        CompetingPlayerSelector defSelector4 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getDef4().add(defSelector4);
         
 		initializeCompetition(
@@ -94,13 +98,13 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
         
         
         // Midfielder selectors
-        CompetingPlayerSelector midSelector1 = new CompetingPlayerSelector();
+        CompetingPlayerSelector midSelector1 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getMid1().add(midSelector1);
         
-        CompetingPlayerSelector midSelector2 = new CompetingPlayerSelector();
+        CompetingPlayerSelector midSelector2 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getMid2().add(midSelector2);
         
-        CompetingPlayerSelector midSelector3 = new CompetingPlayerSelector();
+        CompetingPlayerSelector midSelector3 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getMid3().add(midSelector3);
         
 		initializeCompetition(
@@ -113,25 +117,25 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 						new Midfielder("Andrés", "Iniesta"),
 						new Midfielder("Toni", "Kroos")));
         
-        // Forwards selector
-		CompetingPlayerSelector forwSelector1 = new CompetingPlayerSelector();
+        // Forward selectors
+		CompetingPlayerSelector forwSelector1 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getForw1().add(forwSelector1);
         
-        CompetingPlayerSelector forwSelector2 = new CompetingPlayerSelector();
+        CompetingPlayerSelector forwSelector2 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getForw2().add(forwSelector2);
 
-        CompetingPlayerSelector forwSelector3 = new CompetingPlayerSelector();
+        CompetingPlayerSelector forwSelector3 = new CompetingPlayerSelector(availableWindow);
         selectorsPanel.getForw3().add(forwSelector3);
         
 		initializeCompetition(
-				Stream.of(forwSelector1, forwSelector2, forwSelector3)
+				Stream.of(forwSelector1, forwSelector2, forwSelector3)	
 					.map(CompetingPlayerSelector::getCompetingComboBox)
 					.collect(Collectors.toSet()),
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),
 						new Forward("Neymar", "Jr"), 
 						new Forward("Kylian", "Mbappé"),
-						new Forward("Robert", "Lewandowski")));
+						new Forward("Robert", "Lewand")));
        
 		
 		// Finally add the layeredPane to the frame.
@@ -143,6 +147,13 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
     }
     
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MultiPlayerSelector_using433SpringSafe());
+        SwingUtilities.invokeLater(() -> {
+			try {
+				new MultiPlayerSelector_using433SpringSafe();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
     }
 }
