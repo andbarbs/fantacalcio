@@ -31,19 +31,21 @@ public class _433SpringSafe extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public _433SpringSafe(Dimension dim) {
+	public _433SpringSafe() {
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 
 		// creates springs for the Panel dimensions
-		Spring panelWidth = Spring.constant(dim.width);
-		Spring panelHeight = Spring.constant(dim.height);
-		layout.getConstraints(this).setWidth(panelWidth);
-		layout.getConstraints(this).setHeight(panelHeight);
-
+		Spring panelWidth = Spring.constant(100);
+		Spring panelHeight = Spring.constant(100);
+		
 		// creates springs for the slot dimensions
 		Spring slotWidth = Spring.scale(panelWidth, slotWidthRatio);
 		Spring slotHeight = Spring.scale(panelHeight, slotHeightRatio);
+
+		// sets panel's own dimensions
+		layout.getConstraints(this).setWidth(panelWidth);
+		layout.getConstraints(this).setHeight(panelHeight);
 
 		// creates Goalie slot
 		goalie = new JPanel();
@@ -160,7 +162,7 @@ public class _433SpringSafe extends JPanel {
 			Dimension wndSize = window.getToolkit().getScreenSize(); // Get screen size
 			window.setLocation(new Point(wndSize.width / 4, wndSize.height / 4));
 			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			window.setContentPane(new _433SpringSafe(new Dimension(500, 700)));
+			window.setContentPane(new _433SpringSafe());
 
 			window.pack();
 			window.setVisible(true);
