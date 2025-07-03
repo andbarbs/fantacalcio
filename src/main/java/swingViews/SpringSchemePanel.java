@@ -5,25 +5,37 @@ import java.util.stream.Stream;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-public abstract class SpringSchemePanel extends JPanel {
+public class SpringSchemePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private JPanel goalie = new JPanel();
-	private JPanel def1 = new JPanel();
-	private JPanel def2 = new JPanel();
-	private JPanel def3 = new JPanel();
-	private JPanel def4 = new JPanel();
-	private JPanel mid1 = new JPanel();
-	private JPanel mid2 = new JPanel();
-	private JPanel mid3 = new JPanel();
-	private JPanel forw1 = new JPanel();
-	private JPanel forw2 = new JPanel();
-	private JPanel forw3 = new JPanel();
+	private JPanel goalie;
+	private JPanel def1;
+	private JPanel def2;
+	private JPanel def3;
+	private JPanel def4;
+	private JPanel mid1;
+	private JPanel mid2;
+	private JPanel mid3;
+	private JPanel forw1;
+	private JPanel forw2;
+	private JPanel forw3;
 
 	public SpringSchemePanel() {
 		setOpaque(false);
 		setLayout(new SpringLayout());
+		
+		goalie = new JPanel();
+		def1 = new JPanel(); 
+		def2  = new JPanel(); 
+		def3 = new JPanel(); 
+		def4 = new JPanel();
+		mid1 = new JPanel();
+		mid2 = new JPanel();
+		mid3 = new JPanel();
+		forw1 = new JPanel();
+		forw2 = new JPanel();
+		forw3 = new JPanel();
 
 		Stream.of(goalie,
 				def1, def2, def3, def4,
