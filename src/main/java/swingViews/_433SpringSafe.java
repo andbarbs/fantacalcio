@@ -15,110 +15,87 @@ public class _433SpringSafe extends SpringSchemePanel {
 	private static final float slotWidthRatio = 0.217f;
 	private static final float slotHeightRatio = 0.193f;
 	
-	public static Dimension getSlotDimensions(Dimension fieldDimension) {
+	public static Dimension recommendedSlotDimensions(Dimension fieldDimension) {
 		return new Dimension(
 				(int)Math.floor(fieldDimension.width * slotWidthRatio), 
 				(int)Math.floor(fieldDimension.height * slotHeightRatio));
 	}
 	
 	/**
-	 * Create the panel.
+	 * 1) static methods of Spring:
+	 * From the docs at https://docs.oracle.com/en/java/javase/24/docs/api/java.desktop/javax/swing/Spring.html:
+	 * 
+	 * "the static methods create a new Spring instance containing references 
+	 * to the method's arguments so that the characteristics of the new spring 
+	 * track the potentially changing characteristics of the springs from which it was made"
+	 * 
+	 * Thus, calls to Spring.scale() cannot be replaced by uses of Spring.constant()
+	 * 
+	 * 2) placement of slots:
+	 * placing slots by their HORIZONTAL_CENTER and VERTICAL_CENTER and NOT constraining their size
+	 * allows contents to grow/retract symmetrically around the slot's geometric center.
+	 * In particular, we always use HORIZONTAL_CENTER to allow symmetric expansion horizontally, however
+	 * we're not as strict with VERTICAL_CENTER as we don't forecast the need for symmetric vertical growth.
 	 */
 	public _433SpringSafe() {
 		// creates springs for the Panel dimensions
 		Spring panelWidth = Spring.constant(100);
-		Spring panelHeight = Spring.constant(100);
-		
-		// creates springs for the slot dimensions
-		Spring slotWidth = Spring.scale(panelWidth, slotWidthRatio);
-		Spring slotHeight = Spring.scale(panelHeight, slotHeightRatio);
-
-		// sets panel's own dimensions
+		Spring panelHeight = Spring.constant(100);// sets panel's own dimensions
 		getLayout().getConstraints(this).setWidth(panelWidth);
 		getLayout().getConstraints(this).setHeight(panelHeight);
 
-		// creates getGoalie() slot
+		// installs Goalie slot
 		Spring goalieYoffset = Spring.scale(panelHeight, 0.02f);
 		getLayout().getConstraints(getGoalie()).setConstraint(SpringLayout.NORTH, goalieYoffset);
-		getLayout().putConstraint(SpringLayout.WEST, getGoalie(), Spring.scale(slotWidth, -0.5f),
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getGoalie(), Spring.constant(0),
 				SpringLayout.HORIZONTAL_CENTER, this);
-		getLayout().getConstraints(getGoalie()).setWidth(slotWidth);
-		getLayout().getConstraints(getGoalie()).setHeight(slotHeight);
 		getGoalie().setBackground(new Color(255, 0, 0));
 
-		// creates Defender slots
-		Spring widthAfterDefenders = Spring.sum(panelWidth, Spring.scale(slotWidth, -4f));
-		Spring widthNibbleAfterDefenders = Spring.scale(widthAfterDefenders, 0.125f);
-		Spring defendersArcOffset = Spring.scale(panelHeight, 0.06f);
-		
-		getLayout().getConstraints(getDef2()).setY(Spring.sum(slotHeight, Spring.scale(goalieYoffset, 2f)));
-		getLayout().putConstraint(SpringLayout.EAST, getDef2(), Spring.scale(widthNibbleAfterDefenders, -1f),
+		// installs Defender slots		
+		getLayout().getConstraints(getDef2()).setConstraint(SpringLayout.VERTICAL_CENTER,Spring.scale(panelHeight, 0.34f));
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getDef2(), Spring.scale(panelWidth, -0.1f),
 				SpringLayout.HORIZONTAL_CENTER, this);
-		getLayout().getConstraints(getDef2()).setWidth(slotWidth);
-		getLayout().getConstraints(getDef2()).setHeight(slotHeight);
 		getDef2().setBackground(new Color(102, 204, 51));
 		
 		getLayout().getConstraints(getDef3()).setY(getLayout().getConstraints(getDef2()).getY());
-		getLayout().putConstraint(SpringLayout.WEST, getDef3(), widthNibbleAfterDefenders,
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getDef3(), Spring.scale(panelWidth, 0.1f),
 				SpringLayout.HORIZONTAL_CENTER, this);
-		getLayout().getConstraints(getDef3()).setWidth(slotWidth);
-		getLayout().getConstraints(getDef3()).setHeight(slotHeight);
 		getDef3().setBackground(new Color(102, 204, 51));
 		
-		getLayout().getConstraints(getDef1()).setX(Spring.scale(widthAfterDefenders, 0.125f));
-		getLayout().getConstraints(getDef1()).setY(Spring.sum(defendersArcOffset, getLayout().getConstraints(getDef2()).getY()));
-		getLayout().getConstraints(getDef1()).setWidth(slotWidth);
-		getLayout().getConstraints(getDef1()).setHeight(slotHeight);	
+		getLayout().getConstraints(getDef1()).setConstraint(SpringLayout.VERTICAL_CENTER, Spring.scale(panelHeight, 0.4f));
+		getLayout().getConstraints(getDef1()).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelHeight, 0.125f));
 		getDef1().setBackground(new Color(102, 204, 51));
 		
-		getLayout().getConstraints(getDef4()).setWidth(slotWidth);
-		getLayout().getConstraints(getDef4()).setHeight(slotHeight);	
-		getLayout().putConstraint(SpringLayout.EAST, getDef4(), Spring.scale(widthNibbleAfterDefenders, -1f),
-				SpringLayout.EAST, this);
-		getLayout().getConstraints(getDef4()).setY(getLayout().getConstraints(getDef1()).getY());
+		getLayout().putConstraint(SpringLayout.VERTICAL_CENTER, getDef4(), Spring.constant(0),
+				SpringLayout.VERTICAL_CENTER, getDef1());
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getDef4(), Spring.scale(panelHeight, -0.125f),
+				SpringLayout.EAST, this);	
 		getDef4().setBackground(new Color(102, 204, 51));
 		
-		// creates Midfielder slots
-		Spring widthNibbleAfterMids = Spring.scale(Spring.sum(panelWidth, Spring.scale(slotWidth, -3f)), 1f / 6f);
-		
-		getLayout().getConstraints(getMid1()).setX(widthNibbleAfterMids);
-		getLayout().putConstraint(SpringLayout.NORTH, getMid1(), goalieYoffset, SpringLayout.VERTICAL_CENTER, this);
-		getLayout().getConstraints(getMid1()).setWidth(slotWidth);
-		getLayout().getConstraints(getMid1()).setHeight(slotHeight);	
-		getMid1().setBackground(new Color(221, 0, 0));
-		
-		getLayout().getConstraints(getMid2()).setY(getLayout().getConstraints(getMid1()).getY());
-		getLayout().putConstraint(SpringLayout.WEST, getMid2(), Spring.scale(widthNibbleAfterMids, 2f), SpringLayout.EAST, getMid1());
-		getLayout().getConstraints(getMid2()).setWidth(slotWidth);
-		getLayout().getConstraints(getMid2()).setHeight(slotHeight);	
+		// installs Midfielder slots
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getMid2(), Spring.constant(0), SpringLayout.HORIZONTAL_CENTER, this);
+		getLayout().putConstraint(SpringLayout.NORTH, getMid2(), goalieYoffset, SpringLayout.VERTICAL_CENTER, this);
 		getMid2().setBackground(new Color(221, 0, 0));
 		
-		getLayout().getConstraints(getMid3()).setY(getLayout().getConstraints(getMid1()).getY());
-		getLayout().putConstraint(SpringLayout.WEST, getMid3(), Spring.scale(widthNibbleAfterMids, 2f), SpringLayout.EAST, getMid2());
-		getLayout().getConstraints(getMid3()).setWidth(slotWidth);
-		getLayout().getConstraints(getMid3()).setHeight(slotHeight);	
+		getLayout().getConstraints(getMid1()).setY(getLayout().getConstraints(getMid2()).getY());
+		getLayout().getConstraints(getMid1()).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 0.2f));
+		getMid1().setBackground(new Color(221, 0, 0));
+		
+		getLayout().getConstraints(getMid3()).setY(getLayout().getConstraints(getMid2()).getY());
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getMid3(), Spring.scale(panelWidth, -0.2f), SpringLayout.EAST, this);
 		getMid3().setBackground(new Color(221, 0, 0));
 		
-		// create Forwards slots
-		Spring forwsBaseY = Spring.sum(getLayout().getConstraints(getMid1()).getConstraint(SpringLayout.SOUTH), widthNibbleAfterMids);
-		Spring forwArcHeight = goalieYoffset;
-		
-		getLayout().getConstraints(getForw1()).setX(getLayout().getConstraints(getMid1()).getX());
-		getLayout().getConstraints(getForw1()).setY(forwsBaseY);
-		getLayout().getConstraints(getForw1()).setWidth(slotWidth);
-		getLayout().getConstraints(getForw1()).setHeight(slotHeight);	
-		getForw1().setBackground(new Color(0, 0, 0));
-		
-		getLayout().getConstraints(getForw2()).setX(getLayout().getConstraints(getMid2()).getX());
-		getLayout().getConstraints(getForw2()).setY(Spring.sum(forwsBaseY, forwArcHeight));
-		getLayout().getConstraints(getForw2()).setWidth(slotWidth);
-		getLayout().getConstraints(getForw2()).setHeight(slotHeight);	
+		// installs Forwards slots		
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getForw2(), Spring.constant(0), SpringLayout.HORIZONTAL_CENTER, this);
+		getLayout().putConstraint(SpringLayout.VERTICAL_CENTER, getForw2(), Spring.scale(panelHeight, -0.12f), SpringLayout.SOUTH, this);
 		getForw2().setBackground(new Color(0, 0, 0));
 		
-		getLayout().getConstraints(getForw3()).setX(getLayout().getConstraints(getMid3()).getX());
-		getLayout().getConstraints(getForw3()).setY(forwsBaseY);
-		getLayout().getConstraints(getForw3()).setWidth(slotWidth);
-		getLayout().getConstraints(getForw3()).setHeight(slotHeight);	
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getForw1(), Spring.constant(0), SpringLayout.HORIZONTAL_CENTER, getMid1());
+		getLayout().getConstraints(getForw1()).setConstraint(SpringLayout.VERTICAL_CENTER, Spring.scale(panelHeight, 0.86f));
+		getForw1().setBackground(new Color(0, 0, 0));
+		
+		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getForw3(), Spring.constant(0), SpringLayout.HORIZONTAL_CENTER, getMid3());
+		getLayout().getConstraints(getForw3()).setConstraint(SpringLayout.VERTICAL_CENTER, Spring.scale(panelHeight, 0.86f));
 		getForw3().setBackground(new Color(0, 0, 0));
 	}
 

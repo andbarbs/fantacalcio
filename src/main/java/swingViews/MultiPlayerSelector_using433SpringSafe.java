@@ -57,7 +57,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		layeredPane.setLayer(selectorsPanel, 1);
 		
 		// derive rescaling hint for CompetingPlayerSelectors under current scheme panel
-		Dimension availableWindow = _433SpringSafe.getSlotDimensions(background.getPreferredSize());
+		Dimension availableWindow = _433SpringSafe.recommendedSlotDimensions(background.getPreferredSize());
 		Dimension reducedAvailableWindow = // ensures selectors actually fit inside slots after insets
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
