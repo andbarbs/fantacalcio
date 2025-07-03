@@ -32,7 +32,7 @@ public class PebbleLetter extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                setSelected(true);
+                setSelected(true);    // implements out-of-the-blue pebble selection
             }
         });
     }
@@ -90,7 +90,9 @@ public class PebbleLetter extends JPanel {
         boolean old = this.selected;
         this.selected = sel;
         repaint();
-        firePropertyChange("selected", old, sel);
+        if (sel == true && old == false) {   // only fires when a pebble is newly selected
+        	firePropertyChange("newlySelected", false, true);
+        }
     }
 
     @Override
