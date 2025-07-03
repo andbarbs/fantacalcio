@@ -3,8 +3,8 @@ package swingViews;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class LetterSwapGame extends JFrame {
@@ -24,9 +24,16 @@ public class LetterSwapGame extends JFrame {
 		pebblePanel.setLayout(new BoxLayout(pebblePanel, BoxLayout.X_AXIS));
 		pebblePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-		PropertyChangeListener selectListener = this::onPebbleSelected;
 		for (PebbleLetter p : pebbles) {
-			p.addPropertyChangeListener("newlySelected", selectListener);
+			p.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					// implements out-of-the-blue pebble selection
+			        if (!p.isSelected()) {
+			        	LetterSwapGame.this.passSelectionTo(p);
+			        }
+				}
+			});
 			pebblePanel.add(p);
 			pebblePanel.add(Box.createHorizontalStrut(8));
 		}
@@ -38,11 +45,9 @@ public class LetterSwapGame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedPebble != null && selectedPebble.canSwapLeft()) {
-					PebbleLetter old = selectedPebble;
-					old.swapLeft();
+					selectedPebble.swapLeft();
 					// implements letter-tracking selection
-					old.setSelected(false);
-					old.getLeftNeighbor().setSelected(true);
+					passSelectionTo(selectedPebble.getLeftNeighbor());
 					// arrow-enablement will be updated via the selection listener
 				}
 			}
@@ -54,10 +59,8 @@ public class LetterSwapGame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedPebble != null && selectedPebble.canSwapRight()) {
-					PebbleLetter old = selectedPebble;
-					old.swapRight();
-					old.setSelected(false);
-					old.getRightNeighbor().setSelected(true);
+					selectedPebble.swapRight();
+					passSelectionTo(selectedPebble.getRightNeighbor());
 				}
 			}
 		};
@@ -77,35 +80,31 @@ public class LetterSwapGame extends JFrame {
 
 		// 5. Initial selection
 		SwingUtilities.invokeLater(() -> {
-			pebbles.get(0).setSelected(true);
+			passSelectionTo(pebbles.get(0));
 			updateActions();
 		});
 	}
 
-	/* this is the subscriber callback: 
-	 * notice how LetterSwapGame is tightly coupled with PebbleLetter
-	 * but PebbleLetter is agnostic of LetterSwapGame   */
-	private void onPebbleSelected(PropertyChangeEvent evt) {
-		PebbleLetter source = (PebbleLetter) evt.getSource();
-		if (selectedPebble != null && selectedPebble != source) {
-			selectedPebble.setSelected(false);  // implements toggle-like selection
+	// 'passes' the selection on to a different pebble
+	private void passSelectionTo(PebbleLetter recipient) {
+		// implements toggle-like selection
+		if (selectedPebble != null) {   // is null at initialization!
+			selectedPebble.setSelected(false);  
 		}
-		// updates selectedPebble
-		selectedPebble = source;
+		recipient.setSelected(true);		
+		selectedPebble = recipient;  // updates selectedPebble
 		updateActions();
 
 	}
 
 	private void updateActions() {
-		boolean canL = selectedPebble != null && selectedPebble.canSwapLeft();
-		boolean canR = selectedPebble != null && selectedPebble.canSwapRight();
-		leftAction.setEnabled(canL);
-		rightAction.setEnabled(canR);
+		leftAction.setEnabled(selectedPebble != null && selectedPebble.canSwapLeft());
+		rightAction.setEnabled(selectedPebble != null && selectedPebble.canSwapRight());
 	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			new LetterSwapGame("NABNAA".toCharArray()).setVisible(true);
+			new LetterSwapGame("INLAPTESA".toCharArray()).setVisible(true);
 		});
 	}
 }

@@ -2,8 +2,6 @@ package swingViews;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class PebbleLetter extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -28,13 +26,6 @@ public class PebbleLetter extends JPanel {
         this.letter = letter;
         setPreferredSize(new Dimension(50, 50));
         setOpaque(false);
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setSelected(true);    // implements out-of-the-blue pebble selection
-            }
-        });
     }
 
     public void setLeftNeighbor(PebbleLetter neighbor) {
@@ -45,9 +36,7 @@ public class PebbleLetter extends JPanel {
         this.rightNeighbor = neighbor;
     }
     
-    /** 
-     * Expose neighbors so the frame can shift selection 
-     */
+    // expose neighbors so the frame can shift selection 
     public PebbleLetter getLeftNeighbor() {
         return leftNeighbor;
     }
@@ -87,12 +76,8 @@ public class PebbleLetter extends JPanel {
     }
 
     public void setSelected(boolean sel) {
-        boolean old = this.selected;
         this.selected = sel;
-        repaint();
-        if (sel == true && old == false) {   // only fires when a pebble is newly selected
-        	firePropertyChange("newlySelected", false, true);
-        }
+        repaint();   // setSelected is never called 'in vain'
     }
 
     @Override
