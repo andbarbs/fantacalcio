@@ -70,8 +70,4 @@ public class FantaTeamViewer {
 		});
 		return result;
 	}
-
-
-
-
 }

@@ -80,11 +80,7 @@ public class UserService {
 		return transactionManager.fromTransaction(
 				(context) -> context.getPlayerRepository().findBySurname(surname));
 	}
-	
-	public List<Player> getPlayersByTeam(FantaTeam team) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getPlayerRepository().findByTeam(team));
-	}
+
 
 	// Proposals
 
@@ -176,7 +172,8 @@ public class UserService {
 			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
 			
-			FantaTeam team = lineUp.getTeam();
+			String teamName = lineUp.getTeam().getName();
+
 			LineUpViewer lineUpViewer = lineUp.extract();
 			FantaTeamViewer teamViewer = new FantaTeamViewer(team);	
 

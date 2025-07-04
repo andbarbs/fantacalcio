@@ -1,6 +1,8 @@
 package domainModel;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
@@ -139,7 +141,6 @@ public abstract class Player {
 			visitor.visitForward(this);
 		}
     }
-    
-    
+
 }
 
