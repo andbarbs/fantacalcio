@@ -8,7 +8,7 @@ public class TransactionContext {
 	private final LeagueRepository leagueRepository;
 	private final MatchRepository matchRepository;
 	private final PlayerRepository playerRepository;
-	private final TeamRepository teamRepository;
+	private final FantaTeamRepository teamRepository;
 	private final GradeRepository gradeRepository;
 	private final ProposalRepository proposalRepository;
 	private final ContractRepository contractRepository;
@@ -19,7 +19,7 @@ public class TransactionContext {
 
 	public TransactionContext(EntityManagerFactory entityManagerFactory, LeagueRepository leagueRepository,
 							  MatchRepository matchRepository, PlayerRepository playerRepository,
-							  TeamRepository teamRepository, GradeRepository gradeRepository,
+							  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 							  ProposalRepository proposalRepository, ContractRepository contractRepository,
 							  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
 							  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository) {
@@ -53,7 +53,7 @@ public class TransactionContext {
 		return playerRepository;
 	}
 
-	public TeamRepository getTeamRepository() {
+	public FantaTeamRepository getTeamRepository() {
 		return teamRepository;
 	}
 

@@ -1,14 +1,13 @@
 package businessLogic.repositories;
 
-import java.util.Set;
-
+import java.util.List;
 import domainModel.FantaTeam;
 import domainModel.FantaUser;
 import domainModel.League;
 
-public interface TeamRepository {
+public interface FantaTeamRepository {
 
-	public Set<FantaTeam> getAllTeams(League league);
+	public List<FantaTeam> getAllTeams(League league);
 
 	public void saveTeam(FantaTeam team);
 

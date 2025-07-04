@@ -148,15 +148,13 @@ public class UserService {
 	// Standings
 
 	public List<FantaTeam> getStandings(League league) {
-		Set<FantaTeam> teams = getAllFantaTeams(league);
-
-		return teams.stream().sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
+		return getAllFantaTeams(league).stream().sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
 				.collect(Collectors.toList());
 	}
 
 	// Teams
 
-	public Set<FantaTeam> getAllFantaTeams(League league) {
+	public List<FantaTeam> getAllFantaTeams(League league) {
 		return transactionManager.fromTransaction(
 				(context) -> context.getTeamRepository().getAllTeams(league));
 	}

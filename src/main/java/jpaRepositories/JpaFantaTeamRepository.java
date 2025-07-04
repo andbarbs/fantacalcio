@@ -1,12 +1,10 @@
 package jpaRepositories;
 
-import businessLogic.repositories.TeamRepository;
+import businessLogic.repositories.FantaTeamRepository;
 import domainModel.FantaTeam;
 import domainModel.FantaTeam_;
 import domainModel.FantaUser;
 import domainModel.League;
-import domainModel.LineUp;
-import domainModel.LineUp_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -14,7 +12,7 @@ import jakarta.persistence.criteria.Root;
 
 import java.util.List;
 
-public class JpaFantaTeamRepository extends BaseJpaRepository implements TeamRepository {
+public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTeamRepository {
 	public JpaFantaTeamRepository(EntityManager em) {
 		super(em);
 	}

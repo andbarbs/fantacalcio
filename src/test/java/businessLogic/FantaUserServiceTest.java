@@ -32,7 +32,7 @@ public class FantaUserServiceTest {
     @Mock
     private PlayerRepository playerRepository;
     @Mock
-    private TeamRepository teamRepository;
+    private FantaTeamRepository teamRepository;
     @Mock
     private GradeRepository gradeRepository;
     @Mock
