@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import domainModel.MatchDaySerieA;
 import jakarta.persistence.EntityManager;
 
-class HibernateMatchDayRepositoryTest {
+class JpaMatchDayRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 

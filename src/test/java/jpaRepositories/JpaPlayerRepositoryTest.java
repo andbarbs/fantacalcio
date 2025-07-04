@@ -21,7 +21,7 @@ import domainModel.Player.*;
 import jakarta.persistence.EntityManager;
 
 @DisplayName("tests for HibernatePlayerRepository")
-class HibernatePlayerRepositoryTest {
+class JpaPlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
 
