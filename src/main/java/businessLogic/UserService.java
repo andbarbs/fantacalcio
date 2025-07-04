@@ -141,7 +141,6 @@ public class UserService {
 				context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
 	}
 
-
 	// Grades
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
@@ -178,28 +177,27 @@ public class UserService {
 			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
 			
-			String teamName = lineUp.getTeam().getName();
-
-			LineUpViewer lineUpViewer = lineUp.extract();
-			FantaTeamViewer teamViewer = new FantaTeamViewer(team);	
+			League league = lineUp.getTeam().getLeague();
+			FantaUser user = lineUp.getTeam().getFantaManager();
+			FantaTeam team = getFantaTeamByUserAndLeague(league, user);
 
 			// Collect all players from the LineUp
 			Set<Player> allPlayers = new HashSet<>();
-			allPlayers.addAll(lineUpViewer.starterGoalkeepers());
-			allPlayers.addAll(lineUpViewer.starterDefenders());
-			allPlayers.addAll(lineUpViewer.starterMidfielders());
-			allPlayers.addAll(lineUpViewer.starterForwards());
-			allPlayers.addAll(lineUpViewer.substituteGoalkeepers());
-			allPlayers.addAll(lineUpViewer.substituteDefenders());
-			allPlayers.addAll(lineUpViewer.substituteMidfielders());
-			allPlayers.addAll(lineUpViewer.substituteForwards());
+			allPlayers.addAll(lineUp.extract().starterGoalkeepers());
+			allPlayers.addAll(lineUp.extract().starterDefenders());
+			allPlayers.addAll(lineUp.extract().starterMidfielders());
+			allPlayers.addAll(lineUp.extract().starterForwards());
+			allPlayers.addAll(lineUp.extract().substituteGoalkeepers());
+			allPlayers.addAll(lineUp.extract().substituteDefenders());
+			allPlayers.addAll(lineUp.extract().substituteMidfielders());
+			allPlayers.addAll(lineUp.extract().substituteForwards());
 
 			// Collect all players contracted to the team
 			Set<Player> teamPlayers = new HashSet<>();
-			teamPlayers.addAll(teamViewer.goalkeepers());
-			teamPlayers.addAll(teamViewer.defenders());
-			teamPlayers.addAll(teamViewer.midfielders());
-			teamPlayers.addAll(teamViewer.forwards());
+			teamPlayers.addAll(team.extract().goalkeepers());
+			teamPlayers.addAll(team.extract().defenders());
+			teamPlayers.addAll(team.extract().midfielders());
+			teamPlayers.addAll(team.extract().forwards());
 
 			// Validate ownership
 			for (Player player : allPlayers) {
