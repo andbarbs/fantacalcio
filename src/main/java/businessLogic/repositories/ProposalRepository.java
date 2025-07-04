@@ -8,9 +8,7 @@ import domainModel.Proposal;
 
 public interface ProposalRepository {
 
-	void acceptProposal(Proposal proposal);
-
-	boolean rejectedProposal(Proposal proposal);
+	void deleteProposal(Proposal proposal);
 
 	List<Proposal> getMyProposals(League actualLeague, FantaTeam myTeam);
 

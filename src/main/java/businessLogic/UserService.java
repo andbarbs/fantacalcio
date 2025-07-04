@@ -35,12 +35,19 @@ public class UserService {
 			}else{
 				throw new IllegalArgumentException("A league with the same league code already exists");
 			}
-
 		});
 	}
 
-	public void joinLeague(FantaTeam fantaTeam) {
-		 transactionManager.inTransaction((context) -> context.getTeamRepository().saveTeam(fantaTeam));
+	public void joinLeague(FantaTeam fantaTeam, League league) {
+		 transactionManager.inTransaction((context) -> {
+			 FantaUser user = fantaTeam.getFantaManager();
+			 Set<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);
+			 if(UserLeagues.contains(league)) {
+				 throw new IllegalArgumentException("You have already a team in this league");
+			 } else {
+				 context.getTeamRepository().saveTeam(fantaTeam);
+			 }
+		 });
 	}
 
 	// Matches
@@ -89,14 +96,29 @@ public class UserService {
 				(context) -> context.getProposalRepository().getMyProposals(league, team));
 	}
 
-	public void acceptProposal(Proposal proposal) {
+	public void acceptProposal(Proposal.PendingProposal proposal) {
 		transactionManager.inTransaction(
-				(context) -> context.getProposalRepository().acceptProposal(proposal));
+				(context) -> {
+					Contract receivedContract = new Contract(proposal.getOffedredContract().getTeam(),
+							proposal.getRequestedContract().getPlayer());
+					Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
+							proposal.getOffedredContract().getPlayer());
+					context.getContractRepository().deleteContract(proposal.getRequestedContract());
+					context.getContractRepository().deleteContract(proposal.getOffedredContract());
+					context.getContractRepository().saveContract(receivedContract);
+					context.getContractRepository().saveContract(givenContract);
+					context.getProposalRepository().deleteProposal(proposal);
+				});
 	}
 
-	public boolean rejectProposal(Proposal proposal) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getProposalRepository().rejectedProposal(proposal));
+	public void rejectProposal(Proposal.PendingProposal proposal) {
+		transactionManager.inTransaction(
+				(context) -> {
+					Proposal.RejectedProposal rejectedProposal = new Proposal.
+							RejectedProposal(proposal.getOffedredContract(), proposal.getRequestedContract());
+					context.getProposalRepository().deleteProposal(proposal);
+					context.getProposalRepository().saveProposal(rejectedProposal);
+				});
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam,
@@ -105,18 +127,21 @@ public class UserService {
 			throw new IllegalArgumentException("The players don't have the same role");
 		}
 
-		return transactionManager.fromTransaction(
-				(context) -> {
-			Contract requestedContract = context.getContractRepository().getContract(opponentTeam, requestedPlayer);
-			Contract offeredContract = context.getContractRepository().getContract(myTeam, offeredPlayer);
+		return transactionManager.fromTransaction((context) -> {
+			Optional<Contract> requestedContract = opponentTeam.getContracts().stream().filter(c -> c.getTeam().equals(opponentTeam) && c.getPlayer().equals(requestedPlayer)).findFirst();
+			Optional<Contract> offeredContract = myTeam.getContracts().stream()
+							.filter(c -> c.getTeam().equals(myTeam) && c.getPlayer().equals(offeredPlayer))
+							.findFirst();
+			if(requestedContract.isPresent() && offeredContract.isPresent()){
+				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
-			Proposal newProposal = new Proposal.PendingProposal(offeredContract, requestedContract);
-
-			if (context.getProposalRepository().proposalExists(newProposal)) {
-				throw new IllegalArgumentException("The proposal already exists");
+				if (context.getProposalRepository().proposalExists(newProposal)) {
+					throw new IllegalArgumentException("The proposal already exists");
+				}
+				return context.getProposalRepository().saveProposal(newProposal);
+			} else{
+				return false;
 			}
-
-			return context.getProposalRepository().saveProposal(newProposal);
 		});
 	}
 
@@ -140,7 +165,6 @@ public class UserService {
 		return transactionManager.fromTransaction((context)->
 				context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
 	}
-
 
 	// Grades
 
@@ -166,9 +190,9 @@ public class UserService {
 				context.getLineUpRepository().getLineUpByMatchAndTeam(league, match, fantaTeam));
     }
 
-	public void saveLineUp(LineUp lineUp, LocalDate today){
+	public void saveLineUp(LineUp lineUp){
 		transactionManager.inTransaction((context)-> {
-			
+			LocalDate today = LocalDate.now();
 			DayOfWeek day = today.getDayOfWeek();
 			
 			Match match = lineUp.getMatch();
@@ -178,28 +202,27 @@ public class UserService {
 			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
 			
-			String teamName = lineUp.getTeam().getName();
-
-			LineUpViewer lineUpViewer = lineUp.extract();
-			FantaTeamViewer teamViewer = new FantaTeamViewer(team);	
+			League league = lineUp.getTeam().getLeague();
+			FantaUser user = lineUp.getTeam().getFantaManager();
+			FantaTeam team = getFantaTeamByUserAndLeague(league, user);
 
 			// Collect all players from the LineUp
 			Set<Player> allPlayers = new HashSet<>();
-			allPlayers.addAll(lineUpViewer.starterGoalkeepers());
-			allPlayers.addAll(lineUpViewer.starterDefenders());
-			allPlayers.addAll(lineUpViewer.starterMidfielders());
-			allPlayers.addAll(lineUpViewer.starterForwards());
-			allPlayers.addAll(lineUpViewer.substituteGoalkeepers());
-			allPlayers.addAll(lineUpViewer.substituteDefenders());
-			allPlayers.addAll(lineUpViewer.substituteMidfielders());
-			allPlayers.addAll(lineUpViewer.substituteForwards());
+			allPlayers.addAll(lineUp.extract().starterGoalkeepers());
+			allPlayers.addAll(lineUp.extract().starterDefenders());
+			allPlayers.addAll(lineUp.extract().starterMidfielders());
+			allPlayers.addAll(lineUp.extract().starterForwards());
+			allPlayers.addAll(lineUp.extract().substituteGoalkeepers());
+			allPlayers.addAll(lineUp.extract().substituteDefenders());
+			allPlayers.addAll(lineUp.extract().substituteMidfielders());
+			allPlayers.addAll(lineUp.extract().substituteForwards());
 
 			// Collect all players contracted to the team
 			Set<Player> teamPlayers = new HashSet<>();
-			teamPlayers.addAll(teamViewer.goalkeepers());
-			teamPlayers.addAll(teamViewer.defenders());
-			teamPlayers.addAll(teamViewer.midfielders());
-			teamPlayers.addAll(teamViewer.forwards());
+			teamPlayers.addAll(team.extract().goalkeepers());
+			teamPlayers.addAll(team.extract().defenders());
+			teamPlayers.addAll(team.extract().midfielders());
+			teamPlayers.addAll(team.extract().forwards());
 
 			// Validate ownership
 			for (Player player : allPlayers) {
@@ -213,6 +236,4 @@ public class UserService {
 			
 			context.getLineUpRepository().saveLineUp(lineUp);});
 	}
-
-
 }
