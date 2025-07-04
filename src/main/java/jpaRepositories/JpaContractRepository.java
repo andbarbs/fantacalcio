@@ -15,4 +15,14 @@ public class JpaContractRepository extends BaseJpaRepository implements Contract
 
         return null;
     }
+
+    @Override
+    public void deleteContract(Contract contract) {
+
+    }
+
+    @Override
+    public void saveContract(Contract contract) {
+
+    }
 }

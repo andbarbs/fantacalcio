@@ -35,7 +35,6 @@ public class UserService {
 			}else{
 				throw new IllegalArgumentException("A league with the same league code already exists");
 			}
-
 		});
 	}
 
@@ -97,14 +96,29 @@ public class UserService {
 				(context) -> context.getProposalRepository().getMyProposals(league, team));
 	}
 
-	public void acceptProposal(Proposal proposal) {
+	public void acceptProposal(Proposal.PendingProposal proposal) {
 		transactionManager.inTransaction(
-				(context) -> context.getProposalRepository().acceptProposal(proposal));
+				(context) -> {
+					Contract receivedContract = new Contract(proposal.getOffedredContract().getTeam(),
+							proposal.getRequestedContract().getPlayer());
+					Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
+							proposal.getOffedredContract().getPlayer());
+					context.getContractRepository().deleteContract(proposal.getRequestedContract());
+					context.getContractRepository().deleteContract(proposal.getOffedredContract());
+					context.getContractRepository().saveContract(receivedContract);
+					context.getContractRepository().saveContract(givenContract);
+					context.getProposalRepository().deleteProposal(proposal);
+				});
 	}
 
-	public boolean rejectProposal(Proposal proposal) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getProposalRepository().rejectedProposal(proposal));
+	public void rejectProposal(Proposal.PendingProposal proposal) {
+		transactionManager.inTransaction(
+				(context) -> {
+					Proposal.RejectedProposal rejectedProposal = new Proposal.
+							RejectedProposal(proposal.getOffedredContract(), proposal.getRequestedContract());
+					context.getProposalRepository().deleteProposal(proposal);
+					context.getProposalRepository().saveProposal(rejectedProposal);
+				});
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam,
@@ -222,6 +236,4 @@ public class UserService {
 			
 			context.getLineUpRepository().saveLineUp(lineUp);});
 	}
-
-
 }
