@@ -136,6 +136,12 @@ public class UserService {
 				(context) -> context.getTeamRepository().getAllTeams(league));
 	}
 
+	public FantaTeam getFantaTeamByUserAndLeague(League league, FantaUser user) {
+		return transactionManager.fromTransaction((context)->
+				context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
+	}
+
+
 	// Grades
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
