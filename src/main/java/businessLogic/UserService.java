@@ -38,9 +38,17 @@ public class UserService {
 
 		});
 	}
-//TODO controllare che un user non abbia già un team in quella lega
-	public void joinLeague(FantaTeam fantaTeam) {
-		 transactionManager.inTransaction((context) -> context.getTeamRepository().saveTeam(fantaTeam));
+
+	public void joinLeague(FantaTeam fantaTeam, League league) {
+		 transactionManager.inTransaction((context) -> {
+			 FantaUser user = fantaTeam.getFantaManager();
+			 Set<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);
+			 if(UserLeagues.contains(league)) {
+				 throw new IllegalArgumentException("You have already a team in this league");
+			 } else {
+				 context.getTeamRepository().saveTeam(fantaTeam);
+			 }
+		 });
 	}
 
 	// Matches
