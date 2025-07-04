@@ -99,12 +99,12 @@ public class UserService {
 	public void acceptProposal(Proposal.PendingProposal proposal) {
 		transactionManager.inTransaction(
 				(context) -> {
-					Contract receivedContract = new Contract(proposal.getOffedredContract().getTeam(),
+					Contract receivedContract = new Contract(proposal.getOfferedContract().getTeam(),
 							proposal.getRequestedContract().getPlayer());
 					Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
-							proposal.getOffedredContract().getPlayer());
+							proposal.getOfferedContract().getPlayer());
 					context.getContractRepository().deleteContract(proposal.getRequestedContract());
-					context.getContractRepository().deleteContract(proposal.getOffedredContract());
+					context.getContractRepository().deleteContract(proposal.getOfferedContract());
 					context.getContractRepository().saveContract(receivedContract);
 					context.getContractRepository().saveContract(givenContract);
 					context.getProposalRepository().deleteProposal(proposal);
@@ -115,7 +115,7 @@ public class UserService {
 		transactionManager.inTransaction(
 				(context) -> {
 					Proposal.RejectedProposal rejectedProposal = new Proposal.
-							RejectedProposal(proposal.getOffedredContract(), proposal.getRequestedContract());
+							RejectedProposal(proposal.getOfferedContract(), proposal.getRequestedContract());
 					context.getProposalRepository().deleteProposal(proposal);
 					context.getProposalRepository().saveProposal(rejectedProposal);
 				});
