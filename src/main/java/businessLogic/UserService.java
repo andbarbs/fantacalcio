@@ -38,7 +38,7 @@ public class UserService {
 
 		});
 	}
-
+//TODO controllare che un user non abbia già un team in quella lega
 	public void joinLeague(FantaTeam fantaTeam) {
 		 transactionManager.inTransaction((context) -> context.getTeamRepository().saveTeam(fantaTeam));
 	}
@@ -105,18 +105,21 @@ public class UserService {
 			throw new IllegalArgumentException("The players don't have the same role");
 		}
 
-		return transactionManager.fromTransaction(
-				(context) -> {
-			Contract requestedContract = context.getContractRepository().getContract(opponentTeam, requestedPlayer);
-			Contract offeredContract = context.getContractRepository().getContract(myTeam, offeredPlayer);
+		return transactionManager.fromTransaction((context) -> {
+			Optional<Contract> requestedContract = opponentTeam.getContracts().stream().filter(c -> c.getTeam().equals(opponentTeam) && c.getPlayer().equals(requestedPlayer)).findFirst();
+			Optional<Contract> offeredContract = myTeam.getContracts().stream()
+							.filter(c -> c.getTeam().equals(myTeam) && c.getPlayer().equals(offeredPlayer))
+							.findFirst();
+			if(requestedContract.isPresent() && offeredContract.isPresent()){
+				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
-			Proposal newProposal = new Proposal.PendingProposal(offeredContract, requestedContract);
-
-			if (context.getProposalRepository().proposalExists(newProposal)) {
-				throw new IllegalArgumentException("The proposal already exists");
+				if (context.getProposalRepository().proposalExists(newProposal)) {
+					throw new IllegalArgumentException("The proposal already exists");
+				}
+				return context.getProposalRepository().saveProposal(newProposal);
+			} else{
+				return false;
 			}
-
-			return context.getProposalRepository().saveProposal(newProposal);
 		});
 	}
 
