@@ -23,8 +23,7 @@ public class FantaTeam {
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private FantaUser fantaManager;
     
-    // qui va inserito  CASCADING!!!
-    @OneToMany(mappedBy = Contract_.TEAM)
+	@OneToMany(mappedBy = Contract_.TEAM, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Contract> contracts;
 
     protected FantaTeam() {}
