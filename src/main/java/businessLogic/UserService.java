@@ -168,9 +168,9 @@ public class UserService {
 				context.getLineUpRepository().getLineUpByMatchAndTeam(league, match, fantaTeam));
     }
 
-	public void saveLineUp(LineUp lineUp, LocalDate today){
+	public void saveLineUp(LineUp lineUp){
 		transactionManager.inTransaction((context)-> {
-			
+			LocalDate today = LocalDate.now();
 			DayOfWeek day = today.getDayOfWeek();
 			
 			Match match = lineUp.getMatch();
