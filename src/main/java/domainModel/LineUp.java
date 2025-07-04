@@ -24,7 +24,6 @@ public abstract class LineUp {
 	@JoinColumn(name = LineUp_.TEAM)
 	private FantaTeam team;
     
-    // qui va inserito  CASCADING!!!
 	@OneToMany(mappedBy = Fielding_.LINE_UP, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Fielding> fieldings;
 
