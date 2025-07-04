@@ -27,7 +27,7 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 
         delete.where(
                 cb.and(
-                        cb.equal(root.get(Proposal_.offedredContract), proposal.getOffedredContract()),
+                        cb.equal(root.get(Proposal_.offeredContract), proposal.getOfferedContract()),
                         cb.equal(root.get(Proposal_.requestedContract), proposal.getRequestedContract())
                 )
         );

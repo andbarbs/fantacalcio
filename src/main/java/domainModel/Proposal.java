@@ -11,7 +11,7 @@ public abstract class Proposal {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY )
-    private Contract offedredContract;
+    private Contract offeredContract;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY )
     private Contract requestedContract;
@@ -19,12 +19,12 @@ public abstract class Proposal {
     protected Proposal() {}
 
     protected Proposal(Contract offedredContract, Contract requestedContract) {
-        this.offedredContract = offedredContract;
+        this.offeredContract = offedredContract;
         this.requestedContract = requestedContract;
     }
 
-    public Contract getOffedredContract() {
-        return offedredContract;
+    public Contract getOfferedContract() {
+        return offeredContract;
     }
 
     public Contract getRequestedContract() {
@@ -35,12 +35,12 @@ public abstract class Proposal {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Proposal proposal = (Proposal) o;
-        return Objects.equals(offedredContract, proposal.offedredContract) && Objects.equals(requestedContract, proposal.requestedContract) ;
+        return Objects.equals(offeredContract, proposal.offeredContract) && Objects.equals(requestedContract, proposal.requestedContract) ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(offedredContract, requestedContract);
+        return Objects.hash(offeredContract, requestedContract);
     }
 
     @Entity
