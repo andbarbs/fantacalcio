@@ -1,82 +1,65 @@
 package swingViews;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class LetterSwapGame extends JFrame {
+public class PebbleFrame<E extends PebbleFrame.SwappablePanel<E>> extends JFrame {
 	private static final long serialVersionUID = 1L;
-
-	// adds toggle-like & content-tracking 'selectability' to PebbleLetter
-	private class SelectablePebbleLetter extends PebbleLetter {
+	
+	// the type for the kind of Panel that can be handled by this Frame
+	public static abstract class SwappablePanel<T> extends JPanel {
 		private static final long serialVersionUID = 1L;
+		
+		// 1) swapping logic
+		private T leftNeighbor, rightNeighbor;
+		void setLeftNeighbor(T left)  { this.leftNeighbor  = left; }
+		void setRightNeighbor(T right){ this.rightNeighbor = right; }
 
-		boolean selected = false;
+		protected abstract void swapContentWith(T other);	// subclasses must implement this swapping method!
 
-		SelectablePebbleLetter(char letter) {
-			super(letter);
-		}
-
-		@Override
-		protected void pullFrom(PebbleLetter sender) {
-			super.pullFrom(sender); // deals with content swapping
-
-			// adds selection swapping (enabling content-tracking selection)
-			LetterSwapGame.this.passSelectionTo(this);
-		}
-
-		@Override
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			int w = getWidth(), h = getHeight();
-			Graphics2D g2 = (Graphics2D) g.create();
-
-			// draw pebble circle
-			g2.setColor(selected ? Color.ORANGE : Color.LIGHT_GRAY);
-			g2.fillOval(5, 5, w - 10, h - 10);
-
-			// draw letter
-			g2.setColor(Color.BLACK);
-			g2.setFont(g2.getFont().deriveFont(Font.BOLD, 24f));
-			FontMetrics fm = g2.getFontMetrics();
-			String s = String.valueOf(letter);
-			int sw = fm.stringWidth(s);
-			int sh = fm.getAscent();
-			g2.drawString(s, (w - sw) / 2, (h + sh) / 2 - 4);
-
-			g2.dispose();
-		}
+		private void swapLeft() {	swapContentWith(leftNeighbor); 	}
+		private void swapRight() {	swapContentWith(rightNeighbor);	}	
+		private boolean canSwapLeft() {   return leftNeighbor  != null;  }
+	    private boolean canSwapRight() {  return rightNeighbor != null;  }	
+	    
+	    // 2) highlighting logic
+	    protected abstract void highlight();
+	    protected abstract void dehighlight();
 	}
+	
+	// private utility method for wiring up SwappablePanel instances
+	private <P extends SwappablePanel<P>> void chain(List<P> panels) {
+	    for (int i = 0; i < panels.size(); i++) {
+	      P cur = panels.get(i);
+	      if (i > 0)  cur.setLeftNeighbor(panels.get(i - 1));
+	      if (i < panels.size() - 1) cur.setRightNeighbor(panels.get(i + 1));
+	    }
+	 }	
 
-	private SelectablePebbleLetter selectedPebble;
-	private Action leftAction, rightAction; // Actions are stored instead of JButtons!
+	private SwappablePanel<E> selectedPebble;
+	private Action leftAction, rightAction;
 
-	public LetterSwapGame(String initialLetters) {
-		super("LetterSwapGame");
+	public PebbleFrame(String title, List<E> pebbles) {
+		super(title);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		// 1. Create selectable pebbles and wire out-of-nowhere selection
-		List<SelectablePebbleLetter> pebbles = initialLetters
-				.chars()
-				.mapToObj(c -> (char) c)
-				.map(t -> new SelectablePebbleLetter(t)).collect(Collectors.toCollection(ArrayList::new));
-		PebbleLetter.chain(pebbles);
+		chain(pebbles);
 		JPanel pebblePanel = new JPanel();
 		pebblePanel.setLayout(new BoxLayout(pebblePanel, BoxLayout.X_AXIS));
 		pebblePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-		for (SelectablePebbleLetter p : pebbles) {
+		for (SwappablePanel<E> p : pebbles) {
 			p.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					// implements out-of-nowhere selection
-					if (!p.selected) {
-						LetterSwapGame.this.passSelectionTo(p);
+					if (p != selectedPebble) {
+						PebbleFrame.this.passSelectionTo(p); // implements out-of-nowhere selection
 					}
 				}
 			});
@@ -91,7 +74,8 @@ public class LetterSwapGame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedPebble != null && selectedPebble.canSwapLeft()) {
-					selectedPebble.swapLeft(); // includes content-tracking selection
+					selectedPebble.swapLeft(); 
+					PebbleFrame.this.passSelectionTo(selectedPebble.leftNeighbor); // implements content-tracking selection
 				}
 			}
 		};
@@ -102,7 +86,8 @@ public class LetterSwapGame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedPebble != null && selectedPebble.canSwapRight()) {
-					selectedPebble.swapRight(); // includes content-tracking selection
+					selectedPebble.swapRight();
+					PebbleFrame.this.passSelectionTo(selectedPebble.rightNeighbor); // implements content-tracking selection
 				}
 			}
 		};
@@ -125,15 +110,13 @@ public class LetterSwapGame extends JFrame {
 		setVisible(true);
 	}
 
-	// 'passes' the selection on to the newly selected recipient pebble
-	private void passSelectionTo(SelectablePebbleLetter recipient) {
+	// 'passes' the selection on to a newly selected recipient pebble
+	private void passSelectionTo(SwappablePanel<E> recipient) {
 		// implements toggle-like selection
 		if (selectedPebble != null) { // is null at initialization!
-			selectedPebble.selected = false;
-			selectedPebble.repaint();
+			selectedPebble.dehighlight();
 		}
-		recipient.selected = true;
-		recipient.repaint();
+		recipient.highlight();
 		selectedPebble = recipient; // updates selectedPebble
 
 		// updates actions based on selectedPebble
@@ -143,7 +126,7 @@ public class LetterSwapGame extends JFrame {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			new LetterSwapGame("neidoac");
+			new PebbleFrame<LetterPebble>("Letter Swap Game", LetterPebble.fromString("PALESTINA"));
 		});
 	}
 }
