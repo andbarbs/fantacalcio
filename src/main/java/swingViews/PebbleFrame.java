@@ -7,75 +7,80 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class PebbleFrame<E extends PebbleFrame.SwappablePanel<E>> extends JFrame {
+public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	// the type for the kind of Panel that can be handled by this Frame
-	public static abstract class SwappablePanel<T> extends JPanel {
-		private static final long serialVersionUID = 1L;
+	// public interface clients must implement – besides extending JPanel – so PebbleFrame can drive them
+	public static interface Swappable<T> {	    
+	    void swapContentWith(T other);  // Swap the content of this with another	    
+	    void highlight(); 				// Draw yourself in a “highlighted” state
+	    void dehighlight(); 			// Draw yourself in a “normal” state
+	}
+	 
+	// the internal plumbing type PebbleFrame uses to handle client instances
+	private class ClientSlot extends JPanel {
+		static final long serialVersionUID = 1L;
+		Q panel;                        // the client instance
 		
-		// 1) swapping logic
-		private T leftNeighbor, rightNeighbor;
-		void setLeftNeighbor(T left)  { this.leftNeighbor  = left; }
-		void setRightNeighbor(T right){ this.rightNeighbor = right; }
-
-		protected abstract void swapContentWith(T other);	// subclasses must implement this swapping method!
-
-		private void swapLeft() {	swapContentWith(leftNeighbor); 	}
-		private void swapRight() {	swapContentWith(rightNeighbor);	}	
-		private boolean canSwapLeft() {   return leftNeighbor  != null;  }
-	    private boolean canSwapRight() {  return rightNeighbor != null;  }	
-	    
-	    // 2) highlighting logic
-	    protected abstract void highlight();
-	    protected abstract void dehighlight();
+		ClientSlot(Q panel) {
+		    this.panel = panel;
+		    setLayout(new BorderLayout());
+		    add(panel, BorderLayout.CENTER);
+		}
+		
+		ClientSlot leftSlot, rightSlot;   		// neighbors in the chain
+		boolean canSwapLeft()  { return leftSlot  != null; }
+		boolean canSwapRight() { return rightSlot != null; }		
+		void swapLeft()  { panel.swapContentWith(leftSlot.panel);  }
+		void swapRight() { panel.swapContentWith(rightSlot.panel); }
+		
+		void select()   { panel.highlight();   }
+		void deselect() { panel.dehighlight(); }
 	}
 	
-	// private utility method for wiring up SwappablePanel instances
-	private void chain(List<E> panels) {
-	    for (int i = 0; i < panels.size(); i++) {
-	      E cur = panels.get(i);
-	      if (i > 0)  cur.setLeftNeighbor(panels.get(i - 1));
-	      if (i < panels.size() - 1) cur.setRightNeighbor(panels.get(i + 1));
-	    }
-	 }	
+	private ClientSlot selectedSlot; // bookkeeping reference for managing selection
+    private Action leftAction, rightAction;
 
-	private SwappablePanel<E> selectedPebble;
-	private Action leftAction, rightAction;
+    public PebbleFrame(String title, List<Q> clients) {
+        super(title);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-	public PebbleFrame(String title, List<E> pebbles) {
-		super(title);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+        // 1. Wrap each client in the plumbing type
+        List<ClientSlot> slots = clients.stream()
+            .map(ClientSlot::new)
+            .collect(Collectors.toList());
 
-		// 1. Create selectable pebbles and wire out-of-nowhere selection
-		chain(pebbles);
-		JPanel pebblePanel = new JPanel();
-		pebblePanel.setLayout(new BoxLayout(pebblePanel, BoxLayout.X_AXIS));
-		pebblePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-		for (SwappablePanel<E> p : pebbles) {
-			p.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (p != selectedPebble) {
-						PebbleFrame.this.passSelectionTo(p); // implements out-of-nowhere selection
+        // 2. Chain them
+        for (int i = 0; i < slots.size(); i++) {
+            if (i > 0)  slots.get(i).leftSlot = slots.get(i-1);
+            if (i < slots.size()-1) 
+                slots.get(i).rightSlot = slots.get(i+1);
+        }
+        
+        // 3. Build UI with adapters
+        JPanel pebblePanel = new JPanel(new FlowLayout());
+        slots.forEach(slot -> {
+            pebblePanel.add(slot);
+            slot.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                	if (slot != selectedSlot) {
+						PebbleFrame.this.passSelectionTo(slot); // implements out-of-nowhere selection
 					}
-				}
-			});
-			pebblePanel.add(p);
-			pebblePanel.add(Box.createHorizontalStrut(8));
-		}
+                }
+            });
+        });
 
-		// 2. Define Actions for swapping adjacent pebbles
+		// 4. Define Actions for swapping adjacent pebbles
 		leftAction = new AbstractAction("←") {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedPebble != null && selectedPebble.canSwapLeft()) {
-					selectedPebble.swapLeft(); 
-					PebbleFrame.this.passSelectionTo(selectedPebble.leftNeighbor); // implements content-tracking selection
+				if (selectedSlot != null && selectedSlot.canSwapLeft()) {
+					selectedSlot.swapLeft(); 
+					PebbleFrame.this.passSelectionTo(selectedSlot.leftSlot); // implements content-tracking selection
 				}
 			}
 		};
@@ -85,19 +90,19 @@ public class PebbleFrame<E extends PebbleFrame.SwappablePanel<E>> extends JFrame
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedPebble != null && selectedPebble.canSwapRight()) {
-					selectedPebble.swapRight();
-					PebbleFrame.this.passSelectionTo(selectedPebble.rightNeighbor); // implements content-tracking selection
+				if (selectedSlot != null && selectedSlot.canSwapRight()) {
+					selectedSlot.swapRight();
+					PebbleFrame.this.passSelectionTo(selectedSlot.rightSlot); // implements content-tracking selection
 				}
 			}
 		};
 
-		// 3. Buttons panel
+		// 5. Buttons panel
 		JPanel controls = new JPanel(new FlowLayout());
 		controls.add(new JButton(leftAction));
 		controls.add(new JButton(rightAction));
 
-		// 4. Layout frame
+		// 6. Lays out frame
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(pebblePanel, BorderLayout.CENTER);
 		getContentPane().add(controls, BorderLayout.SOUTH);
@@ -105,23 +110,23 @@ public class PebbleFrame<E extends PebbleFrame.SwappablePanel<E>> extends JFrame
 		pack();
 		setLocationRelativeTo(null);
 
-		// 5. Initial selection
-		passSelectionTo(pebbles.get(0));
+		// 7. Initial selection
+		passSelectionTo(slots.get(0));
 		setVisible(true);
 	}
 
-	// 'passes' the selection on to a newly selected recipient pebble
-	private void passSelectionTo(SwappablePanel<E> recipient) {
+	// 'passes' the selection on to a newly selected slot
+	private void passSelectionTo(ClientSlot  recipientSlot) {
 		// implements toggle-like selection
-		if (selectedPebble != null) { // is null at initialization!
-			selectedPebble.dehighlight();
+		if (selectedSlot != null) { // is null at initialization!
+			selectedSlot.deselect();
 		}
-		recipient.highlight();
-		selectedPebble = recipient; // updates selectedPebble
+		selectedSlot = recipientSlot; // updates selectedPebble
+		recipientSlot.select();
 
 		// updates actions based on selectedPebble
-		leftAction.setEnabled(selectedPebble != null && selectedPebble.canSwapLeft());
-		rightAction.setEnabled(selectedPebble != null && selectedPebble.canSwapRight());
+		leftAction.setEnabled(selectedSlot != null && selectedSlot.canSwapLeft());
+		rightAction.setEnabled(selectedSlot != null && selectedSlot.canSwapRight());
 	}
 
 	public static void main(String[] args) {

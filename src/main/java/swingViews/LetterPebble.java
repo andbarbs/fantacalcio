@@ -4,16 +4,18 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import swingViews.PebbleFrame.SwappablePanel;
+import javax.swing.JPanel;
 
-public class LetterPebble extends SwappablePanel<LetterPebble> {
+import swingViews.PebbleFrame.Swappable;
+
+public class LetterPebble extends JPanel implements Swappable<LetterPebble> {
 	private static final long serialVersionUID = 1L;
 	
 	// 1) content
 	protected char letter;
 	
 	@Override
-	protected void swapContentWith(LetterPebble other) {
+	public void swapContentWith(LetterPebble other) {
 		char temp = letter;
 		letter = other.letter;
 		other.letter = temp;
@@ -38,13 +40,13 @@ public class LetterPebble extends SwappablePanel<LetterPebble> {
 	private boolean highlighted;
 
 	@Override
-	protected void highlight() {
+	public void highlight() {
 		highlighted = true;
 		repaint();		
 	}
 
 	@Override
-	protected void dehighlight() {
+	public void dehighlight() {
 		highlighted = false;
 		repaint();
 	}
