@@ -33,9 +33,9 @@ public class PebbleFrame<E extends PebbleFrame.SwappablePanel<E>> extends JFrame
 	}
 	
 	// private utility method for wiring up SwappablePanel instances
-	private <P extends SwappablePanel<P>> void chain(List<P> panels) {
+	private void chain(List<E> panels) {
 	    for (int i = 0; i < panels.size(); i++) {
-	      P cur = panels.get(i);
+	      E cur = panels.get(i);
 	      if (i > 0)  cur.setLeftNeighbor(panels.get(i - 1));
 	      if (i < panels.size() - 1) cur.setRightNeighbor(panels.get(i + 1));
 	    }
