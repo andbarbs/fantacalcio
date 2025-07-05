@@ -8,9 +8,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
+import swingViews.BidirectionalPebbleChain.*;
 
-public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFrame.Highlightable> extends JFrame {
-	private static final long serialVersionUID = 1L;
+@SuppressWarnings("serial")
+public class BidirectionalPebbleChain
+	<Q extends JPanel & Swappable<Q> & Highlightable> 
+		extends JPanel {
 	
 	// public interfaces clients must implement – besides extending JPanel – so PebbleFrame can drive them
 	public static interface Swappable<T> {	    
@@ -22,9 +25,8 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFra
 	    void dehighlight(); 			// Draw yourself in a “normal” state
 	}
 	 
-	// the internal plumbing type PebbleFrame uses to handle client instances
+	// internal plumbing type PebbleFrame uses to handle client instances
 	private class PebbleSlot extends JPanel {
-		static final long serialVersionUID = 1L;
 		Q panel;                        // the client instance
 		
 		PebbleSlot(Q panel) {
@@ -46,30 +48,28 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFra
 	private PebbleSlot selectedSlot; // bookkeeping reference for managing selection
     private Action leftAction, rightAction;
 
-    public PebbleFrame(String title, List<Q> clients) {
-        super(title);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
+    public BidirectionalPebbleChain(List<Q> clients) {
+    	
         // 1. Wrap each client in the plumbing type
         List<PebbleSlot> slots = clients.stream()
             .map(PebbleSlot::new)
             .collect(Collectors.toList());
 
-        // 2. Chain them
+        // 2. Chain slots
         for (int i = 0; i < slots.size(); i++) {
             if (i > 0)  slots.get(i).leftSlot = slots.get(i-1);
             if (i < slots.size()-1) 
                 slots.get(i).rightSlot = slots.get(i+1);
         }
         
-        // 3. Build UI with adapters
+        // 3. Add slots to container and wire Panel listener
         JPanel pebblePanel = new JPanel(new FlowLayout());
         slots.forEach(slot -> {
             pebblePanel.add(slot);
             slot.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                 	if (slot != selectedSlot) {
-						PebbleFrame.this.moveSelectionTo(slot); // implements out-of-nowhere selection
+						BidirectionalPebbleChain.this.moveSelectionTo(slot); // implements out-of-nowhere selection
 					}
                 }
             });
@@ -77,25 +77,21 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFra
 
 		// 4. Define Actions for swapping adjacent pebbles
 		leftAction = new AbstractAction("←") {
-			private static final long serialVersionUID = 1L;
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedSlot != null && selectedSlot.canSwapLeft()) {
 					selectedSlot.swapLeft(); 
-					PebbleFrame.this.moveSelectionTo(selectedSlot.leftSlot); // implements content-tracking selection
+					BidirectionalPebbleChain.this.moveSelectionTo(selectedSlot.leftSlot); // implements content-tracking selection
 				}
 			}
 		};
 
 		rightAction = new AbstractAction("→") {
-			private static final long serialVersionUID = 1L;
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectedSlot != null && selectedSlot.canSwapRight()) {
 					selectedSlot.swapRight();
-					PebbleFrame.this.moveSelectionTo(selectedSlot.rightSlot); // implements content-tracking selection
+					BidirectionalPebbleChain.this.moveSelectionTo(selectedSlot.rightSlot); // implements content-tracking selection
 				}
 			}
 		};
@@ -106,16 +102,12 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFra
 		controls.add(new JButton(rightAction));
 
 		// 6. Lays out frame
-		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(pebblePanel, BorderLayout.CENTER);
-		getContentPane().add(controls, BorderLayout.SOUTH);
-
-		pack();
-		setLocationRelativeTo(null);
+		setLayout(new BorderLayout());
+		add(pebblePanel, BorderLayout.CENTER);
+		add(controls, BorderLayout.SOUTH);
 
 		// 7. Initial selection
 		moveSelectionTo(slots.get(0));
-		setVisible(true);
 	}
 
 	// 'passes' the selection on to a newly selected slot
@@ -134,7 +126,14 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFra
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			new PebbleFrame<LetterPebble>("Letter Swap Game", LetterPebble.fromString("PALESTINA"));
+			JFrame frame = new JFrame("letter Swap game");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setContentPane(
+					new BidirectionalPebbleChain<LetterPebble>(
+							LetterPebble.fromString("PALESTINA")));
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);			
 		});
 	}
 }
