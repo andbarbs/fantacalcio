@@ -9,28 +9,31 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JFrame {
+public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q> & PebbleFrame.Highlightable> extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	// public interface clients must implement – besides extending JPanel – so PebbleFrame can drive them
+	// public interfaces clients must implement – besides extending JPanel – so PebbleFrame can drive them
 	public static interface Swappable<T> {	    
-	    void swapContentWith(T other);  // Swap the content of this with another	    
+	    void swapContentWith(T other);  // Swap the content of this with another
+	}
+	
+	public static interface Highlightable {	    
 	    void highlight(); 				// Draw yourself in a “highlighted” state
 	    void dehighlight(); 			// Draw yourself in a “normal” state
 	}
 	 
 	// the internal plumbing type PebbleFrame uses to handle client instances
-	private class ClientSlot extends JPanel {
+	private class PebbleSlot extends JPanel {
 		static final long serialVersionUID = 1L;
 		Q panel;                        // the client instance
 		
-		ClientSlot(Q panel) {
+		PebbleSlot(Q panel) {
 		    this.panel = panel;
 		    setLayout(new BorderLayout());
 		    add(panel, BorderLayout.CENTER);
 		}
 		
-		ClientSlot leftSlot, rightSlot;   		// neighbors in the chain
+		PebbleSlot leftSlot, rightSlot;   		// neighbors in the chain
 		boolean canSwapLeft()  { return leftSlot  != null; }
 		boolean canSwapRight() { return rightSlot != null; }		
 		void swapLeft()  { panel.swapContentWith(leftSlot.panel);  }
@@ -40,7 +43,7 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
 		void deselect() { panel.dehighlight(); }
 	}
 	
-	private ClientSlot selectedSlot; // bookkeeping reference for managing selection
+	private PebbleSlot selectedSlot; // bookkeeping reference for managing selection
     private Action leftAction, rightAction;
 
     public PebbleFrame(String title, List<Q> clients) {
@@ -48,8 +51,8 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         // 1. Wrap each client in the plumbing type
-        List<ClientSlot> slots = clients.stream()
-            .map(ClientSlot::new)
+        List<PebbleSlot> slots = clients.stream()
+            .map(PebbleSlot::new)
             .collect(Collectors.toList());
 
         // 2. Chain them
@@ -66,7 +69,7 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
             slot.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                 	if (slot != selectedSlot) {
-						PebbleFrame.this.passSelectionTo(slot); // implements out-of-nowhere selection
+						PebbleFrame.this.moveSelectionTo(slot); // implements out-of-nowhere selection
 					}
                 }
             });
@@ -80,7 +83,7 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
 			public void actionPerformed(ActionEvent e) {
 				if (selectedSlot != null && selectedSlot.canSwapLeft()) {
 					selectedSlot.swapLeft(); 
-					PebbleFrame.this.passSelectionTo(selectedSlot.leftSlot); // implements content-tracking selection
+					PebbleFrame.this.moveSelectionTo(selectedSlot.leftSlot); // implements content-tracking selection
 				}
 			}
 		};
@@ -92,7 +95,7 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
 			public void actionPerformed(ActionEvent e) {
 				if (selectedSlot != null && selectedSlot.canSwapRight()) {
 					selectedSlot.swapRight();
-					PebbleFrame.this.passSelectionTo(selectedSlot.rightSlot); // implements content-tracking selection
+					PebbleFrame.this.moveSelectionTo(selectedSlot.rightSlot); // implements content-tracking selection
 				}
 			}
 		};
@@ -111,12 +114,12 @@ public class PebbleFrame<Q extends JPanel & PebbleFrame.Swappable<Q>> extends JF
 		setLocationRelativeTo(null);
 
 		// 7. Initial selection
-		passSelectionTo(slots.get(0));
+		moveSelectionTo(slots.get(0));
 		setVisible(true);
 	}
 
 	// 'passes' the selection on to a newly selected slot
-	private void passSelectionTo(ClientSlot  recipientSlot) {
+	private void moveSelectionTo(PebbleSlot  recipientSlot) {
 		// implements toggle-like selection
 		if (selectedSlot != null) { // is null at initialization!
 			selectedSlot.deselect();

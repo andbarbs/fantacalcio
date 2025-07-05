@@ -6,9 +6,10 @@ import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
 
+import swingViews.PebbleFrame.Highlightable;
 import swingViews.PebbleFrame.Swappable;
 
-public class LetterPebble extends JPanel implements Swappable<LetterPebble> {
+public class LetterPebble extends JPanel implements Swappable<LetterPebble>, Highlightable{
 	private static final long serialVersionUID = 1L;
 	
 	// 1) content
