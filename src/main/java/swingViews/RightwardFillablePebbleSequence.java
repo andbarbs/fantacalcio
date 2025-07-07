@@ -1,0 +1,64 @@
+package swingViews;
+
+import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.util.List;
+import swingViews.RightwardFillableSequenceDriver.RightwardFillable;
+
+@SuppressWarnings("serial")
+public class RightwardFillablePebbleSequence
+	<FillablePebble extends JComponent & RightwardFillable<FillablePebble>>
+		extends JPanel {
+	
+	/* 
+	 * arranges suitable clients in a sequence such that the contents 
+	 * of one client can be swapped with its left and right neighbors.
+	 * 
+	 * To this end, it
+	 * 	> employs a SwappableSequenceDriver that services client swap requests
+	 * 	> provides a graphical "selection" facility that allows the 
+	 *    user to pick the argument for a client swap request
+	 *  > provides buttons that allow the user to send a swap 
+	 *    request to the driver concerning the selected client
+	 */
+
+	private RightwardFillableSequenceDriver<FillablePebble> driver;
+	
+	public RightwardFillableSequenceDriver<FillablePebble> getDriver() {
+		return driver;
+	}
+
+	public RightwardFillablePebbleSequence(List<FillablePebble> clients) {
+
+		// 1. Initializes driver to client instances received
+		driver = new RightwardFillableSequenceDriver<FillablePebble>(clients);
+
+		// 3. Add slots to their container and wire selection mechanism
+		JPanel pebblePanel = new JPanel(new FlowLayout());
+		clients.forEach(pebblePanel::add);
+
+		// 6. Lays out frame
+		setLayout(new BorderLayout());
+		add(pebblePanel, BorderLayout.CENTER);
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			JFrame frame = new JFrame("letter Swap game");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			List<FillableTextField> clients = List.of(
+					new FillableTextField(),
+					new FillableTextField(),
+					new FillableTextField(),
+					new FillableTextField());
+			RightwardFillablePebbleSequence<FillableTextField> sequence = 
+					new RightwardFillablePebbleSequence<FillableTextField>(clients);
+			clients.forEach(t -> t.attachDriver(sequence.getDriver()));
+			frame.setContentPane(sequence);
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);
+		});
+	}
+}
