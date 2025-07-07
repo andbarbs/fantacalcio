@@ -15,7 +15,7 @@ import swingViews.SwappablePebbleSequence.*;
 
 @SuppressWarnings("serial")
 public class SwappablePebbleSequence
-	<SwappablePebble extends JPanel & SwappableSequenceDriver.Swappable<SwappablePebble> & Highlightable>
+	<SwappablePebble extends JComponent & SwappableSequenceDriver.Swappable<SwappablePebble> & Highlightable>
 		extends JPanel {
 	
 	/* 
