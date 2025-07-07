@@ -6,20 +6,23 @@ import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
 
-import swingViews.BidirectionalPebbleChain.Highlightable;
-import swingViews.BidirectionalPebbleChain.Swappable;
+import swingViews.SwappablePebbleSequence.Highlightable;
 
-public class LetterPebble extends JPanel implements Swappable<LetterPebble>, Highlightable{
+public class LetterPebble extends JPanel implements SwappableSequenceDriver.Swappable<LetterPebble>, Highlightable{
 	private static final long serialVersionUID = 1L;
 	
 	// 1) content
-	protected char letter;
+	private char letter;
 	
 	@Override
 	public void swapContentWith(LetterPebble other) {
 		char temp = letter;
 		letter = other.letter;
 		other.letter = temp;
+		
+		// letters shown must be updated
+		this.repaint();
+		other.repaint();
 	}
 
     private LetterPebble(char letter) {
@@ -38,18 +41,12 @@ public class LetterPebble extends JPanel implements Swappable<LetterPebble>, Hig
     }
 	
 	// 2) highlighting
-	private boolean highlighted;
-
 	@Override
 	public void highlight() {
-		highlighted = true;
-		repaint();		
 	}
 
 	@Override
 	public void dehighlight() {
-		highlighted = false;
-		repaint();
 	}
 	
 	@Override
@@ -57,10 +54,6 @@ public class LetterPebble extends JPanel implements Swappable<LetterPebble>, Hig
 		super.paintComponent(g);
 		int w = getWidth(), h = getHeight();
 		Graphics2D g2 = (Graphics2D) g.create();
-
-		// draw pebble circle
-		g2.setColor(highlighted ? Color.ORANGE : Color.LIGHT_GRAY);
-		g2.fillOval(5, 5, w - 10, h - 10);
 
 		// draw letter
 		g2.setColor(Color.BLACK);
