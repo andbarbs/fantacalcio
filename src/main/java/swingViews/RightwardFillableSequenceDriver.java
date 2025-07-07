@@ -23,24 +23,30 @@ public class RightwardFillableSequenceDriver<T extends RightwardFillable<T>> {
 		  void discardContent();
 		  void enableFilling();
 		  void disableFilling();
+		  
+		  void highlight(); void dehighlight();
 //		  void attachDriver(RightwardFillableSequenceDriver<T> driver);
 		}
+	
+	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
 
 	// TODO consider using a bi-chained wrapper to avoid indexOf() calls
 	private List<T> sequence;
-	private int rightmostFillablePosition = 0;
+	private int rightmostFillablePosition;
 	
 	private boolean isRightmostFillable(T client) {
 		return sequence.indexOf(client) == rightmostFillablePosition;
 	}
 	private boolean isFillable(T client) {
-		return sequence.indexOf(client) <= rightmostFillablePosition;
+		return (sequence.indexOf(client) <= rightmostFillablePosition || 
+				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW);
 	}
 
 	public RightwardFillableSequenceDriver(List<T> clients) {
 		this.sequence = clients;		
 		this.sequence.forEach(c -> c.disableFilling());
 		sequence.getFirst().enableFilling();
+		updateRightmostFillable(0);
 	}
 	
 	public void contentRemoved(T client) {
@@ -49,26 +55,59 @@ public class RightwardFillableSequenceDriver<T extends RightwardFillable<T>> {
 		}
 		
 		// collapses content in the sequence
-		int i = sequence.indexOf(client);
-		for (; i < rightmostFillablePosition - 1; i++) {
+		int nextRightmostFillable = (rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW) ?
+				sequence.size() - 1 : rightmostFillablePosition - 1;
+		for (int i = sequence.indexOf(client); i < nextRightmostFillable; i++) {
 			sequence.get(i).acquireContentFrom(sequence.get(i+1));
 		}
-		// shifts rightmostFillable status backwards
-		sequence.get(i).discardContent();  //
-		sequence.get(rightmostFillablePosition).disableFilling();
-		rightmostFillablePosition = i;		
+		// shifts rightmostFillable client backwards
+		sequence.get(nextRightmostFillable).discardContent();  //
+		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW) {
+			sequence.get(rightmostFillablePosition).disableFilling();
+		}
+		updateRightmostFillable(nextRightmostFillable);		
+	}
+
+	public void contentRemoved2(T client) {
+		int idx = sequence.indexOf(client);
+		if (idx <= rightmostFillablePosition) {
+			// collapse left
+			for (int i = idx; i < rightmostFillablePosition - 1; i++) {
+				sequence.get(i).acquireContentFrom(sequence.get(i + 1));
+			}
+			// reset far right
+			sequence.get(rightmostFillablePosition).discardContent();
+			sequence.get(rightmostFillablePosition).disableFilling();
+			updateRightmostFillable(idx);
+		}
 	}
 
 	public void contentAdded(T client) {
 		if (!isFillable(client)) {
 			throw new IllegalStateException("Content addition reported for non-fillable client");
 		}
-		
+
 		// updates sequence status moving rightmostFillable rightwards
 		if (isRightmostFillable(client)) {
-			rightmostFillablePosition = rightmostFillablePosition < sequence.size() ? 
-					rightmostFillablePosition++ : -1;    // signals sequence completely filled
+			if (rightmostFillablePosition < sequence.size() - 1) {
+				sequence.get(updateRightmostFillable(rightmostFillablePosition + 1)).enableFilling();
+			}
+			else {
+				updateRightmostFillable(RIGHTMOST_FILLABLE_OVERFLOW);   // signals RF overflow
+			}
 		}
 	}
+	
+	private int updateRightmostFillable(int newValue) {
+		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW) {
+			sequence.get(rightmostFillablePosition).dehighlight();
+		}
+		rightmostFillablePosition = newValue;
+		if (newValue != RIGHTMOST_FILLABLE_OVERFLOW) {
+			sequence.get(rightmostFillablePosition).highlight();
+		}
+		return newValue;
+	}
+
 
 }

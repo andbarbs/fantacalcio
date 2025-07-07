@@ -45,13 +45,13 @@ public class RightwardFillablePebbleSequence
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			JFrame frame = new JFrame("letter Swap game");
+			JFrame frame = new JFrame("rightward text input game");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			List<FillableTextField> clients = List.of(
-					new FillableTextField(),
-					new FillableTextField(),
-					new FillableTextField(),
-					new FillableTextField());
+					new FillableTextField(20),
+					new FillableTextField(20),
+					new FillableTextField(20),
+					new FillableTextField(20));
 			RightwardFillablePebbleSequence<FillableTextField> sequence = 
 					new RightwardFillablePebbleSequence<FillableTextField>(clients);
 			clients.forEach(t -> t.attachDriver(sequence.getDriver()));
