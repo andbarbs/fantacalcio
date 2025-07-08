@@ -3,10 +3,12 @@ package swingViews;
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,11 +46,24 @@ public class FillableSwappablePebbleSequence
 	private class PebbleSlot extends JPanel {
 		FillableSwappable pebble; // the client instance
 
-		PebbleSlot(FillableSwappable panel) {
-			this.pebble = panel;
-			setLayout(new FlowLayout());
-			setPreferredSize(new Dimension(200, 200));
-			add(panel);
+		PebbleSlot(FillableSwappable client) {
+			this.pebble = client;
+			GridBagLayout gbl_slot = new GridBagLayout();
+			gbl_slot.columnWidths = new int[]{0, 0};
+			gbl_slot.rowHeights = new int[]{0, 0};
+			gbl_slot.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+			gbl_slot.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+			setLayout(gbl_slot);
+			
+			GridBagConstraints gbc_client = new GridBagConstraints();
+			gbc_client.gridy = 0;
+			gbc_client.gridx = 0;
+			gbc_client.anchor = GridBagConstraints.CENTER;
+			gbc_client.fill = GridBagConstraints.BOTH;
+			gbc_client.insets = new Insets(30, 30, 30, 30);
+			add(client, gbc_client);
+			
+			
 		}
 
 		void select() {

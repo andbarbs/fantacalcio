@@ -112,7 +112,6 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 
 	// swapping api
 	public boolean hasContent(T client) {
-		System.out.printf("sequence.indexOf(client) = %d, rightmostFillablePosition = %d\n", sequence.indexOf(client), rightmostFillablePosition);
 		return sequence.indexOf(client) < rightmostFillablePosition ||
 				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
 	}
