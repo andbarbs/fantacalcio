@@ -16,10 +16,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import swingViews.FillableSwappableGadgetSequence.*;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableClient;
+import swingViews.FillableSwappableSequenceDriver.FillableSwappableView;
 
 @SuppressWarnings("serial")
 public class FillableSwappableGadgetSequence
-		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableClient<FillableSwappable>> extends JPanel {
+		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableClient<FillableSwappable>> 
+			extends JPanel implements FillableSwappableView<FillableSwappable> {
 	
 	/* 
 	 * arranges suitable clients in a sequence such that the contents 
@@ -98,7 +100,7 @@ public class FillableSwappableGadgetSequence
 	public FillableSwappableGadgetSequence(List<FillableSwappable> clients) {
 
 		// 1. Initializes driver to client instances received
-		driver = new FillableSwappableSequenceDriver<FillableSwappable>(clients);
+		driver = new FillableSwappableSequenceDriver<FillableSwappable>(clients, this);
 
 		// 2. Wraps each client in a slot and stores slots
 		slots = clients.stream().map(GadgetSlot::new).collect(Collectors.toList());
@@ -173,6 +175,12 @@ public class FillableSwappableGadgetSequence
 		leftSwapAction.setEnabled(selectedSlot != null && driver.canSwapLeft(selectedSlot.gadget));
 		rightSwapAction.setEnabled(selectedSlot != null && driver.canSwapRight(selectedSlot.gadget));
 	}
+	
+	@Override
+	public void contentLost(FillableSwappable emptyGadget) {
+		GadgetSlot slot = slots.stream().filter(s -> s.gadget == emptyGadget).findFirst().get();
+		handSelectionTo(slots.get(slots.indexOf(slot) - 1));
+	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
@@ -188,4 +196,6 @@ public class FillableSwappableGadgetSequence
 			frame.setVisible(true);
 		});
 	}
+
+
 }
