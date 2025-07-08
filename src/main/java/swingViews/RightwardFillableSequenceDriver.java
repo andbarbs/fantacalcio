@@ -18,14 +18,14 @@ public class RightwardFillableSequenceDriver<T extends RightwardFillable<T>> {
 
 	// public interface clients must implement
 	// so RightwardFillableSequenceDriver can drive them
-	public interface RightwardFillable<T> {
-		  void acquireContentFrom(T other);
+	public interface RightwardFillable<S extends RightwardFillable<S>> {
+		  void acquireContentFrom(S other);
 		  void discardContent();
 		  void enableFilling();
 		  void disableFilling();
 		  
 		  void highlight(); void dehighlight();
-//		  void attachDriver(RightwardFillableSequenceDriver<T> driver);
+		  void attachDriver(RightwardFillableSequenceDriver<S> driver);
 		}
 	
 	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
@@ -43,8 +43,11 @@ public class RightwardFillableSequenceDriver<T extends RightwardFillable<T>> {
 	}
 
 	public RightwardFillableSequenceDriver(List<T> clients) {
-		this.sequence = clients;		
-		this.sequence.forEach(c -> c.disableFilling());
+		this.sequence = clients;
+		this.sequence.forEach(c -> {
+			c.attachDriver(this);
+			c.disableFilling();
+		});
 		sequence.getFirst().enableFilling();
 		updateRightmostFillable(0);
 	}
