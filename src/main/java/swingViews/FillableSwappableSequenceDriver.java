@@ -3,23 +3,42 @@ package swingViews;
 import java.util.List;
 import swingViews.FillableSwappableSequenceDriver.*;
 
-public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T>> {
+/**
+ * Manages a sequence of gadgets in such a way that content in the sequence 
+ * grows left‐to‐right, ensuring no gaps are left when a gadget loses its content,
+ * and allows swapping the content of two adjacent gadgets.
+ *
+ * <p><h1>Contracts</h1>
+ * In order to be driven by {@code FillableSwappableSequenceDriver}, gadgets must
+ * <ul>
+ * 	<li>fulfill the contract in {@link FillableSwappableClient}&lt;T&gt; which ensures they are able to
+ *   	<ul>
+ *   		 <li> toggle their ability to receive user input
+ *  	 	 <li> take over the content of a fellow gadget
+ *   		 <li> swap contents with a fellow gadget
+ *  	 	 <li> attach an instance of {@code FillableSwappableSequenceDriver} 
+ *  				for sending content-related notifications
+ *   	</ul></li>
+ *   <li>notify the attached {@code FillableSwappableSequenceDriver} instance of changes to their content,
+ *   using the {@link FillableSwappableSequenceDriver#contentAdded(FillableSwappableClient)} and 
+ *   {@link FillableSwappableSequenceDriver#contentRemoved(FillableSwappableClient)} methods of the driver. 
+ *   Gadgets should take care that programmatic addition/removal of their content, such as that induced by the driver, 
+ *   be <i>not</i> notified back to the driver
+ * </ul>
+ *
+ * <p><h1>Limitations</h1>
+ * <ul>
+ *   <li>Not thread‐safe</li>
+ *   <li>Does not defend itself against event feedback loops</li>
+ * </ul>
+ *
+ * @param <T> the client type; must implement
+ *           {@link FillableSwappableClient}&lt;T&gt;
+ * @see FillableSwappableClient
+ * @apiNote This driver is GUI-agnostic and relieves clients of using class inheritance
+ */
 
-	/*
-	 * arranges suitable clients in a sequence such that content in the sequence
-	 * grows from left to right, and clients that have content can have it swapped
-	 * 
-	 * To this end, it 
-	 * 		> stores client instances in an ordered structure 
-	 * 		> enables filling for clients in a left-to-right fashion 
-	 * 		> allows clients to notify it of content addition/removal 
-	 * 		> updates its internal notion of sequence state 
-	 * 		> permits an actor to request content swap on filled clients
-	 * 
-	 * CAVEATS:
-	 * clients should ensure that programmatic content addition/removal
-	 * (such as those induced by the driver) be NOT notified back to the driver
-	 */
+public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T>> {
 
 	private interface RightwardFillable<S> {
 		void acquireContentFrom(S other);
@@ -27,7 +46,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		void enableFilling();
 		void disableFilling();
 
-		// allow client to augment rightmost-fillable status
+		// allow gadgets to customize rightmost-fillable status
 		void highlight();
 		void dehighlight();
 	}
@@ -36,15 +55,26 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		void swapContentWith(Q other);
 	}
 	
-	// public interfaces clients must implement
-	// so RightwardFillableSequenceDriver can drive them
-	public interface FillableSwappableClient<T extends FillableSwappableClient<T>>
-			extends RightwardFillable<T>, Swappable<T> {
-		void attachDriver(FillableSwappableSequenceDriver<T> driver);
+	/**
+	 * public interface gadgets must implement 
+	 * so that a {@code FillableSwappableSequenceDriver} can drive them
+	 * 
+	 * <p><h1>Limitations</h1>
+	 * no mechanism is in place to ensure a gadget correctly
+	 * binds &lt;S&gt; to its own type</p>
+	 *
+	 * @param <S> the client type; must implement
+	 *           {@link FillableSwappableClient}&lt;S&gt;
+	 * @see FillableSwappableSequenceDriver
+	 */
+	public interface FillableSwappableClient<S extends FillableSwappableClient<S>>
+			extends RightwardFillable<S>, Swappable<S> {
+		void attachDriver(FillableSwappableSequenceDriver<S> driver);
 	}
 
 	// internal bookkeeping
 	// TODO consider using a bi-chained wrapper to avoid indexOf() calls
+	// and make utility methods more intuitive
 	private List<T> sequence;
 	private int rightmostFillablePosition;
 	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
@@ -59,8 +89,8 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
 	}
 
-	public FillableSwappableSequenceDriver(List<T> clients) {
-		this.sequence = clients;
+	public FillableSwappableSequenceDriver(List<T> gadgets) {
+		this.sequence = gadgets;
 		this.sequence.forEach(c -> {
 			c.attachDriver(this);
 			c.disableFilling();
@@ -69,7 +99,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		updateRightmostFillable(0);
 	}
 
-	// notification methods: manage sequence state
+	// notification methods: update sequence state and collapse
 	public void contentRemoved(T client) {
 		if (!isFillable(client))
 			throw new IllegalStateException("Content removal reported for non-fillable client");
@@ -100,7 +130,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		}
 	}
 
-	// triggers client highlighting for rightmost-fillable status
+	// triggers gadget highlighting for rightmost-fillable status
 	private int updateRightmostFillable(int newValue) {
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
 			sequence.get(rightmostFillablePosition).dehighlight();
@@ -110,7 +140,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		return newValue;
 	}
 
-	// swapping api
+	// swapping gadget content
 	public boolean hasContent(T client) {
 		return sequence.indexOf(client) < rightmostFillablePosition ||
 				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;

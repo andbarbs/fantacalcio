@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JTextField;
 
-import swingViews.FillableSwappablePebbleSequence.ToggleSelectable;
+import swingViews.FillableSwappableGadgetSequence.ToggleSelectable;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableClient;
 
 @SuppressWarnings("serial")

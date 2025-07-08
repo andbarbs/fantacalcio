@@ -14,11 +14,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
-import swingViews.FillableSwappablePebbleSequence.*;
+import swingViews.FillableSwappableGadgetSequence.*;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableClient;
 
 @SuppressWarnings("serial")
-public class FillableSwappablePebbleSequence
+public class FillableSwappableGadgetSequence
 		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableClient<FillableSwappable>> extends JPanel {
 	
 	/* 
@@ -43,11 +43,11 @@ public class FillableSwappablePebbleSequence
 	}
 
 	// a type for the toggle-selectable slot that contains a client
-	private class PebbleSlot extends JPanel {
-		FillableSwappable pebble; // the client instance
+	private class GadgetSlot extends JPanel {
+		FillableSwappable gadget; // the client instance
 
-		PebbleSlot(FillableSwappable client) {
-			this.pebble = client;
+		GadgetSlot(FillableSwappable client) {
+			this.gadget = client;
 			GridBagLayout gbl_slot = new GridBagLayout();
 			gbl_slot.columnWidths = new int[]{0, 0};
 			gbl_slot.rowHeights = new int[]{0, 0};
@@ -62,18 +62,16 @@ public class FillableSwappablePebbleSequence
 			gbc_client.fill = GridBagConstraints.BOTH;
 			gbc_client.insets = new Insets(30, 30, 30, 30);
 			add(client, gbc_client);
-			
-			
 		}
 
 		void select() {
 			repaint();
-			pebble.toggleSelect();
+			gadget.toggleSelect();
 		}
 
 		void deselect() {
 			repaint();
-			pebble.toggleDeselect();
+			gadget.toggleDeselect();
 		}
 
 		@Override
@@ -91,19 +89,19 @@ public class FillableSwappablePebbleSequence
 	}
 
 	// internal bookkeeping for the selection mechanism
-	private List<PebbleSlot> slots;
-	private PebbleSlot selectedSlot;
+	private List<GadgetSlot> slots;
+	private GadgetSlot selectedSlot;
 
 	private FillableSwappableSequenceDriver<FillableSwappable> driver;
 	private Action leftSwapAction, rightSwapAction;
 	
-	public FillableSwappablePebbleSequence(List<FillableSwappable> clients) {
+	public FillableSwappableGadgetSequence(List<FillableSwappable> clients) {
 
 		// 1. Initializes driver to client instances received
 		driver = new FillableSwappableSequenceDriver<FillableSwappable>(clients);
 
 		// 2. Wraps each client in a slot and stores slots
-		slots = clients.stream().map(PebbleSlot::new).collect(Collectors.toList());
+		slots = clients.stream().map(GadgetSlot::new).collect(Collectors.toList());
 
 		// 3. Add slots to their container and wire selection mechanism
 		JPanel pebblePanel = new JPanel(new FlowLayout());
@@ -111,8 +109,8 @@ public class FillableSwappablePebbleSequence
 			pebblePanel.add(slot);
 			slot.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					System.out.printf("driver says %s content!\n", (driver.hasContent(slot.pebble)? "YES" : "NO"));
-					if (slot != selectedSlot && driver.hasContent(slot.pebble)) {
+					System.out.printf("driver says %s content!\n", (driver.hasContent(slot.gadget)? "YES" : "NO"));
+					if (slot != selectedSlot && driver.hasContent(slot.gadget)) {
 						// implements out-of-nowhere selection
 						handSelectionTo(slot);
 					}
@@ -124,8 +122,8 @@ public class FillableSwappablePebbleSequence
 		leftSwapAction = new AbstractAction("←") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedSlot != null && driver.canSwapLeft(selectedSlot.pebble)) {
-					driver.swapLeft(selectedSlot.pebble); // sends swap request to driver
+				if (selectedSlot != null && driver.canSwapLeft(selectedSlot.gadget)) {
+					driver.swapLeft(selectedSlot.gadget); // sends swap request to driver
 
 					// implements content-tracking selection
 					handSelectionTo(slots.get(slots.indexOf(selectedSlot) - 1));
@@ -136,8 +134,8 @@ public class FillableSwappablePebbleSequence
 		rightSwapAction = new AbstractAction("→") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedSlot != null && driver.canSwapRight(selectedSlot.pebble)) {
-					driver.swapRight(selectedSlot.pebble); // sends swap request to driver
+				if (selectedSlot != null && driver.canSwapRight(selectedSlot.gadget)) {
+					driver.swapRight(selectedSlot.gadget); // sends swap request to driver
 
 					// implements content-tracking selection
 					handSelectionTo(slots.get(slots.indexOf(selectedSlot) + 1));
@@ -147,8 +145,11 @@ public class FillableSwappablePebbleSequence
 
 		// 5. Buttons panel
 		JPanel controls = new JPanel(new FlowLayout());
-		controls.add(new JButton(leftSwapAction));
-		controls.add(new JButton(rightSwapAction));
+		JButton leftSwapButton = new JButton(leftSwapAction);
+		JButton rightSwapButton = new JButton(rightSwapAction);
+		List.of(leftSwapButton, rightSwapButton).forEach(b -> b.setBackground(Color.ORANGE));
+		controls.add(leftSwapButton);
+		controls.add(rightSwapButton);
 
 		// 6. Lays out frame
 		setLayout(new BorderLayout());
@@ -160,7 +161,7 @@ public class FillableSwappablePebbleSequence
 	}
 
 	// 'passes' the selection on to a newly selected slot
-	private void handSelectionTo(PebbleSlot recipientSlot) {
+	private void handSelectionTo(GadgetSlot recipientSlot) {
 		// implements toggle-like selection
 		if (selectedSlot != null) { // is null at initialization!
 			selectedSlot.deselect();
@@ -169,15 +170,15 @@ public class FillableSwappablePebbleSequence
 		recipientSlot.select();
 
 		// updates actions based on selectedPebble
-		leftSwapAction.setEnabled(selectedSlot != null && driver.canSwapLeft(selectedSlot.pebble));
-		rightSwapAction.setEnabled(selectedSlot != null && driver.canSwapRight(selectedSlot.pebble));
+		leftSwapAction.setEnabled(selectedSlot != null && driver.canSwapLeft(selectedSlot.gadget));
+		rightSwapAction.setEnabled(selectedSlot != null && driver.canSwapRight(selectedSlot.gadget));
 	}
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			JFrame frame = new JFrame("rightward swappable text input game");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setContentPane(new FillableSwappablePebbleSequence<FillableSwappableTextField>(List.of(
+			frame.setContentPane(new FillableSwappableGadgetSequence<FillableSwappableTextField>(List.of(
 					new FillableSwappableTextField(5),
 					new FillableSwappableTextField(5),
 					new FillableSwappableTextField(5),
