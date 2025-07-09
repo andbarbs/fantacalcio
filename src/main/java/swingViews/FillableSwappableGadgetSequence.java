@@ -15,13 +15,13 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 import swingViews.FillableSwappableGadgetSequence.*;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableClient;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableView;
+import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
+import swingViews.FillableSwappableSequenceDriver.FillableSwappableVisual;
 
 @SuppressWarnings("serial")
 public class FillableSwappableGadgetSequence
-		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableClient<FillableSwappable>> 
-			extends JPanel implements FillableSwappableView<FillableSwappable> {
+		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableGadget<FillableSwappable>> 
+			extends JPanel implements FillableSwappableVisual<FillableSwappable> {
 	
 	/* 
 	 * arranges suitable clients in a sequence such that the contents 
@@ -177,9 +177,15 @@ public class FillableSwappableGadgetSequence
 	}
 	
 	@Override
-	public void contentLost(FillableSwappable emptyGadget) {
-		GadgetSlot slot = slots.stream().filter(s -> s.gadget == emptyGadget).findFirst().get();
+	public void becameEmpty(FillableSwappable emptiedGadget) {
+		GadgetSlot slot = slots.stream().filter(s -> s.gadget == emptiedGadget).findFirst().get();
 		handSelectionTo(slots.get(slots.indexOf(slot) - 1));
+	}
+
+	@Override
+	public void becameFilled(FillableSwappable filledGadget) {
+		// TODO Auto-generated method stub
+
 	}
 
 	public static void main(String[] args) {
@@ -197,5 +203,6 @@ public class FillableSwappableGadgetSequence
 		});
 	}
 
+	
 
 }

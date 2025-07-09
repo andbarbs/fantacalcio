@@ -11,7 +11,7 @@ import swingViews.FillableSwappableSequenceDriver.*;
  * <p><h1>Contracts</h1>
  * In order to be driven by {@code FillableSwappableSequenceDriver}, gadgets must
  * <ul>
- * 	<li>fulfill the contract in {@link FillableSwappableClient}&lt;T&gt; which ensures they are able to
+ * 	<li>fulfill the contract in {@link FillableSwappableGadget}&lt;T&gt; which ensures they are able to
  *   	<ul>
  *   		 <li> toggle their ability to receive user input
  *  	 	 <li> take over the content of a fellow gadget
@@ -20,8 +20,8 @@ import swingViews.FillableSwappableSequenceDriver.*;
  *  				for sending content-related notifications
  *   	</ul></li>
  *   <li>notify the attached {@code FillableSwappableSequenceDriver} instance of changes to their content,
- *   using the {@link FillableSwappableSequenceDriver#contentAdded(FillableSwappableClient)} and 
- *   {@link FillableSwappableSequenceDriver#contentRemoved(FillableSwappableClient)} methods of the driver. 
+ *   passing their instance to methods {@link FillableSwappableSequenceDriver#contentAdded(FillableSwappableGadget)} and 
+ *   {@link FillableSwappableSequenceDriver#contentRemoved(FillableSwappableGadget)} of the driver. 
  *   Gadgets should take care that programmatic addition/removal of their content, such as that induced by the driver, 
  *   be <i>not</i> notified back to the driver
  * </ul>
@@ -32,13 +32,13 @@ import swingViews.FillableSwappableSequenceDriver.*;
  *   <li>Does not defend itself against event feedback loops</li>
  * </ul>
  *
- * @param <T> the client type; must implement
- *           {@link FillableSwappableClient}&lt;T&gt;
- * @see FillableSwappableClient
+ * @param <T> the client gadget type; must implement
+ *           {@link FillableSwappableGadget}&lt;T&gt;
+ * @see FillableSwappableGadget
  * @apiNote This driver is GUI-agnostic and relieves clients of using class inheritance
  */
 
-public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T>> {
+public class FillableSwappableSequenceDriver<T extends FillableSwappableGadget<T>> {
 
 	private interface RightwardFillable<P> {
 		void acquireContentFrom(P other);
@@ -61,28 +61,29 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 	 * 
 	 * <p><h1>Limitations</h1>
 	 * no mechanism is in place to ensure a gadget correctly
-	 * binds &lt;S&gt; to its own type</p>
+	 * binds &lt;R&gt; to its own type</p>
 	 *
 	 * @param <R> the client type; must implement
-	 *           {@link FillableSwappableClient}&lt;R&gt;
+	 *           {@link FillableSwappableGadget}&lt;R&gt;
 	 * @see FillableSwappableSequenceDriver
 	 * @implNote a collapsed interface for various private gadget interfaces
 	 */
-	public interface FillableSwappableClient<R extends FillableSwappableClient<R>>
+	public interface FillableSwappableGadget<R extends FillableSwappableGadget<R>>
 			extends RightwardFillable<R>, Swappable<R> {
 		void attachDriver(FillableSwappableSequenceDriver<R> driver);
 	}
 	
 	/**
-	 * public interface a view must implement 
+	 * public interface a visual must implement 
 	 * so that a {@code FillableSwappableSequenceDriver} can update it
 	 *
 	 * @param <S> the gadget type; must implement
-	 *           {@link FillableSwappableClient}&lt;S&gt;
+	 *           {@link FillableSwappableGadget}&lt;S&gt;
 	 * @see FillableSwappableSequenceDriver
 	 */
-	public interface FillableSwappableView<S extends FillableSwappableClient<S>> {
-		void contentLost(S gadget);
+	public interface FillableSwappableVisual<S extends FillableSwappableGadget<S>> {
+		void becameEmpty(S emptiedGadget);
+		void becameFilled(S filledGadget);
 	}
 
 	// internal bookkeeping
@@ -91,7 +92,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 	private List<T> sequence;
 	private int rightmostFillablePosition;
 	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
-	private FillableSwappableView<T> view;
+	private FillableSwappableVisual<T> view;
 
 	// internal utility methods for querying client status
 	private boolean isRightmostFillable(T client) {
@@ -103,7 +104,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
 	}
 
-	public FillableSwappableSequenceDriver(List<T> gadgets, FillableSwappableView<T> view) {
+	public FillableSwappableSequenceDriver(List<T> gadgets, FillableSwappableVisual<T> view) {
 		this.sequence = gadgets;
 		this.view = view;
 		this.sequence.forEach(c -> {
@@ -127,7 +128,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 		}
 		// shifts rightmostFillable client backwards
 		sequence.get(nextRightmostFillable).discardContent();
-		view.contentLost(sequence.get(nextRightmostFillable));
+		view.becameEmpty(sequence.get(nextRightmostFillable));
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
 			sequence.get(rightmostFillablePosition).disableFilling();
 		updateRightmostFillable(nextRightmostFillable);
@@ -143,6 +144,7 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableClient<T
 				sequence.get(updateRightmostFillable(rightmostFillablePosition + 1)).enableFilling();
 			else
 				updateRightmostFillable(RIGHTMOST_FILLABLE_OVERFLOW); // signals RF overflow
+			view.becameFilled(client);
 		}
 	}
 

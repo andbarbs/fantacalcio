@@ -8,10 +8,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JTextField;
 
 import swingViews.FillableSwappableGadgetSequence.ToggleSelectable;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableClient;
+import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
 @SuppressWarnings("serial")
-public class FillableSwappableTextField extends JTextField implements ToggleSelectable, FillableSwappableClient<FillableSwappableTextField>  {
+public class FillableSwappableTextField extends JTextField implements ToggleSelectable, FillableSwappableGadget<FillableSwappableTextField>  {
 
 	private FillableSwappableSequenceDriver<FillableSwappableTextField> driver;
 
