@@ -37,7 +37,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
         
         // Create the background label with the football field image.
         // In WindowBuilder you can adjust the file path or resource as needed.
-        JLabel background = new JLabel(new ImageIcon(getClass().getResource("/images/raster_field.png")));
+        JLabel background = new JLabel(new ImageIcon(MultiPlayerSelector_using433SpringSafe.class.getResource("/gui_images/raster_field.png")));
 		GridBagConstraints gbc_background = new GridBagConstraints();
 		gbc_background.fill = GridBagConstraints.BOTH;
 		gbc_background.gridx = 0;

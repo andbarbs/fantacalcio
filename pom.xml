@@ -109,13 +109,14 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-			<!-- 2. Add that generated folder as a “real” source root for both
-			CLI & m2e -->
+			
+			<!-- build-helper instructions are reflected in Eclipse's .classpath -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.3.0</version>
 				<executions>
+				
 					<!-- adds Metamodel classes as a source folder -->
 					<execution>
 						<id>add-generated-sources</id>
@@ -131,8 +132,7 @@
 						</configuration>
 					</execution>
 
-					<!-- NEW: add your GUI-resources as a compile-time source
-					root -->
+					<!-- adds gui-resources as a source folder to please WindowBuilder -->
 					<execution>
 						<id>add-gui-resources</id>
 						<phase>generate-resources</phase>
@@ -146,7 +146,7 @@
 						</configuration>
 					</execution>
 
-					<!-- NEW: add your test-gui-resources as a test-source root -->
+					<!-- adds test-gui-resources as a source folder to please WindowBuilder -->
 					<execution>
 						<id>add-test-gui-resources</id>
 						<phase>generate-test-resources</phase>
@@ -163,20 +163,21 @@
 			</plugin>
 		</plugins>
 		
+		<!-- sets exclusion rules for some resource folders  -->
 		<resources>
-			<!-- default Maven resource folder, gets treated with exclusion in Eclipse -->
-			<resource> <directory>src/main/resources</directory> </resource>
-			<!-- main GUI assets without exclusion -->
+			<resource> 
+				<directory>src/main/resources</directory> 
+			</resource>
 			<resource>
 				<directory>src/main/gui-resources</directory>
-				<targetPath>images</targetPath>
 				<filtering>false</filtering>
 			</resource>
 		</resources>
 
 		<testResources>
-			<testResource> <directory>src/test/resources</directory> </testResource>
-			<!-- test GUI assets without exclusion -->
+			<testResource> 
+				<directory>src/test/resources</directory> 
+			</testResource>
 			<testResource>
 				<directory>src/test/test-gui-resources</directory>
 				<targetPath>images</targetPath>

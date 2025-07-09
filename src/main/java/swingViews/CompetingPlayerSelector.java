@@ -13,8 +13,8 @@ public class CompetingPlayerSelector extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	// path to the pngs for the Icons
-	private static final String FIGURE_PNG_PATH = "/images/player_figure_120x225.png";
-	private static final String HEAD_PNG_PATH = "/images/ronaldo_head_120x225.png";
+	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
+	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
 
 	private CompetingComboBox<Player> comboBox;
 

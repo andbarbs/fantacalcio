@@ -21,7 +21,7 @@ public class _433SpringSafe extends SpringSchemePanel {
 				(int)Math.floor(fieldDimension.height * slotHeightRatio));
 	}
 	
-	/**
+	/*
 	 * 1) static methods of Spring:
 	 * From the docs at https://docs.oracle.com/en/java/javase/24/docs/api/java.desktop/javax/swing/Spring.html:
 	 * 
@@ -52,7 +52,7 @@ public class _433SpringSafe extends SpringSchemePanel {
 		getGoalie().setBackground(new Color(255, 0, 0));
 
 		// installs Defender slots		
-		getLayout().getConstraints(getDef2()).setConstraint(SpringLayout.VERTICAL_CENTER,Spring.scale(panelHeight, 0.34f));
+		getLayout().getConstraints(getDef2()).setConstraint(SpringLayout.VERTICAL_CENTER, Spring.scale(panelHeight, 0.34f));
 		getLayout().putConstraint(SpringLayout.HORIZONTAL_CENTER, getDef2(), Spring.scale(panelWidth, -0.1f),
 				SpringLayout.HORIZONTAL_CENTER, this);
 		getDef2().setBackground(new Color(102, 204, 51));
