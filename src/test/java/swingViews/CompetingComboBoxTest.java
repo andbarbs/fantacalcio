@@ -115,6 +115,36 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     }
     
     @Test @GUITest
+    public void testProgrammaticCompetingBehavior() {
+    	GuiActionRunner.execute(() -> {
+    		// Create sample content
+            List<String> sampleContents = Arrays.asList("A", "B", "C");
+
+            // Fill each combo box with content.
+            combo1.setContents(sampleContents);
+            combo2.setContents(sampleContents);
+            combo3.setContents(sampleContents);
+    	});
+    	
+        // Initially, all three combo boxes should have all three items.
+        window.comboBox("combo1").requireItemCount(3);
+        window.comboBox("combo2").requireItemCount(3);
+        window.comboBox("combo3").requireItemCount(3);
+
+        // Select item "A" in combo1 programmatically.
+        // We'll verify that combo2 and combo3 no longer contain "A"
+		GuiActionRunner.execute(() -> combo1.setSelectedItem("A"));
+        assertThat(getComboBoxItems("combo2")).containsExactly("B", "C");
+        assertThat(getComboBoxItems("combo3")).containsExactly("B", "C");
+
+        // Now simulate resetting combo1's selection. Since it was the one that caused "A" to be removed,
+        // clearing its selection should cause "A" to be reinserted into its competitors.
+        GuiActionRunner.execute(() -> combo1.setSelectedIndex(-1));
+        assertThat(getComboBoxItems("combo2")).containsExactly("A", "B", "C");
+        assertThat(getComboBoxItems("combo3")).containsExactly("A", "B", "C");
+    }
+    
+    @Test @GUITest
     public void testSequentialSelectionsOnSameCombo() {
         GuiActionRunner.execute(() -> {
             List<String> sampleContents = Arrays.asList("A", "B", "C");
@@ -139,6 +169,39 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
 
         // Now change the selection on combo1 to "B".
         window.comboBox("combo1").selectItem("B");
+        // combo1: selected "B", model unchanged
+        assertThat(window.comboBox("combo1").target().getSelectedItem()).isEqualTo("B");
+        assertThat(getComboBoxItems("combo1")).containsExactly("A", "B", "C");
+        // Competitor boxes regain "A" and lose "B"
+        assertThat(getComboBoxItems("combo2")).containsExactly("A", "C");
+        assertThat(getComboBoxItems("combo3")).containsExactly("A", "C");
+    }
+    
+    @Test @GUITest
+    public void testProgrammaticSequentialSelectionsOnSameCombo() {
+        GuiActionRunner.execute(() -> {
+            List<String> sampleContents = Arrays.asList("A", "B", "C");
+            combo1.setContents(sampleContents);
+            combo2.setContents(sampleContents);
+            combo3.setContents(sampleContents);
+        });
+        
+        // Verify that initially each combo box has exactly "A", "B", "C".
+        assertThat(getComboBoxItems("combo1")).containsExactly("A", "B", "C");
+        assertThat(getComboBoxItems("combo2")).containsExactly("A", "B", "C");
+        assertThat(getComboBoxItems("combo3")).containsExactly("A", "B", "C");
+
+        // Simulate selecting "A" on combo1.
+        GuiActionRunner.execute(() -> combo1.setSelectedItem("A"));
+        // Competitor boxes lose "A"
+        assertThat(getComboBoxItems("combo2")).containsExactly("B", "C");
+        assertThat(getComboBoxItems("combo3")).containsExactly("B", "C");
+        // combo1: selected "A", model unchanged
+        assertThat(getComboBoxItems("combo1")).containsExactly("A", "B", "C");
+        assertThat(window.comboBox("combo1").target().getSelectedItem()).isEqualTo("A");
+
+        // Now change the selection on combo1 to "B".
+        GuiActionRunner.execute(() -> combo1.setSelectedItem("B"));
         // combo1: selected "B", model unchanged
         assertThat(window.comboBox("combo1").target().getSelectedItem()).isEqualTo("B");
         assertThat(getComboBoxItems("combo1")).containsExactly("A", "B", "C");

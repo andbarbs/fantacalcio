@@ -1,7 +1,5 @@
 package swingViews;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,9 +12,10 @@ import java.util.stream.IntStream;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
+@SuppressWarnings("serial")
 public class CompetingComboBox<E> extends JComboBox<E> {
-
-	private static final long serialVersionUID = 1L;
+	
+	private static final int COMPETING_CBOX_NO_CHOICE = -1;
 
 	private Integer currentSelection;
 	private List<Integer> mask;
@@ -46,7 +45,7 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 
 		// sets up the Combo without any contents
 		this.setModel(new DefaultComboBoxModel<E>());
-		this.setSelectedIndex(-1); // this does NOT trigger the Listener - it hasn't been attached yet!!
+		//this.setSelectedIndex(-1); // this does NOT trigger the Listener - it hasn't been attached yet!!
 
 		// bookkeeping for user-triggered actions on the combo box
 		
@@ -59,52 +58,55 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 		 * 		3) the selection is programmatically set to -1
 		 * 
 		 * */
-		this.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("listener del cbox viene eseguito!");
-				
-				// this CBox has been given a selection
-				if (isPopupVisible() && getSelectedIndex() > -1) { 
-					
-					System.out.println("siamo dentro if");
-					
-					// adds back a previous selection to competitors
-					if (currentSelection != -1) { 
-						competitors.forEach(competitor -> {
-							if (competitor != CompetingComboBox.this) {
-								competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
-							}
-						});
-					}
-					
-					// registers the bookkeeping current selection
-					currentSelection = mask.get(getSelectedIndex());
-					
-					// removes current selection from competitors
-					competitors.forEach(competitor -> {
-						if (competitor != CompetingComboBox.this) {
-							competitor.evictFromComboBox(currentSelection);
-						}
-					});
-					
-					System.out.println("\n\n");
-				}
-				
-				// this CBox's selection has been dropped
-				else if (getSelectedIndex() == -1 && currentSelection != null && currentSelection != -1) {
-					// adds cleared selection back to competitors
-					competitors.forEach(competitor -> {
-						if (competitor != CompetingComboBox.this) {
-							competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
-						}
-					});
-					
-					// clears the bookkeeping current selection
-					currentSelection = -1;
-				}
+	}
+	
+	@Override
+	public void setSelectedIndex(int choice) {
+		super.setSelectedIndex(choice);
+		compete();
+	}
+	
+	@Override
+	public void setSelectedItem(Object choice) {
+		super.setSelectedItem(choice);
+		compete();
+	}
+
+	private void compete() {
+		// a choice has been made on this CBox
+		if (getSelectedIndex() != -1) {
+			// pushes a previous choice back to competitors
+			if (currentSelection != -1) { 
+				competitors.forEach(competitor -> {
+					if (competitor != CompetingComboBox.this)
+						// this can generate an event, but it doesn't call setSelectedIndex()!!
+						competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+				});
 			}
-		});
+			
+			// updates bookkeeping to the current choice
+			currentSelection = mask.get(getSelectedIndex());
+			
+			// removes the current choice from competitors
+			competitors.forEach(competitor -> {
+				if (competitor != CompetingComboBox.this) {
+					competitor.evictFromComboBox(currentSelection);
+				}
+			});
+		}
+		
+		// this CBox's choice has been cleared
+		else if (getSelectedIndex() == -1 && currentSelection != null && currentSelection != COMPETING_CBOX_NO_CHOICE) {
+			
+			// pushes the cleared choice back to competitors
+			competitors.forEach(competitor -> {
+				if (competitor != CompetingComboBox.this)
+					competitor.insertIntoComboBox(currentSelection, contentPool.get(currentSelection - 1));
+			});
+			
+			// updates bookkeeping to no choice
+			currentSelection = COMPETING_CBOX_NO_CHOICE;
+		}
 	}
 	
 	void setContents(List<E> contents) {		
