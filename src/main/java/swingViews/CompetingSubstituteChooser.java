@@ -5,15 +5,40 @@ import javax.swing.Spring;
 
 import java.awt.Dimension;
 import java.beans.Beans;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
+
+import domainModel.Player;
+import domainModel.Player.Defender;
+import swingViews.FillableSwappableSequenceDriver.FillableSwappableVisual;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
-public class CompetingSubstituteChooser extends JPanel {
+public class CompetingSubstituteChooser<T extends Player> extends JPanel implements FillableSwappableVisual<FillableSwappableCompetingPlayerSelector<T>> {
+
+	private FillableSwappableSequenceDriver<FillableSwappableCompetingPlayerSelector<T>> driver;
+	private FillableSwappableCompetingPlayerSelector<T> sel1;
+	private FillableSwappableCompetingPlayerSelector<T> sel2;
+	private FillableSwappableCompetingPlayerSelector<T> sel3;
+	private Action swapSelectors1and2, swapSelectors2and3;
+	
+	public List<CompetingComboBox<T>> getCompetingComboBoxes() {
+		return Stream.of(sel1, sel2, sel3)
+				.map(FillableSwappableCompetingPlayerSelector::getCompetingComboBox)
+				.collect(Collectors.toList());
+	}
 
 	public CompetingSubstituteChooser() {
 		setLayout(new SpringLayout());		
@@ -28,37 +53,37 @@ public class CompetingSubstituteChooser extends JPanel {
 		if (Beans.isDesignTime())
 			setPreferredSize(new Dimension(600, 225));
 
-		CompetingPlayerSelector sel1 = new CompetingPlayerSelector();
-		CompetingPlayerSelector sel2 = new CompetingPlayerSelector();
-		CompetingPlayerSelector sel3 = new CompetingPlayerSelector();
+		// initialize components and add them
+		sel1 = new FillableSwappableCompetingPlayerSelector<T>();
+		sel2 = new FillableSwappableCompetingPlayerSelector<T>();
+		sel3 = new FillableSwappableCompetingPlayerSelector<T>();
 		
-		JButton swap1 = new JButton();
+		swapSelectors1and2 = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("asking driver to swap 1 and 2");
+				driver.swapRight(sel1);
+			}
+		};
+
+		swapSelectors2and3 = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				driver.swapRight(sel2);
+			}
+		};
+		
+		JButton swap1 = new JButton(swapSelectors1and2);
 		swap1.setMargin(new Insets(2, 2, 2, 2));
-		swap1.setIcon(new ImageIcon(CompetingSubstituteChooser.class.getResource("/gui_icons/swap_verysmall.png")));
-		JButton swap2 = new JButton("");
+		swap1.setIcon(new ImageIcon(getClass().getResource("/gui_icons/swap_verysmall.png")));
+		JButton swap2 = new JButton(swapSelectors2and3);
 		swap2.setMargin(new Insets(2, 2, 2, 2));
-		swap2.setIcon(new ImageIcon(CompetingSubstituteChooser.class.getResource("/gui_icons/swap_verysmall.png")));
+		swap2.setIcon(new ImageIcon(getClass().getResource("/gui_icons/swap_verysmall.png")));
 
 		add(sel1); add(sel2); add(sel3);
 		add(swap1); add(swap2);
 		
-//		//lay children out using relative springs <--problem: WB only recognizes putConstraint()!!
-//		lay.getConstraints(sel1).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 1f/6f));
-//		lay.getConstraints(sel2).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 3f/6f));
-//		lay.getConstraints(sel3).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 5f/6f));
-//		lay.putConstraint(SpringLayout.VERTICAL_CENTER, sel1, Spring.constant(0),
-//				SpringLayout.VERTICAL_CENTER, this);
-//		lay.getConstraints(sel2).setY(lay.getConstraints(sel1).getY());
-//		lay.getConstraints(sel3).setY(lay.getConstraints(sel1).getY());
-//
-//		// center swap1 on the boundary after sel1
-//		lay.getConstraints(swap1).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 2f/6f));
-//		lay.getConstraints(swap2).setConstraint(SpringLayout.HORIZONTAL_CENTER, Spring.scale(panelWidth, 4f/6f));
-//		lay.putConstraint(SpringLayout.VERTICAL_CENTER, swap1, Spring.constant(0),
-//				SpringLayout.VERTICAL_CENTER, this);
-//		lay.getConstraints(swap2).setY(lay.getConstraints(swap1).getY());
-		
-		// evenly space sel1/sel2/sel3
+		// evenly space sel1/sel2/sel3 horizontally
 		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, sel1,
 		                  Spring.scale(panelWidth, 1f/6f),
 		                  SpringLayout.WEST, this);
@@ -69,7 +94,7 @@ public class CompetingSubstituteChooser extends JPanel {
 		                  Spring.scale(panelWidth, 5f/6f),
 		                  SpringLayout.WEST, this);
 
-		// swap buttons at 2/6 and 4/6
+		// swap buttons at 2/6 and 4/6 horizontally
 		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, swap1,
 		                  Spring.scale(panelWidth, 2f/6f),
 		                  SpringLayout.WEST, this);
@@ -88,18 +113,55 @@ public class CompetingSubstituteChooser extends JPanel {
 				0, SpringLayout.VERTICAL_CENTER, this);
 		layout.putConstraint(SpringLayout.VERTICAL_CENTER, swap2,
 				0, SpringLayout.VERTICAL_CENTER, this);
+		
+		// wire up driver
+		driver = new FillableSwappableSequenceDriver<FillableSwappableCompetingPlayerSelector<T>>(
+				List.of(sel1, sel2, sel3), this);
+		
+		// initially disable swapping
+		List.of(swapSelectors1and2, swapSelectors2and3).forEach(a -> a.setEnabled(false));
 	}
+	
+	
+	@Override
+	public void becameEmpty(FillableSwappableCompetingPlayerSelector<T> emptiedGadget) {
+		if (emptiedGadget == sel3)
+			swapSelectors2and3.setEnabled(false);
+		else if (emptiedGadget == sel2)
+			swapSelectors1and2.setEnabled(false);
+	}
+	
+	@Override
+	public void becameFilled(FillableSwappableCompetingPlayerSelector<T> filledGadget) {
+		System.out.println("content added to a gadget!");
+		if (filledGadget == sel2)
+			swapSelectors1and2.setEnabled(true);
+		else if (filledGadget == sel3)
+			swapSelectors2and3.setEnabled(true);
+	}
+	
 	
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			JFrame frame = new JFrame("substitute chooser demo");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setContentPane(new CompetingSubstituteChooser());
+			CompetingSubstituteChooser<Defender> chooser = new CompetingSubstituteChooser<Defender>();
+			CompetingComboBox.initializeCompetition(
+					Set.copyOf(chooser.getCompetingComboBoxes()),
+					List.of(
+		            	    new Defender("Sergio", "Ramos"),
+		            	    new Defender("Virgil", "van Dijk"),
+		            	    new Defender("Gerard", "Piqué"),
+		            	    new Defender("Thiago", "Silva"),
+		            	    new Defender("Giorgio", "Chiellini")
+		            	));
+			frame.setContentPane(chooser);
 			frame.pack();
 			frame.setLocationRelativeTo(null);
 			frame.setVisible(true);
 		});
 	}
+
 	
 
 }

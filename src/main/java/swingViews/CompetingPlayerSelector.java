@@ -8,15 +8,16 @@ import java.io.IOException;
 
 import domainModel.Player;
 
-public class CompetingPlayerSelector extends JPanel {
-
-	private static final long serialVersionUID = 1L;
+@SuppressWarnings("serial")
+public class CompetingPlayerSelector<T extends Player> extends JPanel {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
 	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
 
-	private CompetingComboBox<Player> comboBox;
+	protected CompetingComboBox<T> comboBox;
+	private JButton resetButton;
+	protected JLabel figureLabel;
 
 	// WB-compatible constructor
 	public CompetingPlayerSelector() {
@@ -49,7 +50,7 @@ public class CompetingPlayerSelector extends JPanel {
 		layeredPaneGBL.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		layeredPane.setLayout(layeredPaneGBL);
 
-		JLabel figureLabel = new JLabel("");
+		figureLabel = new JLabel("");
 		figureLabel.setIcon(figureIcon);
 		GridBagConstraints gbc_figureLabel = new GridBagConstraints();
 		gbc_figureLabel.anchor = GridBagConstraints.NORTH;
@@ -81,7 +82,7 @@ public class CompetingPlayerSelector extends JPanel {
 		gbl_panel.rowWeights = new double[] { 5.0, 1.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		comboBox = new CompetingComboBox<Player>();
+		comboBox = new CompetingComboBox<T>();
 		comboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
@@ -109,8 +110,8 @@ public class CompetingPlayerSelector extends JPanel {
 		gbc_comboBox.gridy = 0;
 		panel.add(comboBox, gbc_comboBox);
 
-		JButton resetButton = new JButton("Reset");
-		resetButton.setEnabled(false);
+		resetButton = new JButton("Reset");
+		getResetButton().setEnabled(false);
 		GridBagConstraints gbc_resetButton = new GridBagConstraints();
 		gbc_resetButton.anchor = GridBagConstraints.NORTH;
 		gbc_resetButton.gridx = 0;
@@ -118,12 +119,11 @@ public class CompetingPlayerSelector extends JPanel {
 		panel.add(resetButton, gbc_resetButton);
 
 		// implements Combo Box -> Button interaction
-		comboBox.addActionListener(e -> resetButton.setEnabled(comboBox.getSelectedIndex() > -1));
+		comboBox.addActionListener(e -> onSelectionSet());
 
 		// implements Button -> Combo Box interaction
 		resetButton.addActionListener(e -> {
-			getCompetingComboBox().setSelectedIndex(-1);
-			resetButton.setEnabled(false);
+			clearSelection();
 		});
 	}
 
@@ -144,7 +144,20 @@ public class CompetingPlayerSelector extends JPanel {
 				new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
 	}
 
-	public CompetingComboBox<Player> getCompetingComboBox() {
+	public CompetingComboBox<T> getCompetingComboBox() {
 		return comboBox;
+	}
+
+	public JButton getResetButton() {
+		return resetButton;
+	}
+	
+	protected void onSelectionSet() {
+		resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+	}
+	
+	protected void clearSelection() {
+		comboBox.setSelectedIndex(-1);
+		resetButton.setEnabled(false);
 	}
 }
