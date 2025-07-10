@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.beans.Beans;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class Spring433Scheme extends SpringSchemePanel {	
@@ -194,19 +195,34 @@ public class Spring433Scheme extends SpringSchemePanel {
 
 	public JPanel getForw3() {  return slot11;  }
 
+	@Override
+	public List<JPanel> getDefenderSlots() {
+		return List.of(slot2, slot3, slot4, slot5);
+	}
+
+	@Override
+	public List<JPanel> getMidfielderSlots() {
+		return List.of(slot6, slot7, slot8);
+	}
+
+	@Override
+	public List<JPanel> getForwardSlots() {
+		return List.of(slot9, slot10, slot11);
+	}
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
 			JFrame window = new JFrame("testing Safe Spring");
-
+			
 			// Set the position to screen center & size to half screen size
 			Dimension wndSize = window.getToolkit().getScreenSize(); // Get screen size
 			window.setLocation(new Point(wndSize.width / 4, wndSize.height / 4));
 			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			window.setContentPane(new Spring433Scheme());
-
+			
 			window.pack();
 			window.setVisible(true);
-
+			
 		});
 	}
 }

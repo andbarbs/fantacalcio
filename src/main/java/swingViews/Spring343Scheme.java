@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.beans.Beans;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class Spring343Scheme extends SpringSchemePanel {
@@ -188,6 +189,21 @@ public class Spring343Scheme extends SpringSchemePanel {
 	public JPanel getForw2() {  return slot10;  }
 
 	public JPanel getForw3() {  return slot11;  }
+	
+	@Override
+	public List<JPanel> getDefenderSlots() {
+		return List.of(slot2, slot3, slot4);
+	}
+
+	@Override
+	public List<JPanel> getMidfielderSlots() {
+		return List.of(slot5, slot6, slot7, slot8);
+	}
+
+	@Override
+	public List<JPanel> getForwardSlots() {
+		return List.of(slot9, slot10, slot11);
+	}
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {

@@ -1,6 +1,7 @@
 package swingViews;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.swing.JPanel;
@@ -54,6 +55,12 @@ public abstract class SpringSchemePanel extends JPanel {
 		return (SpringLayout) super.getLayout();
 	}
 	
+	public final JPanel getGoalieSlot() {
+		return slot1;
+	}
 	
+	public abstract List<JPanel> getDefenderSlots();
+	public abstract List<JPanel> getMidfielderSlots();
+	public abstract List<JPanel> getForwardSlots();
 
 }
