@@ -46,7 +46,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		layeredPane.setLayer(background, 0);
         
         // Create a panel to hold our SwingPlayerSelector components.
-        SpringSchemePanel selectorsPanel = new _433SpringSafe();
+		Spring433Scheme selectorsPanel = new Spring433Scheme();
         selectorsPanel.setBorder(new LineBorder(new Color(255, 0, 0), 8));
 		GridBagConstraints gbc_selectorsPanel = new GridBagConstraints();
 		gbc_selectorsPanel.fill = GridBagConstraints.BOTH;
@@ -57,7 +57,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
 		layeredPane.setLayer(selectorsPanel, 1);
 		
 		// derive rescaling hint for CompetingPlayerSelectors under current scheme panel
-		Dimension availableWindow = _433SpringSafe.recommendedSlotDimensions(background.getPreferredSize());
+		Dimension availableWindow = Spring433Scheme.recommendedSlotDimensions(background.getPreferredSize());
 		Dimension reducedAvailableWindow = // ensures selectors actually fit inside slots after insets
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
