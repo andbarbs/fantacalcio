@@ -16,7 +16,7 @@ public class Contract {
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private Player player;
-
+    
     protected Contract() {}
 
     public Contract(FantaTeam team, Player player) {
@@ -29,7 +29,7 @@ public class Contract {
         return team;
     }
 
-    public Player getGiocatore() {
+    public Player getPlayer() {
         return player;
     }
 

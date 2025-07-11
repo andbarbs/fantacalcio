@@ -1,15 +1,9 @@
 package domainModel;
 
 import jakarta.persistence.*;
+
 import java.util.Objects;
 import java.util.Set;
-
-import domainModel.Fielding.StarterFielding;
-import domainModel.Fielding.SubstituteFielding;
-import domainModel.Player.Defender;
-import domainModel.Player.Midfielder;
-import domainModel.Player.Forward;
-import domainModel.Player.Goalkeeper;
 
 // coincides with ThreePositionLineUp by definition of the game
 
@@ -23,12 +17,14 @@ public abstract class LineUp {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Match match;
+	@JoinColumn(name = LineUp_.MATCH)
+	private Match match;
     
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private FantaTeam team;
+	@JoinColumn(name = LineUp_.TEAM)
+	private FantaTeam team;
     
-    @OneToMany(mappedBy = Fielding_.LINE_UP)
+	@OneToMany(mappedBy = Fielding_.LINE_UP, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Fielding> fieldings;
 
     protected LineUp() {}
@@ -52,6 +48,11 @@ public abstract class LineUp {
     Set<Fielding> getFieldings() {
     	return fieldings;
     }
+	
+	// entry point for strongly-typed Player lookup
+	public LineUpViewer extract() {
+		return new LineUpViewer(this);
+	}
     
     /*
 	 * equals and hashCode do not include the fielding attribute to avoid infinite recursion
@@ -76,95 +77,5 @@ public abstract class LineUp {
 		LineUp other = (LineUp) obj;
 		return Objects.equals(match, other.match);
 	}
-	
-	/*
-	 * these subtypes of Fielding express the kinds of fielding 
-	 * that are significant to a three-position line-up
-	 * 
-	 *   > consider abolishing them as they merely mirror Player subtypes	 * 
-	 */
 
-	@Entity
-    public static class GoalkeeperStarterFielding extends StarterFielding {
-
-		protected GoalkeeperStarterFielding() {}
-        
-		public GoalkeeperStarterFielding(Goalkeeper player, LineUp lineUp) {
-            super(player, lineUp);
-        }
-	}
-	
-	@Entity
-    public static class DefenderStarterFielding extends StarterFielding {
-
-		protected DefenderStarterFielding() {}
-        
-		public DefenderStarterFielding(Defender player, LineUp lineUp) {
-            super(player, lineUp);
-        }
-	}
-	
-	@Entity
-    public static class MidfielderStarterFielding extends StarterFielding {
-
-		protected MidfielderStarterFielding() {}
-        
-		public MidfielderStarterFielding(Midfielder player, LineUp lineUp) {
-            super(player, lineUp);
-        }
-	}
-	
-	@Entity
-    public static class ForwardStarterFielding extends StarterFielding {
-
-		protected ForwardStarterFielding() {}
-        
-		public ForwardStarterFielding(Forward player, LineUp lineUp) {
-            super(player, lineUp);
-        }
-	}
-	
-	@Entity
-    public static class GoalkeeperSubstituteFielding extends SubstituteFielding {
-
-		protected GoalkeeperSubstituteFielding() {}
-        
-		public GoalkeeperSubstituteFielding(Goalkeeper player, LineUp lineUp, int benchPosition) {
-            super(player, lineUp, benchPosition);
-        }
-	}
-	
-	@Entity
-    public static class DefenderSubstituteFielding extends SubstituteFielding {
-
-		protected DefenderSubstituteFielding() {}
-        
-		public DefenderSubstituteFielding(Defender player, LineUp lineUp, int benchPosition) {
-            super(player, lineUp, benchPosition);
-        }
-	}
-	
-	@Entity
-    public static class MidfielderSubstituteFielding extends SubstituteFielding {
-
-		protected MidfielderSubstituteFielding() {}
-        
-		public MidfielderSubstituteFielding(Midfielder player, LineUp lineUp, int benchPosition) {
-            super(player, lineUp, benchPosition);
-        }
-	}
-	
-	@Entity
-    public static class ForwardSubstituteFielding extends SubstituteFielding {
-
-		protected ForwardSubstituteFielding() {}
-        
-		public ForwardSubstituteFielding(Forward player, LineUp lineUp, int benchPosition) {
-            super(player, lineUp, benchPosition);
-        }
-	}
-
-
-    
-    
 }

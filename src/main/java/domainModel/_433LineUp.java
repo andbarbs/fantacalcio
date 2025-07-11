@@ -16,7 +16,7 @@ public class _433LineUp extends LineUp {
 	
 	protected _433LineUp() {}
 
-	private _433LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
+	_433LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
 		super(match, team, fieldings);
 	}
 
@@ -32,7 +32,7 @@ public class _433LineUp extends LineUp {
 		
 		// Fluent method to add starter goalkeeper
 		public _443LineUpBuilder withGoalkeeper(Goalkeeper goalkeeper) {
-			this.fieldings.add(new LineUp.GoalkeeperStarterFielding(goalkeeper, lineUp));
+			this.fieldings.add(new Fielding.StarterFielding(goalkeeper, lineUp));
 			return this;
 		}
 
@@ -40,7 +40,7 @@ public class _433LineUp extends LineUp {
 		public _443LineUpBuilder withDefenders(Defender defender1, Defender defender2, Defender defender3,
 				Defender defender4) {
 			this.fieldings.addAll(List.of(defender1, defender2, defender3, defender4).stream()
-					.map(def -> new LineUp.DefenderStarterFielding(def, lineUp))
+					.map(def -> new Fielding.StarterFielding(def, lineUp))
 					.collect(Collectors.toList()));
 			return this;
 		}
@@ -49,7 +49,7 @@ public class _433LineUp extends LineUp {
 		public _443LineUpBuilder withMidfielders(Midfielder midfielder1, Midfielder midfielder2,
 				Midfielder midfielder3) {
 			this.fieldings.addAll(List.of(midfielder1, midfielder2, midfielder3).stream()
-					.map(mid -> new LineUp.MidfielderStarterFielding(mid, lineUp))
+					.map(mid -> new Fielding.StarterFielding(mid, lineUp))
 					.collect(Collectors.toList()));
 			return this;
 		}
@@ -57,7 +57,7 @@ public class _433LineUp extends LineUp {
 		// Fluent method to add forwards
 		public _443LineUpBuilder withForwards(Forward striker1, Forward striker2, Forward striker3) {
 			this.fieldings.addAll(List.of(striker1, striker2, striker3).stream()
-					.map(fwd -> new LineUp.ForwardStarterFielding(fwd, lineUp)).collect(Collectors.toList()));
+					.map(fwd -> new Fielding.StarterFielding(fwd, lineUp)).collect(Collectors.toList()));
 			return this;
 		}
 
@@ -65,7 +65,7 @@ public class _433LineUp extends LineUp {
 		public _443LineUpBuilder withSubstituteGoalkeepers(List<Goalkeeper> substituteGoalkeepers) {
 			for (int i = 0; i < substituteGoalkeepers.size(); i++) {
 				this.fieldings
-						.add(new LineUp.GoalkeeperSubstituteFielding(substituteGoalkeepers.get(i), lineUp, i + 1));
+						.add(new Fielding.SubstituteFielding(substituteGoalkeepers.get(i), lineUp, i + 1));
 			}
 			return this;
 		}
@@ -73,7 +73,7 @@ public class _433LineUp extends LineUp {
 		// Adding substitute defenders
 		public _443LineUpBuilder withSubstituteDefenders(List<Defender> substituteDefenders) {
 			for (int i = 0; i < substituteDefenders.size(); i++) {
-				this.fieldings.add(new LineUp.DefenderSubstituteFielding(substituteDefenders.get(i), lineUp, i + 1));
+				this.fieldings.add(new Fielding.SubstituteFielding(substituteDefenders.get(i), lineUp, i + 1));
 			}
 			return this;
 		}
@@ -81,7 +81,7 @@ public class _433LineUp extends LineUp {
 		// Adding substitute midfielders
 		public _443LineUpBuilder withSubstituteMidfielders(List<Midfielder> substituteMidfielders) {
 			for (int i = 0; i < substituteMidfielders.size(); i++) {
-				this.fieldings.add(new LineUp.MidfielderSubstituteFielding(substituteMidfielders.get(i), lineUp, i + 1));
+				this.fieldings.add(new Fielding.SubstituteFielding(substituteMidfielders.get(i), lineUp, i + 1));
 			}
 			return this;
 		}
@@ -89,7 +89,7 @@ public class _433LineUp extends LineUp {
 		// Adding substitute forwards
 		public _443LineUpBuilder withSubstituteForwards(List<Forward> substituteForwards) {
 			for (int i = 0; i < substituteForwards.size(); i++) {
-		        this.fieldings.add(new LineUp.ForwardSubstituteFielding(substituteForwards.get(i), lineUp, i + 1));
+		        this.fieldings.add(new Fielding.SubstituteFielding(substituteForwards.get(i), lineUp, i + 1));
 		    }
 		    return this;
 		}

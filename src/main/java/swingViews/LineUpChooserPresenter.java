@@ -2,7 +2,7 @@ package swingViews;
 
 import domainModel.FantaTeam;
 import domainModel.League;
-import domainModel.User;
+import domainModel.FantaUser;
 
 public class LineUpChooserPresenter {	
 	
@@ -17,7 +17,7 @@ public class LineUpChooserPresenter {
 	}
 
 	
-	public void initializeChoice(User user, League currentLeague) {
+	public void initializeChoice(FantaUser user, League currentLeague) {
 		
 		// 1) TODO gets the user's team under the current league
 		FantaTeam team = null;

@@ -12,7 +12,7 @@ public class League {
     private Long id;
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    private User admin;
+    private FantaUser admin;
 
     @Basic(optional=false)
     private String name;
@@ -24,14 +24,14 @@ public class League {
     private String leagueCode;
 
     protected League() {}
-    public League(User admin, String name, NewsPaper newsPaper, String leagueCode) {
+    public League(FantaUser admin, String name, NewsPaper newsPaper, String leagueCode) {
         this.admin = admin;
         this.name = name;
         this.newsPaper = newsPaper;
         this.leagueCode = leagueCode;
     }
     // Getters
-    public User getAdmin() {
+    public FantaUser getAdmin() {
         return admin;
     }
 

@@ -3,6 +3,7 @@ package domainModel;
 import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class FantaTeam {
@@ -20,14 +21,18 @@ public class FantaTeam {
     private int points;
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    private User fantaManager;
+    private FantaUser fantaManager;
+    
+	@OneToMany(mappedBy = Contract_.TEAM, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Contract> contracts;
 
     protected FantaTeam() {}
-    public FantaTeam(String name, League league, int points, User fantaManager) {
+    public FantaTeam(String name, League league, int points, FantaUser fantaManager, Set<Contract> contracts) {
         this.name = name;
         this.league = league;
         this.points = points;
         this.fantaManager = fantaManager;
+		this.contracts = contracts;
     }
 
     // Getters
@@ -39,12 +44,25 @@ public class FantaTeam {
         return points;
     }
 
-    public User getFantaManager() {
+    public FantaUser getFantaManager() {
         return fantaManager;
     }
 
     public String getName() {
         return name;
+    }
+    
+    public Set<Contract> getContracts() {
+		return contracts;
+	}
+
+    public void setContracts(Set<Contract> contracts) {
+        this.contracts = contracts;
+    }
+
+    // entry point for strongly-typed Player lookup
+    public FantaTeamViewer extract() {
+    	return new FantaTeamViewer(this);
     }
 
     @Override
@@ -58,6 +76,7 @@ public class FantaTeam {
     public int hashCode() {
         return Objects.hash(name, league, points, fantaManager);
     }
+	
 }
 
 

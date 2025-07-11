@@ -36,6 +36,10 @@ public class Match {
     public FantaTeam getTeam2() {
         return Team2;
     }
+    
+    public MatchDaySerieA getMatchDaySerieA() {
+		return matchDaySerieA;
+	}
 
     @Override
     public boolean equals(Object o) {

@@ -1,11 +1,17 @@
 package businessLogic.repositories;
 
+import domainModel.FantaUser;
 import domainModel.League;
+
+import java.util.Optional;
+import java.util.Set;
 
 public interface LeagueRepository {
 
-	League getLeagueByCode(String leagueCode);
+	Optional<League> getLeagueByCode(String leagueCode);
 
-	boolean add(League league);
+	boolean addLeague(League league);
+
+	Set<League> getLeaguesByUser(FantaUser user);
 
 }
