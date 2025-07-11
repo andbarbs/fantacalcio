@@ -59,6 +59,10 @@ public abstract class SpringSchemePanel extends JPanel {
 		return slot1;
 	}
 	
+	public final List<JPanel> getGoalieSlots() {
+		return List.of(slot1);
+	}
+	
 	public abstract List<JPanel> getDefenderSlots();
 	public abstract List<JPanel> getMidfielderSlots();
 	public abstract List<JPanel> getForwardSlots();
