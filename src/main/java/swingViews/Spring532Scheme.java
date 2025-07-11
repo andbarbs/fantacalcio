@@ -1,26 +1,17 @@
 package swingViews;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Point;
 import java.beans.Beans;
 import java.util.List;
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class Spring532Scheme extends SpringSchemePanel {	
 	
-	private static final float slotWidthRatio = 0.217f;
-	private static final float slotHeightRatio = 0.193f;
 	
-	public static Dimension recommendedSlotDimensions(Dimension fieldDimension) {
-		return new Dimension(
-				(int)Math.floor(fieldDimension.width * slotWidthRatio), 
-				(int)Math.floor(fieldDimension.height * slotHeightRatio));
-	}
 	
 	/*
 	 * 1) static methods of Spring:
@@ -40,20 +31,38 @@ public class Spring532Scheme extends SpringSchemePanel {
 	 */
 	public Spring532Scheme() {
 
-		if (Beans.isDesignTime())
-			setPreferredSize(new Dimension(100, 100));
-
 		// creates springs for the Panel dimensions
 		Spring panelWidth = Spring.constant(100);
-		Spring panelHeight = Spring.constant(100);// sets panel's own dimensions
+		Spring panelHeight = Spring.constant(100);   // sets panel's own springs
 		getLayout().getConstraints(this).setWidth(panelWidth);
 		getLayout().getConstraints(this).setHeight(panelHeight);
+		
+		/*
+		 * designing with SpringLayout using WB has several limitations:
+		 * 		- WB only acknowledges the putConstraint() API
+		 * 		- it does not relate container width/height springs
+		 * 			to manually set container dimensions 
+		 * 
+		 * moreover, WB does NOT access superclass members
+		 */
+		if (Beans.isDesignTime()) {
+			
+			// a typical aspect ratio for a football field
+			Dimension footballField = new Dimension(463, 648);
+			setPreferredSize(footballField);
+			
+			// this has to be done so scaled springs will
+			// work well with the absolute dimensions employed
+			panelWidth = Spring.constant(footballField.width);
+			panelHeight = Spring.constant(footballField.height); 
+			
+			fillSlotsWithDummyPanels(recommendedSlotDimensions(footballField));
+		}
 
 		// goalie slot
-		Spring goalieYoffset = Spring.scale(panelHeight, 0.02f);
 		getLayout().putConstraint(
 				SpringLayout.NORTH, slot1, 
-				goalieYoffset, 
+				Spring.scale(panelHeight, 0.005f), 
 				SpringLayout.NORTH, this);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot1, 
@@ -63,13 +72,13 @@ public class Spring532Scheme extends SpringSchemePanel {
 		
 		// def3 slot
 		getLayout().putConstraint(
-				SpringLayout.VERTICAL_CENTER, slot4, 
-				Spring.scale(panelWidth, 0.3f),
-				SpringLayout.NORTH, this);
-		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot4, 
 				Spring.constant(0), 
 				SpringLayout.HORIZONTAL_CENTER, this);
+		getLayout().putConstraint(
+				SpringLayout.VERTICAL_CENTER, slot4, 
+				Spring.scale(panelWidth, 0.43f),
+				SpringLayout.NORTH, this);
 		slot4.setBackground(DEFENDER_COLOR);
 
 		// def2 slot
@@ -90,18 +99,18 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.VERTICAL_CENTER, slot3);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot5, 
-				Spring.scale(panelHeight, -0.25f),
+				Spring.scale(panelWidth, -0.25f),
 				SpringLayout.EAST, this);
 		slot5.setBackground(DEFENDER_COLOR);
 
 		// def1 slot
 		getLayout().putConstraint(
 				SpringLayout.VERTICAL_CENTER, slot2, 
-				Spring.scale(panelHeight, -0.05f),
+				Spring.scale(panelHeight, 0f),
 				SpringLayout.VERTICAL_CENTER, this);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot2, 
-				Spring.scale(panelHeight, 0.125f),
+				Spring.scale(panelWidth, 0.125f),
 				SpringLayout.WEST, this);
 		slot2.setBackground(DEFENDER_COLOR);
 		
@@ -112,7 +121,7 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.VERTICAL_CENTER, slot2);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot6, 
-				Spring.scale(panelHeight, -0.125f),
+				Spring.scale(panelWidth, -0.125f),
 				SpringLayout.EAST, this);
 		slot6.setBackground(DEFENDER_COLOR);
 		
@@ -123,7 +132,7 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.HORIZONTAL_CENTER, this);
 		getLayout().putConstraint(
 				SpringLayout.VERTICAL_CENTER, slot8, 
-				Spring.scale(panelWidth, 0.65f),
+				Spring.scale(panelHeight, 0.7f),
 				SpringLayout.NORTH, this);
 		slot8.setBackground(MIDFIELDER_COLOR);
 
@@ -134,7 +143,7 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.VERTICAL_CENTER, slot8);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot7, 
-				Spring.scale(panelHeight, 0.16f),
+				Spring.scale(panelWidth, 0.16f),
 				SpringLayout.WEST, this);
 		slot7.setBackground(MIDFIELDER_COLOR);
 
@@ -145,7 +154,7 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.VERTICAL_CENTER, slot8);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot9, 
-				Spring.scale(panelHeight, -0.16f),
+				Spring.scale(panelWidth, -0.16f),
 				SpringLayout.EAST, this);
 		slot9.setBackground(MIDFIELDER_COLOR);
 
@@ -156,7 +165,7 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.WEST, this);
 		getLayout().putConstraint(
 				SpringLayout.VERTICAL_CENTER, slot10, 
-				Spring.scale(panelHeight, 0.86f),
+				Spring.scale(panelHeight, 0.9f),
 				SpringLayout.NORTH, this);
 		slot10.setBackground(FORWARD_COLOR);
 
@@ -169,7 +178,64 @@ public class Spring532Scheme extends SpringSchemePanel {
 				SpringLayout.VERTICAL_CENTER, slot11, 
 				Spring.constant(0),
 				SpringLayout.VERTICAL_CENTER, slot10);
-		slot11.setBackground(FORWARD_COLOR);
+		slot11.setBackground(FORWARD_COLOR);		
+	}
+
+	private void fillSlotsWithDummyPanels(Dimension designContentSize) {
+		JPanel content1 = new JPanel();
+		content1.setPreferredSize(designContentSize);
+		content1.setBackground(Color.MAGENTA);
+		slot1.add(content1);
+		
+		JPanel content2 = new JPanel();
+		content2.setPreferredSize(designContentSize);
+		content2.setBackground(Color.ORANGE);
+		slot2.add(content2);
+		
+		JPanel content3 = new JPanel();
+		content3.setPreferredSize(designContentSize);
+		content3.setBackground(Color.ORANGE);
+		slot3.add(content3);
+		
+		JPanel content4 = new JPanel();
+		content4.setPreferredSize(designContentSize);
+		content4.setBackground(Color.ORANGE);
+		slot4.add(content4);
+		
+		JPanel content5 = new JPanel();
+		content5.setPreferredSize(designContentSize);
+		content5.setBackground(Color.ORANGE);
+		slot5.add(content5);
+		
+		JPanel content6 = new JPanel();
+		content6.setPreferredSize(designContentSize);
+		content6.setBackground(Color.ORANGE);
+		slot6.add(content6);
+		
+		JPanel content7 = new JPanel();
+		content7.setPreferredSize(designContentSize);
+		content7.setBackground(Color.GREEN);
+		slot7.add(content7);
+		
+		JPanel content8 = new JPanel();
+		content8.setPreferredSize(designContentSize);
+		content8.setBackground(Color.GREEN);
+		slot8.add(content8);
+		
+		JPanel content9 = new JPanel();
+		content9.setPreferredSize(designContentSize);
+		content9.setBackground(Color.GREEN);
+		slot9.add(content9);
+		
+		JPanel content10= new JPanel();
+		content10.setPreferredSize(designContentSize);
+		content10.setBackground(Color.YELLOW);
+		slot10.add(content10);		
+		
+		JPanel content11 = new JPanel();
+		content11.setPreferredSize(designContentSize);
+		content11.setBackground(Color.YELLOW);
+		slot11.add(content11);
 	}
 	
 	public JPanel getGoalie() { return slot1; }
@@ -207,21 +273,5 @@ public class Spring532Scheme extends SpringSchemePanel {
 	@Override
 	public List<JPanel> getForwardSlots() {
 		return List.of(slot10, slot11);
-	}
-
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			JFrame window = new JFrame("testing Safe Spring");
-
-			// Set the position to screen center & size to half screen size
-			Dimension wndSize = window.getToolkit().getScreenSize(); // Get screen size
-			window.setLocation(new Point(wndSize.width / 4, wndSize.height / 4));
-			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			window.setContentPane(new Spring532Scheme());
-
-			window.pack();
-			window.setVisible(true);
-
-		});
 	}
 }

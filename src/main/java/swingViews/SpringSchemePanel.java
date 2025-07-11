@@ -1,6 +1,7 @@
 package swingViews;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -9,6 +10,15 @@ import javax.swing.SpringLayout;
 
 @SuppressWarnings("serial")
 public abstract class SpringSchemePanel extends JPanel {
+	
+	private static final float slotWidthRatio = 0.217f;
+	private static final float slotHeightRatio = 0.193f;
+	
+	public static Dimension recommendedSlotDimensions(Dimension fieldDimension) {
+		return new Dimension(
+				(int)Math.floor(fieldDimension.width * slotWidthRatio), 
+				(int)Math.floor(fieldDimension.height * slotHeightRatio));
+	}
 	
 	protected static final Color FORWARD_COLOR = new Color(0, 0, 0);
 	protected static final Color MIDFIELDER_COLOR = new Color(221, 0, 0);

@@ -15,9 +15,9 @@ import java.util.stream.Stream;
 import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
-public class MultiPlayerSelector_using433SpringSafe extends JFrame {
+public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 
-	public MultiPlayerSelector_using433SpringSafe() throws IOException {
+	public MultiPlayerSelector_usingSingleScheme() throws IOException {
         setTitle("Football Player Selector");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -37,7 +37,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
         
         // Create the background label with the football field image.
         // In WindowBuilder you can adjust the file path or resource as needed.
-        JLabel background = new JLabel(new ImageIcon(MultiPlayerSelector_using433SpringSafe.class.getResource("/gui_images/raster_field.png")));
+        JLabel background = new JLabel(new ImageIcon(MultiPlayerSelector_usingSingleScheme.class.getResource("/gui_images/raster_field.png")));
 		GridBagConstraints gbc_background = new GridBagConstraints();
 		gbc_background.fill = GridBagConstraints.BOTH;
 		gbc_background.gridx = 0;
@@ -150,7 +150,7 @@ public class MultiPlayerSelector_using433SpringSafe extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
 			try {
-				new MultiPlayerSelector_using433SpringSafe();
+				new MultiPlayerSelector_usingSingleScheme();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

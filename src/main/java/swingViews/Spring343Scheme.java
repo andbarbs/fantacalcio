@@ -1,26 +1,16 @@
 package swingViews;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
+
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Point;
 import java.beans.Beans;
 import java.util.List;
 
 @SuppressWarnings("serial")
 public class Spring343Scheme extends SpringSchemePanel {
-	
-	private static final float slotWidthRatio = 0.217f;
-	private static final float slotHeightRatio = 0.193f;
-	
-	public static Dimension recommendedSlotDimensions(Dimension fieldDimension) {
-		return new Dimension(
-				(int)Math.floor(fieldDimension.width * slotWidthRatio), 
-				(int)Math.floor(fieldDimension.height * slotHeightRatio));
-	}
 	
 	/*
 	 * 1) static methods of Spring:
@@ -40,14 +30,34 @@ public class Spring343Scheme extends SpringSchemePanel {
 	 */
 	public Spring343Scheme() {
 		
-		if (Beans.isDesignTime())
-			setPreferredSize(new Dimension(100, 100));
 		
 		// creates springs for the Panel dimensions
 		Spring panelWidth = Spring.constant(100);
 		Spring panelHeight = Spring.constant(100);// sets panel's own dimensions
 		getLayout().getConstraints(this).setWidth(panelWidth);
 		getLayout().getConstraints(this).setHeight(panelHeight);
+		
+		/*
+		 * designing with SpringLayout using WB has several limitations:
+		 * 		- WB only acknowledges the putConstraint() API
+		 * 		- it does not relate container width/height springs
+		 * 			to manually set container dimensions 
+		 * 
+		 * moreover, WB does NOT access superclass members
+		 */
+		if (Beans.isDesignTime()) {
+			
+			// a typical aspect ratio for a football field
+			Dimension footballField = new Dimension(463, 648);
+			setPreferredSize(footballField);
+			
+			// this has to be done so scaled springs will
+			// work well with the absolute dimensions employed
+			panelWidth = Spring.constant(footballField.width);
+			panelHeight = Spring.constant(footballField.height); 
+			
+			fillSlotsWithDummyPanels(recommendedSlotDimensions(footballField));
+		}
 
 		// installs Goalie slot
 		Spring goalieYoffset = Spring.scale(panelHeight, 0.02f);
@@ -62,7 +72,7 @@ public class Spring343Scheme extends SpringSchemePanel {
 		// def2 slot	
 		getLayout().putConstraint(
 				SpringLayout.VERTICAL_CENTER, slot3, 
-				Spring.scale(panelHeight, 0.4f),
+				Spring.scale(panelHeight, 0.35f),
 				SpringLayout.NORTH, this);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot3, 
@@ -95,11 +105,11 @@ public class Spring343Scheme extends SpringSchemePanel {
 		// mid1 slot
 		getLayout().putConstraint(
 				SpringLayout.VERTICAL_CENTER, slot5, 
-				goalieYoffset, 
-				SpringLayout.VERTICAL_CENTER, this);
+				Spring.scale(panelHeight, 0.6f),
+				SpringLayout.NORTH, this);
 		getLayout().putConstraint(
 				SpringLayout.HORIZONTAL_CENTER, slot5, 
-				Spring.scale(panelHeight, 0.125f),
+				Spring.scale(panelWidth, 0.125f),
 				SpringLayout.WEST, this);
 		slot5.setBackground(MIDFIELDER_COLOR);
 		
@@ -205,19 +215,61 @@ public class Spring343Scheme extends SpringSchemePanel {
 		return List.of(slot9, slot10, slot11);
 	}
 
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			JFrame window = new JFrame("testing Safe Spring");
-
-			// Set the position to screen center & size to half screen size
-			Dimension wndSize = window.getToolkit().getScreenSize(); // Get screen size
-			window.setLocation(new Point(wndSize.width / 4, wndSize.height / 4));
-			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			window.setContentPane(new Spring343Scheme());
-
-			window.pack();
-			window.setVisible(true);
-
-		});
+	private void fillSlotsWithDummyPanels(Dimension designContentSize) {
+		
+		JPanel content1 = new JPanel();
+		content1.setPreferredSize(designContentSize);
+		content1.setBackground(Color.MAGENTA);
+		slot1.add(content1);
+		
+		JPanel content2 = new JPanel();
+		content2.setPreferredSize(designContentSize);
+		content2.setBackground(Color.ORANGE);
+		slot2.add(content2);
+		
+		JPanel content3 = new JPanel();
+		content3.setPreferredSize(designContentSize);
+		content3.setBackground(Color.ORANGE);
+		slot3.add(content3);
+		
+		JPanel content4 = new JPanel();
+		content4.setPreferredSize(designContentSize);
+		content4.setBackground(Color.ORANGE);
+		slot4.add(content4);
+		
+		JPanel content5 = new JPanel();
+		content5.setPreferredSize(designContentSize);
+		content5.setBackground(Color.GREEN);
+		slot5.add(content5);
+		
+		JPanel content6 = new JPanel();
+		content6.setPreferredSize(designContentSize);
+		content6.setBackground(Color.GREEN);
+		slot6.add(content6);
+		
+		JPanel content7 = new JPanel();
+		content7.setPreferredSize(designContentSize);
+		content7.setBackground(Color.GREEN);
+		slot7.add(content7);
+		
+		JPanel content8 = new JPanel();
+		content8.setPreferredSize(designContentSize);
+		content8.setBackground(Color.GREEN);
+		slot8.add(content8);
+		
+		JPanel content9 = new JPanel();
+		content9.setPreferredSize(designContentSize);
+		content9.setBackground(Color.YELLOW);
+		slot9.add(content9);
+		
+		JPanel content10= new JPanel();
+		content10.setPreferredSize(designContentSize);
+		content10.setBackground(Color.YELLOW);
+		slot10.add(content10);		
+		
+		JPanel content11 = new JPanel();
+		content11.setPreferredSize(designContentSize);
+		content11.setBackground(Color.YELLOW);
+		slot11.add(content11);
 	}
 }
