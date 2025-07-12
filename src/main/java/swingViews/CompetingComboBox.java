@@ -49,15 +49,10 @@ public class CompetingComboBox<E> extends JComboBox<E> {
 
 		// bookkeeping for user-triggered actions on the combo box
 		
-		/*
-		 * an event is fired on a ComboBox under these circumstances:
-		 * 		1) the user makes/updates their selection
-		 * 		
-		 * 		2) an entry is REMOVED from the underlying model AND no user selection exists
-		 * 
-		 * 		3) the selection is programmatically set to -1
-		 * 
-		 * */
+		/* an ActionEvent is fired on a JComboBox under these circumstances:
+		 * 		1) a new/the existing selection is set on the combo, either by the user or programmatically
+		 * 		2) the selection is (programmatically) set to -1
+		 * 		3) an entry is REMOVED from the underlying model AND no user selection exists   */
 	}
 	
 	@Override
