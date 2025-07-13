@@ -5,20 +5,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
 @SuppressWarnings("serial")
 public class StarterPlayerSelector<T extends Player> extends JPanel 
-implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
+				implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
 	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
 
-	protected CompetingComboBox<T> comboBox;
+	protected JComboBox<T> comboBox;
 	protected JLabel figureLabel;
 
 	// WB-compatible constructor
@@ -101,7 +106,7 @@ implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 		gbl_panel.rowWeights = new double[] { 5.0, 1.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		comboBox = new CompetingComboBox<T>();
+		comboBox = new JComboBox<T>();
 		comboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
@@ -144,6 +149,7 @@ implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 					comboBox.getSelectedIndex() > -1) { 
 				onUserSelectionSet(comboBox.getSelectedIndex());
 			}
+			compete(comboBox.getSelectedIndex());
 		});
 
 		// implements Button -> Combo Box interaction
@@ -153,17 +159,35 @@ implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 			onSelectionCleared();
 		});
 	}
+	
+	private void compete(int selectedIndex) {
+
+		// a programmatic or user choice has been made on this CBox
+		if (selectedIndex != -1) {
+			if (currentSelection != -1)
+				driver.optionClearedOn(this, currentSelection);
+			currentSelection = mask.get(selectedIndex);
+			driver.optionSelectedOn(this, currentSelection);
+		}
+
+		// this CBox's choice has just been cleared
+		else if (selectedIndex == -1 && currentSelection != null && // false before option attachment
+				currentSelection != COMPETING_CBOX_NO_CHOICE) {
+			driver.optionClearedOn(this, currentSelection);
+			currentSelection = COMPETING_CBOX_NO_CHOICE;
+		}
+	}
 
 	// subclass hooks for augmenting selection event handling
 	protected void onUserSelectionSet(int selectedIndex) {}
 	protected void onSelectionCleared() {}
-
-	public CompetingComboBox<T> getCompetingComboBox() {
-		return comboBox;
-	}	
 	
+	private static final int COMPETING_CBOX_NO_CHOICE = -1;
+
 	private OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver;
-	private List<T> options;
+	private List<T> options;          // the original option pool, ordered
+	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
+	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
 
 	@Override
 	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver) {
@@ -173,17 +197,43 @@ implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 	@Override
 	public void attachOptions(List<T> options) {
 		this.options = options;
+		mask = new ArrayList<Integer>(
+				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
+		
+		// fills the cbox with initial contents
+		comboBox.setModel(new DefaultComboBoxModel<>(new Vector<>(options)));
+		
+		// sets the cbox's starting selection to none
+		currentSelection = -1;
+		comboBox.setSelectedIndex(-1);
 	}
 
 	@Override
 	public void retireOption(int index) {
-		// TODO Auto-generated method stub
-		
+		int pos = mask.indexOf(index);
+		mask.remove(pos);
+		DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) comboBox.getModel();
+		model.removeElementAt(pos);
 	}
 
 	@Override
 	public void restoreOption(int index) {
-		// TODO Auto-generated method stub
-		
+		int insertionIndex = IntStream
+				.range(0, mask.size())
+				.filter(k -> mask.get(k) >= index)
+				.findFirst().orElse(mask.size());
+		mask.add(insertionIndex, index);
+		DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) comboBox.getModel();
+		model.insertElementAt(options.get(index), insertionIndex);
+	}
+	
+	public void select(Optional<T>  player) {
+		if (player.isEmpty()) {
+			comboBox.setSelectedIndex(-1);
+		}
+		else {
+			// TODO check that the combo's model contains player!!
+			comboBox.setSelectedItem(player);
+		}
 	}
 }

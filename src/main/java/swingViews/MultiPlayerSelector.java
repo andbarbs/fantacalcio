@@ -4,13 +4,9 @@ import javax.swing.*;
 
 import domainModel.Player.*;
 
-import static swingViews.CompetingComboBox.initializeCompetition;
-
 import java.awt.*;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class MultiPlayerSelector extends JFrame {
 	private static final long serialVersionUID = 1L;	
@@ -28,7 +24,7 @@ public class MultiPlayerSelector extends JFrame {
         
         // Create the background label with the football field image.
         // In WindowBuilder you can adjust the file path or resource as needed.
-        JLabel background = new JLabel(new ImageIcon(getClass().getResource("/images/raster_field.png")));
+        JLabel background = new JLabel(new ImageIcon(getClass().getResource("/gui_images/raster_field.png")));
         // We'll use absolute bounds for the background image.
         background.setBounds(0, 0, 788, 1100);
         layeredPane.add(background, Integer.valueOf(0)); // lowest layer
@@ -61,8 +57,8 @@ public class MultiPlayerSelector extends JFrame {
         gbc_goalieSelector.insets = new Insets(10, 10, 10, 10); // optional padding
         selectorsPanel.add(goalieSelector, gbc_goalieSelector);
         
-		initializeCompetition(
-				Set.of(goalieSelector.getCompetingComboBox()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(goalieSelector), 
 				List.of(new Goalkeeper("Gigi", "Buffon"), 
 						new Goalkeeper("Manuel", "Neuer"),
 						new Goalkeeper("Jan", "Oblak"), 
@@ -116,11 +112,9 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector4.gridy = 1;
         defendersPanel.add(defSelector4, gbc_defSelector4);
         
-		initializeCompetition(
-				Stream.of(defSelector1, defSelector2, defSelector3, defSelector4)
-                	.map(StarterPlayerSelector::getCompetingComboBox)
-                	.collect(Collectors.toSet()),
-                List.of(
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(defSelector1, defSelector2, defSelector3, defSelector4), 
+				List.of(
                 	    new Defender("Sergio", "Ramos"),
                 	    new Defender("Virgil", "van Dijk"),
                 	    new Defender("Gerard", "Piqué"),
@@ -165,10 +159,8 @@ public class MultiPlayerSelector extends JFrame {
         gbc_midSelector3.gridy = 0;
         midfieldersPanel.add(midSelector3, gbc_midSelector3);
         
-		initializeCompetition(
-				Stream.of(midSelector1, midSelector2, midSelector3)
-                	.map(StarterPlayerSelector::getCompetingComboBox)
-                	.collect(Collectors.toSet()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(midSelector1, midSelector2, midSelector3), 
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
 						new Midfielder("N'Golo", "Kanté"), 
@@ -215,10 +207,8 @@ public class MultiPlayerSelector extends JFrame {
         gbc_forwSelector3.gridy = 0;
         forwardsPanel.add(forwSelector3, gbc_forwSelector3);
         
-		initializeCompetition(
-				Stream.of(forwSelector1, forwSelector2, forwSelector3)
-					.map(StarterPlayerSelector::getCompetingComboBox)
-					.collect(Collectors.toSet()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(forwSelector1, forwSelector2, forwSelector3), 
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),
 						new Forward("Neymar", "Jr"), 

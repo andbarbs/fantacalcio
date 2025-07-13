@@ -3,6 +3,8 @@ package swingViews;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Set;
+
 import javax.swing.JFrame;
 
 import org.assertj.swing.annotation.GUITest;
@@ -30,8 +32,9 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Construct the SwingPlayerSelector with the injected combo			
 			StarterPlayerSelector<Defender> compPlayerSelector = new StarterPlayerSelector<Defender>();
-			compPlayerSelector.getCompetingComboBox().setContents(List.of(
-							new Player.Defender("Gigi", "Buffon"), 
+			OptionDealerGroupDriver.initializeDealing(
+					Set.of(compPlayerSelector), 
+					List.of(new Player.Defender("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
 			JFrame f = new JFrame("Test Frame");
 			f.add(compPlayerSelector);

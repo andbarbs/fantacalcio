@@ -34,9 +34,8 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 	private FillableSwappableCompetingPlayerSelector<T> sel3;
 	private Action swapSelectors1and2, swapSelectors2and3;
 	
-	public List<CompetingComboBox<T>> getCompetingComboBoxes() {
+	public List<FillableSwappableCompetingPlayerSelector<T>> getSubstituteSelectors() {
 		return Stream.of(sel1, sel2, sel3)
-				.map(FillableSwappableCompetingPlayerSelector::getCompetingComboBox)
 				.collect(Collectors.toList());
 	}
 
@@ -146,15 +145,14 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 			JFrame frame = new JFrame("substitute chooser demo");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			CompetingSubstituteChooser<Defender> chooser = new CompetingSubstituteChooser<Defender>();
-			CompetingComboBox.initializeCompetition(
-					Set.copyOf(chooser.getCompetingComboBoxes()),
+			OptionDealerGroupDriver.initializeDealing(
+					Set.copyOf(chooser.getSubstituteSelectors()), 
 					List.of(
 		            	    new Defender("Sergio", "Ramos"),
 		            	    new Defender("Virgil", "van Dijk"),
 		            	    new Defender("Gerard", "Piqué"),
 		            	    new Defender("Thiago", "Silva"),
-		            	    new Defender("Giorgio", "Chiellini")
-		            	));
+		            	    new Defender("Giorgio", "Chiellini")));
 			frame.setContentPane(chooser);
 			frame.pack();
 			frame.setLocationRelativeTo(null);

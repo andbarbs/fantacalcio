@@ -4,14 +4,10 @@ import javax.swing.*;
 
 import domainModel.Player.*;
 
-import static swingViews.CompetingComboBox.initializeCompetition;
-
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
@@ -65,8 +61,8 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<Goalkeeper>(reducedAvailableWindow);
         selectorsPanel.getGoalie().add(goalieSelector);
         
-		initializeCompetition(
-				Set.of(goalieSelector.getCompetingComboBox()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(goalieSelector), 
 				List.of(new Goalkeeper("Gigi", "Buffon"), 
 						new Goalkeeper("Manuel", "Neuer"),
 						new Goalkeeper("Jan", "Oblak"), 
@@ -85,11 +81,9 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         StarterPlayerSelector<Defender> defSelector4 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef4().add(defSelector4);
         
-		initializeCompetition(
-				Stream.of(defSelector1, defSelector2, defSelector3, defSelector4)
-                	.map(StarterPlayerSelector::getCompetingComboBox)
-                	.collect(Collectors.toSet()),
-                List.of(
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(defSelector1, defSelector2, defSelector3, defSelector4), 
+				List.of(
                 	    new Defender("Sergio", "Ramos"),
                 	    new Defender("Virgil", "van Dijk"),
                 	    new Defender("Gerard", "Piqué"),
@@ -108,10 +102,8 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         StarterPlayerSelector<Midfielder> midSelector3 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid3().add(midSelector3);
         
-		initializeCompetition(
-				Stream.of(midSelector1, midSelector2, midSelector3)
-                	.map(StarterPlayerSelector::getCompetingComboBox)
-                	.collect(Collectors.toSet()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(midSelector1, midSelector2, midSelector3), 
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
 						new Midfielder("N'Golo", "Kanté"), 
@@ -128,16 +120,13 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         StarterPlayerSelector<Forward> forwSelector3 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw3().add(forwSelector3);
         
-		initializeCompetition(
-				Stream.of(forwSelector1, forwSelector2, forwSelector3)	
-					.map(StarterPlayerSelector::getCompetingComboBox)
-					.collect(Collectors.toSet()),
+        OptionDealerGroupDriver.initializeDealing(
+				Set.of(forwSelector1, forwSelector2, forwSelector3), 
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),
 						new Forward("Neymar", "Jr"), 
 						new Forward("Kylian", "Mbappé"),
-						new Forward("Robert", "Lewand")));
-       
+						new Forward("Robert", "Lewandowski")));       
 		
 		// Finally add the layeredPane to the frame.
         getContentPane().add(layeredPane);

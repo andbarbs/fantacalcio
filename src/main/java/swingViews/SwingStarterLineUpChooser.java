@@ -2,10 +2,9 @@ package swingViews;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import static java.util.stream.Collectors.*;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -164,17 +163,18 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 	private void populateModels(FantaTeam team) {
 		// TODO there is the issue of ordering players in the team:
 		// initializeCompetition rightly wants a List!!
-		CompetingComboBox.initializeCompetition(
-				goalieSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
+		
+		OptionDealerGroupDriver.initializeDealing(
+				Set.copyOf(goalieSelectors), 
 				List.copyOf(team.extract().goalkeepers()));
-		CompetingComboBox.initializeCompetition(
-				defSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
+		OptionDealerGroupDriver.initializeDealing(
+				Set.copyOf(defSelectors), 
 				List.copyOf(team.extract().defenders()));
-		CompetingComboBox.initializeCompetition(
-				midSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
+		OptionDealerGroupDriver.initializeDealing(
+				Set.copyOf(midSelectors), 
 				List.copyOf(team.extract().midfielders()));
-		CompetingComboBox.initializeCompetition(
-				forwSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
+		OptionDealerGroupDriver.initializeDealing(
+				Set.copyOf(forwSelectors), 
 				List.copyOf(team.extract().forwards()));
 	}
 
@@ -219,7 +219,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 
 		// TODO empty out selectors that won't be shown
 		for (; i < selectors.size(); i++) {
-			selectors.get(i).getCompetingComboBox().setSelectedIndex(-1);
+			selectors.get(i).select(Optional.empty());
 		}
 	}
 	
