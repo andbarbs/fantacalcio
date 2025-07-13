@@ -17,9 +17,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import domainModel.Player;
+import domainModel.Player.Defender;
 
 @RunWith(GUITestRunner.class)
-public class CompetingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
+public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 
     private FrameFixture window;
 
@@ -28,9 +29,9 @@ public class CompetingPlayerSelectorTest extends AssertJSwingJUnitTestCase {
         // Wrap the panel in a frame.
 		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Construct the SwingPlayerSelector with the injected combo			
-			CompetingPlayerSelector compPlayerSelector = new CompetingPlayerSelector();
+			StarterPlayerSelector<Defender> compPlayerSelector = new StarterPlayerSelector<Defender>();
 			compPlayerSelector.getCompetingComboBox().setContents(List.of(
-							new Player.Goalkeeper("Gigi", "Buffon"), 
+							new Player.Defender("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
 			JFrame f = new JFrame("Test Frame");
 			f.add(compPlayerSelector);

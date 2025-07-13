@@ -48,10 +48,10 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 	private final Spring532Scheme panel532;
 
 	// The single pool of selectors
-	private final List<CompetingPlayerSelector<Goalkeeper>> goalieSelectors;
-	private final List<CompetingPlayerSelector<Defender>> defSelectors;
-	private final List<CompetingPlayerSelector<Midfielder>> midSelectors;
-	private final List<CompetingPlayerSelector<Forward>> forwSelectors;
+	private final List<StarterPlayerSelector<Goalkeeper>> goalieSelectors;
+	private final List<StarterPlayerSelector<Defender>> defSelectors;
+	private final List<StarterPlayerSelector<Midfielder>> midSelectors;
+	private final List<StarterPlayerSelector<Forward>> forwSelectors;
 
 	// Internal holder that flips schemes
 	private final JPanel schemesHolder;
@@ -94,22 +94,22 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 		
 		goalieSelectors = List.of(
-				new CompetingPlayerSelector<Goalkeeper>(reducedAvailableWindow));
+				new StarterPlayerSelector<Goalkeeper>(reducedAvailableWindow));
 		defSelectors = List.of(
-				new CompetingPlayerSelector<Defender>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Defender>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Defender>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Defender>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Defender>(reducedAvailableWindow));
+				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
+				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
+				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
+				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
+				new StarterPlayerSelector<Defender>(reducedAvailableWindow));
 		midSelectors = List.of(
-				new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow));
+				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
+				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
+				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
+				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow));
 		forwSelectors = List.of(
-				new CompetingPlayerSelector<Forward>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Forward>(reducedAvailableWindow),
-				new CompetingPlayerSelector<Forward>(reducedAvailableWindow));
+				new StarterPlayerSelector<Forward>(reducedAvailableWindow),
+				new StarterPlayerSelector<Forward>(reducedAvailableWindow),
+				new StarterPlayerSelector<Forward>(reducedAvailableWindow));
 
 		// 5) instantiates 3 supported scheme panels and adds them to CardLayout
 		panel433 = new Spring433Scheme();  
@@ -165,23 +165,23 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		// TODO there is the issue of ordering players in the team:
 		// initializeCompetition rightly wants a List!!
 		CompetingComboBox.initializeCompetition(
-				goalieSelectors.stream().map(CompetingPlayerSelector::getCompetingComboBox).collect(toSet()),
+				goalieSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
 				List.copyOf(team.extract().goalkeepers()));
 		CompetingComboBox.initializeCompetition(
-				defSelectors.stream().map(CompetingPlayerSelector::getCompetingComboBox).collect(toSet()),
+				defSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
 				List.copyOf(team.extract().defenders()));
 		CompetingComboBox.initializeCompetition(
-				midSelectors.stream().map(CompetingPlayerSelector::getCompetingComboBox).collect(toSet()),
+				midSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
 				List.copyOf(team.extract().midfielders()));
 		CompetingComboBox.initializeCompetition(
-				forwSelectors.stream().map(CompetingPlayerSelector::getCompetingComboBox).collect(toSet()),
+				forwSelectors.stream().map(StarterPlayerSelector::getCompetingComboBox).collect(toSet()),
 				List.copyOf(team.extract().forwards()));
 	}
 
 	private void switchToScheme(String schemeKey) {
 
 		// 1) remove all selectors from old parent slots
-		Consumer<? super CompetingPlayerSelector<? extends Player>> detachSelector = sel -> {
+		Consumer<? super StarterPlayerSelector<? extends Player>> detachSelector = sel -> {
 			Container parent = sel.getParent();
 			if (parent != null)
 				parent.remove(sel);
@@ -209,7 +209,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		schemesHolder.repaint();
 	}
 
-	private <T extends Player> void attachSelectors(List<JPanel> slots, List<CompetingPlayerSelector<T>> selectors) {
+	private <T extends Player> void attachSelectors(List<JPanel> slots, List<StarterPlayerSelector<T>> selectors) {
 		int i = 0;
 
 		// add selectors to slots: there could be more selectors than slots

@@ -8,7 +8,7 @@ import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
 @SuppressWarnings("serial")
-public class FillableSwappableCompetingPlayerSelector<T extends Player> extends CompetingPlayerSelector<T> 
+public class FillableSwappableCompetingPlayerSelector<T extends Player> extends StarterPlayerSelector<T> 
 			implements FillableSwappableGadget<FillableSwappableCompetingPlayerSelector<T>> {	
 	
 	// constructors inherited from superclass
@@ -30,7 +30,7 @@ public class FillableSwappableCompetingPlayerSelector<T extends Player> extends 
 	@Override
 	public void discardContent() {
 		// avoids feeding back to the driver
-		super.clearSelection();
+		super.onSelectionCleared();
 	}
 
 	@Override
@@ -74,21 +74,16 @@ public class FillableSwappableCompetingPlayerSelector<T extends Player> extends 
 	}
 	
 	
-	// implements notifications to the driver by augmenting these protected methods
-	// the superclass calls inside listeners
+	// implements notifications to the driver by augmenting these protected hooks
 	@Override
-	protected void onSelectionSet() {
-		super.onSelectionSet();
-		// a user selection has been made on the combo
-		if (comboBox.isPopupVisible() && 
-				comboBox.getSelectedIndex() > -1) { 
-			driver.contentAdded(this);
-		}
+	protected void onUserSelectionSet(int selectedIndex) {
+		// a user selection has been made on the selector
+		driver.contentAdded(this);
 	}
 	
 	@Override
-	protected void clearSelection() {
-		super.clearSelection();
+	protected void onSelectionCleared() {
+		super.onSelectionCleared();
 		driver.contentRemoved(this);
 	}
 	

@@ -62,7 +62,7 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
         // Goalkeeper selectors
-        CompetingPlayerSelector<Goalkeeper> goalieSelector = new CompetingPlayerSelector<Goalkeeper>(reducedAvailableWindow);
+        StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<Goalkeeper>(reducedAvailableWindow);
         selectorsPanel.getGoalie().add(goalieSelector);
         
 		initializeCompetition(
@@ -73,21 +73,21 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        CompetingPlayerSelector<Defender> defSelector1 = new CompetingPlayerSelector<Defender>(reducedAvailableWindow);
+        StarterPlayerSelector<Defender> defSelector1 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef1().add(defSelector1);
         
-        CompetingPlayerSelector<Defender> defSelector2 = new CompetingPlayerSelector<Defender>(reducedAvailableWindow);
+        StarterPlayerSelector<Defender> defSelector2 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef2().add(defSelector2);
         
-        CompetingPlayerSelector<Defender> defSelector3 = new CompetingPlayerSelector<Defender>(reducedAvailableWindow);
+        StarterPlayerSelector<Defender> defSelector3 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef3().add(defSelector3);
         
-        CompetingPlayerSelector<Defender> defSelector4 = new CompetingPlayerSelector<Defender>(reducedAvailableWindow);
+        StarterPlayerSelector<Defender> defSelector4 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef4().add(defSelector4);
         
 		initializeCompetition(
 				Stream.of(defSelector1, defSelector2, defSelector3, defSelector4)
-                	.map(CompetingPlayerSelector::getCompetingComboBox)
+                	.map(StarterPlayerSelector::getCompetingComboBox)
                 	.collect(Collectors.toSet()),
                 List.of(
                 	    new Defender("Sergio", "Ramos"),
@@ -99,18 +99,18 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         
         
         // Midfielder selectors
-        CompetingPlayerSelector<Midfielder> midSelector1 = new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow);
+        StarterPlayerSelector<Midfielder> midSelector1 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid1().add(midSelector1);
         
-        CompetingPlayerSelector<Midfielder> midSelector2 = new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow);
+        StarterPlayerSelector<Midfielder> midSelector2 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid2().add(midSelector2);
         
-        CompetingPlayerSelector<Midfielder> midSelector3 = new CompetingPlayerSelector<Midfielder>(reducedAvailableWindow);
+        StarterPlayerSelector<Midfielder> midSelector3 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid3().add(midSelector3);
         
 		initializeCompetition(
 				Stream.of(midSelector1, midSelector2, midSelector3)
-                	.map(CompetingPlayerSelector::getCompetingComboBox)
+                	.map(StarterPlayerSelector::getCompetingComboBox)
                 	.collect(Collectors.toSet()),
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
@@ -119,18 +119,18 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Midfielder("Toni", "Kroos")));
         
         // Forward selectors
-		CompetingPlayerSelector<Forward> forwSelector1 = new CompetingPlayerSelector<Forward>(reducedAvailableWindow);
+		StarterPlayerSelector<Forward> forwSelector1 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw1().add(forwSelector1);
         
-        CompetingPlayerSelector<Forward> forwSelector2 = new CompetingPlayerSelector<Forward>(reducedAvailableWindow);
+        StarterPlayerSelector<Forward> forwSelector2 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw2().add(forwSelector2);
 
-        CompetingPlayerSelector<Forward> forwSelector3 = new CompetingPlayerSelector<Forward>(reducedAvailableWindow);
+        StarterPlayerSelector<Forward> forwSelector3 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw3().add(forwSelector3);
         
 		initializeCompetition(
 				Stream.of(forwSelector1, forwSelector2, forwSelector3)	
-					.map(CompetingPlayerSelector::getCompetingComboBox)
+					.map(StarterPlayerSelector::getCompetingComboBox)
 					.collect(Collectors.toSet()),
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),

@@ -5,26 +5,45 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 
 import domainModel.Player;
+import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
 @SuppressWarnings("serial")
-public class CompetingPlayerSelector<T extends Player> extends JPanel {
+public class StarterPlayerSelector<T extends Player> extends JPanel 
+implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
 	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
 
 	protected CompetingComboBox<T> comboBox;
-	private JButton resetButton;
 	protected JLabel figureLabel;
 
 	// WB-compatible constructor
-	public CompetingPlayerSelector() {
+	public StarterPlayerSelector() {
 		initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
 				new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
 	}
 
+	// rescaling-augmented constructor available to clients
+	public StarterPlayerSelector(Dimension availableWindow) throws IOException {
+		// 1. Load original images
+		BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
+		BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
+
+		// 2. Compute target width & height, preserving original aspect ratio
+		int ow = origFigure.getWidth(), oh = origFigure.getHeight();
+		double scale = Math.min(availableWindow.width / (double) ow, availableWindow.height / (double) oh);
+		int tw = (int) (ow * scale), th = (int) (oh * scale);
+
+		// 3. Invoke Icon initializer using scaled instances
+		initializeFromIcon(
+				new ImageIcon(origFigure.getScaledInstance(tw, th, Image.SCALE_SMOOTH)),
+				new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
+	}
+	
 	private void initializeFromIcon(ImageIcon figureIcon, ImageIcon headIcon) {
 		setBackground(Color.RED);
 
@@ -110,8 +129,8 @@ public class CompetingPlayerSelector<T extends Player> extends JPanel {
 		gbc_comboBox.gridy = 0;
 		panel.add(comboBox, gbc_comboBox);
 
-		resetButton = new JButton("Reset");
-		getResetButton().setEnabled(false);
+		JButton resetButton = new JButton("Reset");
+		resetButton.setEnabled(false);
 		GridBagConstraints gbc_resetButton = new GridBagConstraints();
 		gbc_resetButton.anchor = GridBagConstraints.NORTH;
 		gbc_resetButton.gridx = 0;
@@ -119,45 +138,52 @@ public class CompetingPlayerSelector<T extends Player> extends JPanel {
 		panel.add(resetButton, gbc_resetButton);
 
 		// implements Combo Box -> Button interaction
-		comboBox.addActionListener(e -> onSelectionSet());
+		comboBox.addActionListener(e -> {
+			resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+			if (comboBox.isPopupVisible() && 
+					comboBox.getSelectedIndex() > -1) { 
+				onUserSelectionSet(comboBox.getSelectedIndex());
+			}
+		});
 
 		// implements Button -> Combo Box interaction
 		resetButton.addActionListener(e -> {
-			clearSelection();
+			comboBox.setSelectedIndex(-1);
+			resetButton.setEnabled(false);
+			onSelectionCleared();
 		});
 	}
 
-	// rescaling-augmented constructor available to clients
-	public CompetingPlayerSelector(Dimension availableWindow) throws IOException {
-		// 1. Load original images
-		BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
-		BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
-
-		// 2. Compute target width & height, preserving original aspect ratio
-		int ow = origFigure.getWidth(), oh = origFigure.getHeight();
-		double scale = Math.min(availableWindow.width / (double) ow, availableWindow.height / (double) oh);
-		int tw = (int) (ow * scale), th = (int) (oh * scale);
-
-		// 3. Invoke Icon initializer using scaled instances
-		initializeFromIcon(
-				new ImageIcon(origFigure.getScaledInstance(tw, th, Image.SCALE_SMOOTH)),
-				new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
-	}
+	// subclass hooks for augmenting selection event handling
+	protected void onUserSelectionSet(int selectedIndex) {}
+	protected void onSelectionCleared() {}
 
 	public CompetingComboBox<T> getCompetingComboBox() {
 		return comboBox;
+	}	
+	
+	private OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver;
+	private List<T> options;
+
+	@Override
+	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver) {
+		this.driver = driver;		
 	}
 
-	public JButton getResetButton() {
-		return resetButton;
+	@Override
+	public void attachOptions(List<T> options) {
+		this.options = options;
 	}
-	
-	protected void onSelectionSet() {
-		resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+
+	@Override
+	public void retireOption(int index) {
+		// TODO Auto-generated method stub
+		
 	}
-	
-	protected void clearSelection() {
-		comboBox.setSelectedIndex(-1);
-		resetButton.setEnabled(false);
+
+	@Override
+	public void restoreOption(int index) {
+		// TODO Auto-generated method stub
+		
 	}
 }
