@@ -14,12 +14,12 @@ import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
 @SuppressWarnings("serial")
-public class StarterPlayerSelector<T extends Player> extends JPanel 
-				implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
+public class StarterPlayerSelector<Y extends Player> extends JPanel 
+				implements OrderedOptionDealer<StarterPlayerSelector<Y>, Y> {
 
-	private PlayerSelectorForm<T> form;
+	private PlayerSelectorForm<Y> form;
 	
-	private JComboBox<T> comboBox;
+	private JComboBox<Y> comboBox;
 	private JLabel figureLabel;
 	private JButton resetButton;
 	private JLabel headLabel;
@@ -33,13 +33,13 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 
 	// WB-compatible constructor
 	public StarterPlayerSelector() {
-		form = new PlayerSelectorForm<T>();
+		form = new PlayerSelectorForm<Y>();
 		wireUpForm();
 	}
 
 	// rescaling-augmented constructor available to clients
 	public StarterPlayerSelector(Dimension availableWindow) throws IOException {
-		form = new PlayerSelectorForm<T>(availableWindow);
+		form = new PlayerSelectorForm<Y>(availableWindow);
 		wireUpForm();
 	}
 	
@@ -122,19 +122,19 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 	
 	/********     OrderedOptionDealer BOOKKEEPING 	 ********/
 
-	private OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver;
-	private List<T> options;          // the original option pool, ordered
+	private OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver;
+	private List<Y> options;          // the original option pool, ordered
 	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
 	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
 	private static final int NO_SELECTION = -1;
 
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver) {
+	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver) {
 		this.driver = driver;		
 	}
 
 	@Override
-	public void attachOptions(List<T> options) {
+	public void attachOptions(List<Y> options) {
 		this.options = options;
 		mask = new ArrayList<Integer>(
 				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
@@ -148,7 +148,7 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 	public void retireOption(int index) {
 		int pos = mask.indexOf(index);
 		mask.remove(pos);
-		DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) comboBox.getModel();
+		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
 		model.removeElementAt(pos);
 	}
 
@@ -159,11 +159,11 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 				.filter(k -> mask.get(k) >= index)
 				.findFirst().orElse(mask.size());
 		mask.add(insertionIndex, index);
-		DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) comboBox.getModel();
+		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
 		model.insertElementAt(options.get(index), insertionIndex);
 	}
 	
-	public void select(Optional<T>  player) {
+	public void select(Optional<Y>  player) {
 		if (player.isEmpty()) {
 			comboBox.setSelectedIndex(-1);
 		}
@@ -189,7 +189,7 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 	 *       	  knowledge of the FillableSwappable collapsing operation
 	 */
 	
-	protected void swapSelectionWith(StarterPlayerSelector<T> other) {
+	protected void swapSelectionWith(StarterPlayerSelector<Y> other) {
 		// does NOT rely on emptying-out combos!
 		// does NOT feedback to the driver
 		int indMine = currentSelection;
@@ -206,7 +206,7 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 		this.retireOption(indMine);
 	}
 	
-	protected void acquireSelectionFrom(StarterPlayerSelector<T> other) {		
+	protected void acquireSelectionFrom(StarterPlayerSelector<Y> other) {		
 		// does NOT rely on emptying-out combos!
 		// does NOT feedback to the driver
 		int indOther = other.currentSelection;
@@ -236,4 +236,67 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 		figureLabel.setEnabled(false);
 		headLabel.setEnabled(false);
 	}
+	
+	
+	protected LocalSelectionOperator<Y> locally() {
+		return new LocalSelectionOperator<Y>(this);
+	}
+	
+	protected static class LocalSelectionOperator<Y extends Player> {
+
+		private StarterPlayerSelector<Y> source, other;
+		private int indSource, indOther;
+
+		private LocalSelectionOperator(StarterPlayerSelector<Y> source) {
+			this.source = source;
+			indSource = source.currentSelection;
+		}
+
+		protected LocalSelectionOperator<Y> takeOverSelectionFrom(StarterPlayerSelector<Y> other) {
+			this.other = other;
+			return this;
+		}
+
+		protected void pushingYoursToThem() {
+			// assumes both source and other have a selection
+			indOther = other.currentSelection;
+			
+			other.restoreOption(indSource);
+			other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
+			other.currentSelection = indSource;
+			other.retireOption(indOther);
+			
+			source.restoreOption(indOther);
+			source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
+			source.currentSelection = indOther;
+			source.retireOption(indSource);
+		}
+
+		protected void droppingYours() {
+			if (other != null) {
+				// assumes only other has a selection
+				indOther = other.currentSelection;
+				
+				source.restoreOption(indOther);
+				source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
+				source.currentSelection = indOther;
+				if (indSource != NO_SELECTION)
+					source.retireOption(indSource);
+			}
+			else {
+				// there was actually no selection to take over
+				source.retireOption(source.currentSelection);
+				source.currentSelection = NO_SELECTION;		
+				source.comboBox.setSelectedIndex(-1);
+			}
+		}
+
+	}
+
+	
+	
+	
+	
+	
+	
 }

@@ -44,17 +44,17 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<T> other) {
-		super.acquireSelectionFrom(other);
+		super.locally().takeOverSelectionFrom(other).droppingYours();
 	}
 	
 	@Override
 	public void discardContent() {
-		super.discardContent();
+		super.locally().takeOverSelectionFrom(null).droppingYours();
 	}
 
 	@Override
 	public void swapContentWith(SubstitutePlayerSelector<T> other) {
-		super.swapSelectionWith(other);
+		super.locally().takeOverSelectionFrom(other).pushingYoursToThem();
 	}
 	
 	@Override
