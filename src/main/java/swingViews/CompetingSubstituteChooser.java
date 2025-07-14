@@ -26,15 +26,15 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
-public class CompetingSubstituteChooser<T extends Player> extends JPanel implements FillableSwappableVisual<FillableSwappableCompetingPlayerSelector<T>> {
+public class CompetingSubstituteChooser<T extends Player> extends JPanel implements FillableSwappableVisual<SubstitutePlayerSelector<T>> {
 
-	private FillableSwappableSequenceDriver<FillableSwappableCompetingPlayerSelector<T>> driver;
-	private FillableSwappableCompetingPlayerSelector<T> sel1;
-	private FillableSwappableCompetingPlayerSelector<T> sel2;
-	private FillableSwappableCompetingPlayerSelector<T> sel3;
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver;
+	private SubstitutePlayerSelector<T> sel1;
+	private SubstitutePlayerSelector<T> sel2;
+	private SubstitutePlayerSelector<T> sel3;
 	private Action swapSelectors1and2, swapSelectors2and3;
 	
-	public List<FillableSwappableCompetingPlayerSelector<T>> getSubstituteSelectors() {
+	public List<SubstitutePlayerSelector<T>> getSubstituteSelectors() {
 		return Stream.of(sel1, sel2, sel3)
 				.collect(Collectors.toList());
 	}
@@ -44,7 +44,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 		SpringLayout layout = (SpringLayout)getLayout();
 		
 		Spring panelWidth = Spring.constant(600);
-		Spring panelHeight = Spring.constant(225);
+		Spring panelHeight = Spring.constant(250);
 		layout.getConstraints(this).setWidth(panelWidth);
 		layout.getConstraints(this).setHeight(panelHeight);
 
@@ -53,9 +53,9 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 			setPreferredSize(new Dimension(600, 225));
 
 		// initialize components and add them
-		sel1 = new FillableSwappableCompetingPlayerSelector<T>();
-		sel2 = new FillableSwappableCompetingPlayerSelector<T>();
-		sel3 = new FillableSwappableCompetingPlayerSelector<T>();
+		sel1 = new SubstitutePlayerSelector<T>();
+		sel2 = new SubstitutePlayerSelector<T>();
+		sel3 = new SubstitutePlayerSelector<T>();
 		
 		swapSelectors1and2 = new AbstractAction() {
 			@Override
@@ -114,7 +114,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 				0, SpringLayout.VERTICAL_CENTER, this);
 		
 		// wire up driver
-		driver = new FillableSwappableSequenceDriver<FillableSwappableCompetingPlayerSelector<T>>(
+		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>>(
 				List.of(sel1, sel2, sel3), this);
 		
 		// initially disable swapping
@@ -123,7 +123,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 	
 	
 	@Override
-	public void becameEmpty(FillableSwappableCompetingPlayerSelector<T> emptiedGadget) {
+	public void becameEmpty(SubstitutePlayerSelector<T> emptiedGadget) {
 		if (emptiedGadget == sel3)
 			swapSelectors2and3.setEnabled(false);
 		else if (emptiedGadget == sel2)
@@ -131,7 +131,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 	}
 	
 	@Override
-	public void becameFilled(FillableSwappableCompetingPlayerSelector<T> filledGadget) {
+	public void becameFilled(SubstitutePlayerSelector<T> filledGadget) {
 		System.out.println("content added to a gadget!");
 		if (filledGadget == sel2)
 			swapSelectors1and2.setEnabled(true);

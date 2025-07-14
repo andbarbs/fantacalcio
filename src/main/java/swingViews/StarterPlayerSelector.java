@@ -1,9 +1,7 @@
 package swingViews;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,175 +17,116 @@ import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 public class StarterPlayerSelector<T extends Player> extends JPanel 
 				implements OrderedOptionDealer<StarterPlayerSelector<T>, T> {
 
-	// path to the pngs for the Icons
-	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
-	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
-
-	protected JComboBox<T> comboBox;
-	protected JLabel figureLabel;
+	private PlayerSelectorForm<T> form;
+	
+	private JComboBox<T> comboBox;
+	private JLabel figureLabel;
+	private JButton resetButton;
+	private JLabel headLabel;
+	
+	private void initFormMembersShortcuts() {
+		comboBox = form.getComboBox();
+		resetButton = form.getResetButton();
+		headLabel = form.getHeadLabel();
+		figureLabel = form.getFigureLabel();
+	}
 
 	// WB-compatible constructor
 	public StarterPlayerSelector() {
-		initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
-				new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
+		form = new PlayerSelectorForm<T>();
+		wireUpForm();
 	}
 
 	// rescaling-augmented constructor available to clients
 	public StarterPlayerSelector(Dimension availableWindow) throws IOException {
-		// 1. Load original images
-		BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
-		BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
-
-		// 2. Compute target width & height, preserving original aspect ratio
-		int ow = origFigure.getWidth(), oh = origFigure.getHeight();
-		double scale = Math.min(availableWindow.width / (double) ow, availableWindow.height / (double) oh);
-		int tw = (int) (ow * scale), th = (int) (oh * scale);
-
-		// 3. Invoke Icon initializer using scaled instances
-		initializeFromIcon(
-				new ImageIcon(origFigure.getScaledInstance(tw, th, Image.SCALE_SMOOTH)),
-				new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
+		form = new PlayerSelectorForm<T>(availableWindow);
+		wireUpForm();
 	}
 	
-	private void initializeFromIcon(ImageIcon figureIcon, ImageIcon headIcon) {
-		setBackground(Color.RED);
+	private void wireUpForm() {		
+		initFormMembersShortcuts();
+		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+		add(form);  // adds the PlayerSelectorForm as the only child
 
-		// sets the CompetingPlayerSelector Panel's own GridBagLayout
-		GridBagLayout rootGBL = new GridBagLayout();
-		rootGBL.columnWidths = new int[] { 1, 0 };
-		rootGBL.rowHeights = new int[] { 1, 0 };
-		rootGBL.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		rootGBL.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
-		setLayout(rootGBL);
-
-		// sets up the JLayeredPane overlaying labels and controls
-		JLayeredPane layeredPane = new JLayeredPane();
-		GridBagConstraints gbc_layeredPane = new GridBagConstraints();
-		gbc_layeredPane.fill = GridBagConstraints.BOTH;
-		gbc_layeredPane.gridx = 0;
-		gbc_layeredPane.gridy = 0;
-		add(layeredPane, gbc_layeredPane);
-		GridBagLayout layeredPaneGBL = new GridBagLayout();
-		layeredPaneGBL.columnWidths = new int[] { 1, 0 };
-		layeredPaneGBL.rowHeights = new int[] { 1, 0 };
-		layeredPaneGBL.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		layeredPaneGBL.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
-		layeredPane.setLayout(layeredPaneGBL);
-
-		figureLabel = new JLabel("");
-		figureLabel.setIcon(figureIcon);
-		GridBagConstraints gbc_figureLabel = new GridBagConstraints();
-		gbc_figureLabel.anchor = GridBagConstraints.NORTH;
-		gbc_figureLabel.gridx = 0;
-		gbc_figureLabel.gridy = 0;
-		layeredPane.add(figureLabel, gbc_figureLabel);
-
-		JLabel headLabel = new JLabel("");
-		layeredPane.setLayer(headLabel, 1);
-		GridBagConstraints gbc_headLabel = new GridBagConstraints();
-		gbc_headLabel.anchor = GridBagConstraints.NORTH;
-		gbc_headLabel.gridx = 0;
-		gbc_headLabel.gridy = 0;
-		layeredPane.add(headLabel, gbc_headLabel);
-		headLabel.setIcon(headIcon);
-
-		JPanel panel = new JPanel();
-		layeredPane.setLayer(panel, 2);
-		panel.setOpaque(false);
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.fill = GridBagConstraints.BOTH;
-		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 0;
-		layeredPane.add(panel, gbc_panel);
-		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[] { 0, 0 };
-		gbl_panel.rowHeights = new int[] { 0, 27, 0 };
-		gbl_panel.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_panel.rowWeights = new double[] { 5.0, 1.0, Double.MIN_VALUE };
-		panel.setLayout(gbl_panel);
-
-		comboBox = new JComboBox<T>();
-		comboBox.setRenderer(new DefaultListCellRenderer() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
-						cellHasFocus);
-				// For the field display (index == -1) and null value, just show an empty string
-				if (index == -1 && value == null)
-					label.setText("");
-				else {
-					Player p = (Player) value;
-					label.setText(p.getName() + " " + p.getSurname());
-				}
-
-				return label;
-			}
-		});
-		GridBagConstraints gbc_comboBox = new GridBagConstraints();
-		gbc_comboBox.anchor = GridBagConstraints.SOUTH;
-		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
-		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_comboBox.gridx = 0;
-		gbc_comboBox.gridy = 0;
-		panel.add(comboBox, gbc_comboBox);
-
-		JButton resetButton = new JButton("Reset");
-		resetButton.setEnabled(false);
-		GridBagConstraints gbc_resetButton = new GridBagConstraints();
-		gbc_resetButton.anchor = GridBagConstraints.NORTH;
-		gbc_resetButton.gridx = 0;
-		gbc_resetButton.gridy = 1;
-		panel.add(resetButton, gbc_resetButton);
-
-		// implements Combo Box -> Button interaction
 		comboBox.addActionListener(e -> {
+			// combo -> button interaction
 			resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+			
+			// decides whether to contact the driver
+			notifyDriver();
+			
+			// propagates user selections to subclasses
 			if (comboBox.isPopupVisible() && 
-					comboBox.getSelectedIndex() > -1) { 
-				onUserSelectionSet(comboBox.getSelectedIndex());
-			}
-			compete(comboBox.getSelectedIndex());
+					comboBox.getSelectedIndex() > -1)
+				onUserSelectionSet();
 		});
 
-		// implements Button -> Combo Box interaction
 		resetButton.addActionListener(e -> {
+			// button -> combo interaction
 			comboBox.setSelectedIndex(-1);
 			resetButton.setEnabled(false);
+			
+			// propagates selection clearance to subclasses
 			onSelectionCleared();
 		});
-	}
+	}	
 	
-	private void compete(int selectedIndex) {
-
-		// a programmatic or user choice has been made on this CBox
-		if (selectedIndex != -1) {
+	/**
+	 * is responsible for deciding whether to contact the
+	 * {@link OptionDealerGroupDriver} in response to a selection event on the
+	 * composed combo. In particular, the driver is contacted only under these
+	 * circumstances:
+	 * <ol>
+	 * 		<li>a selection has been set <i> by the user </i> on the combo, thus
+	 * 		<ul>
+	 * 			<li>a previous selection should be restored on other dealers
+	 * 			<li>the current selection should be retired from other dealers
+	 * 		</ul>
+	 * 		<li>the combo's selection has <i>just</i> been cleared, thus
+	 * 		<ul> 
+	 * 			<li>the previous selection should be restored on other dealers
+	 * 		</ul>
+	 * </ol>
+	 * as no driver intervention is able to elicit these kinds of event,
+	 * this method effectively shields the driver from event feedback.
+	 * 
+	 * <p> Additionally, due to the combo's complete encapsulation within 
+	 * {@link StarterPlayerSelector}, this class is the <i>sole possible 
+	 * originator</i> of programmatic interactions with the combo.
+	 * Thus, any call to the driver must happen within this method.
+	 */
+	private void notifyDriver() {
+		int selectedIndex = comboBox.getSelectedIndex();
+		
+		// a user selection has been set on this CBox
+		if (comboBox.isPopupVisible() && selectedIndex != -1) {
 			if (currentSelection != -1)
-				driver.optionClearedOn(this, currentSelection);
+				driver.selectionClearedOn(this, currentSelection);
 			currentSelection = mask.get(selectedIndex);
-			driver.optionSelectedOn(this, currentSelection);
+			driver.selectionMadeOn(this, currentSelection);
 		}
 
-		// this CBox's choice has just been cleared
-		else if (selectedIndex == -1 && currentSelection != null && // false before option attachment
-				currentSelection != COMPETING_CBOX_NO_CHOICE) {
-			driver.optionClearedOn(this, currentSelection);
-			currentSelection = COMPETING_CBOX_NO_CHOICE;
+		// this CBox's selection has just been cleared
+		else if (selectedIndex == -1 && 
+				currentSelection != null && // false before option attachment
+				currentSelection != NO_SELECTION) {
+			driver.selectionClearedOn(this, currentSelection);
+			currentSelection = NO_SELECTION;
 		}
 	}
 
 	// subclass hooks for augmenting selection event handling
-	protected void onUserSelectionSet(int selectedIndex) {}
+	protected void onUserSelectionSet() {}
 	protected void onSelectionCleared() {}
 	
-	private static final int COMPETING_CBOX_NO_CHOICE = -1;
+	
+	/********     OrderedOptionDealer BOOKKEEPING 	 ********/
 
 	private OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver;
 	private List<T> options;          // the original option pool, ordered
 	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
 	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
+	private static final int NO_SELECTION = -1;
 
 	@Override
 	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<T>, T> driver) {
@@ -199,13 +138,10 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 		this.options = options;
 		mask = new ArrayList<Integer>(
 				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
-		
-		// fills the cbox with initial contents
-		comboBox.setModel(new DefaultComboBoxModel<>(new Vector<>(options)));
-		
-		// sets the cbox's starting selection to none
-		currentSelection = -1;
-		comboBox.setSelectedIndex(-1);
+		comboBox.setModel(  				// fills combo with initial contents
+				new DefaultComboBoxModel<>(new Vector<>(options)));
+		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
+		currentSelection = NO_SELECTION;
 	}
 
 	@Override
@@ -235,5 +171,69 @@ public class StarterPlayerSelector<T extends Player> extends JPanel
 			// TODO check that the combo's model contains player!!
 			comboBox.setSelectedItem(player);
 		}
+	}
+	
+	/* CONVENIENCE METHODS FOR SUBCLASSES 
+	 * these methods offer additional functionality subclasses may find useful,
+	 * as compromise for keeping the combo and bookkeeping encapsulated.
+	 * 
+	 * Encapsulation of the combo and bookkeeping ensures these implementations
+	 * 		- are mindful of the OptionDealerGroupDriver
+	 * 		- do not risk leaking back to drivers in subclasses
+	 * 
+	 * However, this is GODDAMN AWFUL CODE!!!
+	 * 		- StarterPlayerSelector is right to encapsulate its bookkeeping
+	 * 		- but in so doing it has become tightly coupled with the business
+	 * 		  of one particular subclass!
+	 *      	- notice how acquireSelectionFrom is grossly dependent upon
+	 *       	  knowledge of the FillableSwappable collapsing operation
+	 */
+	
+	protected void swapSelectionWith(StarterPlayerSelector<T> other) {
+		// does NOT rely on emptying-out combos!
+		// does NOT feedback to the driver
+		int indMine = currentSelection;
+		int indOther = other.currentSelection;
+		
+		other.restoreOption(indMine);
+		other.comboBox.setSelectedIndex(other.mask.indexOf(indMine));
+		other.currentSelection = indMine;
+		other.retireOption(indOther);
+		
+		this.restoreOption(indOther);
+		this.comboBox.setSelectedIndex(this.mask.indexOf(indOther));
+		this.currentSelection = indOther;
+		this.retireOption(indMine);
+	}
+	
+	protected void acquireSelectionFrom(StarterPlayerSelector<T> other) {		
+		// does NOT rely on emptying-out combos!
+		// does NOT feedback to the driver
+		int indOther = other.currentSelection;
+		int indMine = this.currentSelection;
+		
+		this.restoreOption(indOther);
+		this.comboBox.setSelectedIndex(this.mask.indexOf(indOther));
+		this.currentSelection = indOther;
+		if (indMine != NO_SELECTION)
+			this.retireOption(indMine);
+	}
+
+	protected void discardContent() {
+		retireOption(currentSelection);
+		currentSelection = NO_SELECTION;		
+		comboBox.setSelectedIndex(-1);   // must happen here so no broadcast!
+	}
+
+	protected void enableUserInteraction() {
+		comboBox.setEnabled(true);
+		figureLabel.setEnabled(true);
+		headLabel.setEnabled(true);
+	}
+
+	protected void disableUserInteraction() {
+		comboBox.setEnabled(false);
+		figureLabel.setEnabled(false);
+		headLabel.setEnabled(false);
 	}
 }

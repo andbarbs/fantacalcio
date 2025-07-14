@@ -116,18 +116,22 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableGadget<T
 	}
 
 	// notification methods: update sequence state and collapse
-	public void contentRemoved(T client) {
-		if (!isFillable(client))
+	public void contentRemoved(T emptied) {
+		if (!isFillable(emptied))
 			throw new IllegalStateException("Content removal reported for non-fillable client");
 
-		// collapses content in the sequence
+		// 1) collapses content in the sequence
 		int nextRightmostFillable = (rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW) ? 
 				sequence.size() - 1 : rightmostFillablePosition - 1;
-		for (int i = sequence.indexOf(client); i < nextRightmostFillable; i++) {
+		for (int i = sequence.indexOf(emptied); i < nextRightmostFillable; i++) {
 			sequence.get(i).acquireContentFrom(sequence.get(i + 1));
 		}
-		// shifts rightmostFillable client backwards
-		sequence.get(nextRightmostFillable).discardContent();
+		
+		// 2) shifts rightmostFillable client backwards
+		
+		// avoids emptying if emptied == nextRightmostFillable
+		if (sequence.indexOf(emptied) != nextRightmostFillable)
+			sequence.get(nextRightmostFillable).discardContent();
 		view.becameEmpty(sequence.get(nextRightmostFillable));
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
 			sequence.get(rightmostFillablePosition).disableFilling();
