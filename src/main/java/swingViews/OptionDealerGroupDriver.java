@@ -21,8 +21,8 @@ import swingViews.OptionDealerGroupDriver.*;
  *   	</ul></li>
  *   <li>notify the attached {@code OptionDealerGroupDriver} instance when a selection is made or cleared, 
  *   according to whatever semantic "selection" has for the dealer. The dealer should
- *   pass their instance to methods {@link OptionDealerGroupDriver#optionSelectedOn(OrderedOptionDealer, int)} and 
- *   {@link OptionDealerGroupDriver#optionClearedOn(OrderedOptionDealer, int)} of the driver. 
+ *   pass their instance to methods {@link OptionDealerGroupDriver#selectionMadeOn(OrderedOptionDealer, int)} and 
+ *   {@link OptionDealerGroupDriver#selectionClearedOn(OrderedOptionDealer, int)} of the driver. 
  *   Dealers should take care that driver-induced addition/removal of their options via 
  *   {@link OrderedOptionDealer#restoreOption(int)} and {@link OrderedOptionDealer#retireOption(int)}
  *   be <i>not</i> notified back to the driver
@@ -75,11 +75,11 @@ public class OptionDealerGroupDriver<D extends OrderedOptionDealer<D, O>, O> {
 		driver.dealers.forEach(d -> d.attachOptions(options));
 	}
 	
-	public void optionSelectedOn(D dealer, int index) {
+	public void selectionMadeOn(D dealer, int index) {
 		dealers.stream().filter(d -> !d.equals(dealer)).forEach(d -> d.retireOption(index));
 	}
 	
-	public void optionClearedOn(D dealer, int index) {
+	public void selectionClearedOn(D dealer, int index) {
 		dealers.stream().filter(d -> !d.equals(dealer)).forEach(d -> d.restoreOption(index));
 	}
 

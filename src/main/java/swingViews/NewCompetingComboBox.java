@@ -51,16 +51,16 @@ public class NewCompetingComboBox<T> extends JComboBox<T> implements OrderedOpti
 		// a programmatic or user choice has been made on this CBox
 		if (selectedIndex != -1) {
 			if (currentSelection != -1)
-				driver.optionClearedOn(this, currentSelection); 
+				driver.selectionClearedOn(this, currentSelection); 
 			currentSelection = mask.get(selectedIndex);
-			driver.optionSelectedOn(this, currentSelection);
+			driver.selectionMadeOn(this, currentSelection);
 		}
 		
 		// this CBox's choice has just been cleared
 		else if (selectedIndex == -1 && 
 				currentSelection != null &&   // corner condition
 				currentSelection != COMPETING_CBOX_NO_CHOICE) {
-			driver.optionClearedOn(this, currentSelection);
+			driver.selectionClearedOn(this, currentSelection);
 			currentSelection = COMPETING_CBOX_NO_CHOICE;
 		}
 	}
