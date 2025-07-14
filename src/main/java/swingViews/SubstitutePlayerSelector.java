@@ -69,12 +69,12 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 
 	@Override
 	public void enableFilling() {
-		super.enableUserInteraction();
+		super.controls().setEnabled(true);
 	}
 
 	@Override
 	public void disableFilling() {
-		super.disableUserInteraction();
+		super.controls().setEnabled(false);
 	}
 	
 }

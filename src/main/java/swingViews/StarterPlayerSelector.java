@@ -17,14 +17,13 @@ import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 public class StarterPlayerSelector<Y extends Player> extends JPanel 
 				implements OrderedOptionDealer<StarterPlayerSelector<Y>, Y> {
 
+	/*******************     Graphical control state 	 ******************/
 	
-
 	private PlayerSelectorForm<Y> form;
 	
 	private JComboBox<Y> comboBox;
-	private JLabel figureLabel;
+	private JLabel figureLabel, headLabel;
 	private JButton resetButton;
-	private JLabel headLabel;
 	
 	private void initFormMembersShortcuts() {
 		comboBox = form.getComboBox();
@@ -71,7 +70,50 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			// propagates selection clearance to subclasses
 			onSelectionCleared();
 		});
-	}	
+	}
+	
+	/**************     OrderedOptionDealer internal bookkeeping 	 **************/
+
+	private OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver;
+	private List<Y> options;          // the original option pool, ordered
+	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
+	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
+	private static final int NO_SELECTION = -1;
+
+	@Override
+	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver) {
+		this.driver = driver;		
+	}
+
+	@Override
+	public void attachOptions(List<Y> options) {
+		this.options = options;
+		mask = new ArrayList<Integer>(
+				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
+		comboBox.setModel(  				// fills combo with initial contents
+				new DefaultComboBoxModel<>(new Vector<>(options)));
+		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
+		currentSelection = NO_SELECTION;
+	}
+
+	@Override
+	public void retireOption(int index) {
+		int pos = mask.indexOf(index);
+		mask.remove(pos);
+		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
+		model.removeElementAt(pos);
+	}
+
+	@Override
+	public void restoreOption(int index) {
+		int insertionIndex = IntStream
+				.range(0, mask.size())
+				.filter(k -> mask.get(k) >= index)
+				.findFirst().orElse(mask.size());
+		mask.add(insertionIndex, index);
+		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
+		model.insertElementAt(options.get(index), insertionIndex);
+	}
 	
 	/**
 	 * is responsible for deciding whether to contact the
@@ -116,135 +158,59 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			currentSelection = NO_SELECTION;
 		}
 	}
-
-	// subclass hooks for augmenting selection event handling
-	protected void onUserSelectionSet() {}
-	protected void onSelectionCleared() {}
 	
-	
-	/********     OrderedOptionDealer BOOKKEEPING 	 ********/
-
-	private OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver;
-	private List<Y> options;          // the original option pool, ordered
-	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
-	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
-	private static final int NO_SELECTION = -1;
-
-	@Override
-	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver) {
-		this.driver = driver;		
-	}
-
-	@Override
-	public void attachOptions(List<Y> options) {
-		this.options = options;
-		mask = new ArrayList<Integer>(
-				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
-		comboBox.setModel(  				// fills combo with initial contents
-				new DefaultComboBoxModel<>(new Vector<>(options)));
-		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
-		currentSelection = NO_SELECTION;
-	}
-
-	@Override
-	public void retireOption(int index) {
-		int pos = mask.indexOf(index);
-		mask.remove(pos);
-		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
-		model.removeElementAt(pos);
-	}
-
-	@Override
-	public void restoreOption(int index) {
-		int insertionIndex = IntStream
-				.range(0, mask.size())
-				.filter(k -> mask.get(k) >= index)
-				.findFirst().orElse(mask.size());
-		mask.add(insertionIndex, index);
-		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
-		model.insertElementAt(options.get(index), insertionIndex);
-	}
+	/***********     Programmatic selection-setting API for Clients     **********/
 	
 	public void select(Optional<Y>  player) {
 		if (player.isEmpty()) {
-			comboBox.setSelectedIndex(-1);
+			comboBox.setSelectedIndex(-1);   // engages the driver
 		}
 		else {
-			// TODO check that the combo's model contains player!!
-			comboBox.setSelectedItem(player);
+			comboBox.setSelectedIndex(
+					mask.indexOf(options.indexOf(player.get())));
 		}
 	}
 	
-	/* CONVENIENCE METHODS FOR SUBCLASSES 
-	 * these methods offer additional functionality subclasses may find useful,
-	 * as compromise for keeping the combo and bookkeeping encapsulated.
+	/*********************     Dedicated Subclasses APIs    *********************/
+
+	// 1) hooks for engaging on selection events
+	protected void onUserSelectionSet() {}
+	protected void onSelectionCleared() {}
+	
+	// 2) fluent API for enabling/disabling graphical controls
+	protected final StarterPlayerSelectorControls controls() {
+		return new StarterPlayerSelectorControls();
+	}
+	
+	protected final class StarterPlayerSelectorControls {
+		void setEnabled(boolean bool) {
+			comboBox.setEnabled(bool);
+			figureLabel.setEnabled(bool);
+			headLabel.setEnabled(bool);
+		}
+	}	
+	
+	// 3) local Selection operators	
+	
+	/*
+	 * these fluent operators allow subclasses to access their local 
+	 * selection behavior without being exposed to any internal details
+	 * of StarterPlayerSelector. Benefits of this approach include:
 	 * 
-	 * Encapsulation of the combo and bookkeeping ensures these implementations
-	 * 		- are mindful of the OptionDealerGroupDriver
-	 * 		- do not risk leaking back to drivers in subclasses
+	 * for StarterPlayerSelector: 
+	 * 	- it remains the sole originator of programmatic combo interactions
+	 * 	- these operators are implemented with awareness of OptionDealerGroupDriver
 	 * 
-	 * However, this is GODDAMN AWFUL CODE!!!
-	 * 		- StarterPlayerSelector is right to encapsulate its bookkeeping
-	 * 		- but in so doing it has become tightly coupled with the business
-	 * 		  of one particular subclass!
-	 *      	- notice how acquireSelectionFrom is grossly dependent upon
-	 *       	  knowledge of the FillableSwappable collapsing operation
-	 */
+	 * for subclasses:
+	 *  - these operators do not risk leaking to any drivers inside subclasses
+	 *  - subclasses can only intervene via the event-handling engagement hooks
+	 */	
 	
-	protected void swapSelectionWith(StarterPlayerSelector<Y> other) {
-		// does NOT rely on emptying-out combos!
-		// does NOT feedback to the driver
-		int indMine = currentSelection;
-		int indOther = other.currentSelection;
-		
-		other.restoreOption(indMine);
-		other.comboBox.setSelectedIndex(other.mask.indexOf(indMine));
-		other.currentSelection = indMine;
-		other.retireOption(indOther);
-		
-		this.restoreOption(indOther);
-		this.comboBox.setSelectedIndex(this.mask.indexOf(indOther));
-		this.currentSelection = indOther;
-		this.retireOption(indMine);
-	}
-	
-	protected void acquireSelectionFrom(StarterPlayerSelector<Y> other) {		
-		// does NOT rely on emptying-out combos!
-		// does NOT feedback to the driver
-		int indOther = other.currentSelection;
-		int indMine = this.currentSelection;
-		
-		this.restoreOption(indOther);
-		this.comboBox.setSelectedIndex(this.mask.indexOf(indOther));
-		this.currentSelection = indOther;
-		if (indMine != NO_SELECTION)
-			this.retireOption(indMine);
-	}
-
-	protected void discardContent() {
-		retireOption(currentSelection);
-		currentSelection = NO_SELECTION;		
-		comboBox.setSelectedIndex(-1);   // must happen here so no broadcast!
-	}
-
-	protected void enableUserInteraction() {
-		comboBox.setEnabled(true);
-		figureLabel.setEnabled(true);
-		headLabel.setEnabled(true);
-	}
-
-	protected void disableUserInteraction() {
-		comboBox.setEnabled(false);
-		figureLabel.setEnabled(false);
-		headLabel.setEnabled(false);
-	}
-	
-	
-	protected UnaryLocalSelectionOperator<Y> locally() {
+	protected final UnaryLocalSelectionOperator<Y> locally() {
 		return new UnaryLocalSelectionOperator<Y>(this);
 	}
 	
-	protected static class UnaryLocalSelectionOperator<Y extends Player> {
+	protected final static class UnaryLocalSelectionOperator<Y extends Player> {
 
 		private final StarterPlayerSelector<Y> source;
 
@@ -252,11 +218,15 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			this.source = source;
 		}
 
+		/**
+		 * makes the receiver {@link StarterPlayerSelector} clear its selection
+		 * and drop that option, without having other dealers restore it
+		 */
 		protected void dropSelection() {
 			if (source.currentSelection != NO_SELECTION) {
 				source.retireOption(source.currentSelection);
 				source.currentSelection = NO_SELECTION;		
-				source.comboBox.setSelectedIndex(-1);
+				source.comboBox.setSelectedIndex(-1);  // here, it does not broadcast
 			}
 		}
 
@@ -265,7 +235,7 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 		}
 	}
 	
-	protected static class BinaryLocalSelectionOperator<Y extends Player> {
+	protected final static class BinaryLocalSelectionOperator<Y extends Player> {
 
 		private final StarterPlayerSelector<Y> other;
 		private final int indSource, indOther;
@@ -275,34 +245,35 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			indOther = other.currentSelection;
 			indSource = source.currentSelection;
 
-			// assumes only other has a selection
-			source.restoreOption(indOther);
-			source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
-			source.currentSelection = indOther;
+			if (indOther != NO_SELECTION) {
+				source.restoreOption(indOther);
+				source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
+				source.currentSelection = indOther;
+			}
+			
 			if (indSource != NO_SELECTION)
 				source.retireOption(indSource);
 		}
+
+		/**
+		 * makes the receiver {@link StarterPlayerSelector} take over the (possibly 
+		 * non-existant) selection of the {@code other} selector. If the receiver had 
+		 * a previous selection, it drops that option without having other dealers restore it
+		 */
+		protected void droppingYours() {}
 		
+		/**
+		 * makes the receiver and {@code other} {@link StarterPlayerSelector}s effectively
+		 * exchange their (possibly non-existant) selections: after this operation,
+		 * each dealer looks like the other did before the operation
+		 */
 		protected void pushingYoursToThem() {
-			// assumes both source and other have a selection			
-			other.restoreOption(indSource);
-			other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
-			other.currentSelection = indSource;
-			other.retireOption(indOther);
+			if (indSource != NO_SELECTION) {
+				other.restoreOption(indSource);
+				other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
+				other.currentSelection = indSource;
+				other.retireOption(indOther);
+			}
 		}
-
-		protected void droppingYours() {
-			
-		}
-
-	}
-	
-
-
-	
-	
-	
-	
-	
-	
+	}	
 }
