@@ -17,6 +17,8 @@ import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 public class StarterPlayerSelector<Y extends Player> extends JPanel 
 				implements OrderedOptionDealer<StarterPlayerSelector<Y>, Y> {
 
+	
+
 	private PlayerSelectorForm<Y> form;
 	
 	private JComboBox<Y> comboBox;
@@ -238,60 +240,64 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	}
 	
 	
-	protected LocalSelectionOperator<Y> locally() {
-		return new LocalSelectionOperator<Y>(this);
+	protected UnaryLocalSelectionOperator<Y> locally() {
+		return new UnaryLocalSelectionOperator<Y>(this);
 	}
 	
-	protected static class LocalSelectionOperator<Y extends Player> {
+	protected static class UnaryLocalSelectionOperator<Y extends Player> {
 
-		private StarterPlayerSelector<Y> source, other;
-		private int indSource, indOther;
+		private final StarterPlayerSelector<Y> source;
 
-		private LocalSelectionOperator(StarterPlayerSelector<Y> source) {
+		private UnaryLocalSelectionOperator(StarterPlayerSelector<Y> source) {
 			this.source = source;
-			indSource = source.currentSelection;
 		}
 
-		protected LocalSelectionOperator<Y> takeOverSelectionFrom(StarterPlayerSelector<Y> other) {
-			this.other = other;
-			return this;
-		}
-
-		protected void pushingYoursToThem() {
-			// assumes both source and other have a selection
-			indOther = other.currentSelection;
-			
-			other.restoreOption(indSource);
-			other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
-			other.currentSelection = indSource;
-			other.retireOption(indOther);
-			
-			source.restoreOption(indOther);
-			source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
-			source.currentSelection = indOther;
-			source.retireOption(indSource);
-		}
-
-		protected void droppingYours() {
-			if (other != null) {
-				// assumes only other has a selection
-				indOther = other.currentSelection;
-				
-				source.restoreOption(indOther);
-				source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
-				source.currentSelection = indOther;
-				if (indSource != NO_SELECTION)
-					source.retireOption(indSource);
-			}
-			else {
-				// there was actually no selection to take over
+		protected void dropSelection() {
+			if (source.currentSelection != NO_SELECTION) {
 				source.retireOption(source.currentSelection);
 				source.currentSelection = NO_SELECTION;		
 				source.comboBox.setSelectedIndex(-1);
 			}
 		}
 
+		protected BinaryLocalSelectionOperator<Y> takeOverSelectionFrom(StarterPlayerSelector<Y> other) {
+			return new BinaryLocalSelectionOperator<Y>(source, other);
+		}
 	}
+	
+	protected static class BinaryLocalSelectionOperator<Y extends Player> {
+
+		private final StarterPlayerSelector<Y> other;
+		private final int indSource, indOther;
+
+		private BinaryLocalSelectionOperator(StarterPlayerSelector<Y> source, StarterPlayerSelector<Y> other) {
+			this.other = other;
+			indOther = other.currentSelection;
+			indSource = source.currentSelection;
+
+			// assumes only other has a selection
+			source.restoreOption(indOther);
+			source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
+			source.currentSelection = indOther;
+			if (indSource != NO_SELECTION)
+				source.retireOption(indSource);
+		}
+		
+		protected void pushingYoursToThem() {
+			// assumes both source and other have a selection			
+			other.restoreOption(indSource);
+			other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
+			other.currentSelection = indSource;
+			other.retireOption(indOther);
+		}
+
+		protected void droppingYours() {
+			
+		}
+
+	}
+	
+
 
 	
 	

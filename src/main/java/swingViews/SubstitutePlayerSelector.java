@@ -49,7 +49,7 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 	
 	@Override
 	public void discardContent() {
-		super.locally().takeOverSelectionFrom(null).droppingYours();
+		super.locally().dropSelection();
 	}
 
 	@Override
