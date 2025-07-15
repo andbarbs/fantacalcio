@@ -139,6 +139,8 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	 * originator</i> of programmatic interactions with the combo.
 	 * Thus, any call to the driver must happen within this method.
 	 */
+	
+	// TODO consider opening up to combo.set.. interactions (can only come from this class)
 	private void notifyDriver() {
 		int selectedIndex = comboBox.getSelectedIndex();
 		
@@ -161,14 +163,17 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	
 	/***********     Programmatic selection-setting API for Clients     **********/
 	
-	public void select(Optional<Y>  player) {
-		if (player.isEmpty()) {
-			comboBox.setSelectedIndex(-1);   // engages the driver
-		}
-		else {
-			comboBox.setSelectedIndex(
-					mask.indexOf(options.indexOf(player.get())));
-		}
+	public void select(Optional<Y> player) {
+		player.ifPresentOrElse(
+				p -> {
+			int playerInd = mask.indexOf(options.indexOf(p));
+			comboBox.setSelectedIndex(playerInd);
+			currentSelection = playerInd;
+			driver.selectionMadeOn(this, playerInd);
+		}, 
+				() -> {
+			comboBox.setSelectedIndex(-1); // might engage the driver
+		});
 	}
 	
 	/*********************     Dedicated Subclasses APIs    *********************/
