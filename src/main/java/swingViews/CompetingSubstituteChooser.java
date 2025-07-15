@@ -26,7 +26,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
-public class CompetingSubstituteChooser<T extends Player> extends JPanel implements FillableSwappableVisual<SubstitutePlayerSelector<T>> {
+public class CompetingSubstituteChooser<T extends Player> extends JPanel 
+				implements FillableSwappableVisual<SubstitutePlayerSelector<T>> {
 
 	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver;
 	private SubstitutePlayerSelector<T> sel1;
@@ -54,8 +55,11 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 
 		// initialize components and add them
 		sel1 = new SubstitutePlayerSelector<T>();
+		sel1.setName("selector1");
 		sel2 = new SubstitutePlayerSelector<T>();
+		sel2.setName("selector2");
 		sel3 = new SubstitutePlayerSelector<T>();
+		sel3.setName("selector3");
 		
 		swapSelectors1and2 = new AbstractAction() {
 			@Override
@@ -73,9 +77,11 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel impleme
 		};
 		
 		JButton swap1 = new JButton(swapSelectors1and2);
+		swap1.setName("swap1_2");
 		swap1.setMargin(new Insets(2, 2, 2, 2));
 		swap1.setIcon(new ImageIcon(getClass().getResource("/gui_icons/swap_verysmall.png")));
 		JButton swap2 = new JButton(swapSelectors2and3);
+		swap2.setName("swap2_3");
 		swap2.setMargin(new Insets(2, 2, 2, 2));
 		swap2.setIcon(new ImageIcon(getClass().getResource("/gui_icons/swap_verysmall.png")));
 
