@@ -25,10 +25,13 @@ import org.mockito.MockitoAnnotations;
 
 import domainModel.Player;
 import domainModel.Player.Defender;
+import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
 
 /**
- * this test case aims to specify what interactions should take place
- * between a StarterPlayerSelector and its OptionDealerGroupDriver
+ * this test case aims to specify what communications should take place
+ * from a StarterPlayerSelector to both
+ * 		- its OptionDealerGroupDriver
+ * 		- an attached StarterPlayerSelectorListener
  */
 
 @RunWith(GUITestRunner.class)
@@ -40,6 +43,9 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 	@Mock
 	private OptionDealerGroupDriver<StarterPlayerSelector<Defender>, Defender> driver;
 	
+	@Mock
+	private StarterPlayerSelectorListener<Defender> listener;
+	
 	private AutoCloseable closeable;
 
 	@Override
@@ -49,11 +55,12 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
 			compPlayerSelector = new StarterPlayerSelector<Defender>();
 
-			compPlayerSelector.attachDriver(driver);
-			compPlayerSelector.attachOptions(
+			compPlayerSelector.attachDriver(driver);     // attaches the group driver
+			compPlayerSelector.attachOptions(		     // attaches the group options
 					List.of(
 							new Player.Defender("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
+			compPlayerSelector.attachListener(listener); // attaches the listener
 
 			JFrame f = new JFrame("Test Frame");
 			f.add(compPlayerSelector);
@@ -63,8 +70,8 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 			return f;
 		});
 		
-		window = new FrameFixture(robot(), frame);    // Initialize the FrameFixture.
-		window.show(); 								  // displays the frame to test the UI.
+		window = new FrameFixture(robot(), frame);      // Initialize the FrameFixture.
+		window.show(); 								    // displays the frame to test the UI.
 	}
 	
 	@After
@@ -77,30 +84,36 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
         JComboBoxFixture comboBoxFixture = window.comboBox();
         JButtonFixture resetButtonFixture = window.button(JButtonMatcher.withText("Reset"));
 
-        // GUI selection on combo is notified to the driver
+        // GUI selection on combo is notified to driver and listener
         comboBoxFixture.selectItem(0);
         verify(driver, times(1)).selectionMadeOn(compPlayerSelector, 0);
+        verify(listener, times(1)).selectionMadeOn(compPlayerSelector);
 
-        // subsequent clearing of selection is notified to the driver
+        // subsequent clearing of selection is notified to driver and listener
         resetButtonFixture.click();
         verify(driver, times(1)).selectionClearedOn(compPlayerSelector, 0);
+        verify(listener, times(1)).selectionClearedOn(compPlayerSelector);
         
         verifyNoMoreInteractions(driver);
+        verifyNoMoreInteractions(listener);
     }
     
     @Test @GUITest
-    public void testProgrammaticInteractions() {
-        JButtonFixture resetButtonFixture = window.button(JButtonMatcher.withText("Reset"));        
+    public void testProgrammaticInteractions() {      
 
-        // programmatic selection on selector is notified to the driver
+        // programmatic selection on selector is notified to driver and listener
         GuiActionRunner.execute(() -> {
         	compPlayerSelector.select(Optional.of(new Player.Defender("Gigi", "Buffon")));
         });        
         verify(driver, times(1)).selectionMadeOn(compPlayerSelector, 0);
+        verify(listener, times(1)).selectionMadeOn(compPlayerSelector);
 
-        // subsequent clearing of selection is notified to the driver
-        resetButtonFixture.click();
+        // subsequent clearing of selection is notified to driver and listener
+        GuiActionRunner.execute(() -> {
+        	compPlayerSelector.select(Optional.empty());
+        }); 
         verify(driver, times(1)).selectionClearedOn(compPlayerSelector, 0);
+        verify(listener, times(1)).selectionClearedOn(compPlayerSelector);
         
         verifyNoMoreInteractions(driver);
     }
@@ -115,6 +128,8 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
         });
         verify(driver, times(0)).selectionMadeOn(compPlayerSelector, 0);
     }
+    
+    
     
     
 }

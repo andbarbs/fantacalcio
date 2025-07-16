@@ -14,14 +14,38 @@ import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
 @SuppressWarnings("serial")
-public class StarterPlayerSelector<Y extends Player> extends JPanel 
-				implements OrderedOptionDealer<StarterPlayerSelector<Y>, Y> {
+public class StarterPlayerSelector<P extends Player> extends JPanel 
+				implements OrderedOptionDealer<StarterPlayerSelector<P>, P> {
+	
+	
+	/*
+	 * TODO centralize the handling of combo events into one coherent 
+	 * block that defines the rules for 
+	 * 		- what events should trigger internal state changes
+	 * 		- what events should trigger driver notifications
+	 * 		- what events should trigger listener notifications
+	 * 		- what events should trigger subclass engagement
+	 * bearing in mind that, thanks to combo encapsulation, this class
+	 * is the sole originator of programmatic selection events on the combo
+	 * 
+	 * TODO consider pulling up observer logic into a superclass,
+	 * and any logic that doesn't directly depend on internal bookkeeping
+	 * 
+	 * TODO consider moving any GUI trivial interaction logic,
+	 * such as combo <-> button and future combo <-> label, 
+	 * into PlayerSelectorForm and have it tested there
+	 * 
+	 * TODO in PlayerSelectorForm, consider introducing distinct
+	 * private and public design logic
+	 * 
+	 */
+	
 
 	/*******************     Graphical control state 	 ******************/
 	
-	private PlayerSelectorForm<Y> form;
+	private PlayerSelectorForm<P> form;
 	
-	private JComboBox<Y> comboBox;
+	private JComboBox<P> comboBox;
 	private JLabel figureLabel, headLabel;
 	private JButton resetButton;
 	
@@ -34,13 +58,13 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 
 	// WB-compatible constructor
 	public StarterPlayerSelector() {
-		form = new PlayerSelectorForm<Y>();
+		form = new PlayerSelectorForm<P>();
 		wireUpForm();
 	}
 
 	// rescaling-augmented constructor available to clients
 	public StarterPlayerSelector(Dimension availableWindow) throws IOException {
-		form = new PlayerSelectorForm<Y>(availableWindow);
+		form = new PlayerSelectorForm<P>(availableWindow);
 		wireUpForm();
 	}
 	
@@ -56,10 +80,15 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			// decides whether to contact the driver
 			notifyDriver();
 			
-			// propagates user selections to subclasses
 			if (comboBox.isPopupVisible() && 
-					comboBox.getSelectedIndex() > -1)
+					comboBox.getSelectedIndex() > -1) {
+				
+				// propagates user selections to subclasses
 				onUserSelectionSet();
+				
+				// notifies user selection to listeners
+				listeners.forEach(l -> l.selectionMadeOn(this));
+			}
 		});
 
 		resetButton.addActionListener(e -> {
@@ -69,24 +98,40 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 			
 			// propagates selection clearance to subclasses
 			onSelectionCleared();
+			
+			// notifies selection clearance to to listeners
+			listeners.forEach(l -> l.selectionClearedOn(this));
 		});
+	}
+	
+	/***********     selection event notification to listener clients 	 ***********/
+	
+	public interface StarterPlayerSelectorListener<Q extends Player > {
+		void selectionMadeOn(StarterPlayerSelector<Q> selector);
+		void selectionClearedOn(StarterPlayerSelector<Q> selector);
+	}
+	
+	private List<StarterPlayerSelectorListener<P>> listeners = new ArrayList<>();
+	
+	public void attachListener(StarterPlayerSelectorListener<P> listener) {
+		listeners.add(listener);
 	}
 	
 	/**************     OrderedOptionDealer internal bookkeeping 	 **************/
 
-	private OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver;
-	private List<Y> options;          // the original option pool, ordered
+	private OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver;
+	private List<P> options;          // the original option pool, ordered
 	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
 	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
 	private static final int NO_SELECTION = -1;
 
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<Y>, Y> driver) {
+	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver) {
 		this.driver = driver;		
 	}
 
 	@Override
-	public void attachOptions(List<Y> options) {
+	public void attachOptions(List<P> options) {
 		this.options = options;
 		mask = new ArrayList<Integer>(
 				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
@@ -100,7 +145,7 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	public void retireOption(int index) {
 		int pos = mask.indexOf(index);
 		mask.remove(pos);
-		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
+		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
 		model.removeElementAt(pos);
 	}
 
@@ -111,7 +156,7 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 				.filter(k -> mask.get(k) >= index)
 				.findFirst().orElse(mask.size());
 		mask.add(insertionIndex, index);
-		DefaultComboBoxModel<Y> model = (DefaultComboBoxModel<Y>) comboBox.getModel();
+		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
 		model.insertElementAt(options.get(index), insertionIndex);
 	}
 	
@@ -163,16 +208,18 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	
 	/***********     Programmatic selection-setting API for Clients     **********/
 	
-	public void select(Optional<Y> player) {
+	public void select(Optional<P> player) {
 		player.ifPresentOrElse(
 				p -> {
 			int playerInd = mask.indexOf(options.indexOf(p));
 			comboBox.setSelectedIndex(playerInd);
 			currentSelection = playerInd;
 			driver.selectionMadeOn(this, playerInd);
+			listeners.forEach(l -> l.selectionMadeOn(this));
 		}, 
 				() -> {
 			comboBox.setSelectedIndex(-1); // might engage the driver
+			listeners.forEach(l -> l.selectionClearedOn(this));
 		});
 	}
 	
@@ -211,8 +258,8 @@ public class StarterPlayerSelector<Y extends Player> extends JPanel
 	 *  - subclasses can only intervene via the event-handling engagement hooks
 	 */	
 	
-	protected final UnaryLocalSelectionOperator<Y> locally() {
-		return new UnaryLocalSelectionOperator<Y>(this);
+	protected final UnaryLocalSelectionOperator<P> locally() {
+		return new UnaryLocalSelectionOperator<P>(this);
 	}
 	
 	protected final static class UnaryLocalSelectionOperator<Y extends Player> {
