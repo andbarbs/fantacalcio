@@ -5,6 +5,7 @@ import javax.swing.*;
 import domainModel.Player.*;
 
 import java.awt.*;
+import java.beans.Beans;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +43,7 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 		layeredPane.setLayer(background, 0);
         
         // Create a panel to hold our SwingPlayerSelector components.
-		Spring433Scheme selectorsPanel = new Spring433Scheme();
+		Spring433Scheme selectorsPanel = new Spring433Scheme(Beans.isDesignTime());
         selectorsPanel.setBorder(new LineBorder(new Color(255, 0, 0), 8));
 		GridBagConstraints gbc_selectorsPanel = new GridBagConstraints();
 		gbc_selectorsPanel.fill = GridBagConstraints.BOTH;

@@ -6,13 +6,14 @@ import javax.swing.SpringLayout;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.beans.Beans;
 import java.util.List;
 
 @SuppressWarnings("serial")
 public class Spring433Scheme extends SpringSchemePanel {
 	
 	/*
+	 * SpringLayout MEMO
+	 * 
 	 * 1) static methods of Spring:
 	 * From the docs at https://docs.oracle.com/en/java/javase/24/docs/api/java.desktop/javax/swing/Spring.html:
 	 * 
@@ -28,37 +29,53 @@ public class Spring433Scheme extends SpringSchemePanel {
 	 * In particular, we always use HORIZONTAL_CENTER to allow symmetric expansion horizontally, however
 	 * we're not as strict with VERTICAL_CENTER as we don't forecast the need for symmetric vertical growth.
 	 */
-	public Spring433Scheme() {
-
-
+	
+	// public instantiation
+	public Spring433Scheme(boolean isDesignTime) {
+		
 		// creates springs for the Panel dimensions
 		Spring panelWidth = Spring.constant(100);
-		Spring panelHeight = Spring.constant(100);// sets panel's own dimensions
-		getLayout().getConstraints(this).setWidth(panelWidth);
-		getLayout().getConstraints(this).setHeight(panelHeight);
+		Spring panelHeight = Spring.constant(100);
 
+		if (isDesignTime) {
+			// public design logic
+		}
+		
+		getLayout().getConstraints(this).setWidth(panelWidth);
+		getLayout().getConstraints(this).setHeight(panelHeight);			
+
+		layDownSlots(panelWidth, panelHeight);
+	}
+
+	// private design-only instantiation
+	Spring433Scheme() {
+		
 		/*
 		 * designing with SpringLayout using WB has several limitations:
 		 * 		- WB only acknowledges the putConstraint() API
 		 * 		- it does not relate container width/height springs
-		 * 			to manually set container dimensions 
+		 * 		  to manually set container dimensions
+		 * 		- in fact, it seems to ignore Spring's container w/h springs
+		 * 		  unless a parent container exists
 		 * 
 		 * moreover, WB does NOT access superclass members
 		 */
-		if (Beans.isDesignTime()) {
-			
-			// a typical aspect ratio for a football field
-			Dimension footballField = new Dimension(463, 648);
-			setPreferredSize(footballField);
-			
-			// this has to be done so scaled springs will
-			// work well with the absolute dimensions employed
-			panelWidth = Spring.constant(footballField.width);
-			panelHeight = Spring.constant(footballField.height); 
-			
-			fillSlotsWithDummyPanels(recommendedSlotDimensions(footballField));
-		}
+		
+		// a typical aspect ratio for a football field
+		Dimension footballField = new Dimension(463, 648);
+		setPreferredSize(footballField);
+		
+		// this has to be done so scaled springs will
+		// work well with the absolute dimensions employed
+		Spring panelWidth = Spring.constant(footballField.width);
+		Spring panelHeight = Spring.constant(footballField.height); 
+		
+		layDownSlots(panelWidth, panelHeight);
+		
+		fillSlotsWithDummyPanels(recommendedSlotDimensions(footballField));
+	}
 
+	private void layDownSlots(Spring panelWidth, Spring panelHeight) {
 		// goalie slot
 		Spring goalieYoffset = Spring.scale(panelHeight, 0.02f);
 		getLayout().putConstraint(

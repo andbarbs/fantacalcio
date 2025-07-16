@@ -111,9 +111,9 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 				new StarterPlayerSelector<Forward>(reducedAvailableWindow));
 
 		// 5) instantiates 3 supported scheme panels and adds them to CardLayout
-		panel433 = new Spring433Scheme();  
-		panel343 = new Spring343Scheme();
-		panel532 = new Spring532Scheme();
+		panel433 = new Spring433Scheme(Beans.isDesignTime());
+		panel343 = new Spring343Scheme(Beans.isDesignTime());
+		panel532 = new Spring532Scheme(Beans.isDesignTime());
 
 		schemesHolder.add(panel433, "433");
 		schemesHolder.add(panel343, "343");
