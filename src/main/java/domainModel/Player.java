@@ -139,5 +139,9 @@ public abstract class Player {
 		}
     }
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + ": " + name + ", " + surname;
+	}
 }
 

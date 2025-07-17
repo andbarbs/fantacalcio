@@ -287,32 +287,42 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		}
 	}
 	
+	// TODO consider offering a more readable API 
+	// 		- locally().swapWith(other)
+	//		- locally().equalizeTo(other)
+	
 	protected final static class BinaryLocalSelectionOperator<Y extends Player> {
 
-		private final StarterPlayerSelector<Y> other;
+		private final StarterPlayerSelector<Y> source, other;
 		private final int indSource, indOther;
 
 		private BinaryLocalSelectionOperator(StarterPlayerSelector<Y> source, StarterPlayerSelector<Y> other) {
+			this.source = source;
 			this.other = other;
 			indOther = other.currentSelection;
-			indSource = source.currentSelection;
-
-			if (indOther != NO_SELECTION) {
-				source.restoreOption(indOther);
-				source.comboBox.setSelectedIndex(source.mask.indexOf(indOther));
-				source.currentSelection = indOther;
-			}
-			
-			if (indSource != NO_SELECTION)
-				source.retireOption(indSource);
+			indSource = source.currentSelection;							
 		}
 
 		/**
-		 * makes the receiver {@link StarterPlayerSelector} take over the (possibly 
-		 * non-existant) selection of the {@code other} selector. If the receiver had 
-		 * a previous selection, it drops that option without having other dealers restore it
+		 * effectively makes the receiver {@link StarterPlayerSelector} 
+		 * equalize to {@code other}: after this operation, the receiver dealer 
+		 * looks like a clone of {@code other}.
+		 * 
+		 * If the receiver had a previous selection, it drops that option without 
+		 * having other dealers restore it.
+		 * 
 		 */
-		protected void droppingYours() {}
+		protected void droppingYours() {
+			if (indOther != NO_SELECTION) {
+				source.restoreOption(indOther);
+			}
+			
+			if (indSource != NO_SELECTION) {
+				source.retireOption(indSource);
+			}
+			source.currentSelection = indOther;   // in this order to not alert the driver
+			source.comboBox.setSelectedIndex(indOther == NO_SELECTION ? -1 : source.mask.indexOf(indOther));	
+		}
 		
 		/**
 		 * makes the receiver and {@code other} {@link StarterPlayerSelector}s effectively
@@ -320,12 +330,20 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		 * each dealer looks like the other did before the operation
 		 */
 		protected void pushingYoursToThem() {
-			if (indSource != NO_SELECTION) {
-				other.restoreOption(indSource);
-				other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
-				other.currentSelection = indSource;
+			if (indOther != NO_SELECTION) {
+				source.restoreOption(indOther);
 				other.retireOption(indOther);
 			}
+			source.currentSelection = indOther;   // in this order to not alert the driver
+			source.comboBox.setSelectedIndex(indOther == NO_SELECTION ? -1 : source.mask.indexOf(indOther));
+			
+			if (indSource != NO_SELECTION) {
+				source.retireOption(indSource);
+				other.restoreOption(indSource);
+				// other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
+			}
+			other.currentSelection = indSource;				
+			other.comboBox.setSelectedIndex(indSource == NO_SELECTION ? -1 : other.mask.indexOf(indSource));
 		}
 	}	
 }

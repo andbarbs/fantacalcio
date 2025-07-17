@@ -60,19 +60,25 @@ public class OptionDealerGroupDriver<D extends OrderedOptionDealer<D, O>, O> {
 		void attachOptions(List<O> options);
 		void retireOption(int index);
 		void restoreOption(int index);
-	}	
-
+	}
+	
+	// needed for spying in tests
+	OptionDealerGroupDriver() {
+	}
+	
 	private Set<D> dealers;
 	
 	private OptionDealerGroupDriver(Set<D> dealers) {
-		this.dealers = dealers;				
+		this.dealers = dealers;
 	}
-	
+
 	// public factory method
-	public static <D extends OrderedOptionDealer<D, O>, O> void initializeDealing(Set<D> dealers, List<O> options) {
+	public static <D extends OrderedOptionDealer<D, O>, O> 
+			OptionDealerGroupDriver<D, O> initializeDealing(Set<D> dealers, List<O> options) {
 		OptionDealerGroupDriver<D, O> driver = new OptionDealerGroupDriver<D, O>(dealers);
 		driver.dealers.forEach(d -> d.attachDriver(driver));
 		driver.dealers.forEach(d -> d.attachOptions(options));
+		return driver;
 	}
 	
 	public void selectionMadeOn(D dealer, int index) {

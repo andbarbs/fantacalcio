@@ -57,8 +57,7 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
 
 			compPlayerSelector.attachDriver(driver);     // attaches the group driver
 			compPlayerSelector.attachOptions(		     // attaches the group options
-					List.of(
-							new Player.Defender("Gigi", "Buffon"), 
+					List.of(new Player.Defender("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
 			compPlayerSelector.attachListener(listener); // attaches the listener
 
@@ -127,8 +126,7 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnitTestCase {
         	comboBoxFixture.target().setSelectedIndex(0);
         });
         verify(driver, times(0)).selectionMadeOn(compPlayerSelector, 0);
-    }
-    
+    }    
     
     
     
