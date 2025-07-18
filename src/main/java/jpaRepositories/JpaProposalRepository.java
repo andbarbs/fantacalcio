@@ -47,7 +47,7 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 		return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
-    //TODO check if it is useful
+    //TODO check if we need it
     @Override
     public boolean proposalExists(Proposal proposal) {
         return false;
