@@ -63,8 +63,8 @@ class JpaPlayerRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("getAllGiocatori() on an empty table")
-	public void testNoPlayersExist(){
+	@DisplayName("findAll() on an empty table")
+	public void testFindAllWhenNoPlayersExist(){
 		EntityManager entityManager = sessionFactory.createEntityManager();
 		playerRepository = new JpaPlayerRepository(entityManager);
 		assertThat(playerRepository.findAll()).isEmpty();
@@ -72,8 +72,8 @@ class JpaPlayerRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("getAllGiocatori() when two players have been persisted")
-	public void testTwoPlayersExist(){
+	@DisplayName("findAll() when two players have been persisted")
+	public void testFindAllTwoPlayersExist(){
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 		Player messi = new Forward("Lionel", "Messi");
 
@@ -89,7 +89,7 @@ class JpaPlayerRepositoryTest {
 
 	@Test
 	@DisplayName("addPlayer() with a non-persisted player")
-	public void testAddNonPersistedPlayer() {
+	public void testAddPlayerWithNonPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 
 		EntityManager entityManager = sessionFactory.createEntityManager();
@@ -106,7 +106,7 @@ class JpaPlayerRepositoryTest {
 
 	@Test
 	@DisplayName("addPlayer() does not add an already persisted player")
-	public void testAddAlreadyPersistedPlayer() {
+	public void testAddPlayerWithAlreadyPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 
 		sessionFactory.inTransaction(session -> session.persist(buffon));
@@ -119,13 +119,14 @@ class JpaPlayerRepositoryTest {
 
 	@Test
 	@DisplayName("findBySurname when the player does not exist")
-	public void testFindBySurnameDoesNotExist(){
+	public void testFindBySurnameWhenPlayerDoesNotExist(){
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 		Player messi = new Forward("Lionel", "Messi");
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
-			session.persist(messi);});
+			session.persist(messi);}
+		);
 
 		EntityManager entityManager = sessionFactory.createEntityManager();
 		playerRepository = new JpaPlayerRepository(entityManager);
@@ -135,8 +136,8 @@ class JpaPlayerRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("findBySurname when the players exist")
-	public void testFindBySurnameExist(){
+	@DisplayName("findBySurname when the players exists")
+	public void testFindBySurnameWhenPlayerExists(){
 		Player marcus = new Forward("Marcus", "Thuram");
 		Player kephren = new Forward("Kephren", "Thuram");
 		Player eljif = new Forward("Eljif", "Elmas");
