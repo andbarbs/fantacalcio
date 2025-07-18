@@ -13,6 +13,7 @@ import jakarta.persistence.criteria.Root;
 import java.util.List;
 
 public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTeamRepository {
+	
 	public JpaFantaTeamRepository(EntityManager em) {
 		super(em);
 	}

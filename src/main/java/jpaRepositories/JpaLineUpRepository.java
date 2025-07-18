@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepository {
+	
     public JpaLineUpRepository(EntityManager em) {
         super(em);
     }

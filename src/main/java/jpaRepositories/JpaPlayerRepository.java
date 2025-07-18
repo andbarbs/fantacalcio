@@ -13,7 +13,6 @@ import jakarta.persistence.criteria.Root;
 
 public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepository {
 
-
 	public JpaPlayerRepository(EntityManager em) {
 		super(em);
 	}
