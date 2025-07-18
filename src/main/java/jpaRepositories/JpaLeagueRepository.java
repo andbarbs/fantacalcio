@@ -49,7 +49,7 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 
         criteriaQuery.where(
                 cb.and(
-                        cb.equal(root.get(League_.leagueCode), leagueCode)
+                        cb.equal(root.get(League_.admin), user)
                 )
         );
         
