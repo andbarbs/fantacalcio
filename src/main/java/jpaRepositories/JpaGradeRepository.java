@@ -3,7 +3,6 @@ package jpaRepositories;
 import java.util.List;
 
 import businessLogic.repositories.GradeRepository;
-import domainModel.League;
 import domainModel.Match;
 import domainModel.Grade;
 import domainModel.Grade_;
@@ -20,7 +19,7 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 	}
 
 	@Override
-	public List<Grade> getAllMatchGrades(Match match, League league) {
+	public List<Grade> getAllMatchGrades(Match match) {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Grade> query = builder.createQuery(Grade.class);

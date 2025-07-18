@@ -158,7 +158,7 @@ public class UserService {
 
 	public List<Grade> getAllMatchGrades(League league, Match match) {
 		return transactionManager.fromTransaction(
-				(context) -> context.getGradeRepository().getAllMatchGrades(match, league));
+				(context) -> context.getGradeRepository().getAllMatchGrades(match));
 	}
 
 	//Results
