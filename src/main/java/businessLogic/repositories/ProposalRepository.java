@@ -14,6 +14,6 @@ public interface ProposalRepository {
 
 	boolean proposalExists(Proposal proposal);
 
-	boolean saveProposal(Proposal proposal);
+	void saveProposal(Proposal proposal);
 
 }

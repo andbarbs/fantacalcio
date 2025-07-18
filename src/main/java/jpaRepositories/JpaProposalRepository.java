@@ -7,6 +7,7 @@ import domainModel.Proposal_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
@@ -37,16 +38,23 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 
     @Override
     public List<Proposal> getMyProposals(League actualLeague, FantaTeam myTeam) {
-        return List.of();
+    	EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Proposal> criteriaQuery = criteriaBuilder.createQuery(Proposal.class);
+		Root<Proposal> root = criteriaQuery.from(Proposal.class);
+		criteriaQuery.select(root);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
+    //TODO check if it is useful
     @Override
     public boolean proposalExists(Proposal proposal) {
         return false;
     }
 
     @Override
-    public boolean saveProposal(Proposal proposal) {
-        return false;
+    public void saveProposal(Proposal proposal) {
+        getEntityManager().persist(proposal);;
     }
 }
