@@ -1,5 +1,6 @@
 package jpaRepositories;
 
+import domainModel.Contract;
 import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Proposal;
@@ -11,6 +12,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
+import java.util.Optional;
 
 import businessLogic.repositories.ProposalRepository;
 
@@ -47,15 +49,25 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 		return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
-    //TODO check if we need it
-    @Override
-    public boolean proposalExists(Proposal proposal) {
-        return false;
-    }
-
     @Override
     public boolean saveProposal(Proposal proposal) {
        getEntityManager().persist(proposal);
        return true;
     }
+
+	@Override
+	public Optional<Proposal> getProposal(Contract offeredContract, Contract requestedContract) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<Proposal> criteriaQuery = cb.createQuery(Proposal.class);
+        Root<Proposal> root = criteriaQuery.from(Proposal.class);
+
+        criteriaQuery.where(
+                cb.and(
+                        cb.equal(root.get(Proposal_.offeredContract), offeredContract),
+                        cb.equal(root.get(Proposal_.requestedContract), requestedContract)
+                )
+        );
+
+        return getEntityManager().createQuery(criteriaQuery).getResultList().stream().findFirst();
+	}
 }

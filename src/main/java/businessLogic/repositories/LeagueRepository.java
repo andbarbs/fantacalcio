@@ -10,8 +10,8 @@ public interface LeagueRepository {
 
 	Optional<League> getLeagueByCode(String leagueCode);
 
-	boolean addLeague(League league);
+	boolean saveLeague(League league);
 
 	Set<League> getLeaguesByUser(FantaUser user);
-
+	
 }

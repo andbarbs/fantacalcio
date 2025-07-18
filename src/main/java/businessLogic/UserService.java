@@ -16,22 +16,12 @@ public class UserService {
 	}
 
 	// League
-	public Optional<League> existingLeague(String leagueCode) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getLeagueRepository().getLeagueByCode(leagueCode));
-	}
-
-	public Set<League> getLeaguesByUser(FantaUser user) {
-		return transactionManager.fromTransaction((context) ->
-			context.getLeagueRepository().getLeaguesByUser(user));
-
-	}
 
 	public void createLeague(String leagueName, FantaUser fantaUser, NewsPaper newsPaper, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
-			if(existingLeague(leagueCode).isEmpty()) {
+			if(context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
 				League league = new League(fantaUser, leagueName, newsPaper, leagueCode);
-				context.getLeagueRepository().addLeague(league);
+				context.getLeagueRepository().saveLeague(league);
 			}else{
 				throw new IllegalArgumentException("A league with the same league code already exists");
 			}
@@ -135,7 +125,7 @@ public class UserService {
 			if(requestedContract.isPresent() && offeredContract.isPresent()){
 				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
-				if (context.getProposalRepository().proposalExists(newProposal)) {
+				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get()).isEmpty()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
 				return context.getProposalRepository().saveProposal(newProposal);
@@ -185,7 +175,7 @@ public class UserService {
 */
 	public Optional<LineUp> getLineUpByMatch(League league, Match match, FantaTeam fantaTeam) {
 		return transactionManager.fromTransaction((context) ->
-				context.getLineUpRepository().getLineUpByMatchAndTeam(league, match, fantaTeam));
+				context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
     }
 
 	public void saveLineUp(LineUp lineUp){
