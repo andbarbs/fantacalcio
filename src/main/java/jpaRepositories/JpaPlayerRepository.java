@@ -59,7 +59,8 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
-//TODO check if we need it
+	
+	//TODO check if we need it
 	@Override
 	public List<Player> findByTeam(FantaTeam team) {
 
