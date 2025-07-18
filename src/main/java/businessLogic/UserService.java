@@ -31,7 +31,7 @@ public class UserService {
 	public void joinLeague(FantaTeam fantaTeam, League league) {
 		 transactionManager.inTransaction((context) -> {
 			 FantaUser user = fantaTeam.getFantaManager();
-			 Set<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);
+			 List<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);
 			 if(UserLeagues.contains(league)) {
 				 throw new IllegalArgumentException("You have already a team in this league");
 			 } else {

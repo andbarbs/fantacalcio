@@ -1,5 +1,6 @@
 package jpaRepositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,10 +42,19 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	}
 
 	@Override
-	public Set<League> getLeaguesByUser(FantaUser user) {
+	public List<League> getLeaguesByUser(FantaUser user) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
+        Root<League> root = criteriaQuery.from(League.class);
+
+        criteriaQuery.where(
+                cb.and(
+                        cb.equal(root.get(League_.leagueCode), leagueCode)
+                )
+        );
+        
+        return getEntityManager().createQuery(criteriaQuery).getResultList();
 		
-		
-		return null;
 	}
 
 }
