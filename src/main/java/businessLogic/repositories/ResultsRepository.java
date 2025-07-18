@@ -6,6 +6,9 @@ import domainModel.Match;
 import domainModel.Result;
 
 public interface ResultsRepository {
-    Optional<Result> getResult(Match match);
-    void saveResult(Result result);
+	
+	Optional<Result> getResult(Match match);
+
+	void saveResult(Result result);
+
 }

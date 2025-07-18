@@ -13,4 +13,5 @@ public interface MatchRepository {
 	Match getMatchByMatchDay(MatchDaySerieA matchDaySerieA, League league, FantaTeam fantaTeam);
 
 	Map<MatchDaySerieA, Set<Match>> getAllMatches(League league);
+	
 }

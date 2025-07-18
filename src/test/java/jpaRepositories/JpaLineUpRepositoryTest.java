@@ -190,7 +190,7 @@ class JpaLineUpRepositoryTest {
 		entityManager.clear(); // the Session is not closed! SUT instance is still used for verifications
 
 		// Verify
-		Optional<LineUp> retrieved = lineUpRepository.getLineUpByMatchAndTeam(league, match, team);
+		Optional<LineUp> retrieved = lineUpRepository.getLineUpByMatchAndTeam(match, team);
 		assertThat(retrieved).isPresent();
 
 		LineUp persistedLineUp = retrieved.get();
@@ -225,7 +225,7 @@ class JpaLineUpRepositoryTest {
 
 		entityManager.getTransaction().commit();
 
-		Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(league, match, team);
+		Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(match, team);
 		assertThat(result).isEmpty();
 	}
 

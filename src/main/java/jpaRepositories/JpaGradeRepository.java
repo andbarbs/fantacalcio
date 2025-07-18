@@ -32,19 +32,6 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 		query.select(gradeRoot);
 		
 		return entityManager.createQuery(query).getResultList();
-//		return getSessionFactory().fromTransaction(session -> 
-//		{
-//			CriteriaBuilder builder = session.getCriteriaBuilder();
-//			CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
-//			Root<Grade> gradeRoot = query.from(Grade.class);
-//
-//			gradeRoot.fetch(Grade_.player, JoinType.INNER);
-//			gradeRoot.fetch(Grade_.matchDay, JoinType.INNER);
-//
-//			query.select(gradeRoot);
-//			
-//			return session.createSelectionQuery(query).setReadOnly(true).getResultList();
-//		});
 	}
 
 }

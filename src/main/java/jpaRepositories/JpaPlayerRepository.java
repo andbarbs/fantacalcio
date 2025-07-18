@@ -3,7 +3,6 @@ package jpaRepositories;
 import java.util.List;
 
 import businessLogic.repositories.PlayerRepository;
-import domainModel.FantaTeam;
 import domainModel.Player;
 import domainModel.Player_;
 import jakarta.persistence.EntityManager;
@@ -57,13 +56,6 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 				criteriaBuilder.equal(root.get(Player_.surname), surname)));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
-	}
-	
-	//TODO check if we need it
-	@Override
-	public List<Player> findByTeam(FantaTeam team) {
-
-		return null;
 	}
 
 }

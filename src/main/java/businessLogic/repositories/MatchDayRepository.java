@@ -7,7 +7,11 @@ import java.util.Optional;
 import domainModel.MatchDaySerieA;
 
 public interface MatchDayRepository {
+	
 	List<MatchDaySerieA> getAllMatchDays();
+
 	Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date);
+
 	Optional<MatchDaySerieA> getNextMatchDay(LocalDate date);
+
 }

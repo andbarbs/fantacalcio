@@ -38,9 +38,8 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
         getEntityManager().createQuery(delete).executeUpdate();
     }
 
-    // TODO la Lega in argomento è necessaria? (un Team appartiene ad una sola lega)
     @Override
-    public Optional<LineUp> getLineUpByMatchAndTeam(League league, Match match, FantaTeam fantaTeam) {
+    public Optional<LineUp> getLineUpByMatchAndTeam(Match match, FantaTeam fantaTeam) {
         EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<LineUp> query = cb.createQuery(LineUp.class);

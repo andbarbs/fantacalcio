@@ -2,7 +2,6 @@ package businessLogic.repositories;
 
 import java.util.List;
 
-import domainModel.FantaTeam;
 import domainModel.Player;
 
 public interface PlayerRepository {
@@ -13,5 +12,4 @@ public interface PlayerRepository {
 
 	public List<Player> findBySurname(String surname);
 	
-	public List<Player> findByTeam(FantaTeam team);
 }
