@@ -27,9 +27,10 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	 * 		- what events should trigger subclass engagement
 	 * bearing in mind that, thanks to combo encapsulation, this class
 	 * is the sole originator of programmatic selection events on the combo
+	 *      - this means a reentrance-blocking flag is acceptable
 	 * 
 	 * TODO consider pulling up observer logic into a superclass,
-	 * and any logic that doesn't directly depend on internal bookkeeping
+	 * together with any logic that doesn't directly depend on internal bookkeeping
 	 * 
 	 * TODO consider moving any GUI trivial interaction logic,
 	 * such as combo <-> button and future combo <-> label, 
@@ -140,13 +141,21 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
 		currentSelection = NO_SELECTION;
 	}
+	
+	/**
+	 * at the moment, these methods only mutate the mask and combo model to
+	 * insert or remove an option as mandated by the driver.
+	 * They never leak back into the driver, either because
+	 * 		- they cause no events on the combo to be fired
+	 * 		- they fire an event which is blocked by the listener
+	 */
 
 	@Override
 	public void retireOption(int index) {
 		int pos = mask.indexOf(index);
 		mask.remove(pos);
 		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
-		model.removeElementAt(pos);
+		model.removeElementAt(pos);    // fires an event under conditions 3) and 4)
 	}
 
 	@Override
@@ -189,11 +198,13 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	private void notifyDriver() {
 		int selectedIndex = comboBox.getSelectedIndex();
 		
+		
 		// a user selection has been set on this CBox
 		if (comboBox.isPopupVisible() && selectedIndex != -1) {
 			if (currentSelection != -1)
 				driver.selectionClearedOn(this, currentSelection);
 			currentSelection = mask.get(selectedIndex);
+			System.out.println("about to call driver.selectionMadeOn");
 			driver.selectionMadeOn(this, currentSelection);
 		}
 
@@ -201,6 +212,7 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		else if (selectedIndex == -1 && 
 				currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
+			System.out.println("about to call driver.selectionClearedOn");
 			driver.selectionClearedOn(this, currentSelection);
 			currentSelection = NO_SELECTION;
 		}
@@ -308,7 +320,7 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		 * equalize to {@code other}: after this operation, the receiver dealer 
 		 * looks like a clone of {@code other}.
 		 * 
-		 * If the receiver had a previous selection, it drops that option without 
+		 * If a previous selection existed on the receiver, it drops that option without 
 		 * having other dealers restore it.
 		 * 
 		 */
@@ -345,5 +357,74 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 			other.currentSelection = indSource;				
 			other.comboBox.setSelectedIndex(indSource == NO_SELECTION ? -1 : other.mask.indexOf(indSource));
 		}
-	}	
+	}
+	
+	// 4) local State getter/setter	
+	
+	protected static class LocalPlayerSelectorState<P extends Player> {
+		private final OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver;
+		private final Integer currentSelection; // contains the linear index in this.options of the combo's current selection
+		
+		private LocalPlayerSelectorState(
+				OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver,
+				Integer currentSelection) {
+			this.driver = driver;
+			this.currentSelection = currentSelection;
+		}	
+	}
+	
+	protected LocalPlayerSelectorState<P> getLocalState() {
+		return new LocalPlayerSelectorState<P>(this.driver, this.currentSelection);
+	}
+	
+	protected void setLocalState(LocalPlayerSelectorState<P> otherState) {
+		if (this.driver != otherState.driver)
+			throw new IllegalArgumentException("states must refer to selectors in the same dealer group");
+
+		int oldReceiverSelection = this.currentSelection;
+
+		// adds missing option to receivers model
+		if (otherState.currentSelection != NO_SELECTION)
+			this.restoreOption(otherState.currentSelection);
+
+		// sets receiver's selection without engaging driver
+		this.currentSelection = otherState.currentSelection;
+		this.comboBox.setSelectedIndex(currentSelection == NO_SELECTION ? -1 :
+				this.mask.indexOf(this.currentSelection));
+
+		// silently removes previously selected option from receiver's model
+		if (oldReceiverSelection != NO_SELECTION)
+			this.retireOption(oldReceiverSelection);
+	}
+	
+	// 5) protected retire/restore option
+	
+	protected Optional<P> getSelectedOption() {
+		return Optional.ofNullable(
+				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
+	}
+	
+	protected void silentlySelect(Optional<P> option) {
+		currentSelection = option.isPresent()? options.indexOf(option.get()) : NO_SELECTION;
+		comboBox.setSelectedIndex(currentSelection == NO_SELECTION ? 
+				-1 : mask.indexOf(currentSelection));
+	}
+	
+	protected void silentlyDrop(Optional<P> option) {
+		option.ifPresent(o -> {
+			int pos = options.indexOf(o);
+			if (currentSelection == pos) {
+				currentSelection = NO_SELECTION;		
+				comboBox.setSelectedIndex(-1);  // in this order, no driver feedback
+			}
+			retireOption(pos);	// no ghost selection nor driver feedback
+		});
+	}
+	
+	protected void silentlyAdd(Optional<P> option) {
+		option.ifPresent(o -> {
+			restoreOption(options.indexOf(o));
+		});
+	}
+	
 }

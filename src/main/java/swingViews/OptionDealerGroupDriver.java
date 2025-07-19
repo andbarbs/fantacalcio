@@ -68,7 +68,8 @@ public class OptionDealerGroupDriver<D extends OrderedOptionDealer<D, O>, O> {
 	
 	private Set<D> dealers;
 	
-	private OptionDealerGroupDriver(Set<D> dealers) {
+	// used by tests for spying
+	OptionDealerGroupDriver(Set<D> dealers) {
 		this.dealers = dealers;
 	}
 

@@ -3,6 +3,7 @@ package swingViews;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.swing.border.LineBorder;
 
@@ -44,17 +45,28 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<T> other) {
-		super.locally().takeOverSelectionFrom(other).droppingYours();
+		Optional<T> selection = this.getSelectedOption();
+		Optional<T> otherSelection = other.getSelectedOption();
+    	this.silentlyAdd(otherSelection);
+    	this.silentlySelect(otherSelection);
+		this.silentlyDrop(selection);
 	}
 	
 	@Override
 	public void discardContent() {
-		super.locally().dropSelection();
+		this.silentlyDrop(this.getSelectedOption());
 	}
 
 	@Override
 	public void swapContentWith(SubstitutePlayerSelector<T> other) {
-		super.locally().takeOverSelectionFrom(other).pushingYoursToThem();
+		Optional<T> selection = this.getSelectedOption();
+    	Optional<T> otherSelection = other.getSelectedOption();
+    	this.silentlyAdd(otherSelection);
+    	this.silentlySelect(otherSelection);
+    	this.silentlyDrop(selection);
+    	other.silentlyAdd(selection);
+    	other.silentlySelect(selection);
+    	other.silentlyDrop(otherSelection);
 	}
 	
 	@Override
