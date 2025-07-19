@@ -42,7 +42,9 @@ public class NewCompetingComboBox<T> extends JComboBox<T> implements OrderedOpti
 		/* an ActionEvent is fired on a JComboBox under these circumstances:
 		 * 		1) a new/the existing selection is set on the combo, either by the user or programmatically
 		 * 		2) the selection is (programmatically) set to -1
-		 * 		3) an entry is REMOVED from the underlying model AND no user selection exists   */
+		 * 		3) an entry is REMOVED from the underlying model AND no user selection exists   
+		 * 		4) an entry is REMOVED from the underlying model AND that entry was the combo's selection 
+		 * 		5) an entry is ADDED to the underlying model AND the model was previously empty    */
 		addActionListener(e -> compete(getSelectedIndex()));
 	}
 
