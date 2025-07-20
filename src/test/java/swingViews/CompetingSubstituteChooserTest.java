@@ -1,13 +1,9 @@
 package swingViews;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static swingViews.utilities.TypedJComboBoxFixtureAssert.assertThat;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import javax.swing.ComboBoxModel;
 import javax.swing.JFrame;
 
 import org.assertj.swing.annotation.GUITest;
@@ -15,20 +11,20 @@ import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.assertj.swing.fixture.JComboBoxFixture;
 import org.assertj.swing.junit.runner.GUITestRunner;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import domainModel.Player.Defender;
+import swingViews.utilities.TypedJComboBoxFixture;
 
 @RunWith(GUITestRunner.class)
 public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
 
     private FrameFixture window;
     
-	private JComboBoxFixture combo1, combo2, combo3;
+	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
 	private JButtonFixture reset1, reset2, reset3;
 	private JButtonFixture swap1_2, swap2_3;
 	
@@ -37,15 +33,6 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
 	private static final Defender ramos = new Defender("Sergio", "Ramos");
 	private static final Defender silva = new Defender("Thiago", "Silva");
 	private static final Defender vanDijk = new Defender("Virgil", "van Dijk");
-	
-	private List<Defender> getComboItems(JComboBoxFixture cbFixture) {
-    	return GuiActionRunner.execute(() -> {
-    		ComboBoxModel<?> model = cbFixture.target().getModel();
-    		return IntStream.range(0, model.getSize())
-    				.mapToObj(value -> (Defender) model.getElementAt(value))
-    				.collect(Collectors.toList());
-    	});
-    }
 
     @Override
     public void onSetUp() {    	
@@ -69,9 +56,9 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         window = new FrameFixture(robot(), frame);
         window.show();
         
-        combo1 = window.panel("selector1").comboBox();
-        combo2 = window.panel("selector2").comboBox();
-        combo3 = window.panel("selector3").comboBox();
+        combo1 = TypedJComboBoxFixture.of(window.panel("selector1").comboBox(), Defender.class);
+        combo2 = TypedJComboBoxFixture.of(window.panel("selector2").comboBox(), Defender.class);
+        combo3 = TypedJComboBoxFixture.of(window.panel("selector3").comboBox(), Defender.class);
         
         reset1 = window.panel("selector1").button(JButtonMatcher.withText("Reset"));
         reset2 = window.panel("selector2").button(JButtonMatcher.withText("Reset"));
@@ -89,11 +76,8 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         
         swap1_2.click();
         
-        assertThat(combo1.selectedItem()).isEqualTo("Gerard Piqué");
-        assertThat(getComboItems(combo1)).containsExactly(pique, ramos, silva, vanDijk);
-        
-        assertThat(combo2.selectedItem()).isEqualTo("Giorgio Chiellini");
-        assertThat(getComboItems(combo2)).containsExactly(chiellini, ramos, silva, vanDijk);
+        assertThat(combo1).hasSelected(pique).amongOptions(pique, ramos, silva, vanDijk);
+        assertThat(combo2).hasSelected(chiellini).amongOptions(chiellini, ramos, silva, vanDijk);
     }
     
     @Test @GUITest
@@ -105,14 +89,9 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         
         swap2_3.click();
         
-        assertThat(combo1.selectedItem()).isEqualTo("Giorgio Chiellini");
-        assertThat(getComboItems(combo1)).containsExactly(chiellini, ramos, vanDijk);
-        
-        assertThat(combo2.selectedItem()).isEqualTo("Thiago Silva");
-        assertThat(getComboItems(combo2)).containsExactly(ramos, silva, vanDijk);
-        
-        assertThat(combo3.selectedItem()).isEqualTo("Gerard Piqué");
-        assertThat(getComboItems(combo3)).containsExactly(pique, ramos, vanDijk);        
+        assertThat(combo1).hasSelected(chiellini).amongOptions(chiellini, ramos, vanDijk);
+        assertThat(combo2).hasSelected(silva).amongOptions(ramos, silva, vanDijk);
+        assertThat(combo3).hasSelected(pique).amongOptions(pique, ramos, vanDijk);        
     }
     
     @Test @GUITest
@@ -124,14 +103,9 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         
         reset3.click();
         
-        assertThat(combo1.selectedItem()).isEqualTo("Giorgio Chiellini");
-        assertThat(getComboItems(combo1)).containsExactly(chiellini, ramos, silva, vanDijk);
-        
-        assertThat(combo2.selectedItem()).isEqualTo("Gerard Piqué");
-        assertThat(getComboItems(combo2)).containsExactly(pique, ramos, silva, vanDijk);
-        
-        assertThat(combo3.selectedItem()).isNull();
-        assertThat(getComboItems(combo3)).containsExactly(ramos, silva, vanDijk);        
+        assertThat(combo1).hasSelected(chiellini).amongOptions(chiellini, ramos, silva, vanDijk);       
+        assertThat(combo2).hasSelected(pique).amongOptions(pique, ramos, silva, vanDijk);        
+        assertThat(combo3).hasSelected(null).amongOptions(ramos, silva, vanDijk);        
     }
     
     @Test @GUITest
@@ -143,14 +117,9 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         
         reset2.click();
         
-        assertThat(combo1.selectedItem()).isEqualTo("Giorgio Chiellini");
-        assertThat(getComboItems(combo1)).containsExactly(chiellini, pique, ramos, vanDijk);
-        
-        assertThat(combo2.selectedItem()).isEqualTo("Thiago Silva");
-        assertThat(getComboItems(combo2)).containsExactly(pique, ramos, silva, vanDijk);
-        
-        assertThat(combo3.selectedItem()).isNull();
-        assertThat(getComboItems(combo3)).containsExactly(pique, ramos, vanDijk);        
+        assertThat(combo1).hasSelected(chiellini).amongOptions(chiellini, pique, ramos, vanDijk);        
+        assertThat(combo2).hasSelected(silva).amongOptions(pique, ramos, silva, vanDijk);        
+        assertThat(combo3).hasSelected(null).amongOptions(pique, ramos, vanDijk);        
     }
     
     @Test @GUITest
@@ -162,13 +131,8 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
         
         reset1.click();
         
-        assertThat(combo1.selectedItem()).isEqualTo("Gerard Piqué");
-        assertThat(getComboItems(combo1)).containsExactly(chiellini, pique, ramos, vanDijk);
-        
-        assertThat(combo2.selectedItem()).isEqualTo("Thiago Silva");
-        assertThat(getComboItems(combo2)).containsExactly(chiellini,ramos, silva, vanDijk);
-        
-        assertThat(combo3.selectedItem()).isNull();
-        assertThat(getComboItems(combo3)).containsExactly(chiellini, ramos, vanDijk);        
+        assertThat(combo1).hasSelected(pique).amongOptions(chiellini, pique, ramos, vanDijk);        
+        assertThat(combo2).hasSelected(silva).amongOptions(chiellini,ramos, silva, vanDijk);        
+        assertThat(combo3).hasSelected(null).amongOptions(chiellini, ramos, vanDijk);        
     }
 }
