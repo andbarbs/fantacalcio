@@ -268,136 +268,7 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	 * for subclasses:
 	 *  - these operators do not risk leaking to any drivers inside subclasses
 	 *  - subclasses can only intervene via the event-handling engagement hooks
-	 */	
-	
-	protected final UnaryLocalSelectionOperator<P> locally() {
-		return new UnaryLocalSelectionOperator<P>(this);
-	}
-	
-	protected final static class UnaryLocalSelectionOperator<Y extends Player> {
-
-		private final StarterPlayerSelector<Y> source;
-
-		private UnaryLocalSelectionOperator(StarterPlayerSelector<Y> source) {
-			this.source = source;
-		}
-
-		/**
-		 * makes the receiver {@link StarterPlayerSelector} clear its selection
-		 * and drop that option, without having other dealers restore it
-		 */
-		protected void dropSelection() {
-			if (source.currentSelection != NO_SELECTION) {
-				source.retireOption(source.currentSelection);
-				source.currentSelection = NO_SELECTION;		
-				source.comboBox.setSelectedIndex(-1);  // here, it does not broadcast
-			}
-		}
-
-		protected BinaryLocalSelectionOperator<Y> takeOverSelectionFrom(StarterPlayerSelector<Y> other) {
-			return new BinaryLocalSelectionOperator<Y>(source, other);
-		}
-	}
-	
-	// TODO consider offering a more readable API 
-	// 		- locally().swapWith(other)
-	//		- locally().equalizeTo(other)
-	
-	protected final static class BinaryLocalSelectionOperator<Y extends Player> {
-
-		private final StarterPlayerSelector<Y> source, other;
-		private final int indSource, indOther;
-
-		private BinaryLocalSelectionOperator(StarterPlayerSelector<Y> source, StarterPlayerSelector<Y> other) {
-			this.source = source;
-			this.other = other;
-			indOther = other.currentSelection;
-			indSource = source.currentSelection;							
-		}
-
-		/**
-		 * effectively makes the receiver {@link StarterPlayerSelector} 
-		 * equalize to {@code other}: after this operation, the receiver dealer 
-		 * looks like a clone of {@code other}.
-		 * 
-		 * If a previous selection existed on the receiver, it drops that option without 
-		 * having other dealers restore it.
-		 * 
-		 */
-		protected void droppingYours() {
-			if (indOther != NO_SELECTION) {
-				source.restoreOption(indOther);
-			}
-			
-			if (indSource != NO_SELECTION) {
-				source.retireOption(indSource);
-			}
-			source.currentSelection = indOther;   // in this order to not alert the driver
-			source.comboBox.setSelectedIndex(indOther == NO_SELECTION ? -1 : source.mask.indexOf(indOther));	
-		}
-		
-		/**
-		 * makes the receiver and {@code other} {@link StarterPlayerSelector}s effectively
-		 * exchange their (possibly non-existant) selections: after this operation,
-		 * each dealer looks like the other did before the operation
-		 */
-		protected void pushingYoursToThem() {
-			if (indOther != NO_SELECTION) {
-				source.restoreOption(indOther);
-				other.retireOption(indOther);
-			}
-			source.currentSelection = indOther;   // in this order to not alert the driver
-			source.comboBox.setSelectedIndex(indOther == NO_SELECTION ? -1 : source.mask.indexOf(indOther));
-			
-			if (indSource != NO_SELECTION) {
-				source.retireOption(indSource);
-				other.restoreOption(indSource);
-				// other.comboBox.setSelectedIndex(other.mask.indexOf(indSource));
-			}
-			other.currentSelection = indSource;				
-			other.comboBox.setSelectedIndex(indSource == NO_SELECTION ? -1 : other.mask.indexOf(indSource));
-		}
-	}
-	
-	// 4) local State getter/setter	
-	
-	protected static class LocalPlayerSelectorState<P extends Player> {
-		private final OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver;
-		private final Integer currentSelection; // contains the linear index in this.options of the combo's current selection
-		
-		private LocalPlayerSelectorState(
-				OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver,
-				Integer currentSelection) {
-			this.driver = driver;
-			this.currentSelection = currentSelection;
-		}	
-	}
-	
-	protected LocalPlayerSelectorState<P> getLocalState() {
-		return new LocalPlayerSelectorState<P>(this.driver, this.currentSelection);
-	}
-	
-	protected void setLocalState(LocalPlayerSelectorState<P> otherState) {
-		if (this.driver != otherState.driver)
-			throw new IllegalArgumentException("states must refer to selectors in the same dealer group");
-
-		int oldReceiverSelection = this.currentSelection;
-
-		// adds missing option to receivers model
-		if (otherState.currentSelection != NO_SELECTION)
-			this.restoreOption(otherState.currentSelection);
-
-		// sets receiver's selection without engaging driver
-		this.currentSelection = otherState.currentSelection;
-		this.comboBox.setSelectedIndex(currentSelection == NO_SELECTION ? -1 :
-				this.mask.indexOf(this.currentSelection));
-
-		// silently removes previously selected option from receiver's model
-		if (oldReceiverSelection != NO_SELECTION)
-			this.retireOption(oldReceiverSelection);
-	}
-	
-	// 5) protected retire/restore option
+	 */
 	
 	protected Optional<P> getSelectedOption() {
 		return Optional.ofNullable(
@@ -405,14 +276,27 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	}
 	
 	protected void silentlySelect(Optional<P> option) {
-		currentSelection = option.isPresent()? options.indexOf(option.get()) : NO_SELECTION;
-		comboBox.setSelectedIndex(currentSelection == NO_SELECTION ? 
-				-1 : mask.indexOf(currentSelection));
+		option.ifPresentOrElse(o -> {
+			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (!mask.contains(pos))
+				throw new IllegalArgumentException("option for selecting is not present");
+			currentSelection = pos;
+			comboBox.setSelectedIndex(pos);
+		}, () -> {
+			currentSelection = NO_SELECTION;
+			comboBox.setSelectedIndex(-1);
+		});
 	}
 	
 	protected void silentlyDrop(Optional<P> option) {
 		option.ifPresent(o -> {
 			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (!mask.contains(pos))
+				throw new IllegalArgumentException("option for dropping is already missing");
 			if (currentSelection == pos) {
 				currentSelection = NO_SELECTION;		
 				comboBox.setSelectedIndex(-1);  // in this order, no driver feedback
@@ -423,7 +307,12 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	
 	protected void silentlyAdd(Optional<P> option) {
 		option.ifPresent(o -> {
-			restoreOption(options.indexOf(o));
+			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (mask.contains(pos))
+				throw new IllegalArgumentException("option for adding is already present");
+			restoreOption(pos);
 		});
 	}
 	
