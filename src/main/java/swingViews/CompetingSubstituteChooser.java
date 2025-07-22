@@ -50,17 +50,17 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 			setPreferredSize(new Dimension(600, 225));
 
 		// initialize components and add them
-		SwingSubPlayerSelectorView<T> selView1 = new SwingSubPlayerSelectorView<T>();
+		SwingSubPlayerSelector<T> selView1 = new SwingSubPlayerSelector<T>();
 		selPres1 = new SubstitutePlayerSelectorPresenter<>(selView1);
 		selView1.setName("selector1");
 		selView1.setPresenter(selPres1);
 		
-		SwingSubPlayerSelectorView<T> selView2 = new SwingSubPlayerSelectorView<T>();
+		SwingSubPlayerSelector<T> selView2 = new SwingSubPlayerSelector<T>();
 		selPres2 = new SubstitutePlayerSelectorPresenter<>(selView2);
 		selView2.setName("selector1");
 		selView2.setPresenter(selPres2);
 		
-		SwingSubPlayerSelectorView<T> selView3 = new SwingSubPlayerSelectorView<T>();
+		SwingSubPlayerSelector<T> selView3 = new SwingSubPlayerSelector<T>();
 		selPres3 = new SubstitutePlayerSelectorPresenter<>(selView3);
 		selView3.setName("selector1");
 		selView3.setPresenter(selPres3);

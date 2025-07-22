@@ -64,7 +64,7 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
     	@BeforeEach
     	public void testCaseSpecificSetup() {    		
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
-    			SwingSubPlayerSelectorView<Defender> selView= new SwingSubPlayerSelectorView<Defender>();
+    			SwingSubPlayerSelector<Defender> selView= new SwingSubPlayerSelector<Defender>();
     			compPlayerSelector = new PlayerSelectorPresenter<Defender>(selView);
     			selView.setPresenter(compPlayerSelector);
 
@@ -180,12 +180,12 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 	    @BeforeEach
 	    public void testSpecificSetUp() {
 	        JFrame frame = GuiActionRunner.execute(() -> {
-	        	SwingSubPlayerSelectorView<Defender> sel1View = new SwingSubPlayerSelectorView<Defender>();
+	        	SwingSubPlayerSelector<Defender> sel1View = new SwingSubPlayerSelector<Defender>();
 	        	sel1View.setName("sel1");
 	        	compPlayerSelector1 = new PlayerSelectorPresenter<Defender>(sel1View);
     			sel1View.setPresenter(compPlayerSelector1);
 
-    			SwingSubPlayerSelectorView<Defender> sel2View = new SwingSubPlayerSelectorView<Defender>();
+    			SwingSubPlayerSelector<Defender> sel2View = new SwingSubPlayerSelector<Defender>();
 	        	sel2View.setName("sel2");
 	        	compPlayerSelector2 = new PlayerSelectorPresenter<Defender>(sel2View);
     			sel2View.setPresenter(compPlayerSelector2);

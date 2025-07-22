@@ -45,7 +45,7 @@ public class MultiPlayerSelector extends JFrame {
         
 
         // Goalkeeper selectors
-        SwingSubPlayerSelectorView<Goalkeeper> goalieSelView = new SwingSubPlayerSelectorView<Goalkeeper>();
+        SwingSubPlayerSelector<Goalkeeper> goalieSelView = new SwingSubPlayerSelector<Goalkeeper>();
 		PlayerSelectorPresenter<Goalkeeper> goalieSelPres = 
 				new PlayerSelectorPresenter<>(goalieSelView);
 		goalieSelView.setPresenter(goalieSelPres);
@@ -85,7 +85,7 @@ public class MultiPlayerSelector extends JFrame {
         gbl_defendersPanel.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
         defendersPanel.setLayout(gbl_defendersPanel);        
         
-        SwingSubPlayerSelectorView<Defender> defSelector1View = new SwingSubPlayerSelectorView<Defender>();
+        SwingSubPlayerSelector<Defender> defSelector1View = new SwingSubPlayerSelector<Defender>();
 		PlayerSelectorPresenter<Defender> defSelector1Pres = 
 				new PlayerSelectorPresenter<>(defSelector1View);
 		defSelector1View.setPresenter(defSelector1Pres);
@@ -96,7 +96,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector1.gridy = 0;
         defendersPanel.add(defSelector1View, gbc_defSelector1);
         
-        SwingSubPlayerSelectorView<Defender> defSelector2View = new SwingSubPlayerSelectorView<Defender>();
+        SwingSubPlayerSelector<Defender> defSelector2View = new SwingSubPlayerSelector<Defender>();
 		PlayerSelectorPresenter<Defender> defSelector2Pres = 
 				new PlayerSelectorPresenter<>(defSelector2View);
 		defSelector2View.setPresenter(defSelector2Pres);
@@ -107,7 +107,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector2.gridy = 0;
         defendersPanel.add(defSelector2View, gbc_defSelector2);
         
-        SwingSubPlayerSelectorView<Defender> defSelector3View = new SwingSubPlayerSelectorView<Defender>();
+        SwingSubPlayerSelector<Defender> defSelector3View = new SwingSubPlayerSelector<Defender>();
 		PlayerSelectorPresenter<Defender> defSelector3Pres = 
 				new PlayerSelectorPresenter<>(defSelector3View);
 		defSelector3View.setPresenter(defSelector3Pres);
@@ -118,7 +118,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector3.gridy = 1;
         defendersPanel.add(defSelector3View, gbc_defSelector3);
         
-        SwingSubPlayerSelectorView<Defender> defSelector4View = new SwingSubPlayerSelectorView<Defender>();
+        SwingSubPlayerSelector<Defender> defSelector4View = new SwingSubPlayerSelector<Defender>();
 		PlayerSelectorPresenter<Defender> defSelector4Pres = 
 				new PlayerSelectorPresenter<>(defSelector4View);
 		defSelector4View.setPresenter(defSelector4Pres);
@@ -155,7 +155,7 @@ public class MultiPlayerSelector extends JFrame {
         gbl_midfieldersPanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
         midfieldersPanel.setLayout(gbl_midfieldersPanel);
         
-        SwingSubPlayerSelectorView<Midfielder> midSelector1View = new SwingSubPlayerSelectorView<Midfielder>();
+        SwingSubPlayerSelector<Midfielder> midSelector1View = new SwingSubPlayerSelector<Midfielder>();
 		PlayerSelectorPresenter<Midfielder> midSelector1Pres = 
 				new PlayerSelectorPresenter<>(midSelector1View);
 		midSelector1View.setPresenter(midSelector1Pres);
@@ -165,7 +165,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_midSelector1.gridy = 0;
         midfieldersPanel.add(midSelector1View, gbc_midSelector1);
         
-        SwingSubPlayerSelectorView<Midfielder> midSelector2View = new SwingSubPlayerSelectorView<Midfielder>();
+        SwingSubPlayerSelector<Midfielder> midSelector2View = new SwingSubPlayerSelector<Midfielder>();
 		PlayerSelectorPresenter<Midfielder> midSelector2Pres = 
 				new PlayerSelectorPresenter<>(midSelector2View);
 		midSelector2View.setPresenter(midSelector2Pres);
@@ -175,7 +175,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_midSelector2.gridy = 0;
         midfieldersPanel.add(midSelector2View, gbc_midSelector2);
         
-        SwingSubPlayerSelectorView<Midfielder> midSelector3View = new SwingSubPlayerSelectorView<Midfielder>();
+        SwingSubPlayerSelector<Midfielder> midSelector3View = new SwingSubPlayerSelector<Midfielder>();
 		PlayerSelectorPresenter<Midfielder> midSelector3Pres = 
 				new PlayerSelectorPresenter<>(midSelector3View);
 		midSelector3View.setPresenter(midSelector3Pres);
@@ -207,7 +207,7 @@ public class MultiPlayerSelector extends JFrame {
         gbl_forwardsPanel.rowWeights = new double[]{1.0, 1.0, 1.0, Double.MIN_VALUE};
         forwardsPanel.setLayout(gbl_forwardsPanel);
         
-        SwingSubPlayerSelectorView<Forward> forwSelector1View = new SwingSubPlayerSelectorView<Forward>();
+        SwingSubPlayerSelector<Forward> forwSelector1View = new SwingSubPlayerSelector<Forward>();
 		PlayerSelectorPresenter<Forward> forwSelector1Pres = 
 				new PlayerSelectorPresenter<>(forwSelector1View);
 		forwSelector1View.setPresenter(forwSelector1Pres);
@@ -218,7 +218,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_forwSelector1.gridy = 0;
         forwardsPanel.add(forwSelector1View, gbc_forwSelector1);
         
-        SwingSubPlayerSelectorView<Forward> forwSelector2View = new SwingSubPlayerSelectorView<Forward>();
+        SwingSubPlayerSelector<Forward> forwSelector2View = new SwingSubPlayerSelector<Forward>();
 		PlayerSelectorPresenter<Forward> forwSelector2Pres = 
 				new PlayerSelectorPresenter<>(forwSelector2View);
 		forwSelector2View.setPresenter(forwSelector2Pres);
@@ -230,7 +230,7 @@ public class MultiPlayerSelector extends JFrame {
         forwardsPanel.add(forwSelector2View, gbc_forwSelector2);
 
 
-        SwingSubPlayerSelectorView<Forward> forwSelector3View = new SwingSubPlayerSelectorView<Forward>();
+        SwingSubPlayerSelector<Forward> forwSelector3View = new SwingSubPlayerSelector<Forward>();
 		PlayerSelectorPresenter<Forward> forwSelector3Pres = 
 				new PlayerSelectorPresenter<>(forwSelector3View);
 		forwSelector3View.setPresenter(forwSelector3Pres);

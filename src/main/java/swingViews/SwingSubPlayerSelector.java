@@ -28,7 +28,7 @@ import domainModel.Player;
 import swingViews.SubstitutePlayerSelectorPresenter.SubstitutePlayerSelectorView;
 
 @SuppressWarnings("serial")
-public class SwingSubPlayerSelectorView<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
+public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
@@ -40,13 +40,13 @@ public class SwingSubPlayerSelectorView<P extends Player> extends JPanel impleme
 	private JLabel headLabel;
 	
 	// WB-compatible constructor
-	public SwingSubPlayerSelectorView() {
+	public SwingSubPlayerSelector() {
 			initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
 					new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
 		}
 
 	// rescaling-augmented constructor available to clients
-	public SwingSubPlayerSelectorView(Dimension availableWindow) throws IOException {
+	public SwingSubPlayerSelector(Dimension availableWindow) throws IOException {
 			// 1. Load original images
 			BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
 			BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));

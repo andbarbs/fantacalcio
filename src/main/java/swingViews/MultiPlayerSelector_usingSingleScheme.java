@@ -59,8 +59,8 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
         // Goalkeeper selectors
-        SwingSubPlayerSelectorView<Goalkeeper> goalieSelectorView = 
-        		new SwingSubPlayerSelectorView<Goalkeeper>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Goalkeeper> goalieSelectorView = 
+        		new SwingSubPlayerSelector<Goalkeeper>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Goalkeeper> goalieSelectorPres = 
 				new PlayerSelectorPresenter<>(goalieSelectorView);
 		goalieSelectorView.setPresenter(goalieSelectorPres);
@@ -74,29 +74,29 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        SwingSubPlayerSelectorView<Defender> defSelector1View = 
-        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Defender> defSelector1View = 
+        		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Defender> defSelector1Pres = 
 				new PlayerSelectorPresenter<>(defSelector1View);
 		defSelector1View.setPresenter(defSelector1Pres);
         selectorsPanel.getDef1().add(defSelector1View);
         
-        SwingSubPlayerSelectorView<Defender> defSelector2View = 
-        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Defender> defSelector2View = 
+        		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Defender> defSelector2Pres = 
 				new PlayerSelectorPresenter<>(defSelector2View);
 		defSelector2View.setPresenter(defSelector2Pres);
         selectorsPanel.getDef2().add(defSelector2View);
         
-        SwingSubPlayerSelectorView<Defender> defSelector3View = 
-        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Defender> defSelector3View = 
+        		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Defender> defSelector3Pres = 
 				new PlayerSelectorPresenter<>(defSelector3View);
 		defSelector3View.setPresenter(defSelector3Pres);
         selectorsPanel.getDef3().add(defSelector3View);
         
-        SwingSubPlayerSelectorView<Defender> defSelector4View = 
-        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Defender> defSelector4View = 
+        		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Defender> defSelector4Pres = 
 				new PlayerSelectorPresenter<>(defSelector4View);
 		defSelector4View.setPresenter(defSelector4Pres);
@@ -114,22 +114,22 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         
         
         // Midfielder selectors
-        SwingSubPlayerSelectorView<Midfielder> midSelector1View = 
-        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Midfielder> midSelector1View = 
+        		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Midfielder> midSelector1Pres = 
 				new PlayerSelectorPresenter<>(midSelector1View);
 		midSelector1View.setPresenter(midSelector1Pres);
         selectorsPanel.getMid1().add(midSelector1View);
         
-        SwingSubPlayerSelectorView<Midfielder> midSelector2View = 
-        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Midfielder> midSelector2View = 
+        		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Midfielder> midSelector2Pres = 
 				new PlayerSelectorPresenter<>(midSelector2View);
 		midSelector2View.setPresenter(midSelector2Pres);
         selectorsPanel.getMid2().add(midSelector2View);
         
-        SwingSubPlayerSelectorView<Midfielder> midSelector3View = 
-        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Midfielder> midSelector3View = 
+        		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Midfielder> midSelector3Pres = 
 				new PlayerSelectorPresenter<>(midSelector3View);
 		midSelector3View.setPresenter(midSelector3Pres);
@@ -144,22 +144,22 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Midfielder("Toni", "Kroos")));
         
         // Forward selectors
-		SwingSubPlayerSelectorView<Forward> forwSelector1View = 
-				new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+		SwingSubPlayerSelector<Forward> forwSelector1View = 
+				new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Forward> forwSelector1Pres = 
 				new PlayerSelectorPresenter<>(forwSelector1View);
 		forwSelector1View.setPresenter(forwSelector1Pres);
         selectorsPanel.getForw1().add(forwSelector1View);
         
-        SwingSubPlayerSelectorView<Forward> forwSelector2View = 
-        		new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Forward> forwSelector2View = 
+        		new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Forward> forwSelector2Pres = 
 				new PlayerSelectorPresenter<>(forwSelector2View);
 		forwSelector2View.setPresenter(forwSelector2Pres);
         selectorsPanel.getForw2().add(forwSelector2View);
 
-        SwingSubPlayerSelectorView<Forward> forwSelector3View = 
-        		new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+        SwingSubPlayerSelector<Forward> forwSelector3View = 
+        		new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		PlayerSelectorPresenter<Forward> forwSelector3Pres = 
 				new PlayerSelectorPresenter<>(forwSelector3View);
 		forwSelector3View.setPresenter(forwSelector3Pres);

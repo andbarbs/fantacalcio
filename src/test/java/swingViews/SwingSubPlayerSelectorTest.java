@@ -3,8 +3,6 @@ package swingViews;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Set;
-
 import javax.swing.JFrame;
 
 import org.assertj.swing.annotation.GUITest;
@@ -13,45 +11,50 @@ import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
 import org.assertj.swing.fixture.JComboBoxFixture;
-import org.assertj.swing.junit.runner.GUITestRunner;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player;
 import domainModel.Player.Defender;
+import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
-@RunWith(GUITestRunner.class)
-public class StarterPlayerSelectorIT extends AssertJSwingJUnitTestCase {
+@DisplayName("SwingSubPlayerSelector: MVP-View unit test")
+@ExtendWith(MockitoExtension.class)
+public class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 
-    private FrameFixture window;
+	@Mock
+    private PlayerSelectorPresenter<Defender> selectorPresenter;
 
-    @Override
-    public void onSetUp() {
-        // Wrap the panel in a frame.
+	@BeforeEach
+	public void testCaseSpecificSetup() {
+		
 		JFrame frame = GuiActionRunner.execute(() -> {			
-			// Construct the SwingPlayerSelector with the injected combo
-			SwingSubPlayerSelectorView<Defender> defSelectorView = new SwingSubPlayerSelectorView<Defender>();
-			PlayerSelectorPresenter<Defender> compPlayerSelector = new PlayerSelectorPresenter<Defender>(defSelectorView);
-			defSelectorView.setPresenter(compPlayerSelector);
+			// Constructs a SwingSubPlayerSelector instance with a mocked Presenter
+			SwingSubPlayerSelector<Defender> selectorView = new SwingSubPlayerSelector<Defender>();
+			selectorView.setPresenter(selectorPresenter);
 			
-			OptionDealerGroupDriver.initializeDealing(
-					Set.of(compPlayerSelector), 
-					List.of(new Player.Defender("Gigi", "Buffon"), 
-							new Player.Defender("Mario", "Rossi")));
+			selectorView.initOptions(List.of(
+					new Player.Defender("Gigi", "Buffon"), 
+					new Player.Defender("Mario", "Rossi")));
+			
 			JFrame f = new JFrame("Test Frame");
-			f.add(defSelectorView);
+			f.add(selectorView);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			return f;
 		});
         // Initialize the FrameFixture.
-        window = new FrameFixture(robot(), frame);
+        window = new FrameFixture(robot, frame);
         window.show(); // displays the frame to test the UI.
     }
 
     @Test @GUITest
+    @DisplayName("verifies interactions between combo and reset button")
     public void testComboBoxAndResetButtonInteraction() {
         // Get the fixtures for the combo box and reset button.
         JComboBoxFixture comboBoxFixture = window.comboBox();
