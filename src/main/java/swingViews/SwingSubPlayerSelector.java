@@ -169,21 +169,33 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 	}
 	
 	private void addListeners() {
+		
+		/* an ActionEvent is fired on a JComboBox under these circumstances:
+		 * 		1) a new/the existing selection is set on the combo, either by the user or programmatically
+		 * 		2) the selection is (programmatically) set to -1
+		 * 		3) an entry is REMOVED from the underlying model AND no user selection exists   
+		 * 		4) an entry is REMOVED from the underlying model AND that entry was the combo's selection 
+		 * 		5) an entry is ADDED to the underlying model AND the model was previously empty    */
+		
 		comboBox.addActionListener(e -> {
-			// combo -> button interaction
-			resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+			int selectedIndex = comboBox.getSelectedIndex();
 			
+			// combo -> button interaction
+			resetButton.setEnabled(selectedIndex > -1);
+			
+			// presenter notification
 			if (comboBox.isPopupVisible() && 
-					comboBox.getSelectedIndex() > -1) {
-				presenter.selectedOption(comboBox.getSelectedIndex());
+					selectedIndex > -1) {
+				presenter.selectedOption(selectedIndex);
 			}
 		});
 		
 		resetButton.addActionListener(e -> {
+			
 			// button -> combo interaction
 			comboBox.setSelectedIndex(-1);
-			resetButton.setEnabled(false);
 			
+			// presenter notification
 			presenter.selectionCleared();
 		});
 	}
@@ -196,20 +208,20 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 	}
 
 	@Override
-	public void removeOptionAt(int pos) {
+	public void removeOptionAt(int removalIndex) {
 		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
-		model.removeElementAt(pos);    // fires an event under conditions 3) and 4)
+		model.removeElementAt(removalIndex);    		// may fire events 3), 4)
 	}
 
 	@Override
 	public void insertOptionAt(P option, int insertionIndex) {
 		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
-		model.insertElementAt(option, insertionIndex);
+		model.insertElementAt(option, insertionIndex);  // may fire event 5)
 	}
 
 	@Override
-	public void selectOptionAt(int pos) {
-		comboBox.setSelectedIndex(pos);
+	public void selectOptionAt(int selectionIndex) {
+		comboBox.setSelectedIndex(selectionIndex);		// fires events 1), 2)
 	}
 
 	@Override

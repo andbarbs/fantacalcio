@@ -37,9 +37,9 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	public interface PlayerSelectorView<T> {
 		void initOptions(List<T> options);
-		void removeOptionAt(int pos);
+		void removeOptionAt(int removalIndex);
 		void insertOptionAt(T option, int insertionIndex);
-		void selectOptionAt(int pos);		
+		void selectOptionAt(int selectionIndex);		
 	}
 
 	private final PlayerSelectorPresenter.PlayerSelectorView<P> view;
@@ -93,20 +93,20 @@ public class PlayerSelectorPresenter<P extends Player>
 	 */
 
 	@Override
-	public void retireOption(int index) {
-		int pos = mask.indexOf(index);
+	public void retireOption(int absoluteIndex) {
+		int pos = mask.indexOf(absoluteIndex);
 		mask.remove(pos);
 		view.removeOptionAt(pos);
 	}
 
 	@Override
-	public void restoreOption(int index) {
+	public void restoreOption(int absoluteIndex) {
 		int insertionIndex = IntStream
 				.range(0, mask.size())
-				.filter(k -> mask.get(k) >= index)
+				.filter(k -> mask.get(k) >= absoluteIndex)
 				.findFirst().orElse(mask.size());
-		mask.add(insertionIndex, index);
-		view.insertOptionAt(options.get(index), insertionIndex);
+		mask.add(insertionIndex, absoluteIndex);
+		view.insertOptionAt(options.get(absoluteIndex), insertionIndex);
 	}
 	
 	// methods to be called by the View
@@ -183,13 +183,16 @@ public class PlayerSelectorPresenter<P extends Player>
 	/***********     Programmatic selection-setting API for Clients     **********/
 	
 	public void select(Optional<P> player) {
-		// TODO does not check received option validity 
-		player.ifPresentOrElse(
-				p -> {
+		player.ifPresentOrElse(p -> {
+			if (options.indexOf(p) == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
 			int playerInd = mask.indexOf(options.indexOf(p));
+			if (!mask.contains(playerInd))
+				throw new IllegalArgumentException("option for selecting is not present");
+			view.selectOptionAt(playerInd);
 			selectedOption(playerInd);
-		}, 
-				() -> {
+		}, () -> {
+			view.selectOptionAt(NO_SELECTION);
 			selectionCleared();
 		});
 	}
@@ -201,7 +204,7 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	// TODO consider completely overhauling these operators in favor of
 	// opening up bookkeeping to subclasses, given that this class
-	// no longer has to worry about being the sole originator of
+	// no longer has to worry about being the (sole) originator of
 	// combo events
 	
 	/*
@@ -231,7 +234,7 @@ public class PlayerSelectorPresenter<P extends Player>
 			if (!mask.contains(pos))
 				throw new IllegalArgumentException("option for selecting is not present");
 			currentSelection = pos;
-			view.selectOptionAt(pos);
+			view.selectOptionAt(mask.indexOf(pos));
 		}, () -> {
 			currentSelection = NO_SELECTION;
 			view.selectOptionAt(NO_SELECTION);

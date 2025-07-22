@@ -759,5 +759,259 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 			}
 		}
 	}
+	
+	// TODO consider whether it should be enough to test aggregation of 
+	// local option operators inside the unit testcase for SubstitutePlayerSelectorPresenter
+	
+	@Nested
+	@DisplayName("LEGACY: swap, equalize and drop using the silentlyDrop/Restore API")
+	class AggregateSilentOptionOperators {
+		
+		private PlayerSelectorPresenter<Defender> presenter1, presenter2;
+
+	    @Mock
+	    private OptionDealerGroupDriver<PlayerSelectorPresenter<Defender>, Defender> mockDriver;
+	    
+	    // strongly typed fixtures for the combos
+	    private TypedJComboBoxFixture<Defender> combo1;
+		private TypedJComboBoxFixture<Defender> combo2;
+	    
+	    @BeforeEach
+	    public void testSpecificSetUp() {
+	        JFrame frame = GuiActionRunner.execute(() -> {
+	        	SwingSubPlayerSelector<Defender> sel1View = new SwingSubPlayerSelector<Defender>();
+	        	sel1View.setName("sel1");
+	        	presenter1 = new PlayerSelectorPresenter<Defender>(sel1View);
+    			sel1View.setPresenter(presenter1);
+
+    			SwingSubPlayerSelector<Defender> sel2View = new SwingSubPlayerSelector<Defender>();
+	        	sel2View.setName("sel2");
+	        	presenter2 = new PlayerSelectorPresenter<Defender>(sel2View);
+    			sel2View.setPresenter(presenter2);
+
+	            // wires a real driver for tests' setup phase
+	            OptionDealerGroupDriver.initializeDealing(
+	                    Set.of(presenter1, presenter2),
+	                    List.of(chiellini, pique, ramos, silva, vanDijk));
+
+	            JFrame f = new JFrame("Test Frame");
+	            f.setLayout(new FlowLayout());
+	            f.add(sel1View);
+	            f.add(sel2View);
+	            f.pack();
+	            f.setLocationRelativeTo(null);
+	            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	            return f;
+	        });
+
+	        window = new FrameFixture(robot, frame);
+	        window.show();
+
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+	    }
+
+	    private void attachMockDriver() {
+	        GuiActionRunner.execute(() -> {
+	            List.of(presenter1, presenter2).forEach(
+	                    sel -> sel.attachDriver(mockDriver));
+	        });
+	    }
+
+		@Test @GUITest
+		@DisplayName("local swap with both source and other having a selection")
+		public void testLocalSwapWithBothSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on both combos
+			combo1.selectItem("Sergio Ramos");
+			combo2.selectItem("Giorgio Chiellini");
+			attachMockDriver();
+
+			// call for a swap between 1 (source - S) and 2 (other- S)
+			GuiActionRunner.execute(() -> {
+				Optional<Defender> sel1selection = presenter1.getSelectedOption();
+				Optional<Defender> sel2selection = presenter2.getSelectedOption();
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+				presenter1.silentlyAdd(sel2selection);
+				presenter1.silentlySelect(sel2selection);
+				presenter2.silentlyDrop(presenter2.getSelectedOption());
+				presenter2.silentlyAdd(sel1selection);
+				presenter2.silentlySelect(sel1selection);
+			});
+
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(chiellini).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(ramos).amongOptions(pique, ramos, silva, vanDijk);
+		}
+
+		@Test @GUITest
+		@DisplayName("local swap with source selected, other not selected")
+		public void testLocalSwapWithOtherNotSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on combo1
+			combo1.selectItem("Sergio Ramos");
+			attachMockDriver();
+
+			// call for a swap between 1 (source - S) and 2 (other- N)
+			GuiActionRunner.execute(() -> {
+				Optional<Defender> sel1selection = presenter1.getSelectedOption();
+				Optional<Defender> sel2selection = presenter2.getSelectedOption();
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+				presenter1.silentlyAdd(sel2selection);
+				presenter1.silentlySelect(sel2selection);
+				presenter2.silentlyDrop(presenter2.getSelectedOption());
+				presenter2.silentlyAdd(sel1selection);
+				presenter2.silentlySelect(sel1selection);
+			});
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(ramos).amongOptions(chiellini, pique, ramos, silva, vanDijk);
+
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+		}
+
+		@Test @GUITest
+		@DisplayName("local swap with source not selected, other selected")
+		public void testLocalSwapWithSourceNotSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on combo1
+			combo1.selectItem("Sergio Ramos");
+			attachMockDriver();
+
+			// call for a swap between 2 (source - N) and 1 (other - S)
+			GuiActionRunner.execute(() -> {
+				Optional<Defender> sel1selection = presenter1.getSelectedOption();
+				Optional<Defender> sel2selection = presenter2.getSelectedOption();
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+				presenter1.silentlyAdd(sel2selection);
+				presenter1.silentlySelect(sel2selection);
+				presenter2.silentlyDrop(presenter2.getSelectedOption());
+				presenter2.silentlyAdd(sel1selection);
+				presenter2.silentlySelect(sel1selection);
+			});
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(ramos).amongOptions(chiellini, pique, ramos, silva, vanDijk);
+
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+		}
+
+		@Test @GUITest
+		@DisplayName("local equalize with both source and other having a selection")
+		public void testLocalEqualize_SourceSelected_OtherSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on both combos
+			combo1.selectItem("Sergio Ramos");
+			combo2.selectItem("Giorgio Chiellini");
+			attachMockDriver();
+
+			// call for 1 (source - S) to equalize to 2 (other - S)
+			GuiActionRunner.execute(() -> {
+				Optional<Defender> sel2selection = presenter2.getSelectedOption();
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+				presenter1.silentlyAdd(sel2selection);
+				presenter1.silentlySelect(sel2selection);
+			});
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(chiellini).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(chiellini).amongOptions(chiellini, pique, silva, vanDijk);
+
+		}
+
+		@Test @GUITest
+		@DisplayName("local equalize with source selected, other not selected")
+		public void testLocalEqualize_SourceSelected_OtherNotSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on combo1
+			combo1.selectItem("Sergio Ramos");
+			attachMockDriver();
+
+			// call for 1 (source - S) to equalize to 2 (other - N)
+			GuiActionRunner.execute(() -> {
+				// compPlayerSelector1.setLocalState(compPlayerSelector2.getLocalState());
+
+				Optional<Defender> sel2selection = presenter2.getSelectedOption();
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+				presenter1.silentlyAdd(sel2selection);
+				presenter1.silentlySelect(sel2selection);
+			});
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+
+		}
+
+		@Test @GUITest
+		@DisplayName("local equalize with source not selected, other selected")
+		public void testLocalEqualize_SourceNotSelected_OtherSelected() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+			
+			// select something on combo1
+			combo1.selectItem("Sergio Ramos");
+			attachMockDriver();
+
+			// call for 2 (source - N) to equalize to 1 (other - S)
+			GuiActionRunner.execute(() -> {
+				Optional<Defender> sel1selection = presenter1.getSelectedOption();
+				presenter2.silentlyDrop(presenter2.getSelectedOption());
+				presenter2.silentlyAdd(sel1selection);
+				presenter2.silentlySelect(sel1selection);
+			});
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(ramos).amongOptions(chiellini, pique, ramos, silva, vanDijk);
+			assertThat(combo2).hasSelected(ramos).amongOptions(chiellini, pique, ramos, silva, vanDijk);
+
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+		}
+
+		@Test @GUITest
+		@DisplayName("local drop with an existing selection")
+		public void testLocalDropSelection_WithExistingSelection___retire_restore() {
+			combo1 = TypedJComboBoxFixture.of(window.panel("sel1").comboBox(), Defender.class);
+			combo2 = TypedJComboBoxFixture.of(window.panel("sel2").comboBox(), Defender.class);
+
+			// select something on combo1
+			combo1.selectItem("Sergio Ramos");
+			attachMockDriver();
+
+			// call for 1 to drop its selection silently
+			GuiActionRunner.execute(() -> {
+				presenter1.silentlyDrop(presenter1.getSelectedOption());
+			});
+
+			// verify intended result is achieved
+			assertThat(combo1).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+			assertThat(combo2).hasSelected(null).amongOptions(chiellini, pique, silva, vanDijk);
+
+			// verify that the driver was never notified
+			verifyNoInteractions(mockDriver);
+		}
+	}
 
 }
