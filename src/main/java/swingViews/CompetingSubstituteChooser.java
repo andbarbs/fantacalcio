@@ -27,15 +27,15 @@ import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class CompetingSubstituteChooser<T extends Player> extends JPanel 
-				implements FillableSwappableVisual<SubstitutePlayerSelector<T>> {
+				implements FillableSwappableVisual<SubstitutePlayerSelectorPresenter<T>> {
 
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver;
-	private SubstitutePlayerSelector<T> sel1;
-	private SubstitutePlayerSelector<T> sel2;
-	private SubstitutePlayerSelector<T> sel3;
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver;
+	private SubstitutePlayerSelectorPresenter<T> sel1;
+	private SubstitutePlayerSelectorPresenter<T> sel2;
+	private SubstitutePlayerSelectorPresenter<T> sel3;
 	private Action swapSelectors1and2, swapSelectors2and3;
 	
-	public List<SubstitutePlayerSelector<T>> getSubstituteSelectors() {
+	public List<SubstitutePlayerSelectorPresenter<T>> getSubstituteSelectors() {
 		return Stream.of(sel1, sel2, sel3)
 				.collect(Collectors.toList());
 	}
@@ -54,11 +54,11 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 			setPreferredSize(new Dimension(600, 225));
 
 		// initialize components and add them
-		sel1 = new SubstitutePlayerSelector<T>();
+		sel1 = new SubstitutePlayerSelectorPresenter<T>();
 		sel1.setName("selector1");
-		sel2 = new SubstitutePlayerSelector<T>();
+		sel2 = new SubstitutePlayerSelectorPresenter<T>();
 		sel2.setName("selector2");
-		sel3 = new SubstitutePlayerSelector<T>();
+		sel3 = new SubstitutePlayerSelectorPresenter<T>();
 		sel3.setName("selector3");
 		
 		swapSelectors1and2 = new AbstractAction() {
@@ -120,7 +120,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 				0, SpringLayout.VERTICAL_CENTER, this);
 		
 		// wire up driver
-		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>>(
+		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>>(
 				List.of(sel1, sel2, sel3), this);
 		
 		// initially disable swapping
@@ -129,7 +129,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 	
 	
 	@Override
-	public void becameEmpty(SubstitutePlayerSelector<T> emptiedGadget) {
+	public void becameEmpty(SubstitutePlayerSelectorPresenter<T> emptiedGadget) {
 		if (emptiedGadget == sel3)
 			swapSelectors2and3.setEnabled(false);
 		else if (emptiedGadget == sel2)
@@ -137,7 +137,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 	}
 	
 	@Override
-	public void becameFilled(SubstitutePlayerSelector<T> filledGadget) {
+	public void becameFilled(SubstitutePlayerSelectorPresenter<T> filledGadget) {
 		System.out.println("content added to a gadget!");
 		if (filledGadget == sel2)
 			swapSelectors1and2.setEnabled(true);

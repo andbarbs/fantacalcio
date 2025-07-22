@@ -1,115 +1,59 @@
 package swingViews;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
-@SuppressWarnings("serial")
-public class StarterPlayerSelector<P extends Player> extends JPanel 
-				implements OrderedOptionDealer<StarterPlayerSelector<P>, P> {
-	
-	
-	/*
-	 * TODO centralize the handling of combo events into one coherent 
-	 * block that defines the rules for 
-	 * 		- what events should trigger internal state changes
-	 * 		- what events should trigger driver notifications
-	 * 		- what events should trigger listener notifications
-	 * 		- what events should trigger subclass engagement
-	 * bearing in mind that, thanks to combo encapsulation, this class
-	 * is the sole originator of programmatic selection events on the combo
-	 *      - this means a reentrance-blocking flag is acceptable
-	 * 
-	 * TODO consider pulling up observer logic into a superclass,
-	 * together with any logic that doesn't directly depend on internal bookkeeping
-	 * 
-	 * TODO consider moving any GUI trivial interaction logic,
-	 * such as combo <-> button and future combo <-> label, 
-	 * into PlayerSelectorForm and have it tested there
-	 * 
-	 * TODO in PlayerSelectorForm, consider introducing distinct
-	 * private and public design logic
-	 * 
-	 */
-	
+/*
+ * TODO centralize the handling of combo events into one coherent 
+ * block that defines the rules for 
+ * 		- what events should trigger internal state changes
+ * 		- what events should trigger driver notifications
+ * 		- what events should trigger listener notifications
+ * 		- what events should trigger subclass engagement
+ * bearing in mind that, thanks to combo encapsulation, this class
+ * is the sole originator of programmatic selection events on the combo
+ *      - this means a reentrance-blocking flag is acceptable
+ * 
+ * TODO consider pulling up observer logic into a superclass,
+ * together with any logic that doesn't directly depend on internal bookkeeping
+ * 
+ * TODO consider moving any GUI trivial interaction logic,
+ * such as combo <-> button and future combo <-> label, 
+ * into PlayerSelectorForm and have it tested there
+ * 
+ * TODO in PlayerSelectorForm, consider introducing distinct
+ * private and public design logic
+ * 
+ */
 
-	/*******************     Graphical control state 	 ******************/
+public class PlayerSelectorPresenter<P extends Player> 
+				implements OrderedOptionDealer<PlayerSelectorPresenter<P>, P> {
 	
-	private PlayerSelectorForm<P> form;
-	
-	private JComboBox<P> comboBox;
-	private JLabel figureLabel, headLabel;
-	private JButton resetButton;
-	
-	private void initFormMembersShortcuts() {
-		comboBox = form.getComboBox();
-		resetButton = form.getResetButton();
-		headLabel = form.getHeadLabel();
-		figureLabel = form.getFigureLabel();
+	public interface PlayerSelectorView<T> {
+		void initOptions(List<T> options);
+		void removeOptionAt(int pos);
+		void insertOptionAt(T option, int insertionIndex);
+		void selectOptionAt(int pos);		
 	}
 
-	// WB-compatible constructor
-	public StarterPlayerSelector() {
-		form = new PlayerSelectorForm<P>();
-		wireUpForm();
-	}
-
-	// rescaling-augmented constructor available to clients
-	public StarterPlayerSelector(Dimension availableWindow) throws IOException {
-		form = new PlayerSelectorForm<P>(availableWindow);
-		wireUpForm();
-	}
+	private final PlayerSelectorPresenter.PlayerSelectorView<P> view;
 	
-	private void wireUpForm() {		
-		initFormMembersShortcuts();
-		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-		add(form);  // adds the PlayerSelectorForm as the only child
-
-		comboBox.addActionListener(e -> {
-			// combo -> button interaction
-			resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
-			
-			// decides whether to contact the driver
-			notifyDriver();
-			
-			if (comboBox.isPopupVisible() && 
-					comboBox.getSelectedIndex() > -1) {
-				
-				// propagates user selections to subclasses
-				onUserSelectionSet();
-				
-				// notifies user selection to listeners
-				listeners.forEach(l -> l.selectionMadeOn(this));
-			}
-		});
-
-		resetButton.addActionListener(e -> {
-			// button -> combo interaction
-			comboBox.setSelectedIndex(-1);
-			resetButton.setEnabled(false);
-			
-			// propagates selection clearance to subclasses
-			onSelectionCleared();
-			
-			// notifies selection clearance to to listeners
-			listeners.forEach(l -> l.selectionClearedOn(this));
-		});
+	public PlayerSelectorPresenter(PlayerSelectorView<P> view) {
+		this.view = view;
 	}
+
 	
 	/***********     selection event notification to listener clients 	 ***********/
 	
 	public interface StarterPlayerSelectorListener<Q extends Player > {
-		void selectionMadeOn(StarterPlayerSelector<Q> selector);
-		void selectionClearedOn(StarterPlayerSelector<Q> selector);
+		void selectionMadeOn(PlayerSelectorPresenter<Q> selector);
+		void selectionClearedOn(PlayerSelectorPresenter<Q> selector);
 	}
 	
 	private List<StarterPlayerSelectorListener<P>> listeners = new ArrayList<>();
@@ -120,26 +64,24 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	
 	/**************     OrderedOptionDealer internal bookkeeping 	 **************/
 
-	private OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver;
+	private OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver;
 	private List<P> options;          // the original option pool, ordered
 	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
 	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
 	private static final int NO_SELECTION = -1;
 
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<StarterPlayerSelector<P>, P> driver) {
+	public void attachDriver(OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver) {
 		this.driver = driver;		
 	}
 
 	@Override
 	public void attachOptions(List<P> options) {
 		this.options = options;
-		mask = new ArrayList<Integer>(
+		this.mask = new ArrayList<Integer>(
 				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
-		comboBox.setModel(  				// fills combo with initial contents
-				new DefaultComboBoxModel<>(new Vector<>(options)));
-		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
-		currentSelection = NO_SELECTION;
+		this.currentSelection = NO_SELECTION;
+		this.view.initOptions(options);
 	}
 	
 	/**
@@ -154,8 +96,7 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	public void retireOption(int index) {
 		int pos = mask.indexOf(index);
 		mask.remove(pos);
-		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
-		model.removeElementAt(pos);    // fires an event under conditions 3) and 4)
+		view.removeOptionAt(pos);
 	}
 
 	@Override
@@ -165,8 +106,55 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 				.filter(k -> mask.get(k) >= index)
 				.findFirst().orElse(mask.size());
 		mask.add(insertionIndex, index);
-		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
-		model.insertElementAt(options.get(index), insertionIndex);
+		view.insertOptionAt(options.get(index), insertionIndex);
+	}
+	
+	// methods to be called by the View
+	
+	/**
+	 * to avoid driver feedback, Presenter could
+	 * 		- document to the View the circumstances upon which
+	 * 		  this method ought to be called
+	 * 		- use a reentrance-blocking flag 
+	 */
+	public void selectedOption(int position) {
+		
+		// a user selection has been set on the View
+		if (position != NO_SELECTION) {
+			if (currentSelection != -1)
+				driver.selectionClearedOn(this, currentSelection);
+			currentSelection = mask.get(position);
+			
+			// notifies selection set to driver
+			System.out.println("about to call driver.selectionMadeOn");
+			driver.selectionMadeOn(this, currentSelection);
+
+			// propagates user selections to subclasses
+			onUserSelectionSet();
+
+			// notifies user selection to listeners
+			listeners.forEach(l -> l.selectionMadeOn(this));
+		}
+
+		
+	}
+	
+	public void selectionCleared() {
+		// the View's selection has just been cleared
+		if (currentSelection != null && // false before option attachment
+				currentSelection != NO_SELECTION) {
+
+			// notifies selection cleared to driver
+			System.out.println("about to call driver.selectionClearedOn");
+			driver.selectionClearedOn(this, currentSelection);
+			currentSelection = NO_SELECTION;
+
+			// propagates selection clearance to subclasses
+			onSelectionCleared();
+			
+			// notifies selection clearance to to listeners
+			listeners.forEach(l -> l.selectionClearedOn(this));
+		}
 	}
 	
 	/**
@@ -189,34 +177,10 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	 * this method effectively shields the driver from event feedback.
 	 * 
 	 * <p> Additionally, due to the combo's complete encapsulation within 
-	 * {@link StarterPlayerSelector}, this class is the <i>sole possible 
+	 * {@link PlayerSelectorPresenter}, this class is the <i>sole possible 
 	 * originator</i> of programmatic interactions with the combo.
 	 * Thus, any call to the driver must happen within this method.
 	 */
-	
-	// TODO consider opening up to combo.set.. interactions (can only come from this class)
-	private void notifyDriver() {
-		int selectedIndex = comboBox.getSelectedIndex();
-		
-		
-		// a user selection has been set on this CBox
-		if (comboBox.isPopupVisible() && selectedIndex != -1) {
-			if (currentSelection != -1)
-				driver.selectionClearedOn(this, currentSelection);
-			currentSelection = mask.get(selectedIndex);
-			System.out.println("about to call driver.selectionMadeOn");
-			driver.selectionMadeOn(this, currentSelection);
-		}
-
-		// this CBox's selection has just been cleared
-		else if (selectedIndex == -1 && 
-				currentSelection != null && // false before option attachment
-				currentSelection != NO_SELECTION) {
-			System.out.println("about to call driver.selectionClearedOn");
-			driver.selectionClearedOn(this, currentSelection);
-			currentSelection = NO_SELECTION;
-		}
-	}
 	
 	/***********     Programmatic selection-setting API for Clients     **********/
 	
@@ -224,13 +188,13 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 		player.ifPresentOrElse(
 				p -> {
 			int playerInd = mask.indexOf(options.indexOf(p));
-			comboBox.setSelectedIndex(playerInd);
+			view.selectOptionAt(playerInd);
 			currentSelection = playerInd;
 			driver.selectionMadeOn(this, playerInd);
 			listeners.forEach(l -> l.selectionMadeOn(this));
 		}, 
 				() -> {
-			comboBox.setSelectedIndex(-1); // might engage the driver
+			view.selectOptionAt(NO_SELECTION); // might engage the driver
 			listeners.forEach(l -> l.selectionClearedOn(this));
 		});
 	}
@@ -241,18 +205,18 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 	protected void onUserSelectionSet() {}
 	protected void onSelectionCleared() {}
 	
-	// 2) fluent API for enabling/disabling graphical controls
-	protected final StarterPlayerSelectorControls controls() {
-		return new StarterPlayerSelectorControls();
-	}
-	
-	protected final class StarterPlayerSelectorControls {
-		void setEnabled(boolean bool) {
-			comboBox.setEnabled(bool);
-			figureLabel.setEnabled(bool);
-			headLabel.setEnabled(bool);
-		}
-	}	
+//	// 2) fluent API for enabling/disabling graphical controls
+//	protected final StarterPlayerSelectorControls controls() {
+//		return new StarterPlayerSelectorControls();
+//	}
+//	
+//	protected final class StarterPlayerSelectorControls {
+//		void setEnabled(boolean bool) {
+//			comboBox.setEnabled(bool);
+//			figureLabel.setEnabled(bool);
+//			headLabel.setEnabled(bool);
+//		}
+//	}	
 	
 	// 3) local Selection operators	
 	
@@ -283,10 +247,10 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 			if (!mask.contains(pos))
 				throw new IllegalArgumentException("option for selecting is not present");
 			currentSelection = pos;
-			comboBox.setSelectedIndex(pos);
+			view.selectOptionAt(pos);
 		}, () -> {
 			currentSelection = NO_SELECTION;
-			comboBox.setSelectedIndex(-1);
+			view.selectOptionAt(NO_SELECTION);
 		});
 	}
 	
@@ -299,7 +263,7 @@ public class StarterPlayerSelector<P extends Player> extends JPanel
 				throw new IllegalArgumentException("option for dropping is already missing");
 			if (currentSelection == pos) {
 				currentSelection = NO_SELECTION;		
-				comboBox.setSelectedIndex(-1);  // in this order, no driver feedback
+				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
 			}
 			retireOption(pos);	// no ghost selection nor driver feedback
 		});

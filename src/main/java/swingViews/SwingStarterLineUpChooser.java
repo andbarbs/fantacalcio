@@ -47,10 +47,10 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 	private final Spring532Scheme panel532;
 
 	// The single pool of selectors
-	private final List<StarterPlayerSelector<Goalkeeper>> goalieSelectors;
-	private final List<StarterPlayerSelector<Defender>> defSelectors;
-	private final List<StarterPlayerSelector<Midfielder>> midSelectors;
-	private final List<StarterPlayerSelector<Forward>> forwSelectors;
+	private final List<PlayerSelectorPresenter<Goalkeeper>> goalieSelectors;
+	private final List<PlayerSelectorPresenter<Defender>> defSelectors;
+	private final List<PlayerSelectorPresenter<Midfielder>> midSelectors;
+	private final List<PlayerSelectorPresenter<Forward>> forwSelectors;
 
 	// Internal holder that flips schemes
 	private final JPanel schemesHolder;
@@ -93,22 +93,22 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 		
 		goalieSelectors = List.of(
-				new StarterPlayerSelector<Goalkeeper>(reducedAvailableWindow));
+				new PlayerSelectorPresenter<Goalkeeper>(reducedAvailableWindow));
 		defSelectors = List.of(
-				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
-				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
-				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
-				new StarterPlayerSelector<Defender>(reducedAvailableWindow),
-				new StarterPlayerSelector<Defender>(reducedAvailableWindow));
+				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow));
 		midSelectors = List.of(
-				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow),
-				new StarterPlayerSelector<Midfielder>(reducedAvailableWindow));
+				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow));
 		forwSelectors = List.of(
-				new StarterPlayerSelector<Forward>(reducedAvailableWindow),
-				new StarterPlayerSelector<Forward>(reducedAvailableWindow),
-				new StarterPlayerSelector<Forward>(reducedAvailableWindow));
+				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow),
+				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow));
 
 		// 5) instantiates 3 supported scheme panels and adds them to CardLayout
 		panel433 = new Spring433Scheme(Beans.isDesignTime());
@@ -181,7 +181,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 	private void switchToScheme(String schemeKey) {
 
 		// 1) remove all selectors from old parent slots
-		Consumer<? super StarterPlayerSelector<? extends Player>> detachSelector = sel -> {
+		Consumer<? super PlayerSelectorPresenter<? extends Player>> detachSelector = sel -> {
 			Container parent = sel.getParent();
 			if (parent != null)
 				parent.remove(sel);
@@ -209,7 +209,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		schemesHolder.repaint();
 	}
 
-	private <T extends Player> void attachSelectors(List<JPanel> slots, List<StarterPlayerSelector<T>> selectors) {
+	private <T extends Player> void attachSelectors(List<JPanel> slots, List<PlayerSelectorPresenter<T>> selectors) {
 		int i = 0;
 
 		// add selectors to slots: there could be more selectors than slots

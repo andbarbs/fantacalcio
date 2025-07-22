@@ -1,32 +1,34 @@
 package swingViews;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.io.IOException;
 import java.util.Optional;
-
-import javax.swing.border.LineBorder;
 
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
-@SuppressWarnings("serial")
-public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSelector<T> 
-			implements FillableSwappableGadget<SubstitutePlayerSelector<T>> {	
+public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerSelectorPresenter<T> 
+			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<T>> {	
 	
-	// constructors inherited from superclass
-	public SubstitutePlayerSelector() {
-		super();
-	}
+	private final SubstitutePlayerSelectorView<T> view;
 
-	public SubstitutePlayerSelector(Dimension availableWindow) throws IOException {
-		super(availableWindow);
+	public interface SubstitutePlayerSelectorView<T> extends PlayerSelectorView<T> {
+		void highlight();
+		void dehighlight();
+		void setControlsEnabled(boolean b);
+	}	
+	
+	// TODO very ugly: there will exist two references to the view,
+	// one in super and one in this 
+	
+	// constructor inherited from superclass
+	public SubstitutePlayerSelectorPresenter(SubstitutePlayerSelectorView<T> view) {
+		super(view);
+		this.view = view;
 	}
 	
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver;
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver;
 
 	@Override
-	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver) {
+	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver) {
 		this.driver = driver;		
 	}
 	
@@ -44,7 +46,7 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 	}
 
 	@Override
-	public void acquireContentFrom(SubstitutePlayerSelector<T> other) {
+	public void acquireContentFrom(SubstitutePlayerSelectorPresenter<T> other) {
 		Optional<T> selection = this.getSelectedOption();
 		Optional<T> otherSelection = other.getSelectedOption();
     	this.silentlyAdd(otherSelection);
@@ -58,7 +60,7 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 	}
 
 	@Override
-	public void swapContentWith(SubstitutePlayerSelector<T> other) {
+	public void swapContentWith(SubstitutePlayerSelectorPresenter<T> other) {
 		Optional<T> selection = this.getSelectedOption();
     	Optional<T> otherSelection = other.getSelectedOption();
     	this.silentlyAdd(otherSelection);
@@ -71,22 +73,24 @@ public class SubstitutePlayerSelector<T extends Player> extends StarterPlayerSel
 	
 	@Override
 	public void highlight() {
-		setBorder(new LineBorder(Color.CYAN, 5));
+//		setBorder(new LineBorder(Color.CYAN, 5));
+		view.highlight();
 	}
 	
 	@Override
 	public void dehighlight() {
-		setBorder(null);
+//		setBorder(null);
+		view.dehighlight();
 	}
 
 	@Override
 	public void enableFilling() {
-		super.controls().setEnabled(true);
+		view.setControlsEnabled(true);
 	}
 
 	@Override
 	public void disableFilling() {
-		super.controls().setEnabled(false);
+		view.setControlsEnabled(false);
 	}
 	
 }

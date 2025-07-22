@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
-import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
+import swingViews.PlayerSelectorPresenter.StarterPlayerSelectorListener;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
 
@@ -57,14 +57,14 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 	@DisplayName("notifications to driver and listeners")
 	class DriverAndListenerInteraction {
 
-    	private StarterPlayerSelector<Defender> compPlayerSelector;    	
-    	@Mock private OptionDealerGroupDriver<StarterPlayerSelector<Defender>, Defender> driver;    	
+    	private PlayerSelectorPresenter<Defender> compPlayerSelector;    	
+    	@Mock private OptionDealerGroupDriver<PlayerSelectorPresenter<Defender>, Defender> driver;    	
     	@Mock private StarterPlayerSelectorListener<Defender> listener;
 
     	@BeforeEach
     	public void testCaseSpecificSetup() {    		
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
-    			compPlayerSelector = new StarterPlayerSelector<Defender>();
+    			compPlayerSelector = new PlayerSelectorPresenter<Defender>();
 
     			// manually wires mock driver and options
     			compPlayerSelector.attachDriver(driver);
@@ -149,9 +149,9 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
      * this test case aims to specify the intended behavior of 
      * protected silent option operators of {@code StarterPlayerSelector}, namely
      * <ol>
-	 * 		<li>{@link StarterPlayerSelector#silentlyDrop(Optional)}
-	 * 		<li>{@link StarterPlayerSelector#silentlyAdd(Optional)}
-	 * 		<li>{@link StarterPlayerSelector#silentlySelect(Optional)}
+	 * 		<li>{@link PlayerSelectorPresenter#silentlyDrop(Optional)}
+	 * 		<li>{@link PlayerSelectorPresenter#silentlyAdd(Optional)}
+	 * 		<li>{@link PlayerSelectorPresenter#silentlySelect(Optional)}
 	 * </ol>
      */
     
@@ -166,10 +166,10 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 	@DisplayName("silent option operators for subclasses")
 	class SilentOptionOperators {
 		
-		private StarterPlayerSelector<Defender> compPlayerSelector1, compPlayerSelector2;
+		private PlayerSelectorPresenter<Defender> compPlayerSelector1, compPlayerSelector2;
 
 	    @Mock
-	    private OptionDealerGroupDriver<StarterPlayerSelector<Defender>, Defender> mockDriver;
+	    private OptionDealerGroupDriver<PlayerSelectorPresenter<Defender>, Defender> mockDriver;
 	    
 	    // strongly typed fixtures for the combos
 	    private TypedJComboBoxFixture<Defender> combo1;
@@ -178,8 +178,8 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 	    @BeforeEach
 	    public void testSpecificSetUp() {
 	        JFrame frame = GuiActionRunner.execute(() -> {
-	            compPlayerSelector1 = new StarterPlayerSelector<>();
-	            compPlayerSelector2 = new StarterPlayerSelector<>();
+	            compPlayerSelector1 = new PlayerSelectorPresenter<>();
+	            compPlayerSelector2 = new PlayerSelectorPresenter<>();
 	            compPlayerSelector1.setName("sel1");
 	            compPlayerSelector2.setName("sel2");
 

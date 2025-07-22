@@ -9,8 +9,11 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,27 +24,28 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import domainModel.Player;
+import swingViews.PlayerSelectorPresenter.PlayerSelectorView;
 
 @SuppressWarnings("serial")
-public class PlayerSelectorForm<T extends Player> extends JPanel {
+public class SwingPlayerSelectorView<P extends Player> extends JPanel implements PlayerSelectorView<P> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
 	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
 
-	private JComboBox<T> comboBox;
+	private JComboBox<P> comboBox;
 	private JLabel figureLabel;
 	private JButton resetButton;
 	private JLabel headLabel;
 	
 	// WB-compatible constructor
-	public PlayerSelectorForm() {
+	public SwingPlayerSelectorView() {
 			initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
 					new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
 		}
 
 	// rescaling-augmented constructor available to clients
-	public PlayerSelectorForm(Dimension availableWindow) throws IOException {
+	public SwingPlayerSelectorView(Dimension availableWindow) throws IOException {
 			// 1. Load original images
 			BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
 			BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
@@ -114,7 +118,7 @@ public class PlayerSelectorForm<T extends Player> extends JPanel {
 		gbl_panel.rowWeights = new double[] { 5.0, 1.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		comboBox = new JComboBox<T>();
+		comboBox = new JComboBox<P>();
 		comboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
@@ -149,21 +153,58 @@ public class PlayerSelectorForm<T extends Player> extends JPanel {
 		gbc_resetButton.gridx = 0;
 		gbc_resetButton.gridy = 1;
 		panel.add(resetButton, gbc_resetButton);
+		
+		addListeners();
 	}
 
-	public JComboBox<T> getComboBox() {
-		return comboBox;
+	private void addListeners() {
+		comboBox.addActionListener(e -> {
+			// combo -> button interaction
+			resetButton.setEnabled(comboBox.getSelectedIndex() > -1);
+			
+			if (comboBox.isPopupVisible() && 
+					comboBox.getSelectedIndex() > -1) {
+				presenter.selectedOption(comboBox.getSelectedIndex());
+			}
+		});
+
+		resetButton.addActionListener(e -> {
+			// button -> combo interaction
+			comboBox.setSelectedIndex(-1);
+			resetButton.setEnabled(false);
+			
+			presenter.selectionCleared();
+		});
 	}
 	
-	public JButton getResetButton() {
-		return resetButton;
-	}
+	private PlayerSelectorPresenter<P> presenter;
+
+	public void setPresenter(PlayerSelectorPresenter<P> presenter) {
+		this.presenter = presenter;
+	}	
 	
-	public JLabel getFigureLabel() {
-		return figureLabel;
+
+	@Override
+	public void initOptions(List<P> options) {
+		comboBox.setModel(  				// fills combo with initial contents
+				new DefaultComboBoxModel<>(new Vector<>(options)));
+		comboBox.setSelectedIndex(-1);      // must be re-done after setModel
 	}
-	
-	public JLabel getHeadLabel() {
-		return headLabel;
+
+	@Override
+	public void removeOptionAt(int pos) {
+		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
+		model.removeElementAt(pos);    // fires an event under conditions 3) and 4)
+	}
+
+	@Override
+	public void insertOptionAt(P option, int insertionIndex) {
+		DefaultComboBoxModel<P> model = (DefaultComboBoxModel<P>) comboBox.getModel();
+		model.insertElementAt(option, insertionIndex);
+	}
+
+	@Override
+	public void selectOptionAt(int pos) {
+		comboBox.setSelectedIndex(pos);
 	}
 }

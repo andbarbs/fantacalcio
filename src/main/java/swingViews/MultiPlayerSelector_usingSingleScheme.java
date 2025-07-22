@@ -59,7 +59,7 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
         // Goalkeeper selectors
-        StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<Goalkeeper>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Goalkeeper> goalieSelector = new PlayerSelectorPresenter<Goalkeeper>(reducedAvailableWindow);
         selectorsPanel.getGoalie().add(goalieSelector);
         
         OptionDealerGroupDriver.initializeDealing(
@@ -70,16 +70,16 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        StarterPlayerSelector<Defender> defSelector1 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Defender> defSelector1 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef1().add(defSelector1);
         
-        StarterPlayerSelector<Defender> defSelector2 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Defender> defSelector2 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef2().add(defSelector2);
         
-        StarterPlayerSelector<Defender> defSelector3 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Defender> defSelector3 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef3().add(defSelector3);
         
-        StarterPlayerSelector<Defender> defSelector4 = new StarterPlayerSelector<Defender>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Defender> defSelector4 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
         selectorsPanel.getDef4().add(defSelector4);
         
         OptionDealerGroupDriver.initializeDealing(
@@ -94,13 +94,13 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         
         
         // Midfielder selectors
-        StarterPlayerSelector<Midfielder> midSelector1 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Midfielder> midSelector1 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid1().add(midSelector1);
         
-        StarterPlayerSelector<Midfielder> midSelector2 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Midfielder> midSelector2 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid2().add(midSelector2);
         
-        StarterPlayerSelector<Midfielder> midSelector3 = new StarterPlayerSelector<Midfielder>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Midfielder> midSelector3 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
         selectorsPanel.getMid3().add(midSelector3);
         
         OptionDealerGroupDriver.initializeDealing(
@@ -112,13 +112,13 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Midfielder("Toni", "Kroos")));
         
         // Forward selectors
-		StarterPlayerSelector<Forward> forwSelector1 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Forward> forwSelector1 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw1().add(forwSelector1);
         
-        StarterPlayerSelector<Forward> forwSelector2 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Forward> forwSelector2 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw2().add(forwSelector2);
 
-        StarterPlayerSelector<Forward> forwSelector3 = new StarterPlayerSelector<Forward>(reducedAvailableWindow);
+        PlayerSelectorPresenter<Forward> forwSelector3 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
         selectorsPanel.getForw3().add(forwSelector3);
         
         OptionDealerGroupDriver.initializeDealing(
