@@ -224,6 +224,6 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 
 	@Override
 	public void setControlsEnabled(boolean b) {
-		List.of(comboBox, headLabel, figureLabel).forEach(t -> t.setEnabled(b));
+		List.of(comboBox, resetButton, headLabel, figureLabel).forEach(t -> t.setEnabled(b));
 	}
 }

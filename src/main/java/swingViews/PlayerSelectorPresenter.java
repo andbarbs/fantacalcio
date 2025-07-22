@@ -79,7 +79,7 @@ public class PlayerSelectorPresenter<P extends Player>
 	public void attachOptions(List<P> options) {
 		this.options = options;
 		this.mask = new ArrayList<Integer>(
-				IntStream.rangeClosed(0, options.size() - 1).boxed().collect(Collectors.toList()));
+				IntStream.range(0, options.size()).boxed().collect(Collectors.toList()));
 		this.currentSelection = NO_SELECTION;
 		this.view.initOptions(options);
 	}
@@ -123,7 +123,7 @@ public class PlayerSelectorPresenter<P extends Player>
 	public void selectedOption(int position) {
 		
 		// handles a previously existing selection
-		if (currentSelection != -1)
+		if (currentSelection != NO_SELECTION)
 			driver.selectionClearedOn(this, currentSelection);
 		
 		// updates bookkeeping
@@ -138,6 +138,7 @@ public class PlayerSelectorPresenter<P extends Player>
 	}
 	
 	public void selectionCleared() {
+		
 		// the View's selection has just been cleared
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {

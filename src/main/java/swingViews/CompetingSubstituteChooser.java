@@ -57,25 +57,26 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 		
 		SwingSubPlayerSelector<T> selView2 = new SwingSubPlayerSelector<T>();
 		selPres2 = new SubstitutePlayerSelectorPresenter<>(selView2);
-		selView2.setName("selector1");
+		selView2.setName("selector2");
 		selView2.setPresenter(selPres2);
 		
 		SwingSubPlayerSelector<T> selView3 = new SwingSubPlayerSelector<T>();
 		selPres3 = new SubstitutePlayerSelectorPresenter<>(selView3);
-		selView3.setName("selector1");
+		selView3.setName("selector3");
 		selView3.setPresenter(selPres3);
 		
 		swapSelectors1and2 = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("asking driver to swap 1 and 2");
-				driver.swapRight(selPres2);
+				driver.swapRight(selPres1);
 			}
 		};
 
 		swapSelectors2and3 = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				System.out.println("asking driver to swap 2 and 3");
 				driver.swapRight(selPres2);
 			}
 		};
@@ -125,7 +126,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 		
 		// wire up substitute driver
 		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>>(
-				List.of(selPres2, selPres2, selPres3), this);
+				List.of(selPres1, selPres2, selPres3), this);
 		
 		// initially disable swapping
 		List.of(swapSelectors1and2, swapSelectors2and3).forEach(a -> a.setEnabled(false));
@@ -158,11 +159,11 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 			OptionDealerGroupDriver.initializeDealing(
 					Set.copyOf(chooser.getSubstituteSelectors()), 
 					List.of(
-		            	    new Defender("Sergio", "Ramos"),
-		            	    new Defender("Virgil", "van Dijk"),
+							new Defender("Giorgio", "Chiellini"),
 		            	    new Defender("Gerard", "Piqué"),
+		            	    new Defender("Sergio", "Ramos"),
 		            	    new Defender("Thiago", "Silva"),
-		            	    new Defender("Giorgio", "Chiellini")));
+		            	    new Defender("Virgil", "van Dijk")));
 			frame.setContentPane(chooser);
 			frame.pack();
 			frame.setLocationRelativeTo(null);

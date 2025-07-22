@@ -11,18 +11,19 @@ import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.assertj.swing.junit.runner.GUITestRunner;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
+import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
 
-@RunWith(GUITestRunner.class)
-public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
-
-    private FrameFixture window;
+@DisplayName("SwingSubPlayerSelector: MVP-View unit test")
+@ExtendWith(MockitoExtension.class)
+public class CompetingSubstituteChooserTest extends AssertJSwingJUnit5TestCase {
     
 	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
 	private JButtonFixture reset1, reset2, reset3;
@@ -34,8 +35,8 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
 	private static final Defender silva = new Defender("Thiago", "Silva");
 	private static final Defender vanDijk = new Defender("Virgil", "van Dijk");
 
-    @Override
-    public void onSetUp() {    	
+	@BeforeEach
+	public void testCaseSpecificSetup() {   	
 		JFrame frame = GuiActionRunner.execute(() -> {
 			
 			// sets up the SUT
@@ -53,7 +54,7 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnitTestCase {
 			return f;
 		});
         
-        window = new FrameFixture(robot(), frame);
+        window = new FrameFixture(robot, frame);
         window.show();
         
         combo1 = TypedJComboBoxFixture.of(window.panel("selector1").comboBox(), Defender.class);
