@@ -114,29 +114,27 @@ public class PlayerSelectorPresenter<P extends Player>
 	/**
 	 * to avoid driver feedback, Presenter could
 	 * 		- document to the View the circumstances upon which
-	 * 		  this method ought to be called
+	 * 		  these method ought to be called
 	 * 		- use a reentrance-blocking flag 
 	 */
+	
+	
+	// a user selection has been set on the View
 	public void selectedOption(int position) {
 		
-		// a user selection has been set on the View
-		if (position != NO_SELECTION) {
-			if (currentSelection != -1)
-				driver.selectionClearedOn(this, currentSelection);
-			currentSelection = mask.get(position);
-			
-			// notifies selection set to driver
-			System.out.println("about to call driver.selectionMadeOn");
-			driver.selectionMadeOn(this, currentSelection);
-
-			// propagates user selections to subclasses
-			onUserSelectionSet();
-
-			// notifies user selection to listeners
-			listeners.forEach(l -> l.selectionMadeOn(this));
-		}
-
+		// handles a previously existing selection
+		if (currentSelection != -1)
+			driver.selectionClearedOn(this, currentSelection);
 		
+		// updates bookkeeping
+		currentSelection = mask.get(position);
+		
+		// notifies selection set to driver
+		System.out.println("about to call driver.selectionMadeOn");
+		driver.selectionMadeOn(this, currentSelection);
+
+		// notifies user selection to listeners
+		listeners.forEach(l -> l.selectionMadeOn(this));
 	}
 	
 	public void selectionCleared() {
@@ -144,13 +142,12 @@ public class PlayerSelectorPresenter<P extends Player>
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
 
+			// updates bookkeeping
+			currentSelection = NO_SELECTION;
+
 			// notifies selection cleared to driver
 			System.out.println("about to call driver.selectionClearedOn");
 			driver.selectionClearedOn(this, currentSelection);
-			currentSelection = NO_SELECTION;
-
-			// propagates selection clearance to subclasses
-			onSelectionCleared();
 			
 			// notifies selection clearance to to listeners
 			listeners.forEach(l -> l.selectionClearedOn(this));
@@ -201,24 +198,13 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	/*********************     Dedicated Subclasses APIs    *********************/
 
-	// 1) hooks for engaging on selection events
-	protected void onUserSelectionSet() {}
-	protected void onSelectionCleared() {}
-	
-//	// 2) fluent API for enabling/disabling graphical controls
-//	protected final StarterPlayerSelectorControls controls() {
-//		return new StarterPlayerSelectorControls();
-//	}
-//	
-//	protected final class StarterPlayerSelectorControls {
-//		void setEnabled(boolean bool) {
-//			comboBox.setEnabled(bool);
-//			figureLabel.setEnabled(bool);
-//			headLabel.setEnabled(bool);
-//		}
-//	}	
 	
 	// 3) local Selection operators	
+	
+	// TODO consider completely overhauling these operators in favor of
+	// opening up bookkeeping to subclasses, given that this class
+	// no longer has to worry about being the sole originator of
+	// combo events
 	
 	/*
 	 * these fluent operators allow subclasses to access their local 

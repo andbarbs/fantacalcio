@@ -33,15 +33,16 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 	}
 	
 	
-	// implements notifications to the driver by augmenting these protected hooks
+	// implements notifications to the driver by overriding these superclass methods
 	@Override
-	protected void onUserSelectionSet() {
+	public void selectedOption(int position) {
+		super.selectedOption(position);
 		driver.contentAdded(this);
 	}
 	
 	@Override
-	protected void onSelectionCleared() {
-		super.onSelectionCleared();
+	public void selectionCleared() {
+		super.selectionCleared();
 		driver.contentRemoved(this);
 	}
 

@@ -119,9 +119,16 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 		panel.setLayout(gbl_panel);
 
 		comboBox = new JComboBox<P>();
+		GridBagConstraints gbc_comboBox = new GridBagConstraints();
+		gbc_comboBox.anchor = GridBagConstraints.SOUTH;
+		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
+		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBox.gridx = 0;
+		gbc_comboBox.gridy = 0;
+		panel.add(comboBox, gbc_comboBox);
 		comboBox.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
-
+			
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
@@ -134,17 +141,10 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 					Player p = (Player) value;
 					label.setText(p.getName() + " " + p.getSurname());
 				}
-
+				
 				return label;
 			}
 		});
-		GridBagConstraints gbc_comboBox = new GridBagConstraints();
-		gbc_comboBox.anchor = GridBagConstraints.SOUTH;
-		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
-		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_comboBox.gridx = 0;
-		gbc_comboBox.gridy = 0;
-		panel.add(comboBox, gbc_comboBox);
 
 		resetButton = new JButton("Reset");
 		resetButton.setEnabled(false);
@@ -156,7 +156,13 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 		
 		addListeners();
 	}
+	
+	private PlayerSelectorPresenter<P> presenter;
 
+	public void setPresenter(PlayerSelectorPresenter<P> presenter) {
+		this.presenter = presenter;
+	}	
+	
 	private void addListeners() {
 		comboBox.addActionListener(e -> {
 			// combo -> button interaction
@@ -167,7 +173,7 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 				presenter.selectedOption(comboBox.getSelectedIndex());
 			}
 		});
-
+		
 		resetButton.addActionListener(e -> {
 			// button -> combo interaction
 			comboBox.setSelectedIndex(-1);
@@ -176,13 +182,6 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 			presenter.selectionCleared();
 		});
 	}
-	
-	private PlayerSelectorPresenter<P> presenter;
-
-	public void setPresenter(PlayerSelectorPresenter<P> presenter) {
-		this.presenter = presenter;
-	}	
-	
 
 	@Override
 	public void initOptions(List<P> options) {
