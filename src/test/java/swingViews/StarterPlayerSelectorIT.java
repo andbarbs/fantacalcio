@@ -34,9 +34,9 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
 
 
-@DisplayName("StarterPlayerSelector: comprehensive unit test")
+@DisplayName("Starter Player Selector: MVP Presenter + View integration test")
 @ExtendWith(MockitoExtension.class)
-public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
+public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
     private static final Defender chiellini = new Defender("Giorgio", "Chiellini");
     private static final Defender pique = new Defender("Gerard", "Piqué");
