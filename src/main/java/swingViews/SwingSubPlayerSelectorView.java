@@ -22,12 +22,13 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 import domainModel.Player;
-import swingViews.PlayerSelectorPresenter.PlayerSelectorView;
+import swingViews.SubstitutePlayerSelectorPresenter.SubstitutePlayerSelectorView;
 
 @SuppressWarnings("serial")
-public class SwingPlayerSelectorView<P extends Player> extends JPanel implements PlayerSelectorView<P> {
+public class SwingSubPlayerSelectorView<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
@@ -39,13 +40,13 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 	private JLabel headLabel;
 	
 	// WB-compatible constructor
-	public SwingPlayerSelectorView() {
+	public SwingSubPlayerSelectorView() {
 			initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
 					new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
 		}
 
 	// rescaling-augmented constructor available to clients
-	public SwingPlayerSelectorView(Dimension availableWindow) throws IOException {
+	public SwingSubPlayerSelectorView(Dimension availableWindow) throws IOException {
 			// 1. Load original images
 			BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
 			BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
@@ -205,5 +206,20 @@ public class SwingPlayerSelectorView<P extends Player> extends JPanel implements
 	@Override
 	public void selectOptionAt(int pos) {
 		comboBox.setSelectedIndex(pos);
+	}
+
+	@Override
+	public void highlight() {
+		setBorder(new LineBorder(Color.CYAN, 5));
+	}
+
+	@Override
+	public void dehighlight() {
+		setBorder(null);
+	}
+
+	@Override
+	public void setControlsEnabled(boolean b) {
+		List.of(comboBox, headLabel, figureLabel).forEach(t -> t.setEnabled(b));
 	}
 }

@@ -16,7 +16,7 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 		void setControlsEnabled(boolean b);
 	}	
 	
-	// TODO very ugly: there will exist two references to the view,
+	// TODO somewhat ugly: there will exist two references to the view,
 	// one in super and one in this 
 	
 	// constructor inherited from superclass
@@ -74,13 +74,11 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 	
 	@Override
 	public void highlight() {
-//		setBorder(new LineBorder(Color.CYAN, 5));
 		view.highlight();
 	}
 	
 	@Override
 	public void dehighlight() {
-//		setBorder(null);
 		view.dehighlight();
 	}
 
