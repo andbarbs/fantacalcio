@@ -7,9 +7,6 @@ import java.awt.Dimension;
 import java.beans.Beans;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SpringLayout;
@@ -30,14 +27,13 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 				implements FillableSwappableVisual<SubstitutePlayerSelectorPresenter<T>> {
 
 	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver;
-	private SubstitutePlayerSelectorPresenter<T> sel1;
-	private SubstitutePlayerSelectorPresenter<T> sel2;
-	private SubstitutePlayerSelectorPresenter<T> sel3;
+	private SubstitutePlayerSelectorPresenter<T> selPres1;
+	private SubstitutePlayerSelectorPresenter<T> selPres2;
+	private SubstitutePlayerSelectorPresenter<T> selPres3;
 	private Action swapSelectors1and2, swapSelectors2and3;
 	
 	public List<SubstitutePlayerSelectorPresenter<T>> getSubstituteSelectors() {
-		return Stream.of(sel1, sel2, sel3)
-				.collect(Collectors.toList());
+		return List.of(selPres1, selPres2, selPres3);
 	}
 
 	public CompetingSubstituteChooser() {
@@ -54,25 +50,33 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 			setPreferredSize(new Dimension(600, 225));
 
 		// initialize components and add them
-		sel1 = new SubstitutePlayerSelectorPresenter<T>();
-		sel1.setName("selector1");
-		sel2 = new SubstitutePlayerSelectorPresenter<T>();
-		sel2.setName("selector2");
-		sel3 = new SubstitutePlayerSelectorPresenter<T>();
-		sel3.setName("selector3");
+		SwingSubPlayerSelectorView<T> selView1 = new SwingSubPlayerSelectorView<T>();
+		selPres1 = new SubstitutePlayerSelectorPresenter<>(selView1);
+		selView1.setName("selector1");
+		selView1.setPresenter(selPres1);
+		
+		SwingSubPlayerSelectorView<T> selView2 = new SwingSubPlayerSelectorView<T>();
+		selPres2 = new SubstitutePlayerSelectorPresenter<>(selView2);
+		selView2.setName("selector1");
+		selView2.setPresenter(selPres2);
+		
+		SwingSubPlayerSelectorView<T> selView3 = new SwingSubPlayerSelectorView<T>();
+		selPres3 = new SubstitutePlayerSelectorPresenter<>(selView3);
+		selView3.setName("selector1");
+		selView3.setPresenter(selPres3);
 		
 		swapSelectors1and2 = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("asking driver to swap 1 and 2");
-				driver.swapRight(sel1);
+				driver.swapRight(selPres2);
 			}
 		};
 
 		swapSelectors2and3 = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				driver.swapRight(sel2);
+				driver.swapRight(selPres2);
 			}
 		};
 		
@@ -85,17 +89,17 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 		swap2.setMargin(new Insets(2, 2, 2, 2));
 		swap2.setIcon(new ImageIcon(getClass().getResource("/gui_icons/swap_verysmall.png")));
 
-		add(sel1); add(sel2); add(sel3);
+		add(selView1); add(selView2); add(selView3);
 		add(swap1); add(swap2);
 		
 		// evenly space sel1/sel2/sel3 horizontally
-		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, sel1,
+		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, selView1,
 		                  Spring.scale(panelWidth, 1f/6f),
 		                  SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, sel2,
+		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, selView2,
 		                  Spring.scale(panelWidth, 3f/6f),
 		                  SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, sel3,
+		layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, selView3,
 		                  Spring.scale(panelWidth, 5f/6f),
 		                  SpringLayout.WEST, this);
 
@@ -108,20 +112,20 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 		                  SpringLayout.WEST, this);
 		
 		// vertically center all
-		layout.putConstraint(SpringLayout.VERTICAL_CENTER, sel1,
+		layout.putConstraint(SpringLayout.VERTICAL_CENTER, selView1,
 				0, SpringLayout.VERTICAL_CENTER, this);
-		layout.putConstraint(SpringLayout.VERTICAL_CENTER, sel2,
+		layout.putConstraint(SpringLayout.VERTICAL_CENTER, selView2,
 				0, SpringLayout.VERTICAL_CENTER, this);
-		layout.putConstraint(SpringLayout.VERTICAL_CENTER, sel3,
+		layout.putConstraint(SpringLayout.VERTICAL_CENTER, selView3,
 				0, SpringLayout.VERTICAL_CENTER, this);
 		layout.putConstraint(SpringLayout.VERTICAL_CENTER, swap1,
 				0, SpringLayout.VERTICAL_CENTER, this);
 		layout.putConstraint(SpringLayout.VERTICAL_CENTER, swap2,
 				0, SpringLayout.VERTICAL_CENTER, this);
 		
-		// wire up driver
+		// wire up substitute driver
 		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>>(
-				List.of(sel1, sel2, sel3), this);
+				List.of(selPres2, selPres2, selPres3), this);
 		
 		// initially disable swapping
 		List.of(swapSelectors1and2, swapSelectors2and3).forEach(a -> a.setEnabled(false));
@@ -130,18 +134,18 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 	
 	@Override
 	public void becameEmpty(SubstitutePlayerSelectorPresenter<T> emptiedGadget) {
-		if (emptiedGadget == sel3)
+		if (emptiedGadget == selPres3)
 			swapSelectors2and3.setEnabled(false);
-		else if (emptiedGadget == sel2)
+		else if (emptiedGadget == selPres2)
 			swapSelectors1and2.setEnabled(false);
 	}
 	
 	@Override
 	public void becameFilled(SubstitutePlayerSelectorPresenter<T> filledGadget) {
 		System.out.println("content added to a gadget!");
-		if (filledGadget == sel2)
+		if (filledGadget == selPres2)
 			swapSelectors1and2.setEnabled(true);
-		else if (filledGadget == sel3)
+		else if (filledGadget == selPres3)
 			swapSelectors2and3.setEnabled(true);
 	}
 	

@@ -30,14 +30,17 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnitTestCase {
     public void onSetUp() {
         // Wrap the panel in a frame.
 		JFrame frame = GuiActionRunner.execute(() -> {			
-			// Construct the SwingPlayerSelector with the injected combo			
-			PlayerSelectorPresenter<Defender> compPlayerSelector = new PlayerSelectorPresenter<Defender>();
+			// Construct the SwingPlayerSelector with the injected combo
+			SwingSubPlayerSelectorView<Defender> defSelectorView = new SwingSubPlayerSelectorView<Defender>();
+			PlayerSelectorPresenter<Defender> compPlayerSelector = new PlayerSelectorPresenter<Defender>(defSelectorView);
+			defSelectorView.setPresenter(compPlayerSelector);
+			
 			OptionDealerGroupDriver.initializeDealing(
 					Set.of(compPlayerSelector), 
 					List.of(new Player.Defender("Gigi", "Buffon"), 
 							new Player.Defender("Mario", "Rossi")));
 			JFrame f = new JFrame("Test Frame");
-			f.add(compPlayerSelector);
+			f.add(defSelectorView);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

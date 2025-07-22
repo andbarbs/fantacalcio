@@ -17,6 +17,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.swing.ButtonGroup;
@@ -47,10 +49,10 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 	private final Spring532Scheme panel532;
 
 	// The single pool of selectors
-	private final List<PlayerSelectorPresenter<Goalkeeper>> goalieSelectors;
-	private final List<PlayerSelectorPresenter<Defender>> defSelectors;
-	private final List<PlayerSelectorPresenter<Midfielder>> midSelectors;
-	private final List<PlayerSelectorPresenter<Forward>> forwSelectors;
+	private final List<SwingSubPlayerSelectorView<Goalkeeper>> goalieSelectorViews;
+	private final List<SwingSubPlayerSelectorView<Defender>> defSelectorViews;
+	private final List<SwingSubPlayerSelectorView<Midfielder>> midSelectorViews;
+	private final List<SwingSubPlayerSelectorView<Forward>> forwSelectorViews;
 
 	// Internal holder that flips schemes
 	private final JPanel schemesHolder;
@@ -92,23 +94,53 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		Dimension reducedAvailableWindow = // ensures selectors actually fit inside slots after insets
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 		
-		goalieSelectors = List.of(
-				new PlayerSelectorPresenter<Goalkeeper>(reducedAvailableWindow));
-		defSelectors = List.of(
-				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Defender>(reducedAvailableWindow));
-		midSelectors = List.of(
-				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow));
-		forwSelectors = List.of(
-				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow),
-				new PlayerSelectorPresenter<Forward>(reducedAvailableWindow));
+		goalieSelectorViews = IntStream.range(0, 1).mapToObj(i -> {
+			SwingSubPlayerSelectorView<Goalkeeper> goalieSelectorView;
+			try {
+				goalieSelectorView = new SwingSubPlayerSelectorView<Goalkeeper>(reducedAvailableWindow);
+			} catch (IOException e) {
+				throw new IllegalStateException();
+			}
+			PlayerSelectorPresenter<Goalkeeper> goalieSelectorPres = new PlayerSelectorPresenter<>(goalieSelectorView);
+			goalieSelectorView.setPresenter(goalieSelectorPres);
+			return goalieSelectorView;
+		}).collect(Collectors.toList());
+		
+		defSelectorViews = IntStream.range(0, 5).mapToObj(i -> {
+			SwingSubPlayerSelectorView<Defender> defSelectorView;
+			try {
+				defSelectorView = new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+			} catch (IOException e) {
+				throw new IllegalStateException();
+			}
+			PlayerSelectorPresenter<Defender> defSelectorPres = new PlayerSelectorPresenter<>(defSelectorView);
+			defSelectorView.setPresenter(defSelectorPres);
+			return defSelectorView;
+		}).collect(Collectors.toList());
+		
+		midSelectorViews = IntStream.range(0, 4).mapToObj(i -> {
+			SwingSubPlayerSelectorView<Midfielder> midSelectorView;
+			try {
+				midSelectorView = new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+			} catch (IOException e) {
+				throw new IllegalStateException();
+			}
+			PlayerSelectorPresenter<Midfielder> midSelectorPres = new PlayerSelectorPresenter<>(midSelectorView);
+			midSelectorView.setPresenter(midSelectorPres);
+			return midSelectorView;
+		}).collect(Collectors.toList());
+		
+		forwSelectorViews = IntStream.range(0, 3).mapToObj(i -> {
+			SwingSubPlayerSelectorView<Forward> forwSelectorView;
+			try {
+				forwSelectorView = new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+			} catch (IOException e) {
+				throw new IllegalStateException();
+			}
+			PlayerSelectorPresenter<Forward> forwSelectorPres = new PlayerSelectorPresenter<>(forwSelectorView);
+			forwSelectorView.setPresenter(forwSelectorPres);
+			return forwSelectorView;
+		}).collect(Collectors.toList());
 
 		// 5) instantiates 3 supported scheme panels and adds them to CardLayout
 		panel433 = new Spring433Scheme(Beans.isDesignTime());
@@ -165,41 +197,41 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		// initializeCompetition rightly wants a List!!
 		
 		OptionDealerGroupDriver.initializeDealing(
-				Set.copyOf(goalieSelectors), 
+				goalieSelectorViews.stream().map(SwingSubPlayerSelectorView::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().goalkeepers()));
 		OptionDealerGroupDriver.initializeDealing(
-				Set.copyOf(defSelectors), 
+				defSelectorViews.stream().map(SwingSubPlayerSelectorView::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().defenders()));
 		OptionDealerGroupDriver.initializeDealing(
-				Set.copyOf(midSelectors), 
+				midSelectorViews.stream().map(SwingSubPlayerSelectorView::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().midfielders()));
 		OptionDealerGroupDriver.initializeDealing(
-				Set.copyOf(forwSelectors), 
+				forwSelectorViews.stream().map(SwingSubPlayerSelectorView::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().forwards()));
 	}
 
 	private void switchToScheme(String schemeKey) {
 
 		// 1) remove all selectors from old parent slots
-		Consumer<? super PlayerSelectorPresenter<? extends Player>> detachSelector = sel -> {
+		Consumer<? super SwingSubPlayerSelectorView<? extends Player>> detachSelector = sel -> {
 			Container parent = sel.getParent();
 			if (parent != null)
 				parent.remove(sel);
 		};
 		
 		Stream.concat(
-				Stream.concat(goalieSelectors.stream(), defSelectors.stream()),
-				Stream.concat(midSelectors.stream(), forwSelectors.stream()))
+				Stream.concat(goalieSelectorViews.stream(), defSelectorViews.stream()),
+				Stream.concat(midSelectorViews.stream(), forwSelectorViews.stream()))
 			.forEach(detachSelector);
 
 		// 2) establish user choice of next scheme
 		SpringSchemePanel target = schemeKey.equals("343") ? panel343 : schemeKey.equals("532") ? panel532 : panel433;
 
 		// 3) re-attach as many selectors as we have slots for each role
-		attachSelectors(target.getGoalieSlots(), goalieSelectors);
-		attachSelectors(target.getDefenderSlots(), defSelectors);
-		attachSelectors(target.getMidfielderSlots(), midSelectors);
-		attachSelectors(target.getForwardSlots(), forwSelectors);
+		attachSelectors(target.getGoalieSlots(), goalieSelectorViews);
+		attachSelectors(target.getDefenderSlots(), defSelectorViews);
+		attachSelectors(target.getMidfielderSlots(), midSelectorViews);
+		attachSelectors(target.getForwardSlots(), forwSelectorViews);
 
 		// 4) Show the right card
 		((CardLayout) schemesHolder.getLayout()).show(schemesHolder, schemeKey);
@@ -209,7 +241,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		schemesHolder.repaint();
 	}
 
-	private <T extends Player> void attachSelectors(List<JPanel> slots, List<PlayerSelectorPresenter<T>> selectors) {
+	private <T extends Player> void attachSelectors(List<JPanel> slots, List<SwingSubPlayerSelectorView<T>> selectors) {
 		int i = 0;
 
 		// add selectors to slots: there could be more selectors than slots
@@ -219,7 +251,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 
 		// TODO empty out selectors that won't be shown
 		for (; i < selectors.size(); i++) {
-			selectors.get(i).select(Optional.empty());
+			selectors.get(i).getPresenter().select(Optional.empty());
 		}
 	}
 	

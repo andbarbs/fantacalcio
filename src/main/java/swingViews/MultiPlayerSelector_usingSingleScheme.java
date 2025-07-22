@@ -59,31 +59,51 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 				new Dimension(availableWindow.width-5, availableWindow.height-10);
 
         // Goalkeeper selectors
-        PlayerSelectorPresenter<Goalkeeper> goalieSelector = new PlayerSelectorPresenter<Goalkeeper>(reducedAvailableWindow);
-        selectorsPanel.getGoalie().add(goalieSelector);
+        SwingSubPlayerSelectorView<Goalkeeper> goalieSelectorView = 
+        		new SwingSubPlayerSelectorView<Goalkeeper>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Goalkeeper> goalieSelectorPres = 
+				new PlayerSelectorPresenter<>(goalieSelectorView);
+		goalieSelectorView.setPresenter(goalieSelectorPres);
+        selectorsPanel.getGoalie().add(goalieSelectorView);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(goalieSelector), 
+				Set.of(goalieSelectorPres), 
 				List.of(new Goalkeeper("Gigi", "Buffon"), 
 						new Goalkeeper("Manuel", "Neuer"),
 						new Goalkeeper("Jan", "Oblak"), 
 						new Goalkeeper("Alisson", "Becker")));
         
         // Defender selectors        
-        PlayerSelectorPresenter<Defender> defSelector1 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
-        selectorsPanel.getDef1().add(defSelector1);
+        SwingSubPlayerSelectorView<Defender> defSelector1View = 
+        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Defender> defSelector1Pres = 
+				new PlayerSelectorPresenter<>(defSelector1View);
+		defSelector1View.setPresenter(defSelector1Pres);
+        selectorsPanel.getDef1().add(defSelector1View);
         
-        PlayerSelectorPresenter<Defender> defSelector2 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
-        selectorsPanel.getDef2().add(defSelector2);
+        SwingSubPlayerSelectorView<Defender> defSelector2View = 
+        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Defender> defSelector2Pres = 
+				new PlayerSelectorPresenter<>(defSelector2View);
+		defSelector2View.setPresenter(defSelector2Pres);
+        selectorsPanel.getDef2().add(defSelector2View);
         
-        PlayerSelectorPresenter<Defender> defSelector3 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
-        selectorsPanel.getDef3().add(defSelector3);
+        SwingSubPlayerSelectorView<Defender> defSelector3View = 
+        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Defender> defSelector3Pres = 
+				new PlayerSelectorPresenter<>(defSelector3View);
+		defSelector3View.setPresenter(defSelector3Pres);
+        selectorsPanel.getDef3().add(defSelector3View);
         
-        PlayerSelectorPresenter<Defender> defSelector4 = new PlayerSelectorPresenter<Defender>(reducedAvailableWindow);
-        selectorsPanel.getDef4().add(defSelector4);
+        SwingSubPlayerSelectorView<Defender> defSelector4View = 
+        		new SwingSubPlayerSelectorView<Defender>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Defender> defSelector4Pres = 
+				new PlayerSelectorPresenter<>(defSelector4View);
+		defSelector4View.setPresenter(defSelector4Pres);
+        selectorsPanel.getDef4().add(defSelector4View);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(defSelector1, defSelector2, defSelector3, defSelector4), 
+				Set.of(defSelector1Pres, defSelector2Pres, defSelector3Pres, defSelector4Pres), 
 				List.of(
                 	    new Defender("Sergio", "Ramos"),
                 	    new Defender("Virgil", "van Dijk"),
@@ -94,17 +114,29 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         
         
         // Midfielder selectors
-        PlayerSelectorPresenter<Midfielder> midSelector1 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
-        selectorsPanel.getMid1().add(midSelector1);
+        SwingSubPlayerSelectorView<Midfielder> midSelector1View = 
+        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Midfielder> midSelector1Pres = 
+				new PlayerSelectorPresenter<>(midSelector1View);
+		midSelector1View.setPresenter(midSelector1Pres);
+        selectorsPanel.getMid1().add(midSelector1View);
         
-        PlayerSelectorPresenter<Midfielder> midSelector2 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
-        selectorsPanel.getMid2().add(midSelector2);
+        SwingSubPlayerSelectorView<Midfielder> midSelector2View = 
+        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Midfielder> midSelector2Pres = 
+				new PlayerSelectorPresenter<>(midSelector2View);
+		midSelector2View.setPresenter(midSelector2Pres);
+        selectorsPanel.getMid2().add(midSelector2View);
         
-        PlayerSelectorPresenter<Midfielder> midSelector3 = new PlayerSelectorPresenter<Midfielder>(reducedAvailableWindow);
-        selectorsPanel.getMid3().add(midSelector3);
+        SwingSubPlayerSelectorView<Midfielder> midSelector3View = 
+        		new SwingSubPlayerSelectorView<Midfielder>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Midfielder> midSelector3Pres = 
+				new PlayerSelectorPresenter<>(midSelector3View);
+		midSelector3View.setPresenter(midSelector3Pres);
+        selectorsPanel.getMid3().add(midSelector3View);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(midSelector1, midSelector2, midSelector3), 
+				Set.of(midSelector1Pres, midSelector2Pres, midSelector3Pres), 
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
 						new Midfielder("N'Golo", "Kanté"), 
@@ -112,17 +144,29 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 						new Midfielder("Toni", "Kroos")));
         
         // Forward selectors
-		PlayerSelectorPresenter<Forward> forwSelector1 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
-        selectorsPanel.getForw1().add(forwSelector1);
+		SwingSubPlayerSelectorView<Forward> forwSelector1View = 
+				new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Forward> forwSelector1Pres = 
+				new PlayerSelectorPresenter<>(forwSelector1View);
+		forwSelector1View.setPresenter(forwSelector1Pres);
+        selectorsPanel.getForw1().add(forwSelector1View);
         
-        PlayerSelectorPresenter<Forward> forwSelector2 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
-        selectorsPanel.getForw2().add(forwSelector2);
+        SwingSubPlayerSelectorView<Forward> forwSelector2View = 
+        		new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Forward> forwSelector2Pres = 
+				new PlayerSelectorPresenter<>(forwSelector2View);
+		forwSelector2View.setPresenter(forwSelector2Pres);
+        selectorsPanel.getForw2().add(forwSelector2View);
 
-        PlayerSelectorPresenter<Forward> forwSelector3 = new PlayerSelectorPresenter<Forward>(reducedAvailableWindow);
-        selectorsPanel.getForw3().add(forwSelector3);
+        SwingSubPlayerSelectorView<Forward> forwSelector3View = 
+        		new SwingSubPlayerSelectorView<Forward>(reducedAvailableWindow);
+		PlayerSelectorPresenter<Forward> forwSelector3Pres = 
+				new PlayerSelectorPresenter<>(forwSelector3View);
+		forwSelector3View.setPresenter(forwSelector3Pres);
+        selectorsPanel.getForw3().add(forwSelector3View);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(forwSelector1, forwSelector2, forwSelector3), 
+				Set.of(forwSelector1Pres, forwSelector2Pres, forwSelector3Pres), 
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),
 						new Forward("Neymar", "Jr"), 

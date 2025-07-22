@@ -64,7 +64,9 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
     	@BeforeEach
     	public void testCaseSpecificSetup() {    		
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
-    			compPlayerSelector = new PlayerSelectorPresenter<Defender>();
+    			SwingSubPlayerSelectorView<Defender> selView= new SwingSubPlayerSelectorView<Defender>();
+    			compPlayerSelector = new PlayerSelectorPresenter<Defender>(selView);
+    			selView.setPresenter(compPlayerSelector);
 
     			// manually wires mock driver and options
     			compPlayerSelector.attachDriver(driver);
@@ -73,7 +75,7 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
     			compPlayerSelector.attachListener(listener); // attaches the listener
 
     			JFrame f = new JFrame("Test Frame");
-    			f.add(compPlayerSelector);
+    			f.add(selView);
     			f.pack();
     			f.setLocationRelativeTo(null);
     			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -178,10 +180,15 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 	    @BeforeEach
 	    public void testSpecificSetUp() {
 	        JFrame frame = GuiActionRunner.execute(() -> {
-	            compPlayerSelector1 = new PlayerSelectorPresenter<>();
-	            compPlayerSelector2 = new PlayerSelectorPresenter<>();
-	            compPlayerSelector1.setName("sel1");
-	            compPlayerSelector2.setName("sel2");
+	        	SwingSubPlayerSelectorView<Defender> sel1View = new SwingSubPlayerSelectorView<Defender>();
+	        	sel1View.setName("sel1");
+	        	compPlayerSelector1 = new PlayerSelectorPresenter<Defender>(sel1View);
+    			sel1View.setPresenter(compPlayerSelector1);
+
+    			SwingSubPlayerSelectorView<Defender> sel2View = new SwingSubPlayerSelectorView<Defender>();
+	        	sel2View.setName("sel2");
+	        	compPlayerSelector2 = new PlayerSelectorPresenter<Defender>(sel2View);
+    			sel2View.setPresenter(compPlayerSelector2);
 
 	            // wires a real driver for tests' setup phase
 	            OptionDealerGroupDriver.initializeDealing(
@@ -190,8 +197,8 @@ public class StarterPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 
 	            JFrame f = new JFrame("Test Frame");
 	            f.setLayout(new FlowLayout());
-	            f.add(compPlayerSelector1);
-	            f.add(compPlayerSelector2);
+	            f.add(sel1View);
+	            f.add(sel2View);
 	            f.pack();
 	            f.setLocationRelativeTo(null);
 	            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

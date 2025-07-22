@@ -162,7 +162,11 @@ public class SwingSubPlayerSelectorView<P extends Player> extends JPanel impleme
 
 	public void setPresenter(PlayerSelectorPresenter<P> presenter) {
 		this.presenter = presenter;
-	}	
+	}
+	
+	public PlayerSelectorPresenter<P> getPresenter() {
+		return presenter;
+	}
 	
 	private void addListeners() {
 		comboBox.addActionListener(e -> {

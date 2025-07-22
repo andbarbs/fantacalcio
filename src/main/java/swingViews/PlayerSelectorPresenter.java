@@ -142,12 +142,12 @@ public class PlayerSelectorPresenter<P extends Player>
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
 
-			// updates bookkeeping
-			currentSelection = NO_SELECTION;
-
 			// notifies selection cleared to driver
 			System.out.println("about to call driver.selectionClearedOn");
 			driver.selectionClearedOn(this, currentSelection);
+			
+			// updates bookkeeping
+			currentSelection = NO_SELECTION;
 			
 			// notifies selection clearance to to listeners
 			listeners.forEach(l -> l.selectionClearedOn(this));
@@ -182,17 +182,14 @@ public class PlayerSelectorPresenter<P extends Player>
 	/***********     Programmatic selection-setting API for Clients     **********/
 	
 	public void select(Optional<P> player) {
+		// TODO does not check received option validity 
 		player.ifPresentOrElse(
 				p -> {
 			int playerInd = mask.indexOf(options.indexOf(p));
-			view.selectOptionAt(playerInd);
-			currentSelection = playerInd;
-			driver.selectionMadeOn(this, playerInd);
-			listeners.forEach(l -> l.selectionMadeOn(this));
+			selectedOption(playerInd);
 		}, 
 				() -> {
-			view.selectOptionAt(NO_SELECTION); // might engage the driver
-			listeners.forEach(l -> l.selectionClearedOn(this));
+			selectionCleared();
 		});
 	}
 	

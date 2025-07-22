@@ -45,7 +45,11 @@ public class MultiPlayerSelector extends JFrame {
         
 
         // Goalkeeper selectors
-        PlayerSelectorPresenter<Goalkeeper> goalieSelector = new PlayerSelectorPresenter<Goalkeeper>();
+        SwingSubPlayerSelectorView<Goalkeeper> goalieSelView = new SwingSubPlayerSelectorView<Goalkeeper>();
+		PlayerSelectorPresenter<Goalkeeper> goalieSelPres = 
+				new PlayerSelectorPresenter<>(goalieSelView);
+		goalieSelView.setPresenter(goalieSelPres);
+		
         // Create and add selectors with updated GridBagConstraints:
         GridBagConstraints gbc_goalieSelector = new GridBagConstraints();
         gbc_goalieSelector.gridx = 0;
@@ -55,10 +59,10 @@ public class MultiPlayerSelector extends JFrame {
         gbc_goalieSelector.weightx = 1.0;   // allow horizontal growth
         gbc_goalieSelector.weighty = 1.0;   // allow vertical growth
         gbc_goalieSelector.insets = new Insets(10, 10, 10, 10); // optional padding
-        selectorsPanel.add(goalieSelector, gbc_goalieSelector);
+        selectorsPanel.add(goalieSelView, gbc_goalieSelector);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(goalieSelector), 
+				Set.of(goalieSelPres), 
 				List.of(new Goalkeeper("Gigi", "Buffon"), 
 						new Goalkeeper("Manuel", "Neuer"),
 						new Goalkeeper("Jan", "Oblak"), 
@@ -81,45 +85,57 @@ public class MultiPlayerSelector extends JFrame {
         gbl_defendersPanel.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
         defendersPanel.setLayout(gbl_defendersPanel);        
         
-        PlayerSelectorPresenter<Defender> defSelector1 = new PlayerSelectorPresenter<Defender>();
+        SwingSubPlayerSelectorView<Defender> defSelector1View = new SwingSubPlayerSelectorView<Defender>();
+		PlayerSelectorPresenter<Defender> defSelector1Pres = 
+				new PlayerSelectorPresenter<>(defSelector1View);
+		defSelector1View.setPresenter(defSelector1Pres);
         GridBagConstraints gbc_defSelector1 = new GridBagConstraints();
         gbc_defSelector1.gridwidth = 2;
         gbc_defSelector1.insets = new Insets(0, 0, 5, 5);
         gbc_defSelector1.gridx = 1;
         gbc_defSelector1.gridy = 0;
-        defendersPanel.add(defSelector1, gbc_defSelector1);
+        defendersPanel.add(defSelector1View, gbc_defSelector1);
         
-        PlayerSelectorPresenter<Defender> defSelector2 = new PlayerSelectorPresenter<Defender>();
+        SwingSubPlayerSelectorView<Defender> defSelector2View = new SwingSubPlayerSelectorView<Defender>();
+		PlayerSelectorPresenter<Defender> defSelector2Pres = 
+				new PlayerSelectorPresenter<>(defSelector2View);
+		defSelector2View.setPresenter(defSelector2Pres);
         GridBagConstraints gbc_defSelector2 = new GridBagConstraints();
         gbc_defSelector2.gridwidth = 2;
         gbc_defSelector2.insets = new Insets(0, 0, 5, 5);
         gbc_defSelector2.gridx = 3;
         gbc_defSelector2.gridy = 0;
-        defendersPanel.add(defSelector2, gbc_defSelector2);
+        defendersPanel.add(defSelector2View, gbc_defSelector2);
         
-        PlayerSelectorPresenter<Defender> defSelector3 = new PlayerSelectorPresenter<Defender>();
+        SwingSubPlayerSelectorView<Defender> defSelector3View = new SwingSubPlayerSelectorView<Defender>();
+		PlayerSelectorPresenter<Defender> defSelector3Pres = 
+				new PlayerSelectorPresenter<>(defSelector3View);
+		defSelector3View.setPresenter(defSelector3Pres);
         GridBagConstraints gbc_defSelector3 = new GridBagConstraints();
         gbc_defSelector3.gridwidth = 2;
         gbc_defSelector3.insets = new Insets(0, 0, 0, 5);
         gbc_defSelector3.gridx = 0;
         gbc_defSelector3.gridy = 1;
-        defendersPanel.add(defSelector3, gbc_defSelector3);
+        defendersPanel.add(defSelector3View, gbc_defSelector3);
         
-        PlayerSelectorPresenter<Defender> defSelector4 = new PlayerSelectorPresenter<Defender>();
+        SwingSubPlayerSelectorView<Defender> defSelector4View = new SwingSubPlayerSelectorView<Defender>();
+		PlayerSelectorPresenter<Defender> defSelector4Pres = 
+				new PlayerSelectorPresenter<>(defSelector4View);
+		defSelector4View.setPresenter(defSelector4Pres);
         GridBagConstraints gbc_defSelector4 = new GridBagConstraints();
         gbc_defSelector4.gridwidth = 2;
         gbc_defSelector4.gridx = 4;
         gbc_defSelector4.gridy = 1;
-        defendersPanel.add(defSelector4, gbc_defSelector4);
+        defendersPanel.add(defSelector4View, gbc_defSelector4);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(defSelector1, defSelector2, defSelector3, defSelector4), 
+				Set.of(defSelector1Pres, defSelector2Pres, defSelector3Pres, defSelector4Pres), 
 				List.of(
-                	    new Defender("Sergio", "Ramos"),
-                	    new Defender("Virgil", "van Dijk"),
+						new Defender("Giorgio", "Chiellini"),
                 	    new Defender("Gerard", "Piqué"),
+                	    new Defender("Sergio", "Ramos"),
                 	    new Defender("Thiago", "Silva"),
-                	    new Defender("Giorgio", "Chiellini")
+                	    new Defender("Virgil", "van Dijk")
                 	));
         
         
@@ -139,28 +155,37 @@ public class MultiPlayerSelector extends JFrame {
         gbl_midfieldersPanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
         midfieldersPanel.setLayout(gbl_midfieldersPanel);
         
-        PlayerSelectorPresenter<Midfielder> midSelector1 = new PlayerSelectorPresenter<Midfielder>();
+        SwingSubPlayerSelectorView<Midfielder> midSelector1View = new SwingSubPlayerSelectorView<Midfielder>();
+		PlayerSelectorPresenter<Midfielder> midSelector1Pres = 
+				new PlayerSelectorPresenter<>(midSelector1View);
+		midSelector1View.setPresenter(midSelector1Pres);
         GridBagConstraints gbc_midSelector1 = new GridBagConstraints();
         gbc_midSelector1.insets = new Insets(0, 0, 0, 5);
         gbc_midSelector1.gridx = 0;
         gbc_midSelector1.gridy = 0;
-        midfieldersPanel.add(midSelector1, gbc_midSelector1);
+        midfieldersPanel.add(midSelector1View, gbc_midSelector1);
         
-        PlayerSelectorPresenter<Midfielder> midSelector2 = new PlayerSelectorPresenter<Midfielder>();
+        SwingSubPlayerSelectorView<Midfielder> midSelector2View = new SwingSubPlayerSelectorView<Midfielder>();
+		PlayerSelectorPresenter<Midfielder> midSelector2Pres = 
+				new PlayerSelectorPresenter<>(midSelector2View);
+		midSelector2View.setPresenter(midSelector2Pres);
         GridBagConstraints gbc_midSelector2 = new GridBagConstraints();
         gbc_midSelector2.insets = new Insets(0, 0, 0, 5);
         gbc_midSelector2.gridx = 1;
         gbc_midSelector2.gridy = 0;
-        midfieldersPanel.add(midSelector2, gbc_midSelector2);
+        midfieldersPanel.add(midSelector2View, gbc_midSelector2);
         
-        PlayerSelectorPresenter<Midfielder> midSelector3 = new PlayerSelectorPresenter<Midfielder>();
+        SwingSubPlayerSelectorView<Midfielder> midSelector3View = new SwingSubPlayerSelectorView<Midfielder>();
+		PlayerSelectorPresenter<Midfielder> midSelector3Pres = 
+				new PlayerSelectorPresenter<>(midSelector3View);
+		midSelector3View.setPresenter(midSelector3Pres);
         GridBagConstraints gbc_midSelector3 = new GridBagConstraints();
         gbc_midSelector3.gridx = 2;
         gbc_midSelector3.gridy = 0;
-        midfieldersPanel.add(midSelector3, gbc_midSelector3);
+        midfieldersPanel.add(midSelector3View, gbc_midSelector3);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(midSelector1, midSelector2, midSelector3), 
+				Set.of(midSelector1Pres, midSelector2Pres, midSelector3Pres), 
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
 						new Midfielder("N'Golo", "Kanté"), 
@@ -182,33 +207,42 @@ public class MultiPlayerSelector extends JFrame {
         gbl_forwardsPanel.rowWeights = new double[]{1.0, 1.0, 1.0, Double.MIN_VALUE};
         forwardsPanel.setLayout(gbl_forwardsPanel);
         
-        PlayerSelectorPresenter<Forward> forwSelector1 = new PlayerSelectorPresenter<Forward>();
+        SwingSubPlayerSelectorView<Forward> forwSelector1View = new SwingSubPlayerSelectorView<Forward>();
+		PlayerSelectorPresenter<Forward> forwSelector1Pres = 
+				new PlayerSelectorPresenter<>(forwSelector1View);
+		forwSelector1View.setPresenter(forwSelector1Pres);
         GridBagConstraints gbc_forwSelector1 = new GridBagConstraints();
         gbc_forwSelector1.gridheight = 2;
         gbc_forwSelector1.insets = new Insets(0, 0, 5, 5);
         gbc_forwSelector1.gridx = 0;
         gbc_forwSelector1.gridy = 0;
-        forwardsPanel.add(forwSelector1, gbc_forwSelector1);
+        forwardsPanel.add(forwSelector1View, gbc_forwSelector1);
         
-        PlayerSelectorPresenter<Forward>forwSelector2 = new PlayerSelectorPresenter<Forward>();
+        SwingSubPlayerSelectorView<Forward> forwSelector2View = new SwingSubPlayerSelectorView<Forward>();
+		PlayerSelectorPresenter<Forward> forwSelector2Pres = 
+				new PlayerSelectorPresenter<>(forwSelector2View);
+		forwSelector2View.setPresenter(forwSelector2Pres);
         GridBagConstraints gbc_forwSelector2 = new GridBagConstraints();
         gbc_forwSelector2.gridheight = 2;
         gbc_forwSelector2.insets = new Insets(0, 0, 0, 5);
         gbc_forwSelector2.gridx = 1;
         gbc_forwSelector2.gridy = 1;
-        forwardsPanel.add(forwSelector2, gbc_forwSelector2);
+        forwardsPanel.add(forwSelector2View, gbc_forwSelector2);
 
 
-        PlayerSelectorPresenter<Forward> forwSelector3 = new PlayerSelectorPresenter<Forward>();
+        SwingSubPlayerSelectorView<Forward> forwSelector3View = new SwingSubPlayerSelectorView<Forward>();
+		PlayerSelectorPresenter<Forward> forwSelector3Pres = 
+				new PlayerSelectorPresenter<>(forwSelector3View);
+		forwSelector3View.setPresenter(forwSelector3Pres);
         GridBagConstraints gbc_forwSelector3 = new GridBagConstraints();
         gbc_forwSelector3.gridheight = 2;
         gbc_forwSelector3.insets = new Insets(0, 0, 5, 0);
         gbc_forwSelector3.gridx = 2;
         gbc_forwSelector3.gridy = 0;
-        forwardsPanel.add(forwSelector3, gbc_forwSelector3);
+        forwardsPanel.add(forwSelector3View, gbc_forwSelector3);
         
         OptionDealerGroupDriver.initializeDealing(
-				Set.of(forwSelector1, forwSelector2, forwSelector3), 
+				Set.of(forwSelector1Pres, forwSelector2Pres, forwSelector3Pres), 
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),
 						new Forward("Neymar", "Jr"), 
