@@ -9,66 +9,17 @@ import java.util.stream.IntStream;
 import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
-/*
- * TODO centralize the handling of combo events into one coherent 
- * block that defines the rules for 
- * 		- what events should trigger internal state changes
- * 		- what events should trigger driver notifications
- * 		- what events should trigger listener notifications
- * 		- what events should trigger subclass engagement
- * bearing in mind that, thanks to combo encapsulation, this class
- * is the sole originator of programmatic selection events on the combo
- *      - this means a reentrance-blocking flag is acceptable
- * 
- * TODO consider pulling up observer logic into a superclass,
- * together with any logic that doesn't directly depend on internal bookkeeping
- * 
- * TODO consider moving any GUI trivial interaction logic,
- * such as combo <-> button and future combo <-> label, 
- * into PlayerSelectorForm and have it tested there
- * 
- * TODO in PlayerSelectorForm, consider introducing distinct
- * private and public design logic
- * 
- */
-
 public class PlayerSelectorPresenter<P extends Player> 
 				implements OrderedOptionDealer<PlayerSelectorPresenter<P>, P> {
 	
-	public interface PlayerSelectorView<T> {
-		void initOptions(List<T> options);
-		void removeOptionAt(int removalIndex);
-		void insertOptionAt(T option, int insertionIndex);
-		void selectOptionAt(int selectionIndex);		
-	}
-
-	private final PlayerSelectorPresenter.PlayerSelectorView<P> view;
-	
-	public PlayerSelectorPresenter(PlayerSelectorView<P> view) {
-		this.view = view;
-	}
-
-	
-	/***********     selection event notification to listener clients 	 ***********/
-	
-	public interface StarterPlayerSelectorListener<Q extends Player > {
-		void selectionMadeOn(PlayerSelectorPresenter<Q> selector);
-		void selectionClearedOn(PlayerSelectorPresenter<Q> selector);
-	}
-	
-	private List<StarterPlayerSelectorListener<P>> listeners = new ArrayList<>();
-	
-	public void attachListener(StarterPlayerSelectorListener<P> listener) {
-		listeners.add(listener);
-	}
-	
-	/**************     OrderedOptionDealer internal bookkeeping 	 **************/
+	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 
 	private OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver;
-	private List<P> options;          // the original option pool, ordered
-	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
-	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
-	private static final int NO_SELECTION = -1;
+	
+	protected List<P> options;          // the original option pool, ordered
+	protected List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
+	protected Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
+	protected static final int NO_SELECTION = -1;
 
 	@Override
 	public void attachDriver(OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver) {
@@ -85,13 +36,11 @@ public class PlayerSelectorPresenter<P extends Player>
 	}
 	
 	/**
-	 * at the moment, these methods only mutate the mask and combo model to
-	 * insert or remove an option as mandated by the driver.
-	 * They never leak back into the driver, either because
-	 * 		- they cause no events on the combo to be fired
-	 * 		- they fire an event which is blocked by the listener
+	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
+	 * as long as the {@code PlayerSelectorView} collaborator 
+	 * honors requirements on event-feedback avoidance
+	 * @see PlayerSelectorView#removeOptionAt(int)
 	 */
-
 	@Override
 	public void retireOption(int absoluteIndex) {
 		int pos = mask.indexOf(absoluteIndex);
@@ -99,6 +48,12 @@ public class PlayerSelectorPresenter<P extends Player>
 		view.removeOptionAt(pos);
 	}
 
+	/**
+	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
+	 * as long as the {@code PlayerSelectorView} collaborator 
+	 * honors requirements on event-feedback avoidance
+	 * @see PlayerSelectorView#insertOptionAt(Object, int)
+	 */
 	@Override
 	public void restoreOption(int absoluteIndex) {
 		int insertionIndex = IntStream
@@ -109,17 +64,101 @@ public class PlayerSelectorPresenter<P extends Player>
 		view.insertOptionAt(options.get(absoluteIndex), insertionIndex);
 	}
 	
-	// methods to be called by the View
+	// 2. MVP Presenter: View interface & notification points
 	
 	/**
-	 * to avoid driver feedback, Presenter could
-	 * 		- document to the View the circumstances upon which
-	 * 		  these method ought to be called
-	 * 		- use a reentrance-blocking flag 
+	 * an interface for Views wishing to collaborate with 
+	 * {@link PlayerSelectorPresenter} according to the <b>MVP pattern</b>.
+	 * 
+	 * <p> Functionally, a {@code PlayerSelectorView} is supposed to 
+	 * <ul> 
+	 * 		<li>display an ordered list of options
+	 * 		<li>allow at most one option to be selected at any given time 
+	 * 		<li>permit insertion/removal of options from its list
+	 * </ul>
+	 * 
+	 * In addition to methods mandated by this interface, an implementor 
+	 * should also honor the MVP pattern by
+	 * <ul>
+	 * 		<li>composing one instance of {@code PlayerSelectorPresenter}
+	 * 		<li>notifying its {@code PlayerSelectorPresenter} whenever
+	 * 			<ol>
+	 * 				<li>an option in the View's list is selected
+	 * 				<li>the previous selection of an option is cleared
+	 * 			</ol>
+	 * 
+	 * 			<h1>Event-feedback avoidance</h1>
+	 * 			Notifications to the {@code PlayerSelectorPresenter} should
+	 * 			<i>not</i> take place for mutations induced by the 
+	 * 			{@code PlayerSelectorPresenter} itself: 
+	 * 			see notes to individual members of this interface
+	 * </ul>
+	 * @param <P> the type for options in the View's option list
+	 */	
+	public interface PlayerSelectorView<T> {
+		
+		/**
+		 * requests the {@link PlayerSelectorView} to initialize its option list.
+		 * @param options the initial option list
+		 */
+		void initOptions(List<T> options);
+		
+		/**
+		 * requests the {@code PlayerSelectorView} to remove an option 
+		 * from its current option list.
+		 * @param removalIndex the position of the option to be removed 
+		 * 		relative to the {@code PlayerSelectorView}'s current option list 
+		 * @implSpec option removal <i>should not be notified back</i> to 
+		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 */
+		void removeOptionAt(int removalIndex);
+		
+		/**
+		 * requests the {@code PlayerSelectorView} to add an option
+		 * to its current option list.
+		 * @param option the option to be inserted
+		 * @param insertionIndex the position in the {@code PlayerSelectorView}'s 
+		 * 		current option list where the specified option should be inserted
+		 * @implSpec option insertion <i>should not be notified back</i> to 
+		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 */
+		void insertOptionAt(T option, int insertionIndex);
+		
+		/**
+		 * requests the {@code PlayerSelectorView} to select an option
+		 * from its current option list.
+		 * @param selectionIndex the position of the option to be selected 
+		 * 		relative to the {@code PlayerSelectorView}'s current option list 
+		 * @implSpec option selection <i>should not be notified back</i> to 
+		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 */
+		void selectOptionAt(int selectionIndex);		
+	}
+
+	private final PlayerSelectorPresenter.PlayerSelectorView<P> view;
+	
+	public PlayerSelectorPresenter(PlayerSelectorView<P> view) {
+		this.view = view;
+	}
+	
+	/**
+	 * allows a {@code PlayerSelectorView} to notify its 
+	 * {@code PlayerSelectorPresenter} that an option has been selected
+	 * from its current option list.
+	 * 
+	 * <p><h1>Event-feedback avoidance</h1>
+	 * This notifications should <i>not</i> take place for mutations 
+	 * induced on the View by the {@code PlayerSelectorPresenter} itself: 
+	 * see notes to {@link PlayerSelectorView}
+	 * 
+	 * <p><h1>Notification Redundancy</h1>
+	 * {@code PlayerSelectorView} implementors should be aware that
+	 * {@code PlayerSelectorPresenter} has no mechanism for detecting a
+	 * redundant {@code #selectedOption(int)} notification.<p>		
+	 * 
+	 * @param position the position of the option having been selected 
+	 * 		relative to the {@code PlayerSelectorView}'s current option list
 	 */
-	
-	
-	// a user selection has been set on the View
 	public void selectedOption(int position) {
 		
 		// handles a previously existing selection
@@ -137,9 +176,22 @@ public class PlayerSelectorPresenter<P extends Player>
 		listeners.forEach(l -> l.selectionMadeOn(this));
 	}
 	
+	/**
+	 * allows a {@code PlayerSelectorView} to notify its 
+	 * {@code PlayerSelectorPresenter} that the previous selection 
+	 * on the View has been cleared.
+	 * 
+	 * <p><h1>Event-feedback avoidance</h1>
+	 * This notifications should <i>not</i> take place for mutations 
+	 * induced on the View by the {@code PlayerSelectorPresenter} itself: 
+	 * see notes to {@link PlayerSelectorView}
+	 * 
+	 * <p><h1>Notification Redundancy</h1>
+	 * {@code PlayerSelectorView} implementors should be aware that
+	 * {@code PlayerSelectorPresenter} has no mechanism for detecting a
+	 * redundant {@code #selectionCleared()} notification.
+	 */
 	public void selectionCleared() {
-		
-		// the View's selection has just been cleared
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
 
@@ -155,116 +207,52 @@ public class PlayerSelectorPresenter<P extends Player>
 		}
 	}
 	
+	// 3. Selection querying/setting APIs for clients
+	
 	/**
-	 * is responsible for deciding whether to contact the
-	 * {@link OptionDealerGroupDriver} in response to a selection event on the
-	 * composed combo. In particular, the driver is contacted only under these
-	 * circumstances:
-	 * <ol>
-	 * 		<li>a selection has been set <i> by the user </i> on the combo, thus
-	 * 		<ul>
-	 * 			<li>a previous selection should be restored on other dealers
-	 * 			<li>the current selection should be retired from other dealers
-	 * 		</ul>
-	 * 		<li>the combo's selection has <i>just</i> been cleared, thus
-	 * 		<ul> 
-	 * 			<li>the previous selection should be restored on other dealers
-	 * 		</ul>
-	 * </ol>
-	 * as no driver intervention is able to elicit these kinds of event,
-	 * this method effectively shields the driver from event feedback.
-	 * 
-	 * <p> Additionally, due to the combo's complete encapsulation within 
-	 * {@link PlayerSelectorPresenter}, this class is the <i>sole possible 
-	 * originator</i> of programmatic interactions with the combo.
-	 * Thus, any call to the driver must happen within this method.
+	 * an interface for clients wishing to be notified of selection
+	 * events related to this {@link PlayerSelectorPresenter}.
 	 */
+	public interface PlayerSelectorListener<Q extends Player > {
+		void selectionMadeOn(PlayerSelectorPresenter<Q> selector);
+		void selectionClearedOn(PlayerSelectorPresenter<Q> selector);
+	}
 	
-	/***********     Programmatic selection-setting API for Clients     **********/
+	private List<PlayerSelectorListener<P>> listeners = new ArrayList<>();
 	
-	public void select(Optional<P> player) {
+	public void attachListener(PlayerSelectorListener<P> listener) {
+		listeners.add(listener);
+	}
+	
+	/**
+	 * @return an {@code Optional} containing the option currently selected on
+	 * this dealer, or an empty one if the dealer has no selection
+	 */
+	public Optional<P> getSelection() {
+		return Optional.ofNullable(
+				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
+	}
+	
+	/**
+	 * @param player an {@code Optional} containing the option to be set on 
+	 * this dealer, or an empty one if one wishes to clear the dealer's selection 
+	 */
+	public void setSelection(Optional<P> player) {
 		player.ifPresentOrElse(p -> {
 			if (options.indexOf(p) == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
+				throw new IllegalArgumentException(String.format(
+						"PlayerSelectorPresenter.setSelection: Illegal Argument\n" +
+						"option %s not found in dealer group option list\n", player));
 			int playerInd = mask.indexOf(options.indexOf(p));
 			if (!mask.contains(playerInd))
-				throw new IllegalArgumentException("option for selecting is not present");
+				throw new IllegalArgumentException(String.format(
+						"PlayerSelectorPresenter.setSelection: Illegal Argument\n" +
+						"option %s not found among this dealer's available options\n", player));
 			view.selectOptionAt(playerInd);
 			selectedOption(playerInd);
 		}, () -> {
 			view.selectOptionAt(NO_SELECTION);
 			selectionCleared();
 		});
-	}
-	
-	/*********************     Dedicated Subclasses APIs    *********************/
-
-	
-	// 3) local Selection operators	
-	
-	// TODO consider completely overhauling these operators in favor of
-	// opening up bookkeeping to subclasses, given that this class
-	// no longer has to worry about being the (sole) originator of
-	// combo events
-	
-	/*
-	 * these fluent operators allow subclasses to access their local 
-	 * selection behavior without being exposed to any internal details
-	 * of StarterPlayerSelector. Benefits of this approach include:
-	 * 
-	 * for StarterPlayerSelector: 
-	 * 	- it remains the sole originator of programmatic combo interactions
-	 * 	- these operators are implemented with awareness of OptionDealerGroupDriver
-	 * 
-	 * for subclasses:
-	 *  - these operators do not risk leaking to any drivers inside subclasses
-	 *  - subclasses can only intervene via the event-handling engagement hooks
-	 */
-	
-	protected Optional<P> getSelectedOption() {
-		return Optional.ofNullable(
-				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
-	}
-	
-	protected void silentlySelect(Optional<P> option) {
-		option.ifPresentOrElse(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (!mask.contains(pos))
-				throw new IllegalArgumentException("option for selecting is not present");
-			currentSelection = pos;
-			view.selectOptionAt(mask.indexOf(pos));
-		}, () -> {
-			currentSelection = NO_SELECTION;
-			view.selectOptionAt(NO_SELECTION);
-		});
-	}
-	
-	protected void silentlyDrop(Optional<P> option) {
-		option.ifPresent(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (!mask.contains(pos))
-				throw new IllegalArgumentException("option for dropping is already missing");
-			if (currentSelection == pos) {
-				currentSelection = NO_SELECTION;		
-				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
-			}
-			retireOption(pos);	// no ghost selection nor driver feedback
-		});
-	}
-	
-	protected void silentlyAdd(Optional<P> option) {
-		option.ifPresent(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (mask.contains(pos))
-				throw new IllegalArgumentException("option for adding is already present");
-			restoreOption(pos);
-		});
-	}
-	
+	}	
 }

@@ -5,10 +5,10 @@ import java.util.Optional;
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
-public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerSelectorPresenter<T> 
-			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<T>> {	
+public class SubstitutePlayerSelectorPresenter<P extends Player> extends PlayerSelectorPresenter<P> 
+			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<P>> {	
 	
-	private final SubstitutePlayerSelectorView<T> view;
+	private final SubstitutePlayerSelectorView<P> view;
 
 	public interface SubstitutePlayerSelectorView<T> extends PlayerSelectorView<T> {
 		void highlight();
@@ -20,20 +20,16 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 	// one in super and one in this 
 	
 	// constructor inherited from superclass
-	public SubstitutePlayerSelectorPresenter(SubstitutePlayerSelectorView<T> view) {
+	public SubstitutePlayerSelectorPresenter(SubstitutePlayerSelectorView<P> view) {
 		super(view);
 		this.view = view;
 	}
-	
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver;
 
-	@Override
-	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<T>> driver) {
-		this.driver = driver;		
-	}
+	/**************** FillableSwappableGadget ***************/
 	
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> driver;
 	
-	// implements notifications to the driver by overriding these superclass methods
+	// 1) notifications to the driver: implements them by overriding these superclass methods
 	@Override
 	public void selectedOption(int position) {
 		super.selectedOption(position);
@@ -46,10 +42,17 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 		driver.contentRemoved(this);
 	}
 
+	// 2) mandated FillableSwappableGadget methods
+	
 	@Override
-	public void acquireContentFrom(SubstitutePlayerSelectorPresenter<T> other) {
-		Optional<T> selection = this.getSelectedOption();
-		Optional<T> otherSelection = other.getSelectedOption();
+	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> driver) {
+		this.driver = driver;		
+	}
+	
+	@Override
+	public void acquireContentFrom(SubstitutePlayerSelectorPresenter<P> other) {
+		Optional<P> selection = this.getSelection();
+		Optional<P> otherSelection = other.getSelection();
     	this.silentlyAdd(otherSelection);
     	this.silentlySelect(otherSelection);
 		this.silentlyDrop(selection);
@@ -57,13 +60,13 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 	
 	@Override
 	public void discardContent() {
-		this.silentlyDrop(this.getSelectedOption());
+		this.silentlyDrop(this.getSelection());
 	}
 
 	@Override
-	public void swapContentWith(SubstitutePlayerSelectorPresenter<T> other) {
-		Optional<T> selection = this.getSelectedOption();
-    	Optional<T> otherSelection = other.getSelectedOption();
+	public void swapContentWith(SubstitutePlayerSelectorPresenter<P> other) {
+		Optional<P> selection = this.getSelection();
+    	Optional<P> otherSelection = other.getSelection();
     	this.silentlyAdd(otherSelection);
     	this.silentlySelect(otherSelection);
     	this.silentlyDrop(selection);
@@ -90,6 +93,71 @@ public class SubstitutePlayerSelectorPresenter<T extends Player> extends PlayerS
 	@Override
 	public void disableFilling() {
 		view.setControlsEnabled(false);
+	}
+	
+	/************* package-private local option operators **************/
+
+	
+	// 3) local Selection operators	
+	
+	// TODO consider completely overhauling these operators in favor of
+	// opening up bookkeeping to subclasses, given that this class
+	// no longer has to worry about being the (sole) originator of
+	// combo events
+	
+	/*
+	 * these fluent operators allow subclasses to access their local 
+	 * selection behavior without being exposed to any internal details
+	 * of StarterPlayerSelector. Benefits of this approach include:
+	 * 
+	 * for StarterPlayerSelector: 
+	 * 	- it remains the sole originator of programmatic combo interactions
+	 * 	- these operators are implemented with awareness of OptionDealerGroupDriver
+	 * 
+	 * for subclasses:
+	 *  - these operators do not risk leaking to any drivers inside subclasses
+	 *  - subclasses can only intervene via the event-handling engagement hooks
+	 */
+	
+	void silentlySelect(Optional<P> option) {
+		option.ifPresentOrElse(o -> {
+			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (!mask.contains(pos))
+				throw new IllegalArgumentException("option for selecting is not present");
+			currentSelection = pos;
+			view.selectOptionAt(mask.indexOf(pos));
+		}, () -> {
+			currentSelection = NO_SELECTION;
+			view.selectOptionAt(NO_SELECTION);
+		});
+	}
+	
+	void silentlyDrop(Optional<P> option) {
+		option.ifPresent(o -> {
+			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (!mask.contains(pos))
+				throw new IllegalArgumentException("option for dropping is already missing");
+			if (currentSelection == pos) {
+				currentSelection = NO_SELECTION;		
+				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
+			}
+			retireOption(pos);	// no ghost selection nor driver feedback
+		});
+	}
+	
+	void silentlyAdd(Optional<P> option) {
+		option.ifPresent(o -> {
+			int pos = options.indexOf(o);
+			if (pos == -1)
+				throw new IllegalArgumentException("option must belong to group option pool");
+			if (mask.contains(pos))
+				throw new IllegalArgumentException("option for adding is already present");
+			restoreOption(pos);
+		});
 	}
 	
 }

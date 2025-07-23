@@ -251,7 +251,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 
 		// TODO empty out selectors that won't be shown
 		for (; i < selectors.size(); i++) {
-			selectors.get(i).getPresenter().select(Optional.empty());
+			selectors.get(i).getPresenter().setSelection(Optional.empty());
 		}
 	}
 	

@@ -27,6 +27,11 @@ import javax.swing.border.LineBorder;
 import domainModel.Player;
 import swingViews.SubstitutePlayerSelectorPresenter.SubstitutePlayerSelectorView;
 
+/*
+ * TODO consider introducing distinct private and public design-time logic
+ * 
+ */
+
 @SuppressWarnings("serial")
 public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
 
@@ -177,6 +182,32 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 		 * 		4) an entry is REMOVED from the underlying model AND that entry was the combo's selection 
 		 * 		5) an entry is ADDED to the underlying model AND the model was previously empty    */
 		
+
+		
+		/**
+		 * is responsible for deciding whether to contact the
+		 * {@link OptionDealerGroupDriver} in response to a selection event on the
+		 * composed combo. In particular, the driver is contacted only under these
+		 * circumstances:
+		 * <ol>
+		 * 		<li>a selection has been set <i> by the user </i> on the combo, thus
+		 * 		<ul>
+		 * 			<li>a previous selection should be restored on other dealers
+		 * 			<li>the current selection should be retired from other dealers
+		 * 		</ul>
+		 * 		<li>the combo's selection has <i>just</i> been cleared, thus
+		 * 		<ul> 
+		 * 			<li>the previous selection should be restored on other dealers
+		 * 		</ul>
+		 * </ol>
+		 * as no driver intervention is able to elicit these kinds of event,
+		 * this method effectively shields the driver from event feedback.
+		 * 
+		 * <p> Additionally, due to the combo's complete encapsulation within 
+		 * {@link PlayerSelectorPresenter}, this class is the <i>sole possible 
+		 * originator</i> of programmatic interactions with the combo.
+		 * Thus, any call to the driver must happen within this method.
+		 */
 		comboBox.addActionListener(e -> {
 			int selectedIndex = comboBox.getSelectedIndex();
 			
