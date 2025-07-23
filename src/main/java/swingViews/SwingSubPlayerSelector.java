@@ -163,13 +163,13 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 		addListeners();
 	}
 	
-	private PlayerSelectorPresenter<P> presenter;
+	private OrderedDealerPresenter<P> presenter;
 
-	public void setPresenter(PlayerSelectorPresenter<P> presenter) {
+	public void setPresenter(OrderedDealerPresenter<P> presenter) {
 		this.presenter = presenter;
 	}
 	
-	public PlayerSelectorPresenter<P> getPresenter() {
+	public OrderedDealerPresenter<P> getPresenter() {
 		return presenter;
 	}
 	

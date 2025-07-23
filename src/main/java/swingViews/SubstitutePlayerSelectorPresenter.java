@@ -5,12 +5,12 @@ import java.util.Optional;
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
-public class SubstitutePlayerSelectorPresenter<P extends Player> extends PlayerSelectorPresenter<P> 
+public class SubstitutePlayerSelectorPresenter<P extends Player> extends OrderedDealerPresenter<P> 
 			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<P>> {	
 	
 	private final SubstitutePlayerSelectorView<P> view;
 
-	public interface SubstitutePlayerSelectorView<T> extends PlayerSelectorView<T> {
+	public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
 		void highlight();
 		void dehighlight();
 		void setControlsEnabled(boolean b);

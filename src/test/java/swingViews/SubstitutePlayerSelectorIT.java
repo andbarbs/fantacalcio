@@ -41,7 +41,7 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 	private SubstitutePlayerSelectorPresenter<Defender> substitutePresenter1, substitutePresenter2;
 
     @Mock
-    private OptionDealerGroupDriver<PlayerSelectorPresenter<Defender>, Defender> mockGroupDriver;
+    private OptionDealerGroupDriver<OrderedDealerPresenter<Defender>, Defender> mockGroupDriver;
     
     @Mock
     private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<Defender>> mockSequenceDriver;
@@ -106,9 +106,9 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
      * this test case aims to specify the intended behavior of 
      * protected silent option operators of {@code StarterPlayerSelector}, namely
      * <ol>
-	 * 		<li>{@link PlayerSelectorPresenter#silentlyDrop(Optional)}
-	 * 		<li>{@link PlayerSelectorPresenter#silentlyAdd(Optional)}
-	 * 		<li>{@link PlayerSelectorPresenter#silentlySelect(Optional)}
+	 * 		<li>{@link OrderedDealerPresenter#silentlyDrop(Optional)}
+	 * 		<li>{@link OrderedDealerPresenter#silentlyAdd(Optional)}
+	 * 		<li>{@link OrderedDealerPresenter#silentlySelect(Optional)}
 	 * </ol>
      */
     

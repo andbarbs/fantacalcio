@@ -6,28 +6,27 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import domainModel.Player;
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
-public class PlayerSelectorPresenter<P extends Player> 
-				implements OrderedOptionDealer<PlayerSelectorPresenter<P>, P> {
+public class OrderedDealerPresenter<T> 
+				implements OrderedOptionDealer<OrderedDealerPresenter<T>, T> {
 	
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 
-	private OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver;
+	private OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver;
 	
-	protected List<P> options;          // the original option pool, ordered
-	protected List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
-	protected Integer currentSelection; // contains the linear index in this.options of the combo's current selection	
+	protected List<T> options;            // the original option pool, ordered
+	protected List<Integer> mask;         // contains the linear indices in this.options of elements in the combo's model
+	protected Integer currentSelection;   // contains the linear index in this.options of the combo's current selection	
 	protected static final int NO_SELECTION = -1;
 
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<PlayerSelectorPresenter<P>, P> driver) {
+	public void attachDriver(OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver) {
 		this.driver = driver;		
 	}
 
 	@Override
-	public void attachOptions(List<P> options) {
+	public void attachOptions(List<T> options) {
 		this.options = options;
 		this.mask = new ArrayList<Integer>(
 				IntStream.range(0, options.size()).boxed().collect(Collectors.toList()));
@@ -37,9 +36,9 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	/**
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
-	 * as long as the {@code PlayerSelectorView} collaborator 
+	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
-	 * @see PlayerSelectorView#removeOptionAt(int)
+	 * @see OrderedDealerView#removeOptionAt(int)
 	 */
 	@Override
 	public void retireOption(int absoluteIndex) {
@@ -50,9 +49,9 @@ public class PlayerSelectorPresenter<P extends Player>
 
 	/**
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
-	 * as long as the {@code PlayerSelectorView} collaborator 
+	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
-	 * @see PlayerSelectorView#insertOptionAt(Object, int)
+	 * @see OrderedDealerView#insertOptionAt(Object, int)
 	 */
 	@Override
 	public void restoreOption(int absoluteIndex) {
@@ -68,9 +67,9 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	/**
 	 * an interface for Views wishing to collaborate with 
-	 * {@link PlayerSelectorPresenter} according to the <b>MVP pattern</b>.
+	 * {@link OrderedDealerPresenter} according to the <b>MVP pattern</b>.
 	 * 
-	 * <p> Functionally, a {@code PlayerSelectorView} is supposed to 
+	 * <p> Functionally, a {@code OrderedDealerView} is supposed to 
 	 * <ul> 
 	 * 		<li>display an ordered list of options
 	 * 		<li>allow at most one option to be selected at any given time 
@@ -80,84 +79,84 @@ public class PlayerSelectorPresenter<P extends Player>
 	 * In addition to methods mandated by this interface, an implementor 
 	 * should also honor the MVP pattern by
 	 * <ul>
-	 * 		<li>composing one instance of {@code PlayerSelectorPresenter}
-	 * 		<li>notifying its {@code PlayerSelectorPresenter} whenever
+	 * 		<li>composing one instance of {@code OrderedDealerPresenter}
+	 * 		<li>notifying its {@code OrderedDealerPresenter} whenever
 	 * 			<ol>
 	 * 				<li>an option in the View's list is selected
 	 * 				<li>the previous selection of an option is cleared
 	 * 			</ol>
 	 * 
 	 * 			<h1>Event-feedback avoidance</h1>
-	 * 			Notifications to the {@code PlayerSelectorPresenter} should
+	 * 			Notifications to the {@code OrderedDealerPresenter} should
 	 * 			<i>not</i> take place for mutations induced by the 
-	 * 			{@code PlayerSelectorPresenter} itself: 
+	 * 			{@code OrderedDealerPresenter} itself: 
 	 * 			see notes to individual members of this interface
 	 * </ul>
-	 * @param <P> the type for options in the View's option list
+	 * @param <T> the type for options in the View's option list
 	 */	
-	public interface PlayerSelectorView<T> {
+	public interface OrderedDealerView<T> {
 		
 		/**
-		 * requests the {@link PlayerSelectorView} to initialize its option list.
+		 * requests the {@link OrderedDealerView} to initialize its option list.
 		 * @param options the initial option list
 		 */
 		void initOptions(List<T> options);
 		
 		/**
-		 * requests the {@code PlayerSelectorView} to remove an option 
+		 * requests the {@code OrderedDealerView} to remove an option 
 		 * from its current option list.
 		 * @param removalIndex the position of the option to be removed 
-		 * 		relative to the {@code PlayerSelectorView}'s current option list 
+		 * 		relative to the {@code OrderedDealerView}'s current option list 
 		 * @implSpec option removal <i>should not be notified back</i> to 
-		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
 		 */
 		void removeOptionAt(int removalIndex);
 		
 		/**
-		 * requests the {@code PlayerSelectorView} to add an option
+		 * requests the {@code OrderedDealerView} to add an option
 		 * to its current option list.
 		 * @param option the option to be inserted
-		 * @param insertionIndex the position in the {@code PlayerSelectorView}'s 
+		 * @param insertionIndex the position in the {@code OrderedDealerView}'s 
 		 * 		current option list where the specified option should be inserted
 		 * @implSpec option insertion <i>should not be notified back</i> to 
-		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
 		 */
 		void insertOptionAt(T option, int insertionIndex);
 		
 		/**
-		 * requests the {@code PlayerSelectorView} to select an option
+		 * requests the {@code OrderedDealerView} to select an option
 		 * from its current option list.
 		 * @param selectionIndex the position of the option to be selected 
-		 * 		relative to the {@code PlayerSelectorView}'s current option list 
+		 * 		relative to the {@code OrderedDealerView}'s current option list 
 		 * @implSpec option selection <i>should not be notified back</i> to 
-		 * 		the {@code PlayerSelectorView}'s {@code PlayerSelectorPresenter}
+		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
 		 */
 		void selectOptionAt(int selectionIndex);		
 	}
 
-	private final PlayerSelectorPresenter.PlayerSelectorView<P> view;
+	private final OrderedDealerPresenter.OrderedDealerView<T> view;
 	
-	public PlayerSelectorPresenter(PlayerSelectorView<P> view) {
+	public OrderedDealerPresenter(OrderedDealerView<T> view) {
 		this.view = view;
 	}
 	
 	/**
-	 * allows a {@code PlayerSelectorView} to notify its 
-	 * {@code PlayerSelectorPresenter} that an option has been selected
+	 * allows a {@code OrderedDealerView} to notify its 
+	 * {@code OrderedDealerPresenter} that an option has been selected
 	 * from its current option list.
 	 * 
 	 * <p><h1>Event-feedback avoidance</h1>
 	 * This notifications should <i>not</i> take place for mutations 
-	 * induced on the View by the {@code PlayerSelectorPresenter} itself: 
-	 * see notes to {@link PlayerSelectorView}
+	 * induced on the View by the {@code OrderedDealerPresenter} itself: 
+	 * see notes to {@link OrderedDealerView}
 	 * 
 	 * <p><h1>Notification Redundancy</h1>
-	 * {@code PlayerSelectorView} implementors should be aware that
-	 * {@code PlayerSelectorPresenter} has no mechanism for detecting a
+	 * {@code OrderedDealerView} implementors should be aware that
+	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
 	 * redundant {@code #selectedOption(int)} notification.<p>		
 	 * 
 	 * @param position the position of the option having been selected 
-	 * 		relative to the {@code PlayerSelectorView}'s current option list
+	 * 		relative to the {@code OrderedDealerView}'s current option list
 	 */
 	public void selectedOption(int position) {
 		
@@ -177,18 +176,18 @@ public class PlayerSelectorPresenter<P extends Player>
 	}
 	
 	/**
-	 * allows a {@code PlayerSelectorView} to notify its 
-	 * {@code PlayerSelectorPresenter} that the previous selection 
+	 * allows a {@code OrderedDealerView} to notify its 
+	 * {@code OrderedDealerPresenter} that the previous selection 
 	 * on the View has been cleared.
 	 * 
 	 * <p><h1>Event-feedback avoidance</h1>
 	 * This notifications should <i>not</i> take place for mutations 
-	 * induced on the View by the {@code PlayerSelectorPresenter} itself: 
-	 * see notes to {@link PlayerSelectorView}
+	 * induced on the View by the {@code OrderedDealerPresenter} itself: 
+	 * see notes to {@link OrderedDealerView}
 	 * 
 	 * <p><h1>Notification Redundancy</h1>
-	 * {@code PlayerSelectorView} implementors should be aware that
-	 * {@code PlayerSelectorPresenter} has no mechanism for detecting a
+	 * {@code OrderedDealerView} implementors should be aware that
+	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
 	 * redundant {@code #selectionCleared()} notification.
 	 */
 	public void selectionCleared() {
@@ -211,16 +210,16 @@ public class PlayerSelectorPresenter<P extends Player>
 	
 	/**
 	 * an interface for clients wishing to be notified of selection
-	 * events related to this {@link PlayerSelectorPresenter}.
+	 * events related to this {@link OrderedDealerPresenter}.
 	 */
-	public interface PlayerSelectorListener<Q extends Player > {
-		void selectionMadeOn(PlayerSelectorPresenter<Q> selector);
-		void selectionClearedOn(PlayerSelectorPresenter<Q> selector);
+	public interface OrderedDealerListener<Q> {
+		void selectionMadeOn(OrderedDealerPresenter<Q> selector);
+		void selectionClearedOn(OrderedDealerPresenter<Q> selector);
 	}
 	
-	private List<PlayerSelectorListener<P>> listeners = new ArrayList<>();
+	private List<OrderedDealerListener<T>> listeners = new ArrayList<>();
 	
-	public void attachListener(PlayerSelectorListener<P> listener) {
+	public void attachListener(OrderedDealerListener<T> listener) {
 		listeners.add(listener);
 	}
 	
@@ -228,28 +227,28 @@ public class PlayerSelectorPresenter<P extends Player>
 	 * @return an {@code Optional} containing the option currently selected on
 	 * this dealer, or an empty one if the dealer has no selection
 	 */
-	public Optional<P> getSelection() {
+	public Optional<T> getSelection() {
 		return Optional.ofNullable(
 				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
 	}
 	
 	/**
-	 * @param player an {@code Optional} containing the option to be set on 
+	 * @param option an {@code Optional} containing the option to be set on 
 	 * this dealer, or an empty one if one wishes to clear the dealer's selection 
 	 */
-	public void setSelection(Optional<P> player) {
-		player.ifPresentOrElse(p -> {
-			if (options.indexOf(p) == -1)
+	public void setSelection(Optional<T> option) {
+		option.ifPresentOrElse(o -> {
+			if (options.indexOf(o) == -1)
 				throw new IllegalArgumentException(String.format(
-						"PlayerSelectorPresenter.setSelection: Illegal Argument\n" +
-						"option %s not found in dealer group option list\n", player));
-			int playerInd = mask.indexOf(options.indexOf(p));
-			if (!mask.contains(playerInd))
+						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
+						"option %s not found in dealer group option list\n", option));
+			int pos = mask.indexOf(options.indexOf(o));
+			if (!mask.contains(pos))
 				throw new IllegalArgumentException(String.format(
-						"PlayerSelectorPresenter.setSelection: Illegal Argument\n" +
-						"option %s not found among this dealer's available options\n", player));
-			view.selectOptionAt(playerInd);
-			selectedOption(playerInd);
+						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
+						"option %s not found among this dealer's available options\n", option));
+			view.selectOptionAt(pos);
+			selectedOption(pos);
 		}, () -> {
 			view.selectOptionAt(NO_SELECTION);
 			selectionCleared();

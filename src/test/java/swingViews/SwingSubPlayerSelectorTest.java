@@ -27,7 +27,7 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 public class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 
 	@Mock
-    private PlayerSelectorPresenter<Defender> selectorPresenter;
+    private OrderedDealerPresenter<Defender> selectorPresenter;
 
 	@BeforeEach
 	public void testCaseSpecificSetup() {
