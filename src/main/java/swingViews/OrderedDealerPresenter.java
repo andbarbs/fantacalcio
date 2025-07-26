@@ -16,8 +16,8 @@ public class OrderedDealerPresenter<T>
 	private OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver;
 	
 	protected List<T> options;            // the original option pool, ordered
-	protected List<Integer> mask;         // contains the linear indices in this.options of elements in the combo's model
-	protected Integer currentSelection;   // contains the linear index in this.options of the combo's current selection	
+	protected List<Integer> mask;         // contains the linear indices in this.options of options in the View's list
+	protected Integer currentSelection;   // contains the linear index in this.options of the View's current selection	
 	protected static final int NO_SELECTION = -1;
 
 	@Override
@@ -238,15 +238,16 @@ public class OrderedDealerPresenter<T>
 	 */
 	public void setSelection(Optional<T> option) {
 		option.ifPresentOrElse(o -> {
-			if (options.indexOf(o) == -1)
+			int absoluteIndex = options.indexOf(o);
+			if (absoluteIndex == -1)
 				throw new IllegalArgumentException(String.format(
 						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
-						"option %s not found in dealer group option list\n", option));
-			int pos = mask.indexOf(options.indexOf(o));
-			if (!mask.contains(pos))
+						"option: %s not found in dealer group option list\n", o));
+			int pos = mask.indexOf(absoluteIndex);
+			if (pos == -1)
 				throw new IllegalArgumentException(String.format(
 						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
-						"option %s not found among this dealer's available options\n", option));
+						"option: %s not found among this dealer's available options\n", o));
 			view.selectOptionAt(pos);
 			selectedOption(pos);
 		}, () -> {

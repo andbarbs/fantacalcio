@@ -5,8 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,240 +21,253 @@ import static org.mockito.Mockito.*;
 @DisplayName("An OrderedDealerPresenter")
 class OrderedDealerPresenterTest {
 
-    //--- Collaborator Mocks ---//
-    @Mock
-    private OrderedDealerPresenter.OrderedDealerView<String> view;
-    @Mock
-    private OptionDealerGroupDriver<OrderedDealerPresenter<String>, String> driver;
-    @Mock
-    private OrderedDealerPresenter.OrderedDealerListener<String> listener;
+	// collaborator Mocks
+	@Mock
+	private OrderedDealerPresenter.OrderedDealerView<String> view;
+	
+	@Mock
+	private OptionDealerGroupDriver<OrderedDealerPresenter<String>, String> driver;
+	
+	@Mock
+	private OrderedDealerPresenter.OrderedDealerListener<String> listener;
+	
+	// SUT instance 
+	@InjectMocks
+	private OrderedDealerPresenter<String> presenter;
 
-    //--- Argument Captors ---//
-    @Captor
-    private ArgumentCaptor<Integer> intCaptor;
-    @Captor
-    private ArgumentCaptor<String> stringCaptor;
-    @Captor
-    private ArgumentCaptor<List<String>> listCaptor;
+	// global option pool
+	private static final List<String> INITIAL_OPTIONS = List.of("Alpha", "Beta", "Gamma", "Delta");
 
-    //--- System Under Test (SUT) ---//
-    @InjectMocks
-    private OrderedDealerPresenter<String> presenter;
+	@BeforeEach
+	void commonSetup() {
+		presenter.attachDriver(driver);
+		presenter.attachListener(listener);
+	}
 
-    private List<String> initialOptions;
+	@Nested
+	@DisplayName("as an OrderedOptionDealer")
+	class AsAnOrderedOptionDealer {
 
-    @BeforeEach
-    void commonSetup() {
-        initialOptions = List.of("Alpha", "Beta", "Gamma", "Delta");
-        presenter.attachListener(listener);
-    }
-    
-    //--------------------------------------------------------------------------------
-    
-    @Nested
-    @DisplayName("when being initialized")
-    class WhenInitializing {
+		@Test
+		@DisplayName("when attaching options")
+		void attachOptions() {
+			// WHEN attaching options
+			presenter.attachOptions(INITIAL_OPTIONS);
 
-        @Test
-        @DisplayName("attachDriver should store the driver reference")
-        void attachDriver() {
-            // WHEN attaching the driver
-            presenter.attachDriver(driver);
-            presenter.currentSelection = 1; // Arbitrary selection
-            
-            // THEN calling a method that uses the driver should not fail
-            presenter.selectionCleared();
-            verify(driver).selectionClearedOn(presenter, 1);
-        }
+			// THEN it should command the view to initialize its own options
+			verify(view).initOptions(INITIAL_OPTIONS);
 
-        @Test
-        @DisplayName("attachOptions should initialize view and internal state")
-        void attachOptions() {
-            // WHEN attaching options
-            presenter.attachOptions(initialOptions);
+			// no interaction back to the driver
+			verifyNoInteractions(driver, listener);
+		}
+		
+		@Test
+		@DisplayName("when retiring an option")
+		void onRetireOption() {
+			presenter.options = new ArrayList<>(INITIAL_OPTIONS);			
+			presenter.mask = new ArrayList<>(List.of(0, 1, 3));  // current options "Alpha", "Beta", "Delta"
 
-            // THEN it should command the view to initialize its own options
-            verify(view).initOptions(listCaptor.capture());
-            assertThat(listCaptor.getValue()).isEqualTo(initialOptions);
+			// WHEN the driver retires "Delta" (absolute index 3)
+			presenter.retireOption(3);
 
-            // AND internal state should be correctly set
-            assertThat(presenter.getSelection()).isEmpty();
-        }
-    }
-    
-    //--------------------------------------------------------------------------------
+			// THEN the view is commanded to remove "Delta" (relative position 2)
+			verify(view).removeOptionAt(2);
 
-    @Nested
-    @DisplayName("when options are attached")
-    class WhenOptionsAreAttached {
+			// AND no feedback is sent back to the driver
+			verifyNoMoreInteractions(driver, listener);
+		}
+		
+		@Test
+		@DisplayName("when restoring an option")
+		void onRestoreOption() {
+			presenter.options = new ArrayList<>(INITIAL_OPTIONS);			
+			presenter.mask = new ArrayList<>(List.of(0, 3));   // current options "Alpha", "Delta"
 
-        @BeforeEach
-        void setupWithOptions() {
-            presenter.attachDriver(driver);
-            // Simulate the presenter being fully initialized
-            presenter.options = new ArrayList<>(initialOptions);
-        }
+			// WHEN the driver restores "Gamma" (absolute index 2)
+			presenter.restoreOption(2);
 
-        @Nested
-        @DisplayName("and no selection exists")
-        class AndNoSelectionExists {
-        	
-        	@BeforeEach
-            void setupWithNoSelection() {
-        		presenter.mask = presenter.mask = new ArrayList<>(List.of(0, 1, 2, 3));
-        		presenter.currentSelection = -1; // NO_SELECTION
-            }
+			// THEN the view is commanded to insert "Gamma" (relative position 1)
+			verify(view).insertOptionAt("Gamma", 1);
 
-            @Test
-            @DisplayName("getSelection should return an empty Optional")
-            void getSelection() {
-                assertThat(presenter.getSelection()).isEmpty();
-            }
+			// AND no feedback is sent to the driver
+			verifyNoMoreInteractions(driver, listener);
+		}
 
-            @Test
-            @DisplayName("a view selection should notify driver and listeners")
-            void selectedOption() {
-                // WHEN the view notifies a selection at relative position 2 ("Gamma")
-                presenter.selectedOption(2);
+		
+	}
 
-                // THEN the driver is notified of the new selection (absolute index 2)
-                verify(driver).selectionMadeOn(presenter, 2);
-                // AND the listener is notified
-                verify(listener).selectionMadeOn(presenter);
-                verifyNoMoreInteractions(driver, listener);
-            }
+	@Nested
+	@DisplayName("as an MVP Presenter")
+	class AsAnMVPPresenter {
+		
+		/**
+		 * presenter.options does not need to be initialized
+		 */
 
-            @Test
-            @DisplayName("a client selection should command view and notify others")
-            void setSelection() {
-                // WHEN a client sets the selection to "Delta"
-                presenter.setSelection(Optional.of("Delta"));
+		@Nested
+		@DisplayName("when notified of a selection")
+		class OnSelectedOption {
 
-                // THEN the view is commanded to select relative position 3
-                verify(view).selectOptionAt(3);
-                // AND the driver and listener are notified of absolute index 3
-                verify(driver).selectionMadeOn(presenter, 3);
-                verify(listener).selectionMadeOn(presenter);
-                verifyNoMoreInteractions(driver, listener);
-            }
-        }
+			@Test
+			@DisplayName("and no previous selection existed")
+			void withNoPriorSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+				presenter.currentSelection = -1; 				  // no prior selection
 
-        @Nested
-        @DisplayName("and a selection already exists")
-        class AndASelectionExists {
+				// WHEN the view notifies a selection for "Delta" (relative position 1)
+				presenter.selectedOption(1);
 
-            @BeforeEach
-            void setupWithSelection() {
-            	presenter.mask = new ArrayList<>(List.of(0, 1, 2, 3));
-                presenter.currentSelection = 1; // "Beta" is at absolute index 1
-            }
+				// THEN the driver is notified of the new selection for "Delta" (absolute index 3)
+				verify(driver).selectionMadeOn(presenter, 3);
+				// AND the listener is notified
+				verify(listener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(driver, listener);
+			}
 
-            @Test
-            @DisplayName("getSelection should return the correct Optional")
-            void getSelection() {
-                assertThat(presenter.getSelection()).hasValue("Beta");
-            }
+			@Test
+			@DisplayName("and a previous selection existed")
+			void withPriorSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 
-            @Test
-            @DisplayName("a new view selection should clear old and set new")
-            void selectedOption() {
-                // WHEN the view notifies a new selection at relative position 3 ("Delta")
-                presenter.selectedOption(3);
+				// WHEN the view notifies a selection for "Delta" (relative position 1)
+				presenter.selectedOption(1);
 
-                // THEN the driver is notified of the clearance and the new selection, in order
-                InOrder inOrder = inOrder(driver);
-                inOrder.verify(driver).selectionClearedOn(presenter, 1); // Old selection "Beta"
-                inOrder.verify(driver).selectionMadeOn(presenter, 3);   // New selection "Delta"
-                verifyNoMoreInteractions(driver);
-                
-                // AND the listener is notified of the new selection
-                verify(listener).selectionMadeOn(presenter);
-                verifyNoMoreInteractions(listener);
-            }
+				// THEN the driver is notified of the clearance and the new selection, in order
+				InOrder inOrder = inOrder(driver);
+				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
+				inOrder.verify(driver).selectionMadeOn(presenter, 3); // New selection "Delta"
+				verifyNoMoreInteractions(driver);
 
-            @Test
-            @DisplayName("a view clearance should notify driver and listeners")
-            void selectionCleared() {
-                // WHEN the view notifies the selection was cleared
-                presenter.selectionCleared();
+				// AND listeners are notified of the new selection
+				verify(listener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(listener);
+			}
 
-                // THEN the driver is notified
-                verify(driver).selectionClearedOn(presenter, 1);
-                // AND the listener is notified
-                verify(listener).selectionClearedOn(presenter);
-            }
+		}
+		
+		@Test
+		@DisplayName("when notified of clearance")
+		void onSelectionCleared() {			
+			presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+			presenter.currentSelection = 3;					  // prior selection is "Delta"
 
-            @Test
-            @DisplayName("a client clearance should command view and notify others")
-            void setSelectionToEmpty() {
-                // WHEN a client clears the selection
-                presenter.setSelection(Optional.empty());
+			// WHEN the view notifies a selection clearance for "Delta"
+			presenter.selectionCleared();
 
-                // THEN the view is commanded to clear its selection
-                verify(view).selectOptionAt(-1);
-                // AND the driver and listener are notified
-                verify(driver).selectionClearedOn(presenter, 1);
-                verify(listener).selectionClearedOn(presenter);
-            }
-        }
+			// THEN driver is notified of a selection clearance for "Delta" (absolute index 3)
+			verify(driver).selectionClearedOn(presenter, 3);
+			// AND listeners are notified of a selection clearance
+			verify(listener).selectionClearedOn(presenter);
 
-        @Nested
-        @DisplayName("and acting as a dealer when options are contested")
-        class AsContestedDealer {
+		}
+	}
 
-            @BeforeEach
-            void setupWithContestedOptions() {
-                // Simulate that another dealer took "Gamma" (absolute index 2)
-                presenter.mask = new ArrayList<>(List.of(0, 1, 3));
-                presenter.currentSelection = -1; // NO_SELECTION
-            }
+	@Nested
+	@DisplayName("as a public Selector")
+	class AsAPublicSelector {
+		
+		@BeforeEach
+		void setupWithOptions() {
+			presenter.options = new ArrayList<>(INITIAL_OPTIONS);
+		}
+		
+		@Nested
+		@DisplayName("when the selection is queried")
+		class OnGetSelection {
+			
+			@Test
+			@DisplayName("and a selection exists")
+			void withExistingSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+				
+				assertThat(presenter.getSelection()).hasValue("Alpha");
+			}
+			
+			@Test
+			@DisplayName("and no selection exists")
+			void withNoExistingSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options are "Alpha", "Delta"
+				presenter.currentSelection = -1; 				  // no prior selection
+				
+				assertThat(presenter.getSelection()).isEmpty();
+			}
 
-            @Test
-            @DisplayName("retireOption should command view with the correct relative index")
-            void retireOption() {
-                // The current options are "Alpha", "Beta", "Delta".
-                // "Delta" (absolute index 3) is at relative position 2.
-                
-                // WHEN the driver retires "Delta"
-                presenter.retireOption(3);
+		}
+		
+		@Nested
+		@DisplayName("when the selection is set")
+		class onSetSelection {
+			
+			@Test
+			@DisplayName("and no previous selection existed")
+			void WithNoPriorSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options are "Alpha", "Delta"
+				presenter.currentSelection = -1; 				  // no prior selection
+				
+				// WHEN a client sets the selection to "Delta"
+				presenter.setSelection(Optional.of("Delta"));
 
-                // THEN the view is commanded to remove the option at relative position 2
-                verify(view).removeOptionAt(intCaptor.capture());
-                assertThat(intCaptor.getValue()).isEqualTo(2);
+				// THEN the view is commanded to select "Delta" (relative position 1)
+				verify(view).selectOptionAt(1);
+				// AND the driver is notified of selection for "Delta" (absolute index 3)
+				verify(driver).selectionMadeOn(presenter, 3);
+				// AND listeners are notified of the selection
+				verify(listener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(driver, listener);
+			}
+			
+			@Test
+			@DisplayName("and a previous selection existed")
+			void WithPriorSelection() {				
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+				
+				// WHEN a client sets the selection to "Delta"
+				presenter.setSelection(Optional.of("Delta"));
 
-                // AND no feedback is sent to the driver
-                verifyNoMoreInteractions(driver);
-            }
+				// THEN the view is commanded to select "Delta" (relative position 1)
+				verify(view).selectOptionAt(1);
+				// AND the driver is notified of the clearance and the new selection, in order
+				InOrder inOrder = inOrder(driver);
+				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
+				inOrder.verify(driver).selectionMadeOn(presenter, 3); // New selection "Delta"
+				// AND listeners are notified of the selection
+				verify(listener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(driver, listener);
+			}
+			
+			@Test
+			@DisplayName("but the provided option is unavailable")
+			void withUnavailableOption() {
+				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+				
+				// WHEN attempting to select "Gamma", which is not in the current mask
+				assertThatThrownBy(() -> presenter.setSelection(Optional.of("Gamma")))
+						.isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("not found among this dealer's available options");
 
-            @Test
-            @DisplayName("restoreOption should command view with correct relative index and option")
-            void restoreOption() {
-                // The current options are "Alpha", "Beta", "Delta".
-                // Restoring "Gamma" (absolute index 2) should place it at relative position 2.
+				// THEN no interactions should have occurred with collaborators
+				verifyNoInteractions(view, driver, listener);
+			}
+		}
+		
+		@Test
+		@DisplayName("when the selection is cleared")
+		void ClearingSelection() {				
+			presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+			presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+			
+			// WHEN a client clears the selection
+			presenter.setSelection(Optional.empty());
 
-                // WHEN the driver restores "Gamma"
-                presenter.restoreOption(2);
-
-                // THEN the view is commanded to insert "Gamma" at relative position 2
-                verify(view).insertOptionAt(stringCaptor.capture(), intCaptor.capture());
-                assertThat(stringCaptor.getValue()).isEqualTo("Gamma");
-                assertThat(intCaptor.getValue()).isEqualTo(2);
-                
-                // AND no feedback is sent to the driver
-                verifyNoMoreInteractions(driver);
-            }
-
-            @Test
-            @DisplayName("setSelection with an unavailable option should throw an exception")
-            void setSelectionUnavailable() {
-                // WHEN attempting to select "Gamma", which is not in the current mask
-                assertThatThrownBy(() -> presenter.setSelection(Optional.of("Gamma")))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("not found among this dealer's available options");
-
-                // THEN no interactions should have occurred with collaborators
-                verifyNoInteractions(view, driver, listener);
-            }
-        }
-    }
+			// THEN the view is commanded to clear its selection
+			verify(view).selectOptionAt(-1);
+			// AND the driver and listener are notified
+			verify(driver).selectionClearedOn(presenter, 0);
+			verify(listener).selectionClearedOn(presenter);
+		}
+	}
 }
