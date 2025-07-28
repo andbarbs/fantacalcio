@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
-import swingViews.OrderedDealerPresenter.OrderedDealerListener;
+import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
 
@@ -49,15 +49,15 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 	@DisplayName("notifications to driver and listeners")
 	class DriverAndListenerInteraction {
 
-    	private OrderedDealerPresenter<Defender> compPlayerSelector;    	
+    	private StarterPlayerSelector<Defender> compPlayerSelector;    	
     	@Mock private OptionDealerGroupDriver<OrderedDealerPresenter<Defender>, Defender> driver;    	
-    	@Mock private OrderedDealerListener<Defender> listener;
+    	@Mock private StarterPlayerSelectorListener<Defender> listener;
 
     	@BeforeEach
     	public void testCaseSpecificSetup() {    		
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
     			SwingSubPlayerSelector<Defender> selView= new SwingSubPlayerSelector<Defender>();
-    			compPlayerSelector = new OrderedDealerPresenter<Defender>(selView);
+    			compPlayerSelector = new StarterPlayerSelector<Defender>(selView);
     			selView.setPresenter(compPlayerSelector);
 
     			// manually wires mock driver and options

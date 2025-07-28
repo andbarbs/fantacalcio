@@ -8,6 +8,8 @@ import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 public class SubstitutePlayerSelectorPresenter<P extends Player> extends OrderedDealerPresenter<P> 
 			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<P>> {	
 	
+	// TODO somewhat ugly: there will exist two references to the view,
+	// one in super and one in this 
 	private final SubstitutePlayerSelectorView<P> view;
 
 	public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
@@ -16,10 +18,7 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 		void setControlsEnabled(boolean b);
 	}	
 	
-	// TODO somewhat ugly: there will exist two references to the view,
-	// one in super and one in this 
-	
-	// constructor inherited from superclass
+	// constructor mandated by superclass
 	public SubstitutePlayerSelectorPresenter(SubstitutePlayerSelectorView<P> view) {
 		super(view);
 		this.view = view;
@@ -27,27 +26,36 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 
 	/**************** FillableSwappableGadget ***************/
 	
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> driver;
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> sequenceDriver;
 	
-	// 1) notifications to the driver: implements them by overriding these superclass methods
-	@Override
-	public void selectedOption(int position) {
-		super.selectedOption(position);
-		driver.contentAdded(this);
-	}
-	
-	@Override
-	public void selectionCleared() {
-		super.selectionCleared();
-		driver.contentRemoved(this);
-	}
-
 	// 2) mandated FillableSwappableGadget methods
 	
 	@Override
 	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> driver) {
-		this.driver = driver;		
+		this.sequenceDriver = driver;		
 	}
+	
+	/**
+	 * hooks defined in {@code OrderedDealerPresenter} as
+	 * --- insert code snippet ---
+	 * to enable subclasses to augment Presenter event handling
+	 */
+
+	@Override
+	protected void selectionSetFor(int absoluteIndex) {
+		// TODO Auto-generated method stub
+		groupDriver.selectionMadeOn(this, absoluteIndex);
+		sequenceDriver.contentAdded(this);
+	}
+
+	@Override
+	protected void selectionClearedFor(int absoluteIndex) {
+		// TODO Auto-generated method stub
+		groupDriver.selectionClearedOn(this, absoluteIndex);
+		sequenceDriver.contentRemoved(this);
+	}
+
+	// 2) mandated FillableSwappableGadget methods
 	
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelectorPresenter<P> other) {

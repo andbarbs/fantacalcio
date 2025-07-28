@@ -101,7 +101,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 			} catch (IOException e) {
 				throw new IllegalStateException();
 			}
-			OrderedDealerPresenter<Goalkeeper> goalieSelectorPres = new OrderedDealerPresenter<>(goalieSelectorView);
+			StarterPlayerSelector<Goalkeeper> goalieSelectorPres = new StarterPlayerSelector<>(goalieSelectorView);
 			goalieSelectorView.setPresenter(goalieSelectorPres);
 			return goalieSelectorView;
 		}).collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 			} catch (IOException e) {
 				throw new IllegalStateException();
 			}
-			OrderedDealerPresenter<Defender> defSelectorPres = new OrderedDealerPresenter<>(defSelectorView);
+			StarterPlayerSelector<Defender> defSelectorPres = new StarterPlayerSelector<>(defSelectorView);
 			defSelectorView.setPresenter(defSelectorPres);
 			return defSelectorView;
 		}).collect(Collectors.toList());
@@ -125,7 +125,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 			} catch (IOException e) {
 				throw new IllegalStateException();
 			}
-			OrderedDealerPresenter<Midfielder> midSelectorPres = new OrderedDealerPresenter<>(midSelectorView);
+			StarterPlayerSelector<Midfielder> midSelectorPres = new StarterPlayerSelector<>(midSelectorView);
 			midSelectorView.setPresenter(midSelectorPres);
 			return midSelectorView;
 		}).collect(Collectors.toList());
@@ -137,7 +137,7 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 			} catch (IOException e) {
 				throw new IllegalStateException();
 			}
-			OrderedDealerPresenter<Forward> forwSelectorPres = new OrderedDealerPresenter<>(forwSelectorView);
+			StarterPlayerSelector<Forward> forwSelectorPres = new StarterPlayerSelector<>(forwSelectorView);
 			forwSelectorView.setPresenter(forwSelectorPres);
 			return forwSelectorView;
 		}).collect(Collectors.toList());

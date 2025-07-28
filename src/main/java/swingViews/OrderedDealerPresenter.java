@@ -8,22 +8,22 @@ import java.util.stream.IntStream;
 
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
-public class OrderedDealerPresenter<T> 
-				implements OrderedOptionDealer<OrderedDealerPresenter<T>, T> {
-	
+public abstract class OrderedDealerPresenter<T> 
+				implements OrderedOptionDealer<OrderedDealerPresenter<T>, T> {	
+
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
-
-	private OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver;
 	
-	protected List<T> options;            // the original option pool, ordered
-	protected List<Integer> mask;         // contains the linear indices in this.options of options in the View's list
-	protected Integer currentSelection;   // contains the linear index in this.options of the View's current selection	
-	protected static final int NO_SELECTION = -1;
-
+	protected OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> groupDriver;
+	
 	@Override
 	public void attachDriver(OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver) {
-		this.driver = driver;		
+		this.groupDriver = driver;
 	}
+	
+	List<T> options;            // the original option pool, ordered
+	List<Integer> mask;         // contains the linear indices in this.options of options in the View's list
+	Integer currentSelection;   // contains the linear index in this.options of the View's current selection	
+	static final int NO_SELECTION = -1;
 
 	@Override
 	public void attachOptions(List<T> options) {
@@ -162,19 +162,20 @@ public class OrderedDealerPresenter<T>
 		
 		// handles a previously existing selection
 		if (currentSelection != NO_SELECTION)
-			driver.selectionClearedOn(this, currentSelection);
+			selectionClearedFor(currentSelection);
 		
 		// updates bookkeeping
 		currentSelection = mask.get(position);
 		
 		// notifies selection set to driver
 		System.out.println("about to call driver.selectionMadeOn");
-		driver.selectionMadeOn(this, currentSelection);
-
-		// notifies user selection to listeners
-		listeners.forEach(l -> l.selectionMadeOn(this));
+		selectionSetFor(currentSelection);
 	}
 	
+	protected abstract void selectionSetFor(int absoluteIndex);
+
+	protected abstract void selectionClearedFor(int absoluteIndex);
+
 	/**
 	 * allows a {@code OrderedDealerView} to notify its 
 	 * {@code OrderedDealerPresenter} that the previous selection 
@@ -196,32 +197,14 @@ public class OrderedDealerPresenter<T>
 
 			// notifies selection cleared to driver
 			System.out.println("about to call driver.selectionClearedOn");
-			driver.selectionClearedOn(this, currentSelection);
+			selectionClearedFor(currentSelection);
 			
 			// updates bookkeeping
 			currentSelection = NO_SELECTION;
-			
-			// notifies selection clearance to to listeners
-			listeners.forEach(l -> l.selectionClearedOn(this));
 		}
 	}
 	
 	// 3. Selection querying/setting APIs for clients
-	
-	/**
-	 * an interface for clients wishing to be notified of selection
-	 * events related to this {@link OrderedDealerPresenter}.
-	 */
-	public interface OrderedDealerListener<Q> {
-		void selectionMadeOn(OrderedDealerPresenter<Q> selector);
-		void selectionClearedOn(OrderedDealerPresenter<Q> selector);
-	}
-	
-	private List<OrderedDealerListener<T>> listeners = new ArrayList<>();
-	
-	public void attachListener(OrderedDealerListener<T> listener) {
-		listeners.add(listener);
-	}
 	
 	/**
 	 * @return an {@code Optional} containing the option currently selected on

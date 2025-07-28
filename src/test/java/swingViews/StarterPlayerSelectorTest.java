@@ -10,6 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import domainModel.Player.Midfielder;
+import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,25 +21,30 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("An OrderedDealerPresenter")
-class OrderedDealerPresenterTest {
+@DisplayName("A StarterPlayerSelector")
+class StarterPlayerSelectorTest {
 
 	// collaborator Mocks
 	@Mock
-	private OrderedDealerPresenter.OrderedDealerView<String> view;
+	private OrderedDealerPresenter.OrderedDealerView<Midfielder> view;
 	
 	@Mock
-	private OptionDealerGroupDriver<OrderedDealerPresenter<String>, String> driver;
+	private OptionDealerGroupDriver<OrderedDealerPresenter<Midfielder>, Midfielder> driver;
 	
 	@Mock
-	private OrderedDealerPresenter.OrderedDealerListener<String> listener;
+	private StarterPlayerSelectorListener<Midfielder> listener;
 	
 	// SUT instance 
 	@InjectMocks
-	private OrderedDealerPresenter<String> presenter;
+	private StarterPlayerSelector<Midfielder> presenter;
 
 	// global option pool
-	private static final List<String> INITIAL_OPTIONS = List.of("Alpha", "Beta", "Gamma", "Delta");
+	private static final List<Midfielder> INITIAL_OPTIONS = List.of(
+			new Midfielder("Alpha", null), 
+			new Midfielder("Beta", null), 
+			new Midfielder("Gamma", null),
+			new Midfielder("Delta", null));
+	
 
 	@BeforeEach
 	void commonSetup() {
@@ -87,7 +95,7 @@ class OrderedDealerPresenterTest {
 			presenter.restoreOption(2);
 
 			// THEN the view is commanded to insert "Gamma" (relative position 1)
-			verify(view).insertOptionAt("Gamma", 1);
+			verify(view).insertOptionAt(new Midfielder("Gamma", null), 1);
 
 			// AND no feedback is sent to the driver
 			verifyNoMoreInteractions(driver, listener);
@@ -182,7 +190,7 @@ class OrderedDealerPresenterTest {
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
-				assertThat(presenter.getSelection()).hasValue("Alpha");
+				assertThat(presenter.getSelection()).hasValue(new Midfielder("Alpha", null));
 			}
 			
 			@Test
@@ -207,7 +215,7 @@ class OrderedDealerPresenterTest {
 				presenter.currentSelection = -1; 				  // no prior selection
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of("Delta"));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(view).selectOptionAt(1);
@@ -225,7 +233,7 @@ class OrderedDealerPresenterTest {
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of("Delta"));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(view).selectOptionAt(1);
@@ -245,7 +253,7 @@ class OrderedDealerPresenterTest {
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
 				// WHEN attempting to select "Gamma", which is not in the current mask
-				assertThatThrownBy(() -> presenter.setSelection(Optional.of("Gamma")))
+				assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null))))
 						.isInstanceOf(IllegalArgumentException.class)
 						.hasMessageContaining("not found among this dealer's available options");
 
