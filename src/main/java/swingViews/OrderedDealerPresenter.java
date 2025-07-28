@@ -63,6 +63,7 @@ public abstract class OrderedDealerPresenter<T>
 		view.insertOptionAt(options.get(absoluteIndex), insertionIndex);
 	}
 	
+	
 	// 2. MVP Presenter: View interface & notification points
 	
 	/**
@@ -168,13 +169,15 @@ public abstract class OrderedDealerPresenter<T>
 		currentSelection = mask.get(position);
 		
 		// notifies selection set to driver
-		System.out.println("about to call driver.selectionMadeOn");
 		selectionSetFor(currentSelection);
 	}
 	
+	/**
+	 * allows subclasses to intervene upon a <i>selection-set</i> notification by the View.
+	 * @param absoluteIndex the absolute index of the option having been selected
+	 * @implNote calls to {@link #getSelection()} will reflect the selection being notified
+	 */	
 	protected abstract void selectionSetFor(int absoluteIndex);
-
-	protected abstract void selectionClearedFor(int absoluteIndex);
 
 	/**
 	 * allows a {@code OrderedDealerView} to notify its 
@@ -194,18 +197,29 @@ public abstract class OrderedDealerPresenter<T>
 	public void selectionCleared() {
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
+			
+			//stores currentSelection for subsequent subclass notification
+			int clearedSelection = currentSelection;
+			
+			// updates bookkeeping ensuring getSelection() will reflect clearance
+			// TODO document this in the javadoc for subclass hook!!
+			currentSelection = NO_SELECTION;
 
 			// notifies selection cleared to driver
-			System.out.println("about to call driver.selectionClearedOn");
-			selectionClearedFor(currentSelection);
-			
-			// updates bookkeeping
-			currentSelection = NO_SELECTION;
+			selectionClearedFor(clearedSelection);
 		}
 	}
 	
-	// 3. Selection querying/setting APIs for clients
+	/**
+	 * allows subclasses to intervene upon a  <i>selection-cleared</i> notification by the View.
+	 * @param absoluteIndex the absolute index of the option that was selected prior to clearance
+	 * @implNote calls to {@link #getSelection()} will reflect the clearance being notified
+	 */
+	protected abstract void selectionClearedFor(int absoluteIndex);
 	
+	
+	// 3. Selection querying/setting APIs for clients	
+
 	/**
 	 * @return an {@code Optional} containing the option currently selected on
 	 * this dealer, or an empty one if the dealer has no selection

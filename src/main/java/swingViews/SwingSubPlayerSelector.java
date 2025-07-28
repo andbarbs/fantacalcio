@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import domainModel.Player;
-import swingViews.SubstitutePlayerSelectorPresenter.SubstitutePlayerSelectorView;
+import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
 
 /*
  * TODO consider introducing distinct private and public design-time logic

@@ -38,16 +38,16 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
     private static final Defender silva = new Defender("Thiago", "Silva");
     private static final Defender vanDijk = new Defender("Virgil", "van Dijk");    
 
-	private SubstitutePlayerSelectorPresenter<Defender> substitutePresenter1, substitutePresenter2;
+	private SubstitutePlayerSelector<Defender> substitutePresenter1, substitutePresenter2;
 
     @Mock
     private OptionDealerGroupDriver<OrderedDealerPresenter<Defender>, Defender> mockGroupDriver;
     
     @Mock
-    private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<Defender>> mockSequenceDriver;
+    private FillableSwappableSequenceDriver<SubstitutePlayerSelector<Defender>> mockSequenceDriver;
     
     @Mock
-    private FillableSwappableVisual<SubstitutePlayerSelectorPresenter<Defender>> mockVisual;
+    private FillableSwappableVisual<SubstitutePlayerSelector<Defender>> mockVisual;
     
     // strongly typed fixtures for the combos
     private TypedJComboBoxFixture<Defender> combo1;
@@ -58,12 +58,12 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
         JFrame frame = GuiActionRunner.execute(() -> {
         	SwingSubPlayerSelector<Defender> sel1View = new SwingSubPlayerSelector<Defender>();
         	sel1View.setName("sel1");
-        	substitutePresenter1 = new SubstitutePlayerSelectorPresenter<Defender>(sel1View);
+        	substitutePresenter1 = new SubstitutePlayerSelector<Defender>(sel1View);
 			sel1View.setPresenter(substitutePresenter1);
 
 			SwingSubPlayerSelector<Defender> sel2View = new SwingSubPlayerSelector<Defender>();
         	sel2View.setName("sel2");
-        	substitutePresenter2 = new SubstitutePlayerSelectorPresenter<Defender>(sel2View);
+        	substitutePresenter2 = new SubstitutePlayerSelector<Defender>(sel2View);
 			sel2View.setPresenter(substitutePresenter2);
 
             // wires a real group driver for tests' setup phase
@@ -72,7 +72,7 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
                     List.of(chiellini, pique, ramos, silva, vanDijk));
             
             // wires a real sequence driver to avoid NPE in tests' setup phase
-            new FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<Defender>>(
+            new FillableSwappableSequenceDriver<SubstitutePlayerSelector<Defender>>(
             		List.of(substitutePresenter1, substitutePresenter2), 
             		mockVisual);
 
@@ -510,7 +510,7 @@ public class SubstitutePlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 			}
 			
 			@Test @GUITest
-			@DisplayName("silentlySelect valid option which is the selected ones")
+			@DisplayName("silentlySelect valid option which is the selected one")
 			public void testSilentlySelectValidOption_WhichIsAlsoSelected() {
 
 				// select something on combo1

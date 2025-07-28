@@ -1,12 +1,13 @@
 package swingViews;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
-public class SubstitutePlayerSelectorPresenter<P extends Player> extends OrderedDealerPresenter<P> 
-			implements FillableSwappableGadget<SubstitutePlayerSelectorPresenter<P>> {	
+public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
+			implements FillableSwappableGadget<SubstitutePlayerSelector<P>> {	
 	
 	// TODO somewhat ugly: there will exist two references to the view,
 	// one in super and one in this 
@@ -19,19 +20,27 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 	}	
 	
 	// constructor mandated by superclass
-	public SubstitutePlayerSelectorPresenter(SubstitutePlayerSelectorView<P> view) {
+	public SubstitutePlayerSelector(SubstitutePlayerSelectorView<P> view) {
 		super(view);
 		this.view = view;
 	}
 
 	/**************** FillableSwappableGadget ***************/
 	
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> sequenceDriver;
+	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> sequenceDriver;
+	
+	private boolean allowGroupDriverFeedback = true;
+	
+	private void executeWithoutDriverFeedback(Consumer<SubstitutePlayerSelector<P>> action) {
+		allowGroupDriverFeedback = false;
+		action.accept(this);
+		allowGroupDriverFeedback = true;
+	}
 	
 	// 2) mandated FillableSwappableGadget methods
 	
 	@Override
-	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelectorPresenter<P>> driver) {
+	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> driver) {
 		this.sequenceDriver = driver;		
 	}
 	
@@ -44,26 +53,35 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 	@Override
 	protected void selectionSetFor(int absoluteIndex) {
 		// TODO Auto-generated method stub
-		groupDriver.selectionMadeOn(this, absoluteIndex);
-		sequenceDriver.contentAdded(this);
+		if (allowGroupDriverFeedback) {
+			System.out.println("about to call driver.selectionMadeOn");
+			groupDriver.selectionMadeOn(this, absoluteIndex);
+			sequenceDriver.contentAdded(this);
+		}		
 	}
 
 	@Override
 	protected void selectionClearedFor(int absoluteIndex) {
 		// TODO Auto-generated method stub
-		groupDriver.selectionClearedOn(this, absoluteIndex);
-		sequenceDriver.contentRemoved(this);
+		if (allowGroupDriverFeedback) {
+			System.out.println("about to call driver.selectionClearedOn");
+			groupDriver.selectionClearedOn(this, absoluteIndex);
+			sequenceDriver.contentRemoved(this);
+		}
 	}
 
 	// 2) mandated FillableSwappableGadget methods
 	
 	@Override
-	public void acquireContentFrom(SubstitutePlayerSelectorPresenter<P> other) {
+	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
 		Optional<P> otherSelection = other.getSelection();
     	this.silentlyAdd(otherSelection);
     	this.silentlySelect(otherSelection);
-		this.silentlyDrop(selection);
+		
+    	// on the cleared selector it drops nothing, 
+    	// on others it ensures correct option propagation across selectors
+    	this.silentlyDrop(selection);  
 	}
 	
 	@Override
@@ -72,7 +90,7 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 	}
 
 	@Override
-	public void swapContentWith(SubstitutePlayerSelectorPresenter<P> other) {
+	public void swapContentWith(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
     	Optional<P> otherSelection = other.getSelection();
     	this.silentlyAdd(otherSelection);
@@ -128,32 +146,57 @@ public class SubstitutePlayerSelectorPresenter<P extends Player> extends Ordered
 	 */
 	
 	void silentlySelect(Optional<P> option) {
-		option.ifPresentOrElse(o -> {
+//		option.ifPresentOrElse(o -> {
+//			int pos = options.indexOf(o);
+//			if (pos == -1)
+//				throw new IllegalArgumentException("option must belong to group option pool");
+//			if (!mask.contains(pos))
+//				throw new IllegalArgumentException("option for selecting is not present");
+//			currentSelection = pos;
+//			view.selectOptionAt(mask.indexOf(pos));
+//		}, () -> {
+//			currentSelection = NO_SELECTION;
+//			view.selectOptionAt(NO_SELECTION);
+//		});
+		
+		option.ifPresent(o -> {
 			int pos = options.indexOf(o);
 			if (pos == -1)
 				throw new IllegalArgumentException("option must belong to group option pool");
 			if (!mask.contains(pos))
 				throw new IllegalArgumentException("option for selecting is not present");
-			currentSelection = pos;
-			view.selectOptionAt(mask.indexOf(pos));
-		}, () -> {
-			currentSelection = NO_SELECTION;
-			view.selectOptionAt(NO_SELECTION);
 		});
+		executeWithoutDriverFeedback(selector -> selector.setSelection(option));
 	}
 	
 	void silentlyDrop(Optional<P> option) {
+//		option.ifPresent(o -> {
+//			System.out.println("sbout to drop" + o);
+//			int pos = options.indexOf(o);
+//			if (pos == -1)
+//				throw new IllegalArgumentException("option must belong to group option pool");
+//			if (!mask.contains(pos))
+//				throw new IllegalArgumentException("option for dropping is already missing");
+//			if (currentSelection == pos) {
+//				currentSelection = NO_SELECTION;		
+//				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
+//			}
+//			retireOption(pos);	// no ghost selection nor driver feedback
+//		});
 		option.ifPresent(o -> {
 			int pos = options.indexOf(o);
 			if (pos == -1)
 				throw new IllegalArgumentException("option must belong to group option pool");
 			if (!mask.contains(pos))
 				throw new IllegalArgumentException("option for dropping is already missing");
-			if (currentSelection == pos) {
-				currentSelection = NO_SELECTION;		
-				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
-			}
-			retireOption(pos);	// no ghost selection nor driver feedback
+			getSelection().ifPresent(sel -> {
+				if (sel.equals(o)) {
+					executeWithoutDriverFeedback(selector -> {
+						selector.setSelection(Optional.empty());
+					});
+				}
+			});
+			retireOption(pos);
 		});
 	}
 	
