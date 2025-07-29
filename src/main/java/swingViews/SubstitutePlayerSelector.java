@@ -27,34 +27,22 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	
 	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> sequenceDriver;
 	
-	private boolean allowGroupDriverFeedback = true;
-	
-	private void executeWithoutDriverFeedback(Runnable action) {
-		allowGroupDriverFeedback = false;
-		action.run();
-		allowGroupDriverFeedback = true;
-	}
-	
 	// 2) mandated Presenter hooks
 
 	@Override
 	protected void selectionSetFor(int absoluteIndex) {
 		// TODO Auto-generated method stub
-		if (allowGroupDriverFeedback) {
-			System.out.println("about to call driver.selectionMadeOn");
-			groupDriver.selectionMadeOn(this, absoluteIndex);
-			sequenceDriver.contentAdded(this);
-		}		
+		System.out.println("about to call driver.selectionMadeOn");
+		groupDriver.selectionMadeOn(this, absoluteIndex);
+		sequenceDriver.contentAdded(this);
 	}
 
 	@Override
 	protected void selectionClearedFor(int absoluteIndex) {
 		// TODO Auto-generated method stub
-		if (allowGroupDriverFeedback) {
-			System.out.println("about to call driver.selectionClearedOn");
-			groupDriver.selectionClearedOn(this, absoluteIndex);
-			sequenceDriver.contentRemoved(this);
-		}
+		System.out.println("about to call driver.selectionClearedOn");
+		groupDriver.selectionClearedOn(this, absoluteIndex);
+		sequenceDriver.contentRemoved(this);
 	}
 	
 	// 2) mandated FillableSwappableGadget methods
@@ -72,24 +60,19 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 */
 	@Override
 	public void discardContent() {
-		// this.silentlyDrop(this.getSelection());
-
-
-		executeWithoutDriverFeedback(() -> {
-			int pos = options.indexOf(getSelection().get());
-			setSelection(Optional.empty());
-			retireOption(pos);			
-		});
+		int pos = options.indexOf(getSelection().get());
+		selectOption(NO_SELECTION);
+		retireOption(pos);			
 	}
 	
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
-		Optional<P> otherSelection = other.getSelection();
-		int absoluteIndex = options.indexOf(otherSelection.get());
+		P otherSelection = other.getSelection().get();
+		int absoluteIndex = options.indexOf(otherSelection);
 		this.restoreOption(absoluteIndex);
-    	executeWithoutDriverFeedback(() -> this.setSelection(otherSelection)); 
+    	this.selectOption(options.indexOf(otherSelection)); 
     	
     	// on the cleared selector it drops nothing, 
     	// on others it ensures correct option propagation across selectors
@@ -99,23 +82,16 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
 	@Override
 	public void swapContentWith(SubstitutePlayerSelector<P> other) {
-		Optional<P> selection = this.getSelection();
-    	Optional<P> otherSelection = other.getSelection();
-
-//    	this.silentlyAdd(otherSelection);
-//    	this.silentlySelect(otherSelection);
-//    	this.silentlyDrop(selection);
-//    	other.silentlyAdd(selection);
-//    	other.silentlySelect(selection);
-//    	other.silentlyDrop(otherSelection);
+		P selection = this.getSelection().get();
+    	P otherSelection = other.getSelection().get();
     	
-    	this.restoreOption(this.options.indexOf(otherSelection.get()));
-    	this.executeWithoutDriverFeedback(() -> this.setSelection(otherSelection));
-    	this.retireOption(options.indexOf(selection.get()));
+    	this.restoreOption(this.options.indexOf(otherSelection));
+    	this.selectOption(this.options.indexOf(otherSelection));
+    	this.retireOption(options.indexOf(selection));
     	
-    	other.restoreOption(other.options.indexOf(selection.get()));
-    	other.executeWithoutDriverFeedback(() -> other.setSelection(selection));
-    	other.retireOption(options.indexOf(otherSelection.get()));
+    	other.restoreOption(other.options.indexOf(selection));
+    	other.selectOption(other.options.indexOf(selection));
+    	other.retireOption(options.indexOf(otherSelection));
     	
 	}
 	
@@ -137,50 +113,6 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	@Override
 	public void disableFilling() {
 		view.setControlsEnabled(false);
-	}
-	
-	/************* package-private local option operators **************/
-
-	// TODO remove these or make them private, we don't want to test them!!
-	// 3) local Selection operators	
-	
-	void silentlySelect(Optional<P> option) {
-		
-		option.ifPresent(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (!mask.contains(pos))
-				throw new IllegalArgumentException("option for selecting is not present");
-		});
-		executeWithoutDriverFeedback(() -> this.setSelection(option));
-	}
-	
-	void silentlyDrop(Optional<P> option) {
-		option.ifPresent(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (!mask.contains(pos))
-				throw new IllegalArgumentException("option for dropping is already missing");
-			getSelection().ifPresent(sel -> {
-				if (sel.equals(o)) {
-					executeWithoutDriverFeedback(() -> this.setSelection(Optional.empty()));
-				}
-			});
-			retireOption(pos);
-		});
-	}
-	
-	void silentlyAdd(Optional<P> option) {
-		option.ifPresent(o -> {
-			int pos = options.indexOf(o);
-			if (pos == -1)
-				throw new IllegalArgumentException("option must belong to group option pool");
-			if (mask.contains(pos))
-				throw new IllegalArgumentException("option for adding is already present");
-			restoreOption(pos);
-		});
 	}
 	
 }

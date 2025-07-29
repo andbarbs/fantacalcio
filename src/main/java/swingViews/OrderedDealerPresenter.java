@@ -35,6 +35,8 @@ public abstract class OrderedDealerPresenter<T>
 	}
 	
 	/**
+	 * @param absoluteIndex 
+	 * the linear index in {@code this.options} of the option to be retired
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
 	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
@@ -48,6 +50,8 @@ public abstract class OrderedDealerPresenter<T>
 	}
 
 	/**
+	 * @param absoluteIndex 
+	 * the linear index in {@code this.options} of the option to be restored
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
 	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
@@ -202,7 +206,6 @@ public abstract class OrderedDealerPresenter<T>
 			int clearedSelection = currentSelection;
 			
 			// updates bookkeeping ensuring getSelection() will reflect clearance
-			// TODO document this in the javadoc for subclass hook!!
 			currentSelection = NO_SELECTION;
 
 			// notifies selection cleared to driver
@@ -218,7 +221,7 @@ public abstract class OrderedDealerPresenter<T>
 	protected abstract void selectionClearedFor(int absoluteIndex);
 	
 	
-	// 3. Selection querying/setting APIs for clients	
+	// 3. Selection querying/setting APIs for clients and subclasses
 
 	/**
 	 * @return an {@code Optional} containing the option currently selected on
@@ -251,5 +254,28 @@ public abstract class OrderedDealerPresenter<T>
 			view.selectOptionAt(NO_SELECTION);
 			selectionCleared();
 		});
-	}	
+	}
+	
+	/**
+	 * allows subclasses to set one of the available options as the selection,
+	 * with the operation being local to this selector - akin to the semantics
+	 * of {@link #retireOption(int)} and {@link #restoreOption(int)}.
+	 * @param absoluteIndex 
+	 * 		the linear index in {@code this.options} of the option to be selected, 
+	 * 		or {@link #NO_SELECTION} if one wishes to clear the dealer's selection
+	 * @throws IllegalArgumentException if absoluteIndex is not {@link #NO_SELECTION}
+	 *		nor corresponds to one of the options available on this selector
+	 */
+	protected void selectOption(int absoluteIndex) {
+		if (!(absoluteIndex == NO_SELECTION || mask.contains(absoluteIndex))) 
+			throw new IllegalArgumentException(String.format(
+					"OrderedDealerPresenter.selectOption: Illegal Argument\n" +
+					"option: %d not found among this dealer's available options: %s\n", 
+					absoluteIndex, mask));
+		
+		currentSelection = absoluteIndex;
+		view.selectOptionAt(
+				currentSelection != NO_SELECTION ? mask.indexOf(currentSelection) : -1);		
+	}
+	
 }
