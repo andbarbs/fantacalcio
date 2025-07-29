@@ -37,18 +37,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		allowGroupDriverFeedback = true;
 	}
 	
-	// 2) mandated FillableSwappableGadget methods
-	
-	@Override
-	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> driver) {
-		this.sequenceDriver = driver;		
-	}
-	
-	/**
-	 * hooks defined in {@code OrderedDealerPresenter} as
-	 * --- insert code snippet ---
-	 * to enable subclasses to augment Presenter event handling
-	 */
+	// 2) mandated Presenter hooks
 
 	@Override
 	protected void selectionSetFor(int absoluteIndex) {
@@ -69,9 +58,26 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 			sequenceDriver.contentRemoved(this);
 		}
 	}
-
+	
 	// 2) mandated FillableSwappableGadget methods
 	
+	@Override
+	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> driver) {
+		this.sequenceDriver = driver;		
+	}
+	
+	/**
+	 * causes the {@code SubstitutePlayerSelector} to clear its selection
+	 * and retire the corresponding option <b>without</b> informing the
+	 * {@code OptionDealerGroupDriver} group driver.
+	 * @apiNote this is a local operation
+	 */
+	@Override
+	public void discardContent() {
+		this.silentlyDrop(this.getSelection());
+	}
+	
+	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
@@ -83,12 +89,8 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
     	// on others it ensures correct option propagation across selectors
     	this.silentlyDrop(selection);  
 	}
-	
-	@Override
-	public void discardContent() {
-		this.silentlyDrop(this.getSelection());
-	}
 
+	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
 	@Override
 	public void swapContentWith(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
@@ -123,41 +125,10 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	
 	/************* package-private local option operators **************/
 
-	
+	// TODO remove these or make them private, we don't want to test them!!
 	// 3) local Selection operators	
 	
-	// TODO consider completely overhauling these operators in favor of
-	// opening up bookkeeping to subclasses, given that this class
-	// no longer has to worry about being the (sole) originator of
-	// combo events
-	
-	/*
-	 * these fluent operators allow subclasses to access their local 
-	 * selection behavior without being exposed to any internal details
-	 * of StarterPlayerSelector. Benefits of this approach include:
-	 * 
-	 * for StarterPlayerSelector: 
-	 * 	- it remains the sole originator of programmatic combo interactions
-	 * 	- these operators are implemented with awareness of OptionDealerGroupDriver
-	 * 
-	 * for subclasses:
-	 *  - these operators do not risk leaking to any drivers inside subclasses
-	 *  - subclasses can only intervene via the event-handling engagement hooks
-	 */
-	
 	void silentlySelect(Optional<P> option) {
-//		option.ifPresentOrElse(o -> {
-//			int pos = options.indexOf(o);
-//			if (pos == -1)
-//				throw new IllegalArgumentException("option must belong to group option pool");
-//			if (!mask.contains(pos))
-//				throw new IllegalArgumentException("option for selecting is not present");
-//			currentSelection = pos;
-//			view.selectOptionAt(mask.indexOf(pos));
-//		}, () -> {
-//			currentSelection = NO_SELECTION;
-//			view.selectOptionAt(NO_SELECTION);
-//		});
 		
 		option.ifPresent(o -> {
 			int pos = options.indexOf(o);
@@ -170,19 +141,6 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	}
 	
 	void silentlyDrop(Optional<P> option) {
-//		option.ifPresent(o -> {
-//			System.out.println("sbout to drop" + o);
-//			int pos = options.indexOf(o);
-//			if (pos == -1)
-//				throw new IllegalArgumentException("option must belong to group option pool");
-//			if (!mask.contains(pos))
-//				throw new IllegalArgumentException("option for dropping is already missing");
-//			if (currentSelection == pos) {
-//				currentSelection = NO_SELECTION;		
-//				view.selectOptionAt(NO_SELECTION);  // in this order, no driver feedback
-//			}
-//			retireOption(pos);	// no ghost selection nor driver feedback
-//		});
 		option.ifPresent(o -> {
 			int pos = options.indexOf(o);
 			if (pos == -1)
