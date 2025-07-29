@@ -1,8 +1,6 @@
 package swingViews;
 
 import java.util.Optional;
-import java.util.function.Consumer;
-
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 
@@ -31,9 +29,9 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	
 	private boolean allowGroupDriverFeedback = true;
 	
-	private void executeWithoutDriverFeedback(Consumer<SubstitutePlayerSelector<P>> action) {
+	private void executeWithoutDriverFeedback(Runnable action) {
 		allowGroupDriverFeedback = false;
-		action.accept(this);
+		action.run();
 		allowGroupDriverFeedback = true;
 	}
 	
@@ -74,7 +72,14 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 */
 	@Override
 	public void discardContent() {
-		this.silentlyDrop(this.getSelection());
+		// this.silentlyDrop(this.getSelection());
+
+
+		executeWithoutDriverFeedback(() -> {
+			int pos = options.indexOf(getSelection().get());
+			setSelection(Optional.empty());
+			retireOption(pos);			
+		});
 	}
 	
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
@@ -82,12 +87,13 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
 		Optional<P> otherSelection = other.getSelection();
-    	this.silentlyAdd(otherSelection);
-    	this.silentlySelect(otherSelection);
-		
+		int absoluteIndex = options.indexOf(otherSelection.get());
+		this.restoreOption(absoluteIndex);
+    	executeWithoutDriverFeedback(() -> this.setSelection(otherSelection)); 
+    	
     	// on the cleared selector it drops nothing, 
     	// on others it ensures correct option propagation across selectors
-    	this.silentlyDrop(selection);  
+    	selection.ifPresent(o -> this.retireOption(options.indexOf(o)));
 	}
 
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
@@ -95,12 +101,22 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	public void swapContentWith(SubstitutePlayerSelector<P> other) {
 		Optional<P> selection = this.getSelection();
     	Optional<P> otherSelection = other.getSelection();
-    	this.silentlyAdd(otherSelection);
-    	this.silentlySelect(otherSelection);
-    	this.silentlyDrop(selection);
-    	other.silentlyAdd(selection);
-    	other.silentlySelect(selection);
-    	other.silentlyDrop(otherSelection);
+
+//    	this.silentlyAdd(otherSelection);
+//    	this.silentlySelect(otherSelection);
+//    	this.silentlyDrop(selection);
+//    	other.silentlyAdd(selection);
+//    	other.silentlySelect(selection);
+//    	other.silentlyDrop(otherSelection);
+    	
+    	this.restoreOption(this.options.indexOf(otherSelection.get()));
+    	this.executeWithoutDriverFeedback(() -> this.setSelection(otherSelection));
+    	this.retireOption(options.indexOf(selection.get()));
+    	
+    	other.restoreOption(other.options.indexOf(selection.get()));
+    	other.executeWithoutDriverFeedback(() -> other.setSelection(selection));
+    	other.retireOption(options.indexOf(otherSelection.get()));
+    	
 	}
 	
 	@Override
@@ -137,7 +153,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 			if (!mask.contains(pos))
 				throw new IllegalArgumentException("option for selecting is not present");
 		});
-		executeWithoutDriverFeedback(selector -> selector.setSelection(option));
+		executeWithoutDriverFeedback(() -> this.setSelection(option));
 	}
 	
 	void silentlyDrop(Optional<P> option) {
@@ -149,9 +165,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 				throw new IllegalArgumentException("option for dropping is already missing");
 			getSelection().ifPresent(sel -> {
 				if (sel.equals(o)) {
-					executeWithoutDriverFeedback(selector -> {
-						selector.setSelection(Optional.empty());
-					});
+					executeWithoutDriverFeedback(() -> this.setSelection(Optional.empty()));
 				}
 			});
 			retireOption(pos);
