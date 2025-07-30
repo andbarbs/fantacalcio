@@ -257,7 +257,70 @@ class SubstitutePlayerSelectorTest {
 			
 			// 3. drivers: neither is contacted
 			verifyNoMoreInteractions(groupDriver, sequenceDriver);
-		}		
+		}
+		
+		@Nested
+		@DisplayName("when toggling filling")
+		class WhenTogglingFillingEnabling {
+
+			@Test
+			@DisplayName("when being asked to enable filling")
+			void enableFilling() {
+				presenter.enableFilling();
+				
+				// THEN the View is asked to enable controls
+				verify(view).setControlsEnabled(true);
+				verifyNoMoreInteractions(view);
+				
+				// AND neither driver has been contacted
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
+			}
+
+			@Test
+			@DisplayName("when being asked to disable filling")
+			void disableFilling() {
+				presenter.disableFilling();
+				
+				// THEN the View is asked to disable controls
+				verify(view).setControlsEnabled(false);
+				verifyNoMoreInteractions(view);
+				
+				// AND neither driver is contacted
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
+			}			
+		}
+		
+		@Nested
+		@DisplayName("when toggling \"next-fillable\" status")
+		class WhenTogglingNextFillableStatus {
+			
+			@Test
+			@DisplayName("when being asked to take on \"next-fillable\" status")
+			void highlight() {
+				presenter.highlight();;
+				
+				// THEN the View is asked to take on "next-fillable" status
+				verify(view).highlight();
+				verifyNoMoreInteractions(view);
+				
+				// AND neither driver is contacted
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
+			}
+			
+			@Test
+			@DisplayName("when being asked to relinquish \"next-fillable\" status")
+			void dehighlight() {
+				presenter.dehighlight();
+				
+				// THEN the View is asked to relinquish "next-fillable" status
+				verify(view).dehighlight();
+				verifyNoMoreInteractions(view);
+				
+				// AND neither driver has been contacted
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
+			}	
+		}
+		
 	}	
 
 	@Nested

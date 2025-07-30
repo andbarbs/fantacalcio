@@ -6,8 +6,9 @@ import java.util.Set;
 import swingViews.OptionDealerGroupDriver.*;
 
 /**
- * manages a group of implementors of {@link OrderedOptionDealer} in such a way that each dealer offers all original
- * options barred those that are currently selected in the other dealers.
+ * manages a group of implementors of {@link OrderedOptionDealer} in such a way 
+ * that each dealer offers all original options barred those that are currently 
+ * selected in other dealers in the group.
  *
  * <p><h1>Contracts</h1>
  * In order to be driven by {@link OrderedOptionDealer}, dealers must
@@ -21,8 +22,8 @@ import swingViews.OptionDealerGroupDriver.*;
  *   	</ul></li>
  *   <li>notify the attached {@code OptionDealerGroupDriver} instance when a selection is made or cleared, 
  *   according to whatever semantic "selection" has for the dealer. The dealer should
- *   pass their instance to methods {@link OptionDealerGroupDriver#selectionMadeOn(OrderedOptionDealer, int)} and 
- *   {@link OptionDealerGroupDriver#selectionClearedOn(OrderedOptionDealer, int)} of the driver. 
+ *   pass their instance to methods {@link #selectionMadeOn(OrderedOptionDealer, int)} and 
+ *   {@link #selectionClearedOn(OrderedOptionDealer, int)} of the driver. 
  *   Dealers should take care that driver-induced addition/removal of their options via 
  *   {@link OrderedOptionDealer#restoreOption(int)} and {@link OrderedOptionDealer#retireOption(int)}
  *   be <i>not</i> notified back to the driver
@@ -58,6 +59,14 @@ public class OptionDealerGroupDriver<D extends OrderedOptionDealer<D, O>, O> {
 	public interface OrderedOptionDealer<D extends OrderedOptionDealer<D, O>, O> {
 		void attachDriver(OptionDealerGroupDriver<D, O> driver);
 		void attachOptions(List<O> options);
+		
+		/**
+		 * requires the {@linkplain OrderedOptionDealer} to remove the
+		 * given option from its available options, <i><b>without</b></i>
+		 * notifying back the driver.
+		 * @param absoluteIndex 
+		 * the index in {@code this.options} of the option to be retired
+		 */
 		void retireOption(int index);
 		void restoreOption(int index);
 	}
@@ -73,6 +82,23 @@ public class OptionDealerGroupDriver<D extends OrderedOptionDealer<D, O>, O> {
 		this.dealers = dealers;
 	}
 
+	/**
+	 * , which can be initiated through
+	 * 
+	 * <pre>
+	 * OptionDealerGroupDriver.initializeDealing(
+	 *	Set.of(dealer1, dealer2, dealer3),
+	 *	List.copyOf(originalOptions);
+	 * </pre>
+	 * 
+	 * and
+	 * 
+	 * @param <D> the dealer's self type
+	 * @param <O> the type for options in the group
+	 * @param dealers
+	 * @param options
+	 * @return
+	 */
 	// public factory method
 	public static <D extends OrderedOptionDealer<D, O>, O> 
 			OptionDealerGroupDriver<D, O> initializeDealing(Set<D> dealers, List<O> options) {

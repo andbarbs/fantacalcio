@@ -41,6 +41,12 @@ public class FillableSwappableSequenceDriver<T extends FillableSwappableGadget<T
 
 	private interface RightwardFillable<P> {
 		void acquireContentFrom(P other);
+		
+		/**
+		 * is called on a 
+		 * as part of a <i>collapse operation</i> orchestrated by the
+		 * {@linkplain FillableSwappableSequenceDriver}
+		 */
 		void discardContent();
 		void enableFilling();
 		void disableFilling();

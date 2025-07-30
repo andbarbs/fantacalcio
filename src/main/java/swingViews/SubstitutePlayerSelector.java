@@ -3,60 +3,101 @@ package swingViews;
 import java.util.Optional;
 import domainModel.Player;
 import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
+import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
+/**
+ *implements an MVP Presenter for a gadget capable of being part of
+ * <ol>
+ * 		<li>a <i>group</i> where each gadget allows <i>competitive selection</i> of one instance 
+ * 			of {@linkplain Player}, or one if its sub-types, from a global list
+ * 		<li>an <i>ordered group</i> of gadgets which only permits the user 
+ * 			to enter selections <i>sequentially</i>
+ * </ol>
+ * 
+ * <p>These two functionalities are fully realized when, respectively,
+ * <ul>
+ * 		<li>a <i>{@code Set}</i> of {@code SubstitutePlayerSelector} instances 
+ * 			are made to collaborate with an {@linkplain OptionDealerGroupDriver}
+ * 		<li>a <i>{@code List}</i> of {@code SubstitutePlayerSelector} instances 
+ * 			are made to collaborate with a {@linkplain FillableSwappableSequenceDriver}
+ * </ul> 
+ * through the facilities defined by those types.</p>
+ * 
+ * @param <P> the type for options in the {@code StarterPlayerSelector}
+ * @see {@linkplain OptionDealerGroupDriver} for the semantics of competitive selection, 
+ * 		{@linkplain FillableSwappableSequenceDriver}
+ */
 public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
-			implements FillableSwappableGadget<SubstitutePlayerSelector<P>> {	
+			implements FillableSwappableGadget<SubstitutePlayerSelector<P>> {
 	
-	// TODO somewhat ugly: there will exist two references to the view,
-	// one in super and one in this 
-	private final SubstitutePlayerSelectorView<P> view;
+	// 1. MVP Presenter: additional View interface 
 
-	public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
-		void highlight();
-		void dehighlight();
-		void setControlsEnabled(boolean b);
-	}	
-	
-	// constructor mandated by superclass
-	public SubstitutePlayerSelector(SubstitutePlayerSelectorView<P> view) {
-		super(view);
-		this.view = view;
-	}
+		/**
+		 * an interface for Views wishing to collaborate with a
+		 * {@linkplain SubstitutePlayerSelector}.
+		 * 
+		 * <p> Functionally, a {@code SubstitutePlayerSelectorView} is supposed to
+		 * implement all capabilities in {@linkplain OrderedDealerView} and also
+		 * be able to
+		 * <ul> 
+		 * 		<li>toggle its ability to receive user input
+		 * 		<li>toggle visual decoration of its status as the <i>next-fillable</i> 
+		 * 			gadget in a {@code FillableSwappableSequenceDriver}
+		 * </ul>
+		 * @param <T> the type for options in the View's option list
+		 */	
+		public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
+			
+			//TODO introdurre un setNextFillable(boolean)
+			/**
+			 * requests the {@linkplain SubstitutePlayerSelectorView} to take on 
+			 * <i>next-fillable</i> status.
+			 */
+			void highlight();
+			
+			/**
+			 * requests the {@linkplain SubstitutePlayerSelectorView} to relinquish 
+			 * <i>next-fillable</i> status.
+			 */
+			void dehighlight();
+			
+			/**
+			 * requests the {@link OrderedDealerView} to toggle the visual availability of
+			 * its controls to the user.
+			 */
+			void setControlsEnabled(boolean b);
+		}
+		
+		/**
+		 * a separate reference to the view in the more specific type 
+		 * {@linkplain SubstitutePlayerSelectorView} is necessary for this Presenter to
+		 * implement additional interaction with the View, as per its
+		 * {@linkplain FillableSwappableGadget} duties
+		 */
+		private final SubstitutePlayerSelectorView<P> view;		
+		
+		public SubstitutePlayerSelector(SubstitutePlayerSelectorView<P> view) {
+			super(view);
+			this.view = view;
+		}
 
-	/**************** FillableSwappableGadget ***************/
-	
+		
+	// 2. FillableSwappable: mandated functions
+
 	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> sequenceDriver;
-	
-	// 2) mandated Presenter hooks
-
-	@Override
-	protected void selectionSetFor(int absoluteIndex) {
-		// TODO Auto-generated method stub
-		System.out.println("about to call driver.selectionMadeOn");
-		groupDriver.selectionMadeOn(this, absoluteIndex);
-		sequenceDriver.contentAdded(this);
-	}
-
-	@Override
-	protected void selectionClearedFor(int absoluteIndex) {
-		// TODO Auto-generated method stub
-		System.out.println("about to call driver.selectionClearedOn");
-		groupDriver.selectionClearedOn(this, absoluteIndex);
-		sequenceDriver.contentRemoved(this);
-	}
-	
-	// 2) mandated FillableSwappableGadget methods
 	
 	@Override
 	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> driver) {
 		this.sequenceDriver = driver;		
 	}
 	
-	/**
-	 * causes the {@code SubstitutePlayerSelector} to clear its selection
-	 * and retire the corresponding option <b>without</b> informing the
-	 * {@code OptionDealerGroupDriver} group driver.
-	 * @apiNote this is a local operation
+	/** 
+	 * causes a {@code SubstitutePlayerSelector} to clear its selection 
+	 * and retire the corresponding option , as requested by the 
+	 * {@linkplain FillableSwappableSequenceDriver} during a <i>collapse operation</i>,
+	 * <b>without</b> notifying back the sequence driver.
+	 * @implNote this is a local operation with respect to the dealer group, 
+	 * 		i.e. it does not notify the {@code OptionDealerGroupDriver}
 	 */
 	@Override
 	public void discardContent() {
@@ -65,7 +106,26 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		retireOption(pos);			
 	}
 	
-	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
+	/**
+	 * causes a {@code SubstitutePlayerSelector} to "equalize" to another
+	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, as requested
+	 * by the {@linkplain FillableSwappableSequenceDriver} during a <i>collapse operation</i>,
+	 * <b>without</b> notifying back the sequence driver.
+	 * <p>
+	 * In the context of the dealer group, this means
+	 * <ul>
+	 * 		<li>restoring <i><b>{@code other}</i></b>'s selected option
+	 * 		<li>setting the newly restored option as the selected one
+	 * 		<li>retiring the previously selected option, if applicable
+	 * </ul>
+	 * 
+	 * @implNote 
+	 * <ol>
+	 * 		<li>this is a local operation with respect to the dealer group, 
+	 * 			i.e. it does not notify the {@linkplain OptionDealerGroupDriver}
+	 * 		<li>this operation does not rely on temporarily clearing the View's selection
+	 * </ol>
+	 */
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
 		// saves the current selection on this
@@ -81,7 +141,27 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
     	thisSelection.ifPresent(o -> this.retireOption(options.indexOf(o)));
 	}
 
-	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
+	/**
+	 * causes a {@code SubstitutePlayerSelector} to swap contents with another
+	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, 
+	 * as requested by the {@linkplain FillableSwappableSequenceDriver} during a <i>swap operation</i>, 
+	 * <b>without</b> notifying back the sequence driver.
+	 * <p>
+	 * In the context of the dealer group, this means
+	 * <ul>
+	 * 		<li>restoring <i><b>{@code other}</i></b>'s selected option
+	 * 		<li>setting the newly restored option as the selected one
+	 * 		<li>retiring the previously selected option
+	 * </ul>
+	 * and reciprocally on <i><b>{@code other}</i></b> with <i><b>{@code this}</i></b>.<p>
+	 * 
+	 * @implNote 
+	 * <ol>
+	 * 		<li>this is a local operation with respect to the dealer group, 
+	 * 			i.e. it does not notify the {@linkplain OptionDealerGroupDriver}
+	 * 		<li>this operation does not rely on temporarily clearing the View's selection
+	 * </ol>
+	 */
 	@Override
 	public void swapContentWith(SubstitutePlayerSelector<P> other) {
 		P selection = this.getSelection().get();
@@ -93,8 +173,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
     	
     	other.restoreOption(options.indexOf(selection));
     	other.selectOption(options.indexOf(selection));
-    	other.retireOption(options.indexOf(otherSelection));
-    	
+    	other.retireOption(options.indexOf(otherSelection));    	
 	}
 	
 	@Override
@@ -115,6 +194,23 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	@Override
 	public void disableFilling() {
 		view.setControlsEnabled(false);
+	}
+	
+	
+	// 3. OrderedDealerPresenter: response to selection events
+	
+	@Override
+	protected void selectionSetFor(int absoluteIndex) {
+		System.out.println("about to call driver.selectionMadeOn");
+		groupDriver.selectionMadeOn(this, absoluteIndex);
+		sequenceDriver.contentAdded(this);
+	}
+
+	@Override
+	protected void selectionClearedFor(int absoluteIndex) {
+		System.out.println("about to call driver.selectionClearedOn");
+		groupDriver.selectionClearedOn(this, absoluteIndex);
+		sequenceDriver.contentRemoved(this);
 	}
 	
 }

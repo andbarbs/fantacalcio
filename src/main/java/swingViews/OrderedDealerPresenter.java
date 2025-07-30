@@ -166,9 +166,12 @@ public abstract class OrderedDealerPresenter<T>
 	}
 	
 	/**
-	 * allows a {@code OrderedDealerView} to notify its 
-	 * {@code OrderedDealerPresenter} that an option has been selected
-	 * from its current option list.
+	 * implements {@code OrderedDealerPresenter}'s response to a 
+	 * <i>selection-set</i> event.
+	 * 
+	 * <p>As a notification point for the View, allows the {@code OrderedDealerView} 
+	 * collaborator to notify its {@code OrderedDealerPresenter} that an option 
+	 * has been selected from the View's current option list.
 	 * 
 	 * <p><h1>Event-feedback avoidance</h1>
 	 * This notifications should <i>not</i> take place for mutations 
@@ -206,9 +209,12 @@ public abstract class OrderedDealerPresenter<T>
 	protected abstract void selectionSetFor(int absoluteIndex);
 
 	/**
-	 * allows a {@code OrderedDealerView} to notify its 
-	 * {@code OrderedDealerPresenter} that the previous selection 
-	 * on the View has been cleared.
+	 * implements {@code OrderedDealerPresenter}'s response to a 
+	 * <i>selection-cleared</i> event.
+	 * 
+	 * <p>As a notification point for the View, allows the {@code OrderedDealerView}
+	 * to notify its {@code OrderedDealerPresenter} that the View's previously existing
+	 * selection has been cleared.
 	 * 
 	 * <p><h1>Event-feedback avoidance</h1>
 	 * This notifications should <i>not</i> take place for mutations 
