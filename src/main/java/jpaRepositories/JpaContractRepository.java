@@ -1,5 +1,7 @@
 package jpaRepositories;
 
+import java.util.Optional;
+
 import businessLogic.repositories.ContractRepository;
 import domainModel.Contract;
 import domainModel.Contract_;
@@ -16,7 +18,7 @@ public class JpaContractRepository extends BaseJpaRepository implements Contract
         super(em);
     }
     @Override
-    public Contract getContract(FantaTeam team, Player player) {
+    public Optional<Contract> getContract(FantaTeam team, Player player) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Contract> query = cb.createQuery(Contract.class);
@@ -27,7 +29,7 @@ public class JpaContractRepository extends BaseJpaRepository implements Contract
                 cb.equal(root.get(Contract_.player), player)
         );
 
-        return em.createQuery(query).getSingleResult();
+        return em.createQuery(query).getResultList().stream().findFirst();
     }
 
     @Override

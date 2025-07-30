@@ -1,10 +1,12 @@
 package businessLogic.repositories;
 
+import java.util.Optional;
+
 import domainModel.*;
 
 public interface ContractRepository {
 
-	Contract getContract(FantaTeam team, Player player);
+	Optional<Contract> getContract(FantaTeam team, Player player);
 
 	void deleteContract(Contract contract);
 
