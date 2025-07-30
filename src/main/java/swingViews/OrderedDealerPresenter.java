@@ -8,6 +8,22 @@ import java.util.stream.IntStream;
 
 import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
 
+/**
+ * implements the mandated members of an {@linkplain OrderedOptionDealer}
+ * as a Presenter in the sense of the <b>MVP pattern</b>.
+ * 
+ * <p>Subclasses are free to implement the behavioral responsibilities of 
+ * {@linkplain OrderedOptionDealer}, i.e. notifying the driver, through the 
+ * {@linkplain #groupDriver} field and hooks {@linkplain #selectionSetFor(int)} 
+ * and {@linkplain #selectionClearedFor(int)}, which complete Presenter 
+ * response to View notifications.
+ * 
+ * @implNote {@linkplain OrderedOptionDealer} members do not leak back into
+ * 		the driver, as long as the {@linkplain OrderedDealerView}
+ * 		collaborator does <i>not</i> notify back the {@code OrderedDealerPresenter} 
+ * 		for mutations induced by the {@code OrderedDealerPresenter} itself
+ * @param <T> the type for options in this dealer
+ */
 public abstract class OrderedDealerPresenter<T> 
 				implements OrderedOptionDealer<OrderedDealerPresenter<T>, T> {	
 
@@ -20,9 +36,13 @@ public abstract class OrderedDealerPresenter<T>
 		this.groupDriver = driver;
 	}
 	
-	List<T> options;            // the original option pool, ordered
-	List<Integer> mask;         // contains the linear indices in this.options of options in the View's list
-	Integer currentSelection;   // contains the linear index in this.options of the View's current selection	
+	/*
+	 * bookkeeping variables are package-private to aid in the set-up phase of unit tests
+	 */
+	
+	List<T> options;            	// the original option pool, ordered
+	List<Integer> mask;         	// contains the indices in this.options of options in the View's list
+	Integer currentSelection;   	// contains the index in this.options of the View's current selection	
 	static final int NO_SELECTION = -1;
 
 	@Override
@@ -36,7 +56,7 @@ public abstract class OrderedDealerPresenter<T>
 	
 	/**
 	 * @param absoluteIndex 
-	 * the linear index in {@code this.options} of the option to be retired
+	 * the index in {@code this.options} of the option to be retired
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
 	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
@@ -51,7 +71,7 @@ public abstract class OrderedDealerPresenter<T>
 
 	/**
 	 * @param absoluteIndex 
-	 * the linear index in {@code this.options} of the option to be restored
+	 * the index in {@code this.options} of the option to be restored
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
 	 * as long as the {@code OrderedDealerView} collaborator 
 	 * honors requirements on event-feedback avoidance
@@ -164,22 +184,24 @@ public abstract class OrderedDealerPresenter<T>
 	 * 		relative to the {@code OrderedDealerView}'s current option list
 	 */
 	public void selectedOption(int position) {
-		
+
 		// handles a previously existing selection
 		if (currentSelection != NO_SELECTION)
+			// engages subclasses on selection-cleared event
 			selectionClearedFor(currentSelection);
-		
+
 		// updates bookkeeping
 		currentSelection = mask.get(position);
-		
-		// notifies selection set to driver
+
+		// engages subclasses on selection-set event
 		selectionSetFor(currentSelection);
 	}
 	
 	/**
-	 * allows subclasses to intervene upon a <i>selection-set</i> notification by the View.
-	 * @param absoluteIndex the absolute index of the option having been selected
-	 * @implNote calls to {@link #getSelection()} will reflect the selection being notified
+	 * allows subclasses to intervene upon a <i>selection-set</i> event on this Presenter.
+	 * @param absoluteIndex the index in {@code this.options} of the option having been selected
+	 * @implNote {@link #getSelection()} within this hook will acknowledge the
+	 * selection-set event
 	 */	
 	protected abstract void selectionSetFor(int absoluteIndex);
 
@@ -202,21 +224,24 @@ public abstract class OrderedDealerPresenter<T>
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
 			
-			//stores currentSelection for subsequent subclass notification
+			//stores currentSelection for subsequent hook call
 			int clearedSelection = currentSelection;
 			
 			// updates bookkeeping ensuring getSelection() will reflect clearance
 			currentSelection = NO_SELECTION;
 
-			// notifies selection cleared to driver
+			// engages subclasses on selection-cleared event
 			selectionClearedFor(clearedSelection);
 		}
 	}
 	
 	/**
-	 * allows subclasses to intervene upon a  <i>selection-cleared</i> notification by the View.
-	 * @param absoluteIndex the absolute index of the option that was selected prior to clearance
-	 * @implNote calls to {@link #getSelection()} will reflect the clearance being notified
+	 * allows subclasses to intervene upon a  <i>selection-cleared</i> event 
+	 * on this Presenter.
+	 * @param absoluteIndex the index in {@code this.options} of the option 
+	 * that was selected prior to clearance
+	 * @implNote {@link #getSelection()} within this hook will acknowledge the
+	 * selection-cleared event
 	 */
 	protected abstract void selectionClearedFor(int absoluteIndex);
 	
@@ -238,16 +263,16 @@ public abstract class OrderedDealerPresenter<T>
 	 */
 	public void setSelection(Optional<T> option) {
 		option.ifPresentOrElse(o -> {
-			int absoluteIndex = options.indexOf(o);
-			if (absoluteIndex == -1)
+			if (!options.contains(o))
 				throw new IllegalArgumentException(String.format(
 						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
 						"option: %s not found in dealer group option list\n", o));
-			int pos = mask.indexOf(absoluteIndex);
-			if (pos == -1)
+			int absoluteIndex = options.indexOf(o);
+			if (!mask.contains(absoluteIndex))
 				throw new IllegalArgumentException(String.format(
 						"OrderedDealerPresenter.setSelection: Illegal Argument\n" +
 						"option: %s not found among this dealer's available options\n", o));
+			int pos = mask.indexOf(absoluteIndex);
 			view.selectOptionAt(pos);
 			selectedOption(pos);
 		}, () -> {
@@ -261,7 +286,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * with the operation being local to this selector - akin to the semantics
 	 * of {@link #retireOption(int)} and {@link #restoreOption(int)}.
 	 * @param absoluteIndex 
-	 * 		the linear index in {@code this.options} of the option to be selected, 
+	 * 		the index in {@code this.options} of the option to be selected, 
 	 * 		or {@link #NO_SELECTION} if one wishes to clear the dealer's selection
 	 * @throws IllegalArgumentException if absoluteIndex is not {@link #NO_SELECTION}
 	 *		nor corresponds to one of the options available on this selector

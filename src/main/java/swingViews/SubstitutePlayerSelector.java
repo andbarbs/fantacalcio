@@ -68,15 +68,17 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
 	@Override
 	public void acquireContentFrom(SubstitutePlayerSelector<P> other) {
-		Optional<P> selection = this.getSelection();
+		// saves the current selection on this
+		Optional<P> thisSelection = this.getSelection();
+		
+		// makes this acquire other's selection
 		P otherSelection = other.getSelection().get();
-		int absoluteIndex = options.indexOf(otherSelection);
-		this.restoreOption(absoluteIndex);
+		this.restoreOption(options.indexOf(otherSelection));
     	this.selectOption(options.indexOf(otherSelection)); 
     	
-    	// on the cleared selector it drops nothing, 
+    	// on the emptied selector it drops nothing, 
     	// on others it ensures correct option propagation across selectors
-    	selection.ifPresent(o -> this.retireOption(options.indexOf(o)));
+    	thisSelection.ifPresent(o -> this.retireOption(options.indexOf(o)));
 	}
 
 	// TODO inserire controlli su appartenenza di other a: stessa sequence, stesso gruppo
@@ -85,12 +87,12 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		P selection = this.getSelection().get();
     	P otherSelection = other.getSelection().get();
     	
-    	this.restoreOption(this.options.indexOf(otherSelection));
-    	this.selectOption(this.options.indexOf(otherSelection));
+    	this.restoreOption(options.indexOf(otherSelection));
+    	this.selectOption(options.indexOf(otherSelection));
     	this.retireOption(options.indexOf(selection));
     	
-    	other.restoreOption(other.options.indexOf(selection));
-    	other.selectOption(other.options.indexOf(selection));
+    	other.restoreOption(options.indexOf(selection));
+    	other.selectOption(options.indexOf(selection));
     	other.retireOption(options.indexOf(otherSelection));
     	
 	}

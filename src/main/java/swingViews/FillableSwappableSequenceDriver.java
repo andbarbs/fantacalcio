@@ -37,7 +37,6 @@ import swingViews.FillableSwappableSequenceDriver.*;
  * @see FillableSwappableGadget
  * @apiNote This driver is GUI-agnostic and relieves clients of using class inheritance
  */
-
 public class FillableSwappableSequenceDriver<T extends FillableSwappableGadget<T>> {
 
 	private interface RightwardFillable<P> {

@@ -246,19 +246,39 @@ class StarterPlayerSelectorTest {
 				verifyNoMoreInteractions(driver, listener);
 			}
 			
-			@Test
-			@DisplayName("but the provided option is unavailable")
-			void withUnavailableOption() {
-				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
-				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+			@Nested
+			@DisplayName("but the provided option does not belong")
+			class WithInvalidOption {
 				
-				// WHEN attempting to select "Gamma", which is not in the current mask
-				assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null))))
-						.isInstanceOf(IllegalArgumentException.class)
-						.hasMessageContaining("not found among this dealer's available options");
+				@Test
+				@DisplayName("to this dealer")
+				void withUnavailableOption() {
+					presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+					
+					// WHEN attempting to select "Gamma", which is not in the current mask
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null))))
+							.isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining("not found among this dealer's available options");
 
-				// THEN no interactions should have occurred with collaborators
-				verifyNoInteractions(view, driver, listener);
+					// THEN no interactions should have occurred with collaborators
+					verifyNoInteractions(view, driver, listener);
+				}
+				
+				@Test
+				@DisplayName("to any dealer in this group dealer")
+				void withUnknownOption() {
+					presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
+					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
+					
+					// WHEN attempting to select "Theta", which is not in the common option list
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Theta", null))))
+							.isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining("not found in dealer group option list");
+
+					// THEN no interactions should have occurred with collaborators
+					verifyNoInteractions(view, driver, listener);
+				}
 			}
 		}
 		
