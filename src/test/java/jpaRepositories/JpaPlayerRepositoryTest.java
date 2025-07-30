@@ -27,6 +27,8 @@ class JpaPlayerRepositoryTest {
 
 	private JpaPlayerRepository playerRepository;
 
+	private EntityManager entityManager;
+
 //TODO aggiornare bootstrap di tutti i test hibernate
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -55,6 +57,8 @@ class JpaPlayerRepositoryTest {
 	void setup() {
 		// ensures tests work on empty tables without having to recreate a SessionFactory instance
 		sessionFactory.getSchemaManager().truncateMappedObjects();
+		entityManager = sessionFactory.createEntityManager();
+		playerRepository = new JpaPlayerRepository(entityManager);
 	}
 
 	@AfterAll
@@ -64,11 +68,8 @@ class JpaPlayerRepositoryTest {
 
 	@Test
 	@DisplayName("findAll() on an empty table")
-	public void testFindAllWhenNoPlayersExist(){
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
+	public void testFindAllWhenNoPlayersExist(){		
 		assertThat(playerRepository.findAll()).isEmpty();
-		entityManager.close();
 	}
 
 	@Test
@@ -80,11 +81,8 @@ class JpaPlayerRepositoryTest {
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
 			session.persist(messi);});
-
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
+		
 		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
-		entityManager.close();
 	}
 
 	@Test
@@ -92,8 +90,6 @@ class JpaPlayerRepositoryTest {
 	public void testAddPlayerWithNonPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon");
 
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
 		entityManager.getTransaction().begin(); // Start the transaction
 		assertTrue(playerRepository.addPlayer(buffon));
 		entityManager.getTransaction().commit(); // Commit the transaction to flush changes
@@ -111,8 +107,6 @@ class JpaPlayerRepositoryTest {
 
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
 		assertFalse(playerRepository.addPlayer(buffon));
 		entityManager.close();
 	}
@@ -128,8 +122,6 @@ class JpaPlayerRepositoryTest {
 			session.persist(messi);}
 		);
 
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
 		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
 		entityManager.close();
 
@@ -147,8 +139,6 @@ class JpaPlayerRepositoryTest {
 			session.persist(kephren);
 			session.persist(eljif);});
 
-		EntityManager entityManager = sessionFactory.createEntityManager();
-		playerRepository = new JpaPlayerRepository(entityManager);
 		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
 		entityManager.close();
 	}
