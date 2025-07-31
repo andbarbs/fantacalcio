@@ -24,9 +24,7 @@ import jakarta.persistence.EntityManager;
 class JpaPlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
-
 	private JpaPlayerRepository playerRepository;
-
 	private EntityManager entityManager;
 
 //TODO aggiornare bootstrap di tutti i test hibernate
