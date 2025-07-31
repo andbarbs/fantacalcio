@@ -10,7 +10,7 @@ import domainModel.Proposal;
 
 public interface ProposalRepository {
 
-	void deleteProposal(Proposal proposal);
+	boolean deleteProposal(Proposal proposal);
 
 	List<Proposal> getMyProposals(League actualLeague, FantaTeam myTeam);
 

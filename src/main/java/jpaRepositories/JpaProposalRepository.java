@@ -23,7 +23,7 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 		}
 
     @Override
-    public void deleteProposal(Proposal proposal) {
+    public boolean deleteProposal(Proposal proposal) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaDelete<Proposal> delete = cb.createCriteriaDelete(Proposal.class);
         Root<Proposal> root = delete.from(Proposal.class);
@@ -35,7 +35,7 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
                 )
         );
 
-        getEntityManager().createQuery(delete).executeUpdate();
+        return getEntityManager().createQuery(delete).executeUpdate() != 0;
     }
 
     @Override
