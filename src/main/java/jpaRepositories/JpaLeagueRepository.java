@@ -2,8 +2,6 @@ package jpaRepositories;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
 import businessLogic.repositories.LeagueRepository;
 import domainModel.FantaUser;
 import domainModel.League;
