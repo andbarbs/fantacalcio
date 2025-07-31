@@ -58,7 +58,6 @@ class JpaContractRepositoryTest {
 		}
 	}
 
-	// TODO I test ci mettono molto rispetto ad altre classi
 	@BeforeEach
 	void setup() {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
@@ -96,7 +95,6 @@ class JpaContractRepositoryTest {
 	@DisplayName("getContract() when contract exists")
 	public void testGetContractWithContractExisting() {
 
-
 		Player player2 = new Player.Defender("Giorgio", "Chiellini");
 		Contract contract1 = new Contract(team, player);
 		Contract contract2 = new Contract(team, player2);
@@ -127,7 +125,7 @@ class JpaContractRepositoryTest {
 
 		assertThat(result).isEmpty();
 		
-		entityManager.clear();
+		entityManager.close();
 
 	}
 
@@ -151,7 +149,7 @@ class JpaContractRepositoryTest {
 
 		assertThat(result).isEmpty();
 
-		entityManager.clear();
+		entityManager.close();
 		
 	}
 

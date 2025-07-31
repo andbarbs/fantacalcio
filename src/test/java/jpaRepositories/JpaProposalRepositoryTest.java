@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 class JpaProposalRepositoryTest {
 
+	// TODO implement all tests
 	@Test
 	void testDeleteProposal() {
 		fail("Not yet implemented");

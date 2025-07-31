@@ -105,47 +105,47 @@ class JpaFantaTeamRepositoryTest {
 	@DisplayName("saveTeam() should persist correctly")
 	public void testSaveTeam() {
 
-		FantaUser user = new FantaUser("mail1", "pswd1");
+		entityManager.getTransaction().begin();
 
+		FantaUser user = new FantaUser("mail1", "pswd1");
 		FantaTeam team = new FantaTeam("team1", league, 0, user, new HashSet<Contract>());
 
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(team);
-		});
+		entityManager.persist(user);
+
+		fantaTeamRepository.saveTeam(team);
 
 		FantaTeam result = entityManager
 				.createQuery("FROM FantaTeam t WHERE t.league = :league AND t.fantaManager = :user", FantaTeam.class)
 				.setParameter("league", league).setParameter("user", user).getSingleResult();
-		
+
 		assertThat(result).isEqualTo(team);
+
+		entityManager.close();
 	}
 
 	@Test
 	@DisplayName("getFantaTeamByUserAndLeague() when that team does not exist")
 	public void testGetFantaTeamByUserAndLeagueWhenNotPresent() {
 
-		assertThrows(
-				jakarta.persistence.NoResultException.class,
-				() -> fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin)
-				);
-		
+		assertThrows(jakarta.persistence.NoResultException.class,
+				() -> fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin));
+
 	}
-	
+
 	@Test
 	@DisplayName("getFantaTeamByUserAndLeague() when that team exists")
 	public void testGetFantaTeamByUserAndLeagueWhenPresent() {
 
 		FantaUser user = new FantaUser("mail", "pswd");
 		FantaTeam team = new FantaTeam("team", league, 0, user, new HashSet<Contract>());
-		
+
 		sessionFactory.inTransaction(session -> {
 			session.persist(user);
 			session.persist(team);
 		});
-		
+
 		assertThat(fantaTeamRepository.getFantaTeamByUserAndLeague(league, user)).isEqualTo(team);
-		
+
 	}
 
 }
