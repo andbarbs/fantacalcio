@@ -3,9 +3,6 @@ package jpaRepositories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -19,11 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import domainModel.MatchDaySerieA;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 
 class JpaMatchDayRepositoryTest {
 
@@ -87,7 +79,6 @@ class JpaMatchDayRepositoryTest {
 		repositorySession.close();
 	}
 
-	// TODO check
 	@Test
 	@DisplayName("getPreviousMatchDay() when previous day doesn't exist")
 	public void testGetPreviousMatchDayWhenNoPreviousMatchDayExists() {
@@ -102,7 +93,6 @@ class JpaMatchDayRepositoryTest {
 
 	}
 
-	// TODO check
 	@Test
 	@DisplayName("getPreviousMatchDay() when previous day exists")
 	public void testGetPreviousMatchDayWhenPreviousMatchDayExists() {
@@ -118,7 +108,6 @@ class JpaMatchDayRepositoryTest {
 
 	}
 
-	// TODO da fare
 	@Test
 	@DisplayName("getPreviousMatchDay() when many previous days exist")
 	public void testGetPreviousMatchDayWhenMultiplePreviousMatchDayExist() {
@@ -136,7 +125,6 @@ class JpaMatchDayRepositoryTest {
 
 	}
 
-	// TODO check
 	@Test
 	@DisplayName("getNextMatchDay() when next day doesn't exist")
 	public void testGetNextMatchDayWhenNoNextMatchDayExists() {
@@ -151,7 +139,6 @@ class JpaMatchDayRepositoryTest {
 
 	}
 
-	// TODO check
 	@Test
 	@DisplayName("getNextMatchDay() when next day exists")
 	public void testGetNextMatchDayWhenNextMatchDayExists() {
@@ -167,7 +154,6 @@ class JpaMatchDayRepositoryTest {
 
 	}
 
-	// TODO da fare
 	@Test
 	@DisplayName("getNextMatchDay() when many next days exist")
 	public void testGetNextMatchDayWhenMultipleNextMatchDayExist() {
