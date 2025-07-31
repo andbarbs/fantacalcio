@@ -98,10 +98,8 @@ class JpaGradeRepositoryTest {
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
 				
-		EntityManager repositorySession = sessionFactory.createEntityManager();
-
 		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();;
-		repositorySession.close();
+
 	}
 
 	@Test
