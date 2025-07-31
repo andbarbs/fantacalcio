@@ -3,6 +3,8 @@ package jpaRepositories;
 import java.util.List;
 import java.util.Optional;
 import businessLogic.repositories.LeagueRepository;
+import domainModel.FantaTeam;
+import domainModel.FantaTeam_;
 import domainModel.FantaUser;
 import domainModel.League;
 import domainModel.League_;
@@ -13,23 +15,19 @@ import jakarta.persistence.criteria.Root;
 
 public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepository {
 
-    public JpaLeagueRepository(EntityManager em) {
+	public JpaLeagueRepository(EntityManager em) {
 		super(em);
 	}
 
 	@Override
 	public Optional<League> getLeagueByCode(String leagueCode) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
-        Root<League> root = criteriaQuery.from(League.class);
+		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
+		Root<League> root = criteriaQuery.from(League.class);
 
-        criteriaQuery.where(
-                cb.and(
-                        cb.equal(root.get(League_.leagueCode), leagueCode)
-                )
-        );
-        
-        return getEntityManager().createQuery(criteriaQuery).getResultList().stream().findFirst();
+		criteriaQuery.where(cb.and(cb.equal(root.get(League_.leagueCode), leagueCode)));
+
+		return getEntityManager().createQuery(criteriaQuery).getResultList().stream().findFirst();
 
 	}
 
@@ -41,18 +39,17 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 
 	@Override
 	public List<League> getLeaguesByUser(FantaUser user) {
-		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
-        Root<League> root = criteriaQuery.from(League.class);
 
-        criteriaQuery.where(
-                cb.and(
-                        cb.equal(root.get(League_.admin), user)
-                )
-        );
-        
-        return getEntityManager().createQuery(criteriaQuery).getResultList();
-		
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
+		Root<FantaTeam> root = criteriaQuery.from(FantaTeam.class);
+
+		criteriaQuery.select(root.get(FantaTeam_.league)).distinct(true)
+				.where(cb.equal(root.get(FantaTeam_.fantaManager), user));
+
+		return getEntityManager().createQuery(criteriaQuery).getResultList();
+
 	}
 
 }
