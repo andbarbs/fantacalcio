@@ -18,7 +18,6 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
 		super(em);
 	}
 
-	// TODO ritorna sempre una lista vuota (guarda test)
 	@Override
 	public List<FantaTeam> getAllTeams(League league) {
 		
