@@ -18,8 +18,8 @@ public abstract class Proposal {
 
     protected Proposal() {}
 
-    protected Proposal(Contract offedredContract, Contract requestedContract) {
-        this.offeredContract = offedredContract;
+    protected Proposal(Contract offeredContract, Contract requestedContract) {
+        this.offeredContract = offeredContract;
         this.requestedContract = requestedContract;
     }
 
@@ -46,16 +46,16 @@ public abstract class Proposal {
     @Entity
     public static class PendingProposal extends Proposal {
         public PendingProposal() {}
-        public PendingProposal(Contract offedredContract, Contract requestedContract) {
-            super(offedredContract, requestedContract);
+        public PendingProposal(Contract offeredContract, Contract requestedContract) {
+            super(offeredContract, requestedContract);
         }
     }
 
     @Entity
     public static class RejectedProposal extends Proposal {
         public RejectedProposal() {}
-        public RejectedProposal(Contract offedredContract, Contract requestedContract) {
-            super(offedredContract, requestedContract);
+        public RejectedProposal(Contract offeredContract, Contract requestedContract) {
+            super(offeredContract, requestedContract);
         }
     }
 }
