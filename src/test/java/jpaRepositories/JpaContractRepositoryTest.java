@@ -3,7 +3,6 @@ package jpaRepositories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,25 +22,22 @@ import domainModel.Contract;
 import domainModel.FantaTeam;
 import domainModel.FantaUser;
 import domainModel.League;
-import domainModel.LineUp;
-import domainModel.Match;
 import domainModel.NewsPaper;
 import domainModel.Player;
-import domainModel._433LineUp;
-import domainModel.Player.Defender;
 import domainModel.Player.Forward;
-import domainModel.Player.Goalkeeper;
-import domainModel.Player.Midfielder;
 import jakarta.persistence.EntityManager;
 
 @DisplayName("tests for HibernateContractRepository")
 class JpaContractRepositoryTest {
 
 	private static SessionFactory sessionFactory;
-
 	private JpaContractRepository contractRepository;
-
 	private EntityManager entityManager;
+	private FantaUser user;
+	private NewsPaper newspaper;
+	private FantaTeam team;
+	private League league;
+	private Forward player;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -49,12 +45,11 @@ class JpaContractRepositoryTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry)
-					.addAnnotatedClass(Contract.class).addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(Player.class).addAnnotatedClass(Player.Forward.class)
-					.addAnnotatedClass(Player.Defender.class).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class)
-					.getMetadataBuilder().build();
+			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Forward.class).addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class).getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -63,154 +58,113 @@ class JpaContractRepositoryTest {
 		}
 	}
 
+	// TODO I test ci mettono molto rispetto ad altre classi
 	@BeforeEach
 	void setup() {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 		entityManager = sessionFactory.createEntityManager();
 		contractRepository = new JpaContractRepository(entityManager);
+		
+		sessionFactory.inTransaction(t -> {
+			user = new FantaUser("manager@example.com", "securePass");
+			t.persist(user);
+			newspaper = new NewsPaper("Gazzetta");
+			t.persist(newspaper);
+			league = new League(user, "Lega", newspaper, "1234");
+			t.persist(league);
+			team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
+			t.persist(team);
+			player = new Player.Forward("Lionel", "Messi");
+			t.persist(player);
+		});
+		
 	}
 
 	@AfterAll
 	static void tearDown() {
 		sessionFactory.close();
 	}
-	
+
 	@Test
 	@DisplayName("getContract() when contract doesn't exist")
-	public void testGetContractWithNoContractExisting(){
-		
-		FantaUser user = new FantaUser("email", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(user, "Lega", newspaper, "1234");
-		FantaTeam team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
-		Player player = new Player.Forward("Lionel", "Messi");
-		
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(newspaper);
-			session.persist(league);
-			session.persist(team);
-			session.persist(player);
-		});
-		
+	public void testGetContractWithNoContractExisting() {
+
 		assertThat(contractRepository.getContract(team, player)).isEmpty();
 	}
-	
+
 	@Test
 	@DisplayName("getContract() when contract exists")
-	public void testGetContractWithContractExisting(){
-		
-		FantaUser user = new FantaUser("email", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(user, "Lega", newspaper, "1234");
-		Player player1 = new Player.Forward("Lionel", "Messi");
+	public void testGetContractWithContractExisting() {
+
+
 		Player player2 = new Player.Defender("Giorgio", "Chiellini");
-		FantaTeam team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
-		Contract contract1 = new Contract(team, player1);
+		Contract contract1 = new Contract(team, player);
 		Contract contract2 = new Contract(team, player2);
-				
+
 		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(newspaper);
-			session.persist(league);
-			session.persist(player1);
 			session.persist(player2);
-			session.persist(team);
 			session.persist(contract1);
 			session.persist(contract2);
 		});
-		
+
 		team.setContracts(Set.of(contract1, contract2));
 
-		assertThat(contractRepository.getContract(team, player1).get()).isEqualTo(contract1);
+		assertThat(contractRepository.getContract(team, player).get()).isEqualTo(contract1);
 		assertThat(contractRepository.getContract(team, player2).get()).isEqualTo(contract2);
 	}
-	
-	// TODO Errore: transaction required, executing an update/delete query?????
+
 	@Test
 	@DisplayName("deleteContract() when contract doesn't exist")
-	public void testDeleteContractWithNoContractExisting(){
-		
-		FantaUser user = new FantaUser("email", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(user, "Lega", newspaper, "1234");
-		FantaTeam team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
-		Player player = new Player.Forward("Lionel", "Messi");
-		
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(newspaper);
-			session.persist(league);
-			session.persist(team);
-			session.persist(player);
-		});
-		
-		sessionFactory.inTransaction((Session em) -> {
-			contractRepository.deleteContract(new Contract(team, player));
-			
-			Optional<Contract> result = em
-					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-					.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
+	public void testDeleteContractWithNoContractExisting() {
 
-			assertThat(result).isEmpty();
-		});
+		entityManager.getTransaction().begin();
+
+		contractRepository.deleteContract(new Contract(team, player));
+
+		Optional<Contract> result = entityManager
+				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
+
+		assertThat(result).isEmpty();
 		
+		entityManager.clear();
+
 	}
-	
-	// TODO Errore: transaction required, executing an update/delete query?????
+
 	@Test
 	@DisplayName("deleteContract() when contract exists")
-	public void testDeleteContractWithContractExisting(){
-		
-		FantaUser user = new FantaUser("email", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(user, "Lega", newspaper, "1234");
-		Player player = new Player.Forward("Lionel", "Messi");
-		FantaTeam team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
-		Contract contract = new Contract(team, player);
-				
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(newspaper);
-			session.persist(league);
-			session.persist(player);
-			session.persist(team);
-			session.persist(contract);
-		});
-		
-		team.setContracts(Set.of(contract));
-		
-		sessionFactory.inTransaction((Session em) -> {
-			contractRepository.deleteContract(contract);
-			
-			Optional<Contract> result = em
-					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-					.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
+	public void testDeleteContractWithContractExisting() {
 
-			assertThat(result).isEmpty();
-		});
+		entityManager.getTransaction().begin();
+
+		Contract contract = new Contract(team, player);
+
+		entityManager.persist(contract);
+
+		team.setContracts(Set.of(contract));
+
+		contractRepository.deleteContract(contract);
+
+		Optional<Contract> result = entityManager
+				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
+
+		assertThat(result).isEmpty();
+
+		entityManager.clear();
+		
 	}
-	
+
 	@Test
 	@DisplayName("saveContract should persist correctly")
 	void testSaveContractPersistsCorrectly() {
-		
-		FantaUser user = new FantaUser("email", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(user, "Lega", newspaper, "1234");
-		Player player = new Player.Forward("Lionel", "Messi");
-		FantaTeam team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
+
 		Contract contract = new Contract(team, player);
-				
+
 		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(newspaper);
-			session.persist(league);
-			session.persist(player);
-			session.persist(team);
 			session.persist(contract);
 		});
-		
+
 		sessionFactory.inTransaction((Session em) -> {
 			Optional<Contract> result = em
 					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)

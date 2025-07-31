@@ -14,9 +14,11 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
 public class JpaContractRepository extends BaseJpaRepository implements ContractRepository {
+	
     public JpaContractRepository(EntityManager em) {
         super(em);
     }
+    
     @Override
     public Optional<Contract> getContract(FantaTeam team, Player player) {
     	EntityManager em = getEntityManager();
