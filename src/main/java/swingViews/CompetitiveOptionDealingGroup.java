@@ -5,6 +5,13 @@ import java.util.Set;
 
 import swingViews.CompetitiveOptionDealingGroup.*;
 
+/*
+ * TODO 
+ * 		1. consider moving the global option list entirely within this driver
+ * 			attualmente, i test usano una option list vuota ed esercitano 
+ * 			il driver su indici arbitrari, senza che venga sollevato errore
+ */
+
 /**
  * drives a {@code Set} of implementors of {@linkplain CompetitiveOrderedDealer} 
  * in such a way as to realize a <i>competitive dealing</i> group.

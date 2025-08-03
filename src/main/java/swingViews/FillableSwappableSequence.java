@@ -2,6 +2,10 @@ package swingViews;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import swingViews.FillableSwappableSequence.*;
 
 /**
@@ -79,6 +83,45 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		void attachDriver(FillableSwappableSequence<R> driver);
 	}
 	
+	private class GadgetWrapper {
+
+		G gadget;
+
+		GadgetWrapper(G gadget) {
+			this.gadget = gadget;
+		}
+		
+		G unwrap() {
+			return gadget;
+		}
+		
+		// internal utility methods for querying gadget status
+		boolean isRightmostFillable() {
+			return sequence.contains(this) && sequence.indexOf(this) == rightmostFillablePosition;
+		}
+
+		private boolean isFillable() {
+			return sequence.indexOf(this) <= rightmostFillablePosition || 
+					rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
+		}
+		
+		// swapping gadget content
+		boolean hasContent() {
+			return sequence.indexOf(this) < rightmostFillablePosition ||
+					rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
+		}
+		
+		boolean canSwapLeft() {
+			return hasContent() && sequence.indexOf(this) != 0;
+		}
+
+		boolean canSwapRight() {
+			return hasContent() && 
+					sequence.indexOf(this) < sequence.size() - 1 &&
+					sequence.get(sequence.indexOf(this) + 1).hasContent();
+		}
+	}
+	
 	/**
 	 * public interface a visual must implement 
 	 * so that a {@code FillableSwappableSequenceDriver} can update it
@@ -93,38 +136,29 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 	}
 
 	// internal bookkeeping
-	// TODO consider using a bi-chained wrapper to avoid indexOf() calls
-	// and make utility methods more intuitive
-	private List<G> sequence;
+	// TODO consider using a bi-chained wrapper to avoid indexOf() calls (?!)
+	private List<GadgetWrapper> sequence;
 	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
 	int rightmostFillablePosition = RIGHTMOST_FILLABLE_OVERFLOW;
 	List<FillableSwappableSequenceListener<G>> listeners = 
 			new ArrayList<FillableSwappableSequenceListener<G>>();
 	
-	// internal utility methods for querying gadget status
-	private boolean isRightmostFillable(G client) {
-		return sequence.contains(client) && sequence.indexOf(client) == rightmostFillablePosition;
-	}
-
-	private boolean isFillable(G client) {
-		return sequence.indexOf(client) <= rightmostFillablePosition || 
-				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
-	}
+	
 	
 	// useful to unit tests
 	FillableSwappableSequence(List<G> gadgets) {
-		this.sequence = gadgets;
+		this.sequence = gadgets.stream().map(GadgetWrapper::new).collect(Collectors.toList());
 	}
 	
 	// public static factory method
 	public static <T extends FillableSwappableGadget<T>> FillableSwappableSequence<T> 
 			createSequence(List<T> gadgets) {
 		FillableSwappableSequence<T>  driver = new FillableSwappableSequence<T>(gadgets);
-		driver.sequence.forEach(c -> {
-			c.attachDriver(driver);
-			c.disableFilling();
+		driver.sequence.forEach(w -> {
+			w.unwrap().attachDriver(driver);
+			w.unwrap().disableFilling();
 		});
-		driver.sequence.getFirst().enableFilling();
+		driver.sequence.getFirst().unwrap().enableFilling();
 		driver.updateRightmostFillable(0);
 		return driver;
 	}
@@ -134,90 +168,95 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 	}
 
 	// notification methods: update sequence state and collapse
-	public void contentRemoved(G emptied) {
-		if (!isFillable(emptied))
-			throw new IllegalStateException("Content removal reported for gadget for which filling should have been disabled");
-		if (isRightmostFillable(emptied))
-			throw new IllegalStateException("Content removal reported for gadget for which filling had not been reported");
-		if (!sequence.contains(emptied))
-			throw new IllegalArgumentException("Content removal reported for a gadget that is not a member of this sequence");
+	public void contentRemoved(G emptied) {		
+		indexOf(emptied).ifPresentOrElse(index -> {
+			if (!sequence.get(index).isFillable())
+				throw new IllegalStateException(
+						"Content removal reported for gadget for which filling should have been disabled");
+			if (sequence.get(index).isRightmostFillable())
+				throw new IllegalStateException(
+						"Content removal reported for gadget for which filling had not been reported");
 
-		// 1) collapses content in the sequence
-		int nextRightmostFillable = (rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW) ? 
-				sequence.size() - 1 : rightmostFillablePosition - 1;
-		for (int i = sequence.indexOf(emptied); i < nextRightmostFillable; i++) {
-			sequence.get(i).acquireContentFrom(sequence.get(i + 1));
-		}
+			// 1) collapses content in the sequence
+			int nextRightmostFillable = (rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW) ? sequence.size() - 1
+					: rightmostFillablePosition - 1;
+			for (int i = index; i < nextRightmostFillable; i++) {
+				sequence.get(i).unwrap().acquireContentFrom(sequence.get(i + 1).unwrap());
+			}
+
+			// 2) shifts rightmostFillable client backwards
+
+			// avoids emptying if emptied == nextRightmostFillable
+			if (index != nextRightmostFillable)
+				sequence.get(nextRightmostFillable).unwrap().discardContent();
+			listeners.forEach(l -> l.becameEmpty(sequence.get(nextRightmostFillable).unwrap()));
+			if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
+				sequence.get(rightmostFillablePosition).unwrap().disableFilling();
+			updateRightmostFillable(nextRightmostFillable);
+		}, () -> {
+			throw new IllegalArgumentException(
+					"Content removal reported for a gadget that is not a member of this sequence");
+		});
 		
-		// 2) shifts rightmostFillable client backwards
-		
-		// avoids emptying if emptied == nextRightmostFillable
-		if (sequence.indexOf(emptied) != nextRightmostFillable)
-			sequence.get(nextRightmostFillable).discardContent();
-		listeners.forEach(l -> l.becameEmpty(sequence.get(nextRightmostFillable)));
-		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
-			sequence.get(rightmostFillablePosition).disableFilling();
-		updateRightmostFillable(nextRightmostFillable);
 	}
 
 	public void contentAdded(G client) {
-		if (!sequence.contains(client))
+		indexOf(client).ifPresentOrElse(index -> {			
+			if (!sequence.get(index).isFillable())
+				throw new IllegalStateException("Content addition reported for a gadget beyond the next-fillable");
+			
+			// updates sequence status moving rightmostFillable rightwards
+			if (sequence.get(index).isRightmostFillable()) {
+				if (rightmostFillablePosition < sequence.size() - 1)
+					sequence.get(updateRightmostFillable(rightmostFillablePosition + 1)).unwrap().enableFilling();
+				else
+					updateRightmostFillable(RIGHTMOST_FILLABLE_OVERFLOW); // signals RF overflow
+				listeners.forEach(l -> l.becameFilled(client));
+			}
+		}, () -> {
 			throw new IllegalArgumentException("Content addition reported for a gadget that is not a member of this sequence");
+		});
 		
-		if (!isFillable(client))
-			throw new IllegalStateException("Content addition reported for a gadget beyond the next-fillable");
+	}
 
-		// updates sequence status moving rightmostFillable rightwards
-		if (isRightmostFillable(client)) {
-			if (rightmostFillablePosition < sequence.size() - 1)
-				sequence.get(updateRightmostFillable(rightmostFillablePosition + 1)).enableFilling();
-			else
-				updateRightmostFillable(RIGHTMOST_FILLABLE_OVERFLOW); // signals RF overflow
-			listeners.forEach(l -> l.becameFilled(client));
-		}
+	private OptionalInt indexOf(G client) {
+		return IntStream.range(0, sequence.size())
+				.filter(i -> sequence.get(i).unwrap().equals(client))
+				.findFirst();
 	}
 
 	// triggers gadget highlighting for rightmost-fillable status
 	private int updateRightmostFillable(int newValue) {
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
-			sequence.get(rightmostFillablePosition).dehighlight();
+			sequence.get(rightmostFillablePosition).unwrap().dehighlight();
 		rightmostFillablePosition = newValue;
 		if (newValue != RIGHTMOST_FILLABLE_OVERFLOW)
-			sequence.get(rightmostFillablePosition).highlight();
+			sequence.get(rightmostFillablePosition).unwrap().highlight();
 		return newValue;
-	}
+	}	
 
-	// swapping gadget content
-	public boolean hasContent(G client) {
-		return sequence.indexOf(client) < rightmostFillablePosition ||
-				rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
-	}
-	
-	public boolean canSwapLeft(G client) {
-		return hasContent(client) && sequence.indexOf(client) != 0;
-	}
-
-	public boolean canSwapRight(G client) {
-		return hasContent(client) && 
-				sequence.indexOf(client) < sequence.size() - 1 &&
-					hasContent(sequence.get(sequence.indexOf(client) + 1));
-	}
-
-	// TODO insert checks using canSwap (like Iterator does: next() -> hasNext())
 	public void swapLeft(G client) {
-		if (!sequence.contains(client))
+		indexOf(client).ifPresentOrElse(index -> {
+			if (!sequence.get(index).canSwapLeft())
+				throw new IllegalArgumentException("Left-swapping requested for gadget that is unable to swap left");
+			client.swapContentWith(sequence.get(index - 1).unwrap());
+		}, () -> {			
 			throw new IllegalArgumentException("Left-swapping requested for gadget that is not a member of this sequence");
-		if (!canSwapLeft(client))
-			throw new IllegalArgumentException("Left-swapping requested for gadget that is unable to swap left");
-		client.swapContentWith(sequence.get(sequence.indexOf(client) - 1));
+		});
+		
+		
 	}
 
-	public void swapRight(G client) {		
-		if (!sequence.contains(client))
+	public void swapRight(G client) {
+		indexOf(client).ifPresentOrElse(index -> {
+			if (!sequence.get(index).canSwapRight())
+				throw new IllegalArgumentException("Right-swapping requested for gadget that is unable to swap right");
+			client.swapContentWith(sequence.get(index + 1).unwrap());		
+		}, () -> {			
 			throw new IllegalArgumentException("Right-swapping requested for gadget that is not a member of this sequence");
-		if (!canSwapRight(client))
-			throw new IllegalArgumentException("Right-swapping requested for gadget that is unable to swap right");
-		client.swapContentWith(sequence.get(sequence.indexOf(client) + 1));
+		});
+		
+		
 	}
 
 }

@@ -21,7 +21,7 @@ import domainModel.Player.Defender;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
 
-@DisplayName("SwingSubPlayerSelector: MVP-View unit test")
+@DisplayName("CompetingSubstituteChooserTest: MVP View + Presenter IT")
 @ExtendWith(MockitoExtension.class)
 public class CompetingSubstituteChooserTest extends AssertJSwingJUnit5TestCase {
     
