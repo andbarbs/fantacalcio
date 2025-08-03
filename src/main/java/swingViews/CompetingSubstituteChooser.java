@@ -14,7 +14,7 @@ import javax.swing.SwingUtilities;
 
 import domainModel.Player;
 import domainModel.Player.Defender;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableVisual;
+import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -24,9 +24,9 @@ import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class CompetingSubstituteChooser<T extends Player> extends JPanel 
-				implements FillableSwappableVisual<SubstitutePlayerSelector<T>> {
+				implements FillableSwappableSequenceListener<SubstitutePlayerSelector<T>> {
 
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>> driver;
+	private FillableSwappableSequence<SubstitutePlayerSelector<T>> driver;
 	private SubstitutePlayerSelector<T> selPres1;
 	private SubstitutePlayerSelector<T> selPres2;
 	private SubstitutePlayerSelector<T> selPres3;
@@ -125,8 +125,9 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 				0, SpringLayout.VERTICAL_CENTER, this);
 		
 		// wire up substitute driver
-		driver = new FillableSwappableSequenceDriver<SubstitutePlayerSelector<T>>(
-				List.of(selPres1, selPres2, selPres3), this);
+		driver = FillableSwappableSequence.createSequence(
+				List.of(selPres1, selPres2, selPres3));
+		driver.attachListener(this);
 		
 		// initially disable swapping
 		List.of(swapSelectors1and2, swapSelectors2and3).forEach(a -> a.setEnabled(false));

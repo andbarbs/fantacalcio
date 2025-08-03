@@ -39,7 +39,7 @@ class CompetitiveOptionDealingGroupTest {
 	private CompetitiveOptionDealingGroup<TestSpecificDealer, String> driver;
 	
 	@Test
-	@DisplayName("can be initialized statically")
+	@DisplayName("when being initialized")
 	void staticFactoryMethod() {
 		// WHEN a group is initialized through the static factory API
 		driver = CompetitiveOptionDealingGroup.initializeDealing(

@@ -32,7 +32,7 @@ class SubstitutePlayerSelectorTest {
 	private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;
 	
 	@Mock
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<Midfielder>> sequenceDriver;
+	private FillableSwappableSequence<SubstitutePlayerSelector<Midfielder>> sequenceDriver;
 	
 	@InjectMocks
 	private SubstitutePlayerSelector<Midfielder> presenter;

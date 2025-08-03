@@ -2,7 +2,7 @@ package swingViews;
 
 import java.util.Optional;
 import domainModel.Player;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
+import swingViews.FillableSwappableSequence.FillableSwappableGadget;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
@@ -19,13 +19,13 @@ import swingViews.OrderedDealerPresenter.OrderedDealerView;
  * 		<li>a <i>{@code Set}</i> of {@code SubstitutePlayerSelector} instances 
  * 			are made to collaborate with a {@linkplain CompetitiveOptionDealingGroup}
  * 		<li>a <i>{@code List}</i> of {@code SubstitutePlayerSelector} instances 
- * 			are made to collaborate with a {@linkplain FillableSwappableSequenceDriver}
+ * 			are made to collaborate with a {@linkplain FillableSwappableSequence}
  * </ol> 
  * through the facilities defined by those types.</p>
  * 
  * @param <P> the type for options in the {@code StarterPlayerSelector}
  * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of competitive dealing, 
- * 		{@linkplain FillableSwappableSequenceDriver}
+ * 		{@linkplain FillableSwappableSequence}
  */
 public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
 			implements FillableSwappableGadget<SubstitutePlayerSelector<P>> {
@@ -84,17 +84,17 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		
 	// 2. FillableSwappable: mandated functions
 
-	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> sequenceDriver;
+	private FillableSwappableSequence<SubstitutePlayerSelector<P>> sequenceDriver;
 	
 	@Override
-	public void attachDriver(FillableSwappableSequenceDriver<SubstitutePlayerSelector<P>> driver) {
+	public void attachDriver(FillableSwappableSequence<SubstitutePlayerSelector<P>> driver) {
 		this.sequenceDriver = driver;		
 	}
 	
 	/** 
 	 * causes a {@code SubstitutePlayerSelector} to clear its selection 
 	 * and retire the corresponding option , as requested by the 
-	 * {@linkplain FillableSwappableSequenceDriver} during a <i>collapse operation</i>,
+	 * {@linkplain FillableSwappableSequence} during a <i>collapse operation</i>,
 	 * <b>without</b> notifying back the sequence driver.
 	 * @implNote this is a local operation with respect to the dealer group, 
 	 * 		i.e. it does not notify the {@code OptionDealerGroupDriver}
@@ -109,7 +109,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	/**
 	 * causes a {@code SubstitutePlayerSelector} to "equalize" to another
 	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, as requested
-	 * by the {@linkplain FillableSwappableSequenceDriver} during a <i>collapse operation</i>,
+	 * by the {@linkplain FillableSwappableSequence} during a <i>collapse operation</i>,
 	 * <b>without</b> notifying back the sequence driver.
 	 * <p>
 	 * In the context of the dealer group, this means
@@ -144,7 +144,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	/**
 	 * causes a {@code SubstitutePlayerSelector} to swap contents with another
 	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, 
-	 * as requested by the {@linkplain FillableSwappableSequenceDriver} during a <i>swap operation</i>, 
+	 * as requested by the {@linkplain FillableSwappableSequence} during a <i>swap operation</i>, 
 	 * <b>without</b> notifying back the sequence driver.
 	 * <p>
 	 * In the context of the dealer group, this means

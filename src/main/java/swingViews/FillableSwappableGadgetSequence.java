@@ -15,13 +15,13 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 import swingViews.FillableSwappableGadgetSequence.*;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
-import swingViews.FillableSwappableSequenceDriver.FillableSwappableVisual;
+import swingViews.FillableSwappableSequence.FillableSwappableGadget;
+import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 
 @SuppressWarnings("serial")
 public class FillableSwappableGadgetSequence
 		<FillableSwappable extends JComponent & ToggleSelectable & FillableSwappableGadget<FillableSwappable>> 
-			extends JPanel implements FillableSwappableVisual<FillableSwappable> {
+			extends JPanel implements FillableSwappableSequenceListener<FillableSwappable> {
 	
 	/* 
 	 * arranges suitable clients in a sequence such that the contents 
@@ -94,13 +94,14 @@ public class FillableSwappableGadgetSequence
 	private List<GadgetSlot> slots;
 	private GadgetSlot selectedSlot;
 
-	private FillableSwappableSequenceDriver<FillableSwappable> driver;
+	private FillableSwappableSequence<FillableSwappable> driver;
 	private Action leftSwapAction, rightSwapAction;
 	
 	public FillableSwappableGadgetSequence(List<FillableSwappable> clients) {
 
 		// 1. Initializes driver to client instances received
-		driver = new FillableSwappableSequenceDriver<FillableSwappable>(clients, this);
+		driver = new FillableSwappableSequence<FillableSwappable>(clients);
+		driver.attachListener(this);
 
 		// 2. Wraps each client in a slot and stores slots
 		slots = clients.stream().map(GadgetSlot::new).collect(Collectors.toList());
