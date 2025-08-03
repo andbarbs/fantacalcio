@@ -12,14 +12,14 @@ import domainModel.Player;
  * 
  * <p>This functionality is fully realized when a <i>{@code Set}</i> of 
  * {@code StarterPlayerSelector} instances are made to collaborate with 
- * an {@linkplain OptionDealerGroupDriver}, through the facilities defined thereby.</p>
+ * an {@linkplain CompetitiveOptionDealingGroup}, through the facilities defined thereby.</p>
  * 
  * <p>Additionally, {@code StarterPlayerSelector} offers a Subject API 
  * for clients wanting to be notified of <i>selection-set</i> and <i>selection-cleared</i> 
  * events on a {@code StarterPlayerSelector} instance.
  * 
  * @param <P> the type for options in the {@code StarterPlayerSelector}
- * @see {@linkplain OptionDealerGroupDriver} for the semantics of competitive selection
+ * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of competitive selection
  */
 public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> {
 

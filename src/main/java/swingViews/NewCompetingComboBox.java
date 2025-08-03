@@ -9,11 +9,11 @@ import java.util.stream.IntStream;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
-import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
+import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
 
 /**
  * an implementation of CompetingComboBox that relies on an
- * {@link OptionDealerGroupDriver} to drive competition.
+ * {@link CompetitiveOptionDealingGroup} to drive competition.
  * 
  * Clients should use it as follows: 
  * <pre>
@@ -25,10 +25,10 @@ import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
  *     Arrays.asList("A", "B", "C"));
  * }</pre>
  *
- * @see OptionDealerGroupDriver
+ * @see CompetitiveOptionDealingGroup
  */
 @SuppressWarnings("serial")
-public class NewCompetingComboBox<T> extends JComboBox<T> implements OrderedOptionDealer<NewCompetingComboBox<T>, T>{
+public class NewCompetingComboBox<T> extends JComboBox<T> implements CompetitiveOrderedDealer<NewCompetingComboBox<T>, T>{
 	
 	private static final int COMPETING_CBOX_NO_CHOICE = -1;
 
@@ -36,7 +36,7 @@ public class NewCompetingComboBox<T> extends JComboBox<T> implements OrderedOpti
 	private List<Integer> mask;       // contains the linear indices in this.options of elements in the combo's model
 	private Integer currentSelection; // contains the linear index in this.options of the combo's current selection
 
-	private OptionDealerGroupDriver<NewCompetingComboBox<T>, T> driver;	
+	private CompetitiveOptionDealingGroup<NewCompetingComboBox<T>, T> driver;	
 	
 	public NewCompetingComboBox() {
 		/* an ActionEvent is fired on a JComboBox under these circumstances:
@@ -68,7 +68,7 @@ public class NewCompetingComboBox<T> extends JComboBox<T> implements OrderedOpti
 	}
 
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<NewCompetingComboBox<T>, T> driver) {
+	public void attachDriver(CompetitiveOptionDealingGroup<NewCompetingComboBox<T>, T> driver) {
 		this.driver = driver;
 	}
 

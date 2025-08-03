@@ -61,7 +61,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_goalieSelector.insets = new Insets(10, 10, 10, 10); // optional padding
         selectorsPanel.add(goalieSelView, gbc_goalieSelector);
         
-        OptionDealerGroupDriver.initializeDealing(
+        CompetitiveOptionDealingGroup.initializeDealing(
 				Set.of(goalieSelPres), 
 				List.of(new Goalkeeper("Gigi", "Buffon"), 
 						new Goalkeeper("Manuel", "Neuer"),
@@ -128,7 +128,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_defSelector4.gridy = 1;
         defendersPanel.add(defSelector4View, gbc_defSelector4);
         
-        OptionDealerGroupDriver.initializeDealing(
+        CompetitiveOptionDealingGroup.initializeDealing(
 				Set.of(defSelector1Pres, defSelector2Pres, defSelector3Pres, defSelector4Pres), 
 				List.of(
 						new Defender("Giorgio", "Chiellini"),
@@ -184,7 +184,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_midSelector3.gridy = 0;
         midfieldersPanel.add(midSelector3View, gbc_midSelector3);
         
-        OptionDealerGroupDriver.initializeDealing(
+        CompetitiveOptionDealingGroup.initializeDealing(
 				Set.of(midSelector1Pres, midSelector2Pres, midSelector3Pres), 
 				List.of(new Midfielder("Luka", "Modrić"), 
 						new Midfielder("Kevin", "De Bruyne"),
@@ -241,7 +241,7 @@ public class MultiPlayerSelector extends JFrame {
         gbc_forwSelector3.gridy = 0;
         forwardsPanel.add(forwSelector3View, gbc_forwSelector3);
         
-        OptionDealerGroupDriver.initializeDealing(
+        CompetitiveOptionDealingGroup.initializeDealing(
 				Set.of(forwSelector1Pres, forwSelector2Pres, forwSelector3Pres), 
 				List.of(new Forward("Lionel", "Messi"), 
 						new Forward("Cristiano", "Ronaldo"),

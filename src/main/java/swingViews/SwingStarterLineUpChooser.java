@@ -196,16 +196,16 @@ public class SwingStarterLineUpChooser extends JPanel implements LineUpChooserVi
 		// TODO there is the issue of ordering players in the team:
 		// initializeCompetition rightly wants a List!!
 		
-		OptionDealerGroupDriver.initializeDealing(
+		CompetitiveOptionDealingGroup.initializeDealing(
 				goalieSelectorViews.stream().map(SwingSubPlayerSelector::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().goalkeepers()));
-		OptionDealerGroupDriver.initializeDealing(
+		CompetitiveOptionDealingGroup.initializeDealing(
 				defSelectorViews.stream().map(SwingSubPlayerSelector::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().defenders()));
-		OptionDealerGroupDriver.initializeDealing(
+		CompetitiveOptionDealingGroup.initializeDealing(
 				midSelectorViews.stream().map(SwingSubPlayerSelector::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().midfielders()));
-		OptionDealerGroupDriver.initializeDealing(
+		CompetitiveOptionDealingGroup.initializeDealing(
 				forwSelectorViews.stream().map(SwingSubPlayerSelector::getPresenter).collect(Collectors.toSet()), 
 				List.copyOf(team.extract().forwards()));
 	}

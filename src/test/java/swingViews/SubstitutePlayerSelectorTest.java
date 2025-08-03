@@ -29,7 +29,7 @@ class SubstitutePlayerSelectorTest {
 	private SubstitutePlayerSelectorView<Midfielder> view;
 	
 	@Mock
-	private OptionDealerGroupDriver<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;
+	private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;
 	
 	@Mock
 	private FillableSwappableSequenceDriver<SubstitutePlayerSelector<Midfielder>> sequenceDriver;

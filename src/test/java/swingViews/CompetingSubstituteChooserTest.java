@@ -41,7 +41,7 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnit5TestCase {
 			
 			// sets up the SUT
 			CompetingSubstituteChooser<Defender> chooser = new CompetingSubstituteChooser<Defender>();
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.copyOf(chooser.getSubstituteSelectors()), 
 					List.of(chiellini, pique, ramos, silva, vanDijk));  // in alphabetical order
 			

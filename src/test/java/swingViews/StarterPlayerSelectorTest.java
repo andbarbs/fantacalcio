@@ -29,7 +29,7 @@ class StarterPlayerSelectorTest {
 	private OrderedDealerPresenter.OrderedDealerView<Midfielder> view;
 	
 	@Mock
-	private OptionDealerGroupDriver<OrderedDealerPresenter<Midfielder>, Midfielder> driver;
+	private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> driver;
 	
 	@Mock
 	private StarterPlayerSelectorListener<Midfielder> listener;

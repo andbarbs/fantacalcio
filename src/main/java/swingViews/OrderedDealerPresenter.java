@@ -6,33 +6,33 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import swingViews.OptionDealerGroupDriver.OrderedOptionDealer;
+import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
 
 /**
- * implements the mandated members of an {@linkplain OrderedOptionDealer}
+ * implements the mandated members of an {@linkplain CompetitiveOrderedDealer}
  * as a Presenter in the sense of the <b>MVP pattern</b>.
  * 
  * <p>Subclasses are free to implement the behavioral responsibilities of 
- * {@linkplain OrderedOptionDealer}, i.e. notifying the driver, through the 
+ * {@linkplain CompetitiveOrderedDealer}, i.e. notifying the driver, through the 
  * {@linkplain #groupDriver} field and hooks {@linkplain #selectionSetFor(int)} 
  * and {@linkplain #selectionClearedFor(int)}, which complete Presenter 
  * response to View notifications.
  * 
- * @implNote {@linkplain OrderedOptionDealer} members do not leak back into
+ * @implNote {@linkplain CompetitiveOrderedDealer} members do not leak back into
  * 		the driver, as long as the {@linkplain OrderedDealerView}
  * 		collaborator does <i>not</i> notify back the {@code OrderedDealerPresenter} 
  * 		for mutations induced by the {@code OrderedDealerPresenter} itself
  * @param <T> the type for options in this dealer
  */
 public abstract class OrderedDealerPresenter<T> 
-				implements OrderedOptionDealer<OrderedDealerPresenter<T>, T> {	
+				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T> {	
 
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 	
-	protected OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> groupDriver;
+	protected CompetitiveOptionDealingGroup<OrderedDealerPresenter<T>, T> groupDriver;
 	
 	@Override
-	public void attachDriver(OptionDealerGroupDriver<OrderedDealerPresenter<T>, T> driver) {
+	public void attachDriver(CompetitiveOptionDealingGroup<OrderedDealerPresenter<T>, T> driver) {
 		this.groupDriver = driver;
 	}
 	

@@ -81,7 +81,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     public void testCompetingBehavior() {
 		GuiActionRunner.execute(() -> {
 			// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					Arrays.asList("A", "B", "C"));
 		});
@@ -109,7 +109,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     public void testProgrammaticCompetingBehavior() {
     	GuiActionRunner.execute(() -> {
 			// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					Arrays.asList("A", "B", "C"));
 		});
@@ -136,7 +136,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     public void testSequentialSelectionsOnSameCombo() {
     	GuiActionRunner.execute(() -> {
 			// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					Arrays.asList("A", "B", "C"));
 		});
@@ -169,7 +169,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     public void testProgrammaticSequentialSelectionsOnSameCombo() {
     	GuiActionRunner.execute(() -> {
 			// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					Arrays.asList("A", "B", "C"));
 		});
@@ -202,7 +202,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     public void testCompetingBehaviorAcrossDifferentCombos() {
     	GuiActionRunner.execute(() -> {
 			// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					Arrays.asList("A", "B", "C"));
 		});
@@ -243,7 +243,7 @@ public class NewCompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     		combo3.setName("spectator");
     		
     		// Set up competition
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(combo1, combo2, combo3), 
 					contents);
 		});

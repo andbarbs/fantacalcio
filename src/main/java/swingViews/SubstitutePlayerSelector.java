@@ -6,25 +6,25 @@ import swingViews.FillableSwappableSequenceDriver.FillableSwappableGadget;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
- *implements an MVP Presenter for a gadget capable of being part of
+ * <h1></h1>implements an MVP Presenter for a gadget capable of being part of
  * <ol>
- * 		<li>a <i>group</i> where each gadget allows <i>competitive selection</i> of one instance 
- * 			of {@linkplain Player}, or one if its sub-types, from a global list
+ * 		<li>a <i>group</i> where each gadget allows <i>competitive dealing</i> of one instance 
+ * 			of {@linkplain Player}, or one if its sub-types, from a group-wide list
  * 		<li>an <i>ordered group</i> of gadgets which only permits the user 
  * 			to enter selections <i>sequentially</i>
  * </ol>
  * 
  * <p>These two functionalities are fully realized when, respectively,
- * <ul>
+ * <ol>
  * 		<li>a <i>{@code Set}</i> of {@code SubstitutePlayerSelector} instances 
- * 			are made to collaborate with an {@linkplain OptionDealerGroupDriver}
+ * 			are made to collaborate with a {@linkplain CompetitiveOptionDealingGroup}
  * 		<li>a <i>{@code List}</i> of {@code SubstitutePlayerSelector} instances 
  * 			are made to collaborate with a {@linkplain FillableSwappableSequenceDriver}
- * </ul> 
+ * </ol> 
  * through the facilities defined by those types.</p>
  * 
  * @param <P> the type for options in the {@code StarterPlayerSelector}
- * @see {@linkplain OptionDealerGroupDriver} for the semantics of competitive selection, 
+ * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of competitive dealing, 
  * 		{@linkplain FillableSwappableSequenceDriver}
  */
 public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
@@ -122,7 +122,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 * @implNote 
 	 * <ol>
 	 * 		<li>this is a local operation with respect to the dealer group, 
-	 * 			i.e. it does not notify the {@linkplain OptionDealerGroupDriver}
+	 * 			i.e. it does not notify the {@linkplain CompetitiveOptionDealingGroup}
 	 * 		<li>this operation does not rely on temporarily clearing the View's selection
 	 * </ol>
 	 */
@@ -158,7 +158,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 * @implNote 
 	 * <ol>
 	 * 		<li>this is a local operation with respect to the dealer group, 
-	 * 			i.e. it does not notify the {@linkplain OptionDealerGroupDriver}
+	 * 			i.e. it does not notify the {@linkplain CompetitiveOptionDealingGroup}
 	 * 		<li>this operation does not rely on temporarily clearing the View's selection
 	 * </ol>
 	 */

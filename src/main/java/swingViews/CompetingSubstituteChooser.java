@@ -156,7 +156,7 @@ public class CompetingSubstituteChooser<T extends Player> extends JPanel
 			JFrame frame = new JFrame("substitute chooser demo");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			CompetingSubstituteChooser<Defender> chooser = new CompetingSubstituteChooser<Defender>();
-			OptionDealerGroupDriver.initializeDealing(
+			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.copyOf(chooser.getSubstituteSelectors()), 
 					List.of(
 							new Defender("Giorgio", "Chiellini"),

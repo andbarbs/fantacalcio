@@ -50,7 +50,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 	class DriverAndListenerInteraction {
 
     	private StarterPlayerSelector<Defender> compPlayerSelector;    	
-    	@Mock private OptionDealerGroupDriver<OrderedDealerPresenter<Defender>, Defender> driver;    	
+    	@Mock private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Defender>, Defender> driver;    	
     	@Mock private StarterPlayerSelectorListener<Defender> listener;
 
     	@BeforeEach
