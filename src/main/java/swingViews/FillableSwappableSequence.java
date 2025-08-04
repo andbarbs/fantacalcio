@@ -101,7 +101,6 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 			return index;
 		}
 		
-		// internal utility methods for querying gadget status
 		boolean isRightmostFillable() {
 			return index == rightmostFillablePosition;
 		}
@@ -111,7 +110,6 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 					rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
 		}
 		
-		// swapping gadget content
 		boolean hasContent() {
 			return index < rightmostFillablePosition ||
 					rightmostFillablePosition == RIGHTMOST_FILLABLE_OVERFLOW;
@@ -128,6 +126,12 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		}
 	}
 	
+	private Optional<GadgetWrapper> wrapperOf(G client) {
+		return sequence.stream()
+				.filter(w -> w.unwrap().equals(client))
+				.findFirst();
+	}
+
 	/**
 	 * public interface a visual must implement 
 	 * so that a {@code FillableSwappableSequenceDriver} can update it
@@ -142,7 +146,6 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 	}
 
 	// internal bookkeeping
-	// TODO consider using a bi-chained wrapper to avoid indexOf() calls (?!)
 	private List<GadgetWrapper> sequence;
 	private static final int RIGHTMOST_FILLABLE_OVERFLOW = -1;
 	int rightmostFillablePosition = RIGHTMOST_FILLABLE_OVERFLOW;
@@ -227,12 +230,6 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		
 	}
 	
-	private Optional<GadgetWrapper> wrapperOf(G client) {
-		return sequence.stream()
-				.filter(w -> w.unwrap().equals(client))
-				.findFirst();
-	}
-
 	// triggers gadget highlighting for rightmost-fillable status
 	private int updateRightmostFillable(int newValue) {
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
@@ -247,7 +244,8 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		wrapperOf(client).ifPresentOrElse(wrapper -> {
 			if (!wrapper.canSwapLeft())
 				throw new IllegalArgumentException("Left-swapping requested for gadget that is unable to swap left");
-			client.swapContentWith(sequence.get(wrapper.index() - 1).unwrap());
+			GadgetWrapper leftNeighbor = sequence.get(wrapper.index() - 1);
+			wrapper.unwrap().swapContentWith(leftNeighbor.unwrap());
 		}, () -> {			
 			throw new IllegalArgumentException("Left-swapping requested for gadget that is not a member of this sequence");
 		});
@@ -259,7 +257,8 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		wrapperOf(client).ifPresentOrElse(wrapper -> {
 			if (!wrapper.canSwapRight())
 				throw new IllegalArgumentException("Right-swapping requested for gadget that is unable to swap right");
-			client.swapContentWith(sequence.get(wrapper.index() + 1).unwrap());		
+			GadgetWrapper rightNeighbor = sequence.get(wrapper.index() + 1);
+			wrapper.unwrap().swapContentWith(rightNeighbor.unwrap());		
 		}, () -> {			
 			throw new IllegalArgumentException("Right-swapping requested for gadget that is not a member of this sequence");
 		});

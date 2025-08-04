@@ -10,12 +10,9 @@ import java.util.stream.Stream;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestClassOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -71,110 +68,106 @@ class FillableSwappableSequenceTest {
 		}
 
 		@Nested
-		@DisplayName("advances the sequence")
-		@TestClassOrder(ClassOrderer.OrderAnnotation.class)
-		class AdvancesSequence {
+		@DisplayName("when notified that a gadget has been filled")
+		class OnGadgetFilled {
 
 			@Nested
-			@DisplayName("when notified that next-fillable has been filled")
-			@Order(1) 
-			class OnGadgetFilled {
+			@DisplayName("advances the sequence")
+			class AdvancesSequence {
 
 				@Nested
-				@DisplayName("with next-fillable being")
-				class WithNFBeing {
+				@DisplayName("when that gadget is the next-fillable")
+				class OnNFFilled {
 
-					@Test
-					@DisplayName("the first gadget")
-					void onFirstNextFillable() {
-						driver.rightmostFillablePosition = 0;
-						
-						// WHEN notified of filling on NF
-						driver.contentAdded(fillable0);
-						
-						// THEN the sequence is advanced
-						verify(fillable1).enableFilling();
-						verify(fillable0).dehighlight();
-						verify(fillable1).highlight();
-						
-						// AND listeners are notified
-						verify(listener).becameFilled(fillable0);
-						
-						verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
-					}
-					
-					@Test
-					@DisplayName("the last gadget")
-					void onLastNextFillable() {
-						driver.rightmostFillablePosition = 3;
-						
-						// WHEN notified of filling on NF
-						driver.contentAdded(fillable3);
-						
-						// THEN the sequence is advanced
-						verify(fillable3).dehighlight();
-						
-						// AND listeners are notified
-						verify(listener).becameFilled(fillable3);
-						
-						verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
-					}
-					
-					@Test
-					@DisplayName("an intermediate gadget")
-					void onIntermediateNextFillable() {
-						driver.rightmostFillablePosition = 2;
-						
-						// WHEN notified of filling on NF
-						driver.contentAdded(fillable2);
-						
-						// THEN the sequence is advanced
-						verify(fillable3).enableFilling();
-						verify(fillable2).dehighlight();
-						verify(fillable3).highlight();
-						
-						// AND listeners are notified
-						verify(listener).becameFilled(fillable2);
-						
-						verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
+					@Nested
+					@DisplayName("with next-fillable being")
+					class WithNFBeing {
+
+						@Test
+						@DisplayName("the first gadget")
+						void onFirstNextFillable() {
+							driver.rightmostFillablePosition = 0;
+
+							// WHEN notified of filling on NF
+							driver.contentAdded(fillable0);
+
+							// THEN the sequence is advanced
+							verify(fillable1).enableFilling();
+							verify(fillable0).dehighlight();
+							verify(fillable1).highlight();
+
+							// AND listeners are notified
+							verify(listener).becameFilled(fillable0);
+
+							verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
+						}
+
+						@Test
+						@DisplayName("the last gadget")
+						void onLastNextFillable() {
+							driver.rightmostFillablePosition = 3;
+
+							// WHEN notified of filling on NF
+							driver.contentAdded(fillable3);
+
+							// THEN the sequence is advanced
+							verify(fillable3).dehighlight();
+
+							// AND listeners are notified
+							verify(listener).becameFilled(fillable3);
+
+							verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
+						}
+
+						@Test
+						@DisplayName("an intermediate gadget")
+						void onIntermediateNextFillable() {
+							driver.rightmostFillablePosition = 2;
+
+							// WHEN notified of filling on NF
+							driver.contentAdded(fillable2);
+
+							// THEN the sequence is advanced
+							verify(fillable3).enableFilling();
+							verify(fillable2).dehighlight();
+							verify(fillable3).highlight();
+
+							// AND listeners are notified
+							verify(listener).becameFilled(fillable2);
+
+							verifyNoMoreInteractions(fillable1, fillable2, fillable3, listener);
+						}
 					}
 				}
 			}
 			
 			@Nested
-			@DisplayName("but does not advance")
-			@Order(2) 
+			@DisplayName("does not advance")
 			class DoesNotAdvanceSequence {
 
-				@Nested
-				@DisplayName("when notified that a gadget has been filled")
-				class OnIdleFilled {
+				@Test
+				@DisplayName("when that gadget is before the next-fillable")
+				void onPriorToNFMember() {
+					driver.rightmostFillablePosition = 2;
 					
-					@Test
-					@DisplayName("and the gadget is before the next-fillable")
-					void onPriorToNFMember() {
-						driver.rightmostFillablePosition = 2;
-						
-						// WHEN notified of filling on NF
-						driver.contentAdded(fillable0);
-						
-						// THEN the sequence is not advanced
-						verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
-					}
+					// WHEN notified of filling on NF
+					driver.contentAdded(fillable0);
+					
+					// THEN the sequence is not advanced
+					verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
 				}
 			}
 			
 			@Nested
-			@DisplayName("but throws an error and does not advance")
-			@Order(3) 
+			@DisplayName("throws an error and does not advance")
 			class DoesNotAdvanceAndThrows {
 
 				@Nested
-				@DisplayName("when notified that a gadget has been filled")
-				class OnGadgetFilled {
+				@DisplayName("when that gadget")
+				class OnInvalidGadgetFilled {
 					
 					@Test
-					@DisplayName("and the gadget is in the sequence, but is past the next-fillable")
+					@DisplayName("is in the sequence, but is past the next-fillable")
 					void onNonNFMember() {
 						driver.rightmostFillablePosition = 0;
 						
@@ -191,7 +184,7 @@ class FillableSwappableSequenceTest {
 					}
 
 					@Test
-					@DisplayName("and the gadget is not even in the sequence")
+					@DisplayName("is not even in the sequence")
 					void onNonMember(@Mock TestSpecificFillable stranger) {
 						
 						// WHEN notified of filling on NF
@@ -209,22 +202,20 @@ class FillableSwappableSequenceTest {
 		}		
 		
 		@Nested
-		@DisplayName("collapses the sequence")
-		@TestClassOrder(ClassOrderer.OrderAnnotation.class)
-		class CollapsesSequence {
+		@DisplayName("when notified that a gadget has been emptied")
+		class OnGadgetEmpties {
 
 			@Nested
-			@DisplayName("when notified that a gadget has been emptied")
-			@Order(1) 
-			class OnGadgetFilled {
+			@DisplayName("collapses the sequence")
+			class CollapsesSequence {
 
 				@Nested
-				@DisplayName("with the emptied gadget being")
+				@DisplayName("when the emptied gadget is")
 				class WithEmptiedBeing {
 
 					@Test
 					@DisplayName("right before next-fillable")
-					void onFirstNextFillable() {
+					void rigthBeforeNF() {
 						driver.rightmostFillablePosition = 2;
 						
 						// WHEN notified of emptying on fillable1
@@ -243,7 +234,7 @@ class FillableSwappableSequenceTest {
 					
 					@Test
 					@DisplayName("some steps before next-fillable")
-					void onLastNextFillable() {
+					void someStepsBeforeNF() {
 						driver.rightmostFillablePosition = 3;
 						
 						// WHEN notified of emptying on fillable1
@@ -269,16 +260,15 @@ class FillableSwappableSequenceTest {
 			}
 			
 			@Nested
-			@DisplayName("but throws an error and does not collapse")
-			@Order(2) 
+			@DisplayName("throws an error and does not collapse")
 			class DoesNotCollapseSequence {
 
 				@Nested
-				@DisplayName("when notified that a gadget has been emptied")
-				class OnGadgetEmptied {
+				@DisplayName("when the emptied gadget is")
+				class OnInvalidGadgetEmptied {
 					
 					@Test
-					@DisplayName("and the gadget is the next-fillable")
+					@DisplayName("the next-fillable")
 					void onNFMember() {
 						driver.rightmostFillablePosition = 2;
 						
@@ -295,7 +285,7 @@ class FillableSwappableSequenceTest {
 					}
 					
 					@Test
-					@DisplayName("and the gadget is after next-fillable")
+					@DisplayName("after next-fillable")
 					void onPostNFMember() {
 						driver.rightmostFillablePosition = 2;
 						
@@ -312,7 +302,7 @@ class FillableSwappableSequenceTest {
 					}
 
 					@Test
-					@DisplayName("and the gadget is not even in the sequence")
+					@DisplayName("not even in the sequence")
 					void onNonMember(@Mock TestSpecificFillable stranger) {
 						
 						// WHEN notified of filling on an extraneous gadget
@@ -331,54 +321,56 @@ class FillableSwappableSequenceTest {
 		}
 		
 		@Nested
-		@DisplayName("makes a gadget swap contents")
-		@TestClassOrder(ClassOrderer.OrderAnnotation.class)
-		class SwapsContent {
+		@DisplayName("when asked to swap the contents of a gadget")
+		class WhenAskedToSwap {
 
 			@Nested
-			@DisplayName("when asked to swap a filled gadget")
-			@Order(1) 
-			class OnGadgetFilled {
+			@DisplayName("and the pair are both filled")
+			class SwapIsPossible {
 
 				@Nested
-				@DisplayName("with its neighbor")
-				class WithNeighbor {
+				@DisplayName("makes the gadget swap")
+				class MakedGadgetSwap {
 
-					@Test
-					@DisplayName("to the left")
-					void toTheLeft() {
-						driver.rightmostFillablePosition = 2;
+					@Nested
+					@DisplayName("with its neighbor")
+					class WithNeighbor {
+
+						@Test
+						@DisplayName("to the left")
+						void toTheLeft() {
+							driver.rightmostFillablePosition = 2;
+							
+							// WHEN asked to swap fillable2 to the left
+							driver.swapLeft(fillable1);
+							
+							// THEN next-fillable status is moved
+							verify(fillable1).swapContentWith(fillable0);
+							
+							// AND listeners are not notified						
+							verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
+						}
 						
-						// WHEN asked to swap fillable2 to the left
-						driver.swapLeft(fillable1);
-						
-						// THEN next-fillable status is moved
-						verify(fillable1).swapContentWith(fillable0);
-						
-						// AND listeners are not notified						
-						verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
-					}
-					
-					@Test
-					@DisplayName("to the right")
-					void toTheRight() {
-						driver.rightmostFillablePosition = 2;
-						
-						// WHEN asked to swap fillable1 to the right
-						driver.swapRight(fillable0);
-						
-						// THEN next-fillable status is moved
-						verify(fillable0).swapContentWith(fillable1);
-						
-						// AND listeners are not notified						
-						verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
+						@Test
+						@DisplayName("to the right")
+						void toTheRight() {
+							driver.rightmostFillablePosition = 2;
+							
+							// WHEN asked to swap fillable1 to the right
+							driver.swapRight(fillable0);
+							
+							// THEN next-fillable status is moved
+							verify(fillable0).swapContentWith(fillable1);
+							
+							// AND listeners are not notified						
+							verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
+						}
 					}
 				}
 			}
 			
 			@Nested
-			@DisplayName("but throws an error and does not swap")
-			@Order(2) 
+			@DisplayName("throws an error and does not swap")
 			class DoesNotSwapAndThrows {
 
 				@Nested
