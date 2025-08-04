@@ -297,7 +297,7 @@ class SubstitutePlayerSelectorTest {
 			@Test
 			@DisplayName("when being asked to take on \"next-fillable\" status")
 			void highlight() {
-				presenter.highlight();;
+				presenter.setNextFillable(true);
 				
 				// THEN the View is asked to take on "next-fillable" status
 				verify(view).highlight();
@@ -310,7 +310,7 @@ class SubstitutePlayerSelectorTest {
 			@Test
 			@DisplayName("when being asked to relinquish \"next-fillable\" status")
 			void dehighlight() {
-				presenter.dehighlight();
+				presenter.setNextFillable(false);
 				
 				// THEN the View is asked to relinquish "next-fillable" status
 				verify(view).dehighlight();

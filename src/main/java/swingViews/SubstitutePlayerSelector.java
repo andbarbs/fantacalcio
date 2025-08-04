@@ -177,13 +177,11 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	}
 	
 	@Override
-	public void highlight() {
-		view.highlight();
-	}
-	
-	@Override
-	public void dehighlight() {
-		view.dehighlight();
+	public void setNextFillable(boolean flag) {
+		if (flag)
+			view.highlight();
+		else
+			view.dehighlight();
 	}
 
 	@Override

@@ -53,7 +53,7 @@ class FillableSwappableSequenceTest {
 			verify(fillable).disableFilling();
 		});
 		verify(fillable0).enableFilling();
-		verify(fillable0).highlight();
+		verify(fillable0).setNextFillable(true);
 		verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3);
 	}
 
@@ -93,8 +93,8 @@ class FillableSwappableSequenceTest {
 
 							// THEN the sequence is advanced
 							verify(fillable1).enableFilling();
-							verify(fillable0).dehighlight();
-							verify(fillable1).highlight();
+							verify(fillable0).setNextFillable(false);
+							verify(fillable1).setNextFillable(true);
 
 							// AND listeners are notified
 							verify(listener).becameFilled(fillable0);
@@ -111,7 +111,7 @@ class FillableSwappableSequenceTest {
 							driver.contentAdded(fillable3);
 
 							// THEN the sequence is advanced
-							verify(fillable3).dehighlight();
+							verify(fillable3).setNextFillable(false);
 
 							// AND listeners are notified
 							verify(listener).becameFilled(fillable3);
@@ -129,8 +129,8 @@ class FillableSwappableSequenceTest {
 
 							// THEN the sequence is advanced
 							verify(fillable3).enableFilling();
-							verify(fillable2).dehighlight();
-							verify(fillable3).highlight();
+							verify(fillable2).setNextFillable(false);
+							verify(fillable3).setNextFillable(true);
 
 							// AND listeners are notified
 							verify(listener).becameFilled(fillable2);
@@ -223,8 +223,8 @@ class FillableSwappableSequenceTest {
 						
 						// THEN next-fillable status is moved
 						verify(fillable2).disableFilling();
-						verify(fillable2).dehighlight();
-						verify(fillable1).highlight();
+						verify(fillable2).setNextFillable(false);
+						verify(fillable1).setNextFillable(true);
 						
 						// AND listeners are notified of emptying
 						verify(listener).becameEmpty(fillable1);
@@ -248,8 +248,8 @@ class FillableSwappableSequenceTest {
 						
 						// AND next-fillable status is moved
 						verify(fillable3).disableFilling();
-						verify(fillable3).dehighlight();
-						verify(fillable2).highlight();
+						verify(fillable3).setNextFillable(false);
+						verify(fillable2).setNextFillable(true);
 						
 						// AND listeners are notified of emptying
 						verify(listener).becameEmpty(fillable2);  // the gadget emptied as a result of collapsing

@@ -57,8 +57,7 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 		void disableFilling();
 
 		// allow gadgets to customize rightmost-fillable status
-		void highlight();
-		void dehighlight();
+		void setNextFillable(boolean flag);
 	}
 
 	private interface Swappable<Q> {
@@ -233,10 +232,10 @@ public class FillableSwappableSequence<G extends FillableSwappableGadget<G>> {
 	// triggers gadget highlighting for rightmost-fillable status
 	private int updateRightmostFillable(int newValue) {
 		if (rightmostFillablePosition != RIGHTMOST_FILLABLE_OVERFLOW)
-			sequence.get(rightmostFillablePosition).unwrap().dehighlight();
+			sequence.get(rightmostFillablePosition).unwrap().setNextFillable(false);
 		rightmostFillablePosition = newValue;
 		if (newValue != RIGHTMOST_FILLABLE_OVERFLOW)
-			sequence.get(rightmostFillablePosition).unwrap().highlight();
+			sequence.get(rightmostFillablePosition).unwrap().setNextFillable(true);
 		return newValue;
 	}	
 
