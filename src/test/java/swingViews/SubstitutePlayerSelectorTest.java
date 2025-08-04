@@ -266,7 +266,7 @@ class SubstitutePlayerSelectorTest {
 			@Test
 			@DisplayName("when being asked to enable filling")
 			void enableFilling() {
-				presenter.enableFilling();
+				presenter.setFillingEnabled(true);
 				
 				// THEN the View is asked to enable controls
 				verify(view).setControlsEnabled(true);
@@ -279,7 +279,7 @@ class SubstitutePlayerSelectorTest {
 			@Test
 			@DisplayName("when being asked to disable filling")
 			void disableFilling() {
-				presenter.disableFilling();
+				presenter.setFillingEnabled(false);
 				
 				// THEN the View is asked to disable controls
 				verify(view).setControlsEnabled(false);

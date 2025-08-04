@@ -2,7 +2,7 @@ package swingViews;
 
 import java.util.Optional;
 import domainModel.Player;
-import swingViews.FillableSwappableSequence.FillableSwappableGadget;
+import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
@@ -28,7 +28,7 @@ import swingViews.OrderedDealerPresenter.OrderedDealerView;
  * 		{@linkplain FillableSwappableSequence}
  */
 public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
-			implements FillableSwappableGadget<SubstitutePlayerSelector<P>> {
+			implements FillableSwappable<SubstitutePlayerSelector<P>> {
 	
 	// 1. MVP Presenter: additional View interface 
 
@@ -72,7 +72,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		 * a separate reference to the view in the more specific type 
 		 * {@linkplain SubstitutePlayerSelectorView} is necessary for this Presenter to
 		 * implement additional interaction with the View, as per its
-		 * {@linkplain FillableSwappableGadget} duties
+		 * {@linkplain FillableSwappable} duties
 		 */
 		private final SubstitutePlayerSelectorView<P> view;		
 		
@@ -185,13 +185,8 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	}
 
 	@Override
-	public void enableFilling() {
-		view.setControlsEnabled(true);
-	}
-
-	@Override
-	public void disableFilling() {
-		view.setControlsEnabled(false);
+	public void setFillingEnabled(boolean flag) {
+		view.setControlsEnabled(flag);
 	}
 	
 	

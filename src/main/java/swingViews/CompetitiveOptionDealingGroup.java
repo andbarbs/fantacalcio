@@ -37,7 +37,7 @@ import swingViews.CompetitiveOptionDealingGroup.*;
  * </ul>
  *
  * @param <D> the type for dealers in the group; must implement
- *            {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt};
+ *            {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt;}
  * @param <O> the type for options in the dealing
  */
 public class CompetitiveOptionDealingGroup<D extends CompetitiveOrderedDealer<D, O>, O> {	
@@ -60,14 +60,14 @@ public class CompetitiveOptionDealingGroup<D extends CompetitiveOrderedDealer<D,
 	 * 		{@linkplain CompetitiveOptionDealingGroup} driver, respectively,
 	 * 		through the latter's {@linkplain #selectionMadeOn <i>selection-made</i>} 
 	 * 		and {@linkplain #selectionClearedOn <i>selection-cleared</i>} notification points
-	 * 	<li>ensuring that driver-induced option addition/removal, via
-	 * 		the dealer's {@link CompetitiveOrderedDealer#restoreOption restoreOption} and
-	 * 		{@link CompetitiveOrderedDealer#retireOption retireOption} members,
-	 * 		be <b>not</b> notified back to the driver itself
+	 * 	<li>ensuring that driver requests to 
+	 * 		{@linkplain CompetitiveOrderedDealer#restoreOption add back} or 
+	 * 		{@linkplain CompetitiveOrderedDealer#retireOption remove} an option 
+	 * 		do <b>not</b> produce a notification back to the driver
 	 * </ol>
 	 *
 	 * @param <D> intended as a self-bound type; must implement
-	 *            {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt};
+	 *            {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt;}
 	 * @param <O> the type for options in the dealing
 	 */
 	public interface CompetitiveOrderedDealer<D extends CompetitiveOrderedDealer<D, O>, O> {
@@ -132,7 +132,7 @@ public class CompetitiveOptionDealingGroup<D extends CompetitiveOrderedDealer<D,
 	 * <i>competitive ordered dealing</i> group}.
 	 * 
 	 * @param <D>     the type for dealers in the group; must implement
-	 *                {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt};
+	 *                {@link CompetitiveOrderedDealer CompetitiveOrderedDealer&lt;D, O&gt;}
 	 * @param <O>     the type for options in the group
 	 * @param dealers the {@code Set} of {@code dealers} to include in the group
 	 * @param options the global option list for this group
