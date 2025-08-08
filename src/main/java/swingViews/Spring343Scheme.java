@@ -30,7 +30,18 @@ public class Spring343Scheme extends SpringSchemePanel {
 	 * we're not as strict with VERTICAL_CENTER as we don't forecast the need for symmetric vertical growth.
 	 */
 	
-	// public instantiation
+	/**
+	 * provides {@linkplain Spring343Scheme}'s <b>public</b> instantiation point.
+	 * 
+	 * @param isDesignTime selects
+	 *                     <ul>
+	 *                     <li><b><i>design-time</i></b> instantiation when {@code true}
+	 *                     <li><b><i>runtime</i></b> instantiation when {@code false}
+	 *                     </ul>
+	 *                     <p>
+	 *                     Graphical clients should consider passing
+	 *                     {@linkplain Beans#isDesignTime()}
+	 */
 	public Spring343Scheme(boolean isDesignTime) {
 		
 		// creates springs for the Panel dimensions
@@ -38,7 +49,7 @@ public class Spring343Scheme extends SpringSchemePanel {
 		Spring panelHeight = Spring.constant(100);
 
 		if (isDesignTime) {
-			// public design logic
+			// public design-time logic
 		}
 		
 		getLayout().getConstraints(this).setWidth(panelWidth);
@@ -47,7 +58,13 @@ public class Spring343Scheme extends SpringSchemePanel {
 		layDownSlots(panelWidth, panelHeight);
 	}
 
-	// private design-only instantiation
+	/**
+	 * provides this type's <b><i>private</i> design-time instantiation</b>.
+	 * 
+	 * <p>
+	 * This constructor is intended <i>purely</i> for supporting the design of this
+	 * type in WindowBuilder
+	 */
 	Spring343Scheme() {
 		
 		/*
@@ -75,6 +92,15 @@ public class Spring343Scheme extends SpringSchemePanel {
 		fillSlotsWithDummyPanels(recommendedSlotDimensions(footballField));
 	}
 
+	/**
+	 * lays out slot Panels inside {@code this} containing Panel, in terms of 
+	 * {@link Spring#constant(int) Spring.constant}(0) Springs or 
+	 * {@link Spring#scale(Spring, float) Spring.scale} self-adjusting multiples of
+	 * {@code panelWidth} and {@code panelHeight}. 
+	 * 
+	 * @param panelWidth the containing Panel's constant width Spring
+	 * @param panelHeight the containing Panel's constant height Spring
+	 */
 	private void layDownSlots(Spring panelWidth, Spring panelHeight) {
 		
 		// installs Goalie slot
