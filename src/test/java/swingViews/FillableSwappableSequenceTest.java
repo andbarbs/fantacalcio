@@ -328,45 +328,21 @@ class FillableSwappableSequenceTest {
 			@DisplayName("and the pair are both filled")
 			class SwapIsPossible {
 
-				@Nested
-				@DisplayName("makes the gadget swap")
-				class MakedGadgetSwap {
-
-					@Nested
-					@DisplayName("with its neighbor")
-					class WithNeighbor {
-
-						@Test
-						@DisplayName("to the left")
-						void toTheLeft() {
-							driver.rightmostFillableIndex = 2;
-							
-							// WHEN asked to swap fillable2 to the left
-							driver.swapLeft(fillable1);
-							
-							// THEN next-fillable status is moved
-							verify(fillable1).swapContentWith(fillable0);
-							
-							// AND listeners are not notified						
-							verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
-						}
-						
-						@Test
-						@DisplayName("to the right")
-						void toTheRight() {
-							driver.rightmostFillableIndex = 2;
-							
-							// WHEN asked to swap fillable1 to the right
-							driver.swapRight(fillable0);
-							
-							// THEN next-fillable status is moved
-							verify(fillable0).swapContentWith(fillable1);
-							
-							// AND listeners are not notified						
-							verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
-						}
-					}
+				@Test
+				@DisplayName("makes a gadget swap with its right neighbor")
+				void toTheRight() {
+					driver.rightmostFillableIndex = 2;
+					
+					// WHEN asked to swap fillable1 to the right
+					driver.swapRight(fillable0);
+					
+					// THEN next-fillable status is moved
+					verify(fillable0).swapContentWith(fillable1);
+					
+					// AND listeners are not notified						
+					verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
 				}
+				
 			}
 			
 			@Nested
@@ -383,14 +359,9 @@ class FillableSwappableSequenceTest {
 						driver.rightmostFillableIndex = 2;
 						
 						// WHEN asked to swap the next-fillable
-						ThrowingCallable swapLeft = () -> driver.swapLeft(fillable2);
 						ThrowingCallable swapRight = () -> driver.swapRight(fillable2);
 						
-						// THEN an error is thrown
-						assertThatThrownBy(swapLeft)
-								.isInstanceOf(IllegalArgumentException.class)
-								.hasMessageContainingAll("unable to swap left");
-						
+						// THEN an error is thrown						
 						assertThatThrownBy(swapRight)
 								.isInstanceOf(IllegalArgumentException.class)
 								.hasMessageContaining("unable to swap right");

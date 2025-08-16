@@ -195,10 +195,6 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 			return index < rightmostFillableIndex || rightmostFillableIndex == RF_OVERFLOW;
 		}
 
-		boolean canSwapLeft() {
-			return hasContent() && index != 0;
-		}
-
 		boolean canSwapRight() {
 			return hasContent() && index < sequence.size() - 1 && sequence.get(index + 1).hasContent();
 		}
@@ -410,34 +406,6 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 	}
 
 	// 5. Sequence-member swapping API for clients
-
-	/**
-	 * allows clients to request a content swap for a sequence member and its
-	 * left neighbor.
-	 * 
-	 * @param swappee the sequence member for which a left swap is requested
-	 * @throws IllegalArgumentException if the swap operation does not involve two
-	 *                                  members that hold content. Clients should
-	 *                                  register themselves as listeners in order to
-	 *                                  monitor the filling of sequence members
-	 */
-	public void swapLeft(F swappee) {
-		wrapperOf(swappee).ifPresentOrElse(wrapper -> {
-			if (!wrapper.canSwapLeft())
-				throw new IllegalArgumentException(String.format(
-						"FillableSwappableSequence.swapLeft: Illegal Argument\n"
-						+ "Left-swapping requested for member %s "
-						+ "that is unable to swap left\n", wrapper.unwrap()));
-			
-			MemberWrapper leftNeighbor = sequence.get(wrapper.index() - 1);
-			wrapper.unwrap().swapContentWith(leftNeighbor.unwrap());
-		}, () -> {
-			throw new IllegalArgumentException(String.format(
-					"FillableSwappableSequence.swapLeft: Illegal Argument\n"
-					+ "Left-swapping requested for member %s "
-					+ "that is not a member of this sequence\n", swappee));
-		});
-	}
 
 	/**
 	 * allows clients to request a content swap for a sequence member and its
