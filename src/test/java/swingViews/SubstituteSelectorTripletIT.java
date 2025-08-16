@@ -14,16 +14,16 @@ import org.assertj.swing.fixture.JButtonFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import domainModel.Player.Defender;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
 
-@DisplayName("CompetingSubstituteChooserTest: MVP View + Presenter IT")
-@ExtendWith(MockitoExtension.class)
-public class CompetingSubstituteChooserTest extends AssertJSwingJUnit5TestCase {
+/**
+ * this test case integrates at the SubstituteSelectorTriplet level:
+ * it could be replaced by integration at a higher level
+ */
+@DisplayName("SubstituteSelectorTriplet: MVP View + Presenter IT")
+public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
     
 	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
 	private JButtonFixture reset1, reset2, reset3;
@@ -40,7 +40,7 @@ public class CompetingSubstituteChooserTest extends AssertJSwingJUnit5TestCase {
 		JFrame frame = GuiActionRunner.execute(() -> {
 			
 			// sets up the SUT
-			CompetingSubstituteChooser<Defender> chooser = new CompetingSubstituteChooser<Defender>();
+			SubstituteSelectorTriplet<Defender> chooser = new SubstituteSelectorTriplet<Defender>();
 			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.copyOf(chooser.getSubstituteSelectors()), 
 					List.of(chiellini, pique, ramos, silva, vanDijk));  // in alphabetical order
