@@ -2,6 +2,7 @@ package swingViews;
 
 import static org.mockito.Mockito.verify;
 
+import java.awt.Dimension;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -25,7 +26,7 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 @ExtendWith(MockitoExtension.class)
 public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
-	private SubstituteSelectorTriplet<Defender> chooser; // SUT reference
+	private SubstituteSelectorTriplet<Defender> triplet; // SUT reference
 
 	@Mock
 	SubstitutePlayerSelector<Defender> mockSelector1, mockSelector2, mockSelector3;
@@ -36,11 +37,13 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 	public void testCaseSpecificSetup() {
 		JFrame frame = GuiActionRunner.execute(() -> {
 
-			chooser = new SubstituteSelectorTriplet<Defender>();
+			Dimension selectorDims = new Dimension(120, 225); // appropriate dims for rendering a selector
+			triplet = new SubstituteSelectorTriplet<Defender>(true, selectorDims);
 
 			// sets up the test Frame
 			JFrame f = new JFrame("Test Frame");
-			f.add(chooser);
+			f.setPreferredSize(new Dimension(550, 300));
+			f.add(triplet);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -86,7 +89,7 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 			@BeforeEach
 			void wireUpMockSelectors() {
-				chooser.setSelectors(mockSelector1, mockSelector2, mockSelector3);
+				triplet.setSelectors(mockSelector1, mockSelector2, mockSelector3);
 			}
 
 			@Nested
@@ -111,7 +114,7 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 						// WHEN driver notifies second selector filled
 						GuiActionRunner.execute(() -> {
-							chooser.becameFilled(mockSelector2);
+							triplet.becameFilled(mockSelector2);
 						});
 
 						// THEN the first swap button is enabled
@@ -125,7 +128,7 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 						// WHEN driver notifies third selector filled
 						GuiActionRunner.execute(() -> {
-							chooser.becameFilled(mockSelector3);
+							triplet.becameFilled(mockSelector3);
 						});
 
 						// THEN the second swap button is enabled
@@ -156,7 +159,7 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 						// WHEN driver notifies third selector emptied
 						GuiActionRunner.execute(() -> {
-							chooser.becameEmpty(mockSelector3);
+							triplet.becameEmpty(mockSelector3);
 						});
 
 						// THEN the second swap button is disabled
@@ -170,7 +173,7 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 						// WHEN driver notifies second selector emptied
 						GuiActionRunner.execute(() -> {
-							chooser.becameEmpty(mockSelector2);
+							triplet.becameEmpty(mockSelector2);
 						});
 
 						// THEN the first swap button is disabled
@@ -190,8 +193,8 @@ public class SubstituteSelectorTripletTest extends AssertJSwingJUnit5TestCase {
 
 		@BeforeEach
 		void wireUpMockSelectorsAndSequence() {
-			chooser.setSelectors(mockSelector1, mockSelector2, mockSelector3);
-			chooser.setSequenceDriver(mockSequence);
+			triplet.setSelectors(mockSelector1, mockSelector2, mockSelector3);
+			triplet.setSequenceDriver(mockSequence);
 		}
 
 		@Nested
