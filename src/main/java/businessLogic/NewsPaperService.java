@@ -1,9 +1,10 @@
 package businessLogic;
 
-public class NewsPaperService {
-	
+import domainModel.Player;
 
-	public void setVoteToPlayer(String giocatore, int voto) {
+public class NewsPaperService {
+
+	public void setVoteToPlayer(Player player, int voto) {
 		System.out.println("Hello");
 	}
 

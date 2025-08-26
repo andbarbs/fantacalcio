@@ -16,13 +16,15 @@ public class TransactionContext {
 	private final FieldingRepository fieldingRepository;
 	private final LineUpRepository lineUpRepository;
 	private final MatchDayRepository matchDayRepository;
+	private final NewsPaperRepository newspaperRepository;
 
 	public TransactionContext(EntityManagerFactory entityManagerFactory, LeagueRepository leagueRepository,
 							  MatchRepository matchRepository, PlayerRepository playerRepository,
 							  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 							  ProposalRepository proposalRepository, ContractRepository contractRepository,
 							  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
-							  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository) {
+							  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository,
+							  NewsPaperRepository newspaperRepository) {
 		this.entityManagerFactory = entityManagerFactory;
 		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
@@ -35,6 +37,7 @@ public class TransactionContext {
 		this.fieldingRepository = fieldingRepository;
 		this.lineUpRepository = lineUpRepository;
 		this.matchDayRepository = matchDayRepository;
+		this.newspaperRepository = newspaperRepository;
 	}
 
 	public EntityManagerFactory getEntityManagerFactory() {
@@ -83,5 +86,9 @@ public class TransactionContext {
 
 	public MatchDayRepository getMatchDayRepository() {
 		return matchDayRepository;
+	}
+
+	public NewsPaperRepository getNewspaperRepository() {
+		return newspaperRepository;
 	}
 }

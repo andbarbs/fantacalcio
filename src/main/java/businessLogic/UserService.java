@@ -9,7 +9,7 @@ import domainModel.*;
 
 public class UserService {
 
-	private final TransactionManager transactionManager;
+	protected final TransactionManager transactionManager;
 
 	public UserService(TransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
@@ -17,10 +17,10 @@ public class UserService {
 
 	// League
 
-	public void createLeague(String leagueName, FantaUser fantaUser, NewsPaper newsPaper, String leagueCode) {
+	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
 			if(context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
-				League league = new League(fantaUser, leagueName, newsPaper, leagueCode);
+				League league = new League(admin, leagueName, newsPaper, leagueCode);
 				context.getLeagueRepository().saveLeague(league);
 			}else{
 				throw new IllegalArgumentException("A league with the same league code already exists");
@@ -167,12 +167,7 @@ public class UserService {
 		return transactionManager.fromTransaction((context)-> context.getResultsRepository().getResult(match));
 
 	}
-	//TODO spostarlo nell'admin service
-// va nell'admin
-/*	public void saveResult(Result result) {
-		transactionManager.inTransaction((context) -> context.getResultsRepository().saveResult(result));
-	}
-*/
+
 	public Optional<LineUp> getLineUpByMatch(League league, Match match, FantaTeam fantaTeam) {
 		return transactionManager.fromTransaction((context) ->
 				context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
