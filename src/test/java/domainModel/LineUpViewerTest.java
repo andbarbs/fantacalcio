@@ -18,20 +18,20 @@ public class LineUpViewerTest {
     @Test
     public void testLineUpViewer() {
         // Create starter players
-        Goalkeeper starterGK = new Goalkeeper("John", "Doe");
-        Defender starterDef = new Defender("Alan", "Smith");
-        Midfielder starterMid = new Midfielder("Bruce", "Wayne");
-        Forward starterFwd = new Forward("Clark", "Kent");
+        Goalkeeper starterGK = new Goalkeeper("John", "Doe", "Barcellona");
+        Defender starterDef = new Defender("Alan", "Smith", "Barcellona");
+        Midfielder starterMid = new Midfielder("Bruce", "Wayne", "Barcellona");
+        Forward starterFwd = new Forward("Clark", "Kent", "Barcellona");
 
         // Create substitute players
-        Goalkeeper position2Glk = new Goalkeeper("SubGk1", "McFly");
-        Goalkeeper position1Glk = new Goalkeeper("SubGk2", "McFly");
-        Defender position2Def = new Defender("SubDef1", "McFly");
-        Defender position1Def = new Defender("SubDef2", "McFly");
-        Midfielder subMid1 = new Midfielder("SubMid1", "McFly");
-        Forward position3For = new Forward("SubFwd1", "McFly");
-        Forward position1For = new Forward("SubFwd2", "McFly");
-        Forward position2For = new Forward("SubFwd3", "McFly");
+        Goalkeeper position2Glk = new Goalkeeper("SubGk1", "McFly", "Barcellona");
+        Goalkeeper position1Glk = new Goalkeeper("SubGk2", "McFly", "Barcellona");
+        Defender position2Def = new Defender("SubDef1", "McFly", "Barcellona");
+        Defender position1Def = new Defender("SubDef2", "McFly", "Barcellona");
+        Midfielder subMid1 = new Midfielder("SubMid1", "McFly", "Barcellona");
+        Forward position3For = new Forward("SubFwd1", "McFly", "Barcellona");
+        Forward position1For = new Forward("SubFwd2", "McFly", "Barcellona");
+        Forward position2For = new Forward("SubFwd3", "McFly", "Barcellona");
 
         // Create an empty set for fieldings
         Set<Fielding> fieldings = new HashSet<>();

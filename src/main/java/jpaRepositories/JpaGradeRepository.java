@@ -4,6 +4,9 @@ import java.util.List;
 
 import businessLogic.repositories.GradeRepository;
 import domainModel.Match;
+import domainModel.MatchDaySerieA;
+import domainModel.NewsPaper;
+import domainModel.Player;
 import domainModel.Grade;
 import domainModel.Grade_;
 import jakarta.persistence.EntityManager;
@@ -31,6 +34,13 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 		query.select(gradeRoot);
 		
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public void setGrade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists,
+			NewsPaper newsPaper) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

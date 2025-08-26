@@ -21,32 +21,32 @@ public class FantaTeamViewerTest {
         // Create players for each role.
 
         // Goalkeepers
-        Goalkeeper keeper1 = new Goalkeeper("Manuel", "Neuer");
-        Goalkeeper keeper2 = new Goalkeeper("Alisson", "Becker");
-        Goalkeeper keeper3 = new Goalkeeper("David", "de Gea");
-        Goalkeeper keeper4 = new Goalkeeper("Ederson", "Motta");
-        Goalkeeper keeper5 = new Goalkeeper("Jan", "Oblak");
+        Goalkeeper keeper1 = new Goalkeeper("Manuel", "Neuer", "Juventus");
+        Goalkeeper keeper2 = new Goalkeeper("Alisson", "Becker", "Juventus");
+        Goalkeeper keeper3 = new Goalkeeper("David", "de Gea", "Juventus");
+        Goalkeeper keeper4 = new Goalkeeper("Ederson", "Motta", "Juventus");
+        Goalkeeper keeper5 = new Goalkeeper("Jan", "Oblak", "Juventus");
 
         // Defenders
-        Defender defender1 = new Defender("Virgil", "van Dijk");
-        Defender defender2 = new Defender("Sergio", "Ramos");
-        Defender defender3 = new Defender("Raphael", "Varane");
-        Defender defender4 = new Defender("Gerard", "Piqué");
-        Defender defender5 = new Defender("Thiago", "Silva");
+        Defender defender1 = new Defender("Virgil", "van Dijk", "Juventus");
+        Defender defender2 = new Defender("Sergio", "Ramos", "Juventus");
+        Defender defender3 = new Defender("Raphael", "Varane", "Juventus");
+        Defender defender4 = new Defender("Gerard", "Piqué", "Juventus");
+        Defender defender5 = new Defender("Thiago", "Silva", "Juventus");
 
         // Midfielders
-        Midfielder midfielder1 = new Midfielder("Luka", "Modrić");
-        Midfielder midfielder2 = new Midfielder("Andrés", "Iniesta");
-        Midfielder midfielder3 = new Midfielder("Kevin", "De Bruyne");
-        Midfielder midfielder4 = new Midfielder("N'Golo", "Kanté");
-        Midfielder midfielder5 = new Midfielder("Toni", "Kroos");
+        Midfielder midfielder1 = new Midfielder("Luka", "Modrić", "Barcellona");
+        Midfielder midfielder2 = new Midfielder("Andrés", "Iniesta", "Barcellona");
+        Midfielder midfielder3 = new Midfielder("Kevin", "De Bruyne", "Barcellona");
+        Midfielder midfielder4 = new Midfielder("N'Golo", "Kanté", "Barcellona");
+        Midfielder midfielder5 = new Midfielder("Toni", "Kroos", "Barcellona");
 
         // Forwards
-        Forward forward1 = new Forward("Lionel", "Messi");
-        Forward forward2 = new Forward("Cristiano", "Ronaldo");
-        Forward forward3 = new Forward("Neymar", "Jr");
-        Forward forward4 = new Forward("Robert", "Lewandowski");
-        Forward forward5 = new Forward("Kylian", "Mbappé");
+        Forward forward1 = new Forward("Lionel", "Messi", "Barcellona");
+        Forward forward2 = new Forward("Cristiano", "Ronaldo", "Barcellona");
+        Forward forward3 = new Forward("Neymar", "Jr", "Barcellona");
+        Forward forward4 = new Forward("Robert", "Lewandowski", "Barcellona");
+        Forward forward5 = new Forward("Kylian", "Mbappé", "Barcellona");
 
         // Create an empty set for contracts.
         Set<Contract> contracts = new HashSet<>();

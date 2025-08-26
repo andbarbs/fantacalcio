@@ -29,7 +29,7 @@ public class AdminUserService extends UserService {
 
 	public void setNewspaperForLeague(NewsPaper newspaper, League adminLeague) {
 		transactionManager.inTransaction((context) -> {
-			context.getNewspaperRepository().setNewsPaper(newspaper, adminLeague);
+			context.getNewspaperRepository().setNewsPaperForLeague(newspaper, adminLeague);
 		});
 	}
 
