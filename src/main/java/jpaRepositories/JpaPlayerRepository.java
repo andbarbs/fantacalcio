@@ -58,4 +58,17 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public List<Player> findByTeam(String team) {
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
+		Root<Player> root = criteriaQuery.from(Player.class);
+
+		criteriaQuery.select(root).where(criteriaBuilder.and(
+				criteriaBuilder.equal(root.get(Player_.team), team)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
 }

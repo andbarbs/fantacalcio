@@ -9,6 +9,6 @@ public interface NewsPaperRepository {
 
 	Set<NewsPaper> getAllNewspapers();
 
-	void setNewsPaper(NewsPaper newspaper, League league);
+	void setNewsPaperForLeague(NewsPaper newspaper, League league);
 
 }

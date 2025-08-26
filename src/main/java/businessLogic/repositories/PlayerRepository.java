@@ -12,4 +12,6 @@ public interface PlayerRepository {
 
 	public List<Player> findBySurname(String surname);
 	
+	public List<Player> findByTeam(String team);
+	
 }

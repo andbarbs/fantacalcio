@@ -20,11 +20,15 @@ public abstract class Player {
     @Basic(optional=false)
     private String surname;
     
+    @Basic(optional=false)
+    private String team;
+    
     protected Player() {}
 
-    Player(String name, String surname) {
+    Player(String name, String surname, String team) {
         this.name = name;
         this.surname = surname;
+		this.team = team;
     }
 
     // Getter
@@ -84,8 +88,8 @@ public abstract class Player {
 		
 		protected Goalkeeper () {}
 		
-		public Goalkeeper(String name, String surname) {
-			super(name, surname);
+		public Goalkeeper(String name, String surname, String team) {
+			super(name, surname, team);
 	    }
 
 		@Override
@@ -99,8 +103,8 @@ public abstract class Player {
 		
 		protected Defender () {}
 		
-		public Defender(String name, String surname) {
-			super(name, surname);
+		public Defender(String name, String surname, String team) {
+			super(name, surname, team);
 	    }
 
 		@Override
@@ -114,8 +118,8 @@ public abstract class Player {
 		
 		protected Midfielder() {}
 
-		public Midfielder(String name, String surname) {
-			super(name, surname);
+		public Midfielder(String name, String surname, String team) {
+			super(name, surname, team);
 	    }
 
 		@Override
@@ -129,8 +133,8 @@ public abstract class Player {
 		
 		protected Forward() {}
 		
-		public Forward(String name, String surname) {
-			super(name, surname);
+		public Forward(String name, String surname, String team) {
+			super(name, surname, team);
 	    }
 
 		@Override
