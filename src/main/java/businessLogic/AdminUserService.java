@@ -37,7 +37,8 @@ public class AdminUserService extends UserService {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 38);	
-			// ora dobbiamo salvare la schedule in qualche modo
+			// TODO ora dobbiamo salvare la schedule in qualche modo
+			System.out.println(schedule);
 		});
 		
 	}

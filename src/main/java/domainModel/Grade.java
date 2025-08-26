@@ -50,7 +50,7 @@ public class Grade {
 		return mark;
 	}
 
-	public Player getGiocatore() {
+	public Player getPlayer() {
 		return player;
 	}
 

@@ -1,6 +1,8 @@
 package jpaRepositories;
 
 import domainModel.*;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -11,6 +13,8 @@ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JpaGradeRepositoryTest {
@@ -38,11 +42,10 @@ class JpaGradeRepositoryTest {
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Grade.class)
 					.addAnnotatedClass(Player.class).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(MatchDaySerieA.class).addAnnotatedClass(Player.Goalkeeper.class)
-					.addAnnotatedClass(Player.Forward.class).addAnnotatedClass(Contract.class)
-					.getMetadataBuilder().build();
+					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class).addAnnotatedClass(Match.class)
+					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(Contract.class).getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -61,7 +64,7 @@ class JpaGradeRepositoryTest {
 		// Instantiates the SUT using the static SessionFactory
 		entityManager = sessionFactory.createEntityManager();
 		gradeRepository = new JpaGradeRepository(entityManager);
-		
+
 		sessionFactory.inTransaction(t -> {
 			manager = new FantaUser("manager@example.com", "securePass");
 			t.persist(manager);
@@ -97,18 +100,19 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-				
-		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();;
+
+		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();
+		;
 
 	}
 
 	@Test
 	@DisplayName("getAllMatchGrades() when two grades have been persisted")
 	public void testGetAllMatchGradesWhenTwoGradesExist() {
-		
+
 		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", "Juventus");
 		Player player2 = new Player.Forward("Gigi", "Riva", "Cagliari");
-		
+
 		Grade voto1 = new Grade(player1, matchDay, 6.0, 0, 1, newsPaper);
 		Grade voto2 = new Grade(player1, matchDay, 8.0, 2, 0, newsPaper);
 
@@ -123,6 +127,33 @@ class JpaGradeRepositoryTest {
 
 		assertThat(gradeRepository.getAllMatchGrades(match)).containsExactly(voto1, voto2);
 		repositorySession.close();
+	}
+
+	@Test
+	@DisplayName("saveGrade should persist correctly")
+	void testSaveGradePersistsCorrectly() {
+
+		Player totti = new Player.Forward("Francesco", "Totti", "Roma");
+		Grade grade = new Grade(totti, matchDay, 9.0, 2, 1, newsPaper);
+
+		sessionFactory.inTransaction(session -> {
+			session.persist(totti);
+			session.persist(grade);
+		});
+
+		sessionFactory.inTransaction((Session em) -> {
+			Optional<Grade> result = em
+					.createQuery("SELECT g FROM Grade g " + "WHERE g.player = :player " + "AND g.matchDay = :matchDay "
+							+ "AND g.newsPaper = :newsPaper", Grade.class)
+					.setParameter("player", totti).setParameter("matchDay", matchDay)
+					.setParameter("newsPaper", newsPaper).getResultStream().findFirst();
+
+			assertThat(result).isPresent();
+			Grade found = result.get();
+			assertThat(found.getPlayer()).isEqualTo(totti);
+			assertThat(found.getNewsPaper()).isEqualTo(newsPaper);
+		});
+
 	}
 
 }
