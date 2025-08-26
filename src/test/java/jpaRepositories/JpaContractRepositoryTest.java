@@ -73,7 +73,7 @@ class JpaContractRepositoryTest {
 			t.persist(league);
 			team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
 			t.persist(team);
-			player = new Player.Forward("Lionel", "Messi");
+			player = new Player.Forward("Lionel", "Messi", "Barcellona");
 			t.persist(player);
 		});
 		
@@ -95,7 +95,7 @@ class JpaContractRepositoryTest {
 	@DisplayName("getContract() when contract exists")
 	public void testGetContractWithContractExisting() {
 
-		Player player2 = new Player.Defender("Giorgio", "Chiellini");
+		Player player2 = new Player.Defender("Giorgio", "Chiellini", "Juventus");
 		Contract contract1 = new Contract(team, player);
 		Contract contract2 = new Contract(team, player2);
 

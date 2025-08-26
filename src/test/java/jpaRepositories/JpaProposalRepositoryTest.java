@@ -1,11 +1,7 @@
 package jpaRepositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.HashSet;
-import java.util.List;
-
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -23,7 +19,6 @@ import domainModel.FantaUser;
 import domainModel.League;
 import domainModel.NewsPaper;
 import domainModel.Player;
-import domainModel.Player.Forward;
 import domainModel.Proposal;
 import jakarta.persistence.EntityManager;
 
@@ -93,8 +88,8 @@ class JpaProposalRepositoryTest {
 		entityManager.getTransaction().begin();
 
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 
@@ -121,8 +116,8 @@ class JpaProposalRepositoryTest {
 		entityManager.getTransaction().begin();
 
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 
@@ -158,8 +153,8 @@ class JpaProposalRepositoryTest {
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user2, new HashSet<Contract>());
 		FantaUser user3 = new FantaUser("userMail3", "userPswd3");
 		FantaTeam team3 = new FantaTeam("team3", league, 0, user3, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 		Contract offeredContract2 = new Contract(team, player1);
@@ -193,8 +188,8 @@ class JpaProposalRepositoryTest {
 		entityManager.getTransaction().begin();
 
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 
@@ -223,8 +218,8 @@ class JpaProposalRepositoryTest {
 	void testGetProposalWhenThereIsNoProposal() {
 		
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 
@@ -245,8 +240,8 @@ class JpaProposalRepositoryTest {
 	void testGetProposalWhenContractsHaveProposal() {
 
 		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-		Player player1 = new Player.Forward("Francesco", "Totti");
-		Player player2 = new Player.Midfielder("Kevin", "De Bruyne");
+		Player player1 = new Player.Forward("Francesco", "Totti", "Roma");
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", "Napoli");
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
 		Proposal.PendingProposal proposal = new Proposal.PendingProposal(offeredContract, requestedContract);

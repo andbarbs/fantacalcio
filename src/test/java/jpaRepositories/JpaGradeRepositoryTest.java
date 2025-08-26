@@ -106,8 +106,8 @@ class JpaGradeRepositoryTest {
 	@DisplayName("getAllMatchGrades() when two grades have been persisted")
 	public void testGetAllMatchGradesWhenTwoGradesExist() {
 		
-		Player player1 = new Player.Goalkeeper("Gigi", "Buffon");
-		Player player2 = new Player.Forward("Gigi", "Riva");
+		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", "Juventus");
+		Player player2 = new Player.Forward("Gigi", "Riva", "Cagliari");
 		
 		Grade voto1 = new Grade(player1, matchDay, 6.0, 0, 1, newsPaper);
 		Grade voto2 = new Grade(player1, matchDay, 8.0, 2, 0, newsPaper);
