@@ -113,7 +113,6 @@ class JpaLineUpRepositoryTest {
 
 		entityManager.persist(team);
 
-		
 		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 		entityManager.persist(opponent);
 

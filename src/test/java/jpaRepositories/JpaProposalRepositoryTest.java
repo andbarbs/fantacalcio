@@ -80,7 +80,6 @@ class JpaProposalRepositoryTest {
 		sessionFactory.close();
 	}
 
-	// TODO implement all tests
 	@Test
 	@DisplayName("deleteProposal() when the requested proposal is not present")
 	void testDeleteProposalWithoutProposal() {

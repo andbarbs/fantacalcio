@@ -96,14 +96,10 @@ class JpaGradeRepositoryTest {
 		sessionFactory.close();
 	}
 
-	// TODO
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-
 		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();
-		;
-
 	}
 
 	@Test
