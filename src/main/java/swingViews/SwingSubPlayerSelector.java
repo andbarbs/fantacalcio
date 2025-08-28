@@ -32,6 +32,13 @@ import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
  * 
  */
 
+/**
+ * 
+ * @param <P> the type for options in the triplet's
+ *            {@code SubstitutePlayerSelector}s
+ * @apiNote as an inner graphical component with raster contents, instantiation
+ *          requires a <b>sizing hint</b>: see the
+ */
 @SuppressWarnings("serial")
 public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
 
@@ -49,6 +56,10 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 			initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
 					new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
 		}
+	
+	public static <Q extends Player> SwingSubPlayerSelector<Q> createWithSizing(Dimension availableWindow) throws IOException {
+		return new SwingSubPlayerSelector<Q>(availableWindow);
+	}
 
 	// rescaling-augmented constructor available to clients
 	public SwingSubPlayerSelector(Dimension availableWindow) throws IOException {

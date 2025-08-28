@@ -2,6 +2,7 @@ package swingViews;
 
 import static swingViews.utilities.TypedJComboBoxFixtureAssert.assertThat;
 
+import java.awt.Dimension;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JFrame;
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import domainModel.Player.Defender;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 import swingViews.utilities.TypedJComboBoxFixture;
+
+// TODO: use DisplayName on tests
 
 /**
  * this test case integrates at the SubstituteSelectorTriplet level:
@@ -36,13 +39,30 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 	private static final Defender vanDijk = new Defender("Virgil", "van Dijk");
 
 	@BeforeEach
-	public void testCaseSpecificSetup() {   	
+	public void testCaseSpecificSetup() {
+		Dimension selectorDims = new Dimension(120, 225);
+		
 		JFrame frame = GuiActionRunner.execute(() -> {
+			SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			SwingSubPlayerSelector<Defender> view3 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			
+			SubstitutePlayerSelector<Defender> selPres1 = new SubstitutePlayerSelector<Defender>(view1);
+			SubstitutePlayerSelector<Defender> selPres2 = new SubstitutePlayerSelector<Defender>(view2);
+			SubstitutePlayerSelector<Defender> selPres3 = new SubstitutePlayerSelector<Defender>(view3);
+			
+			view1.setPresenter(selPres1);
+			view2.setPresenter(selPres2);
+			view3.setPresenter(selPres3);
 			
 			// sets up the SUT
-			SubstituteSelectorTriplet<Defender> chooser = new SubstituteSelectorTriplet<Defender>();
+			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>> chooser = 
+						new SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(false,
+					selPres1, view1,
+					selPres2, view2,
+					selPres3, view3);
 			CompetitiveOptionDealingGroup.initializeDealing(
-					Set.copyOf(chooser.getSubstituteSelectors()), 
+					Set.of(selPres1, selPres2, selPres3), 
 					List.of(chiellini, pique, ramos, silva, vanDijk));  // in alphabetical order
 			
 			// sets up the test Frame
@@ -57,13 +77,13 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
         window = new FrameFixture(robot, frame);
         window.show();
         
-        combo1 = TypedJComboBoxFixture.of(window.panel("selector1").comboBox(), Defender.class);
-        combo2 = TypedJComboBoxFixture.of(window.panel("selector2").comboBox(), Defender.class);
-        combo3 = TypedJComboBoxFixture.of(window.panel("selector3").comboBox(), Defender.class);
+        combo1 = TypedJComboBoxFixture.of(window.panel("widget1").comboBox(), Defender.class);
+        combo2 = TypedJComboBoxFixture.of(window.panel("widget2").comboBox(), Defender.class);
+        combo3 = TypedJComboBoxFixture.of(window.panel("widget3").comboBox(), Defender.class);
         
-        reset1 = window.panel("selector1").button(JButtonMatcher.withText("Reset"));
-        reset2 = window.panel("selector2").button(JButtonMatcher.withText("Reset"));
-        reset3 = window.panel("selector3").button(JButtonMatcher.withText("Reset"));
+        reset1 = window.panel("widget1").button(JButtonMatcher.withText("Reset"));
+        reset2 = window.panel("widget2").button(JButtonMatcher.withText("Reset"));
+        reset3 = window.panel("widget3").button(JButtonMatcher.withText("Reset"));
         
         swap1_2 = window.button("swap1_2");
         swap2_3 = window.button("swap2_3");
