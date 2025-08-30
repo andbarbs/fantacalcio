@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.beans.Beans;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -55,7 +56,7 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 				fakeWidget.setBackground(Color.ORANGE);
 			});
 			
-			triplet = new SwingFillableSwappableTriplet<TestFillableSwappable>(true, 
+			triplet = new SwingFillableSwappableTriplet<TestFillableSwappable>(Beans.isDesignTime(), 
 					mockFillable1, fakeWidget1,
 					mockFillable2, fakeWidget2,
 					mockFillable3, fakeWidget3);
@@ -127,7 +128,7 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 
 							// WHEN driver notifies second selector filled
 							GuiActionRunner.execute(() -> {
-								triplet.becameFilled(mockFillable2);
+								triplet.getSequenceListener().becameFilled(mockFillable2);
 							});
 
 							// THEN the first swap button is enabled
@@ -141,7 +142,7 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 
 							// WHEN driver notifies third selector filled
 							GuiActionRunner.execute(() -> {
-								triplet.becameFilled(mockFillable3);
+								triplet.getSequenceListener().becameFilled(mockFillable3);
 							});
 
 							// THEN the second swap button is enabled
@@ -172,7 +173,7 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 
 							// WHEN driver notifies third selector emptied
 							GuiActionRunner.execute(() -> {
-								triplet.becameEmpty(mockFillable3);
+								triplet.getSequenceListener().becameEmpty(mockFillable3);
 							});
 
 							// THEN the second swap button is disabled
@@ -186,7 +187,7 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 
 							// WHEN driver notifies second selector emptied
 							GuiActionRunner.execute(() -> {
-								triplet.becameEmpty(mockFillable2);
+								triplet.getSequenceListener().becameEmpty(mockFillable2);
 							});
 
 							// THEN the first swap button is disabled

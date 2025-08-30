@@ -43,17 +43,16 @@ import java.awt.Color;
  *           public constructor}
  */
 @SuppressWarnings("serial")
-public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> extends JPanel
-		implements FillableSwappableSequenceListener<T> {
+public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> extends JPanel {
 	
-	private static final float TRIPLET_W_OVER_VIEW_W = 5f;
-	private static final float TRIPLET_H_OVER_VIEW_H = 1.3f;
-	
-	private T member1, member2, member3;
-
+	// sequence creation & listening
+	private T member1, member2, member3;	
 	private FillableSwappableSequence<T> sequenceDriver;
+	private FillableSwappableSequenceListener<T> sequenceListener;
 
-	private JButton swapMembers1and2, swapMembers2and3;
+	// graphical appearance
+	private static final float TRIPLET_W_OVER_VIEW_W = 5f, TRIPLET_H_OVER_VIEW_H = 1.3f;
+	private JButton swapMembers1and2, swapMembers2and3;	
 	
 	/*
 	 * WINDOWBUILDER SPRING LAYOUT MEMO
@@ -111,13 +110,33 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 		Spring panelWidth = Spring.constant((int)(maxWidgetSize.width * TRIPLET_W_OVER_VIEW_W));
 		Spring panelHeight = Spring.constant((int)(maxWidgetSize.height * TRIPLET_H_OVER_VIEW_H));
 
-		if (isDesignTime) {
-			// public design-time logic
+		// creates fillable-swappable sequence and attaches listener
+		if (!isDesignTime) {			
+			sequenceDriver = FillableSwappableSequence.createSequence(List.of(fillable1, fillable2, fillable3));
+			sequenceListener = new FillableSwappableSequenceListener<T>() {
+				
+				// disables swap buttons according to notifications from the sequence driver
+				@Override
+				public void becameEmpty(T emptiedGadget) {
+					// System.out.println("content removed from a gadget!");
+					if (emptiedGadget == member3)
+						swapMembers2and3.setEnabled(false);
+					else if (emptiedGadget == member2)
+						swapMembers1and2.setEnabled(false);
+				}
+				
+				// enables swap buttons according to notifications from the sequence driver
+				@Override
+				public void becameFilled(T filledGadget) {
+					// System.out.println("content added to a gadget!");
+					if (filledGadget == member2)
+						swapMembers1and2.setEnabled(true);
+					else if (filledGadget == member3)
+						swapMembers2and3.setEnabled(true);
+				}
+			};
+			sequenceDriver.attachListener(sequenceListener);
 		}
-
-		// creates fillable-swappable sequence and attaches itself as listener
-		sequenceDriver = FillableSwappableSequence.createSequence(List.of(fillable1, fillable2, fillable3));
-		sequenceDriver.attachListener(this);
 
 		// sets visual appearance
 		SpringLayout layout = new SpringLayout();
@@ -173,8 +192,12 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(184, 207, 229)));
 	}
 	
-	/*
-	 * instantiates, adds Listeners to, adds to this, lays out and initially disables the two swap buttons
+	/**
+	 * instantiates, adds Listeners to, adds to this, lays out and initially
+	 * disables the two swap buttons
+	 * 
+	 * @param layout      the {@code SpringLayout} layout manager for {@code this}
+	 * @param parentWidth the width constraint for {@code this}
 	 */
 	private void addAndLayoutSwapButtons(SpringLayout layout, Spring parentWidth) {
 		swapMembers1and2 = new JButton();
@@ -251,37 +274,14 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 		layout.putConstraint(SpringLayout.VERTICAL_CENTER, widget3, 0, SpringLayout.VERTICAL_CENTER, this);
 	}
 
-	/**
-	 * disables swap buttons according to notifications from the
-	 * {@linkplain FillableSwappableSequence Sequence driver}
-	 */
-	@Override
-	public void becameEmpty(T emptiedGadget) {
-		// System.out.println("content removed from a gadget!");
-		if (emptiedGadget == member3)
-			swapMembers2and3.setEnabled(false);
-		else if (emptiedGadget == member2)
-			swapMembers1and2.setEnabled(false);
-	}
-
-	/**
-	 * enables swap buttons according to notifications from the
-	 * {@linkplain FillableSwappableSequence Sequence driver}
-	 */
-	@Override
-	public void becameFilled(T filledGadget) {
-		// System.out.println("content added to a gadget!");
-		if (filledGadget == member2)
-			swapMembers1and2.setEnabled(true);
-		else if (filledGadget == member3)
-			swapMembers2and3.setEnabled(true);
-	}
-
-	/*
-	 * this setter is necessary for unit tests to install hard composite
-	 */
+	// needed by unit tests to install hard composite
 	void setSequenceDriver(FillableSwappableSequence<T> mockSequence) {
 		this.sequenceDriver = mockSequence;
+	}
+	
+	// needed by unit tests to simulate driver notifications
+	FillableSwappableSequenceListener<T> getSequenceListener() {
+		return sequenceListener;
 	}
 
 	public static void main(String[] args) {
