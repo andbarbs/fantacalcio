@@ -26,7 +26,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
 		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
 		criteriaQuery.select(root);
-
+		//TODO controllare che la lista sia in ordine ovvero prima ho la prima giornata poi la seconda etc etc
 		return entityManager.createQuery(criteriaQuery).getResultList();	
 	}
 

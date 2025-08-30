@@ -41,13 +41,15 @@ public class AdminUserService extends UserService {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 38);
-			// TODO ora dobbiamo salvare la schedule in qualche modo
-			System.out.println(schedule);
+			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
+			List<Match> matches = createMatches(schedule, matchDaySerieA);
+			for(Match match: matches) {
+				context.getMatchRepository().saveMatch(match);
+			}
 		});
 
 	}
 
-	// AI generated
 	private List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
 		int n = teams.size();
 		if (n % 2 != 0) {
@@ -100,7 +102,6 @@ public class AdminUserService extends UserService {
 		return rounds;
 	}
 
-	// AI generated
 	private List<List<FantaTeam[]>> generateFixedRounds(List<FantaTeam> teams, int targetRounds) {
 		List<List<FantaTeam[]>> base = generateSchedule(teams); // double round robin
 		List<List<FantaTeam[]>> full = new ArrayList<>();
@@ -114,6 +115,28 @@ public class AdminUserService extends UserService {
 		}
 		return full;
 	}
+
+	public List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDaySerieA> matchDays) {
+		List<Match> matches = new ArrayList<>();
+
+		if (schedule.size() != matchDays.size()) {
+			throw new IllegalArgumentException("Schedule rounds and matchDays must have the same size");
+		}
+
+		for (int roundIndex = 0; roundIndex < schedule.size(); roundIndex++) {
+			MatchDaySerieA matchDay = matchDays.get(roundIndex);
+			List<FantaTeam[]> round = schedule.get(roundIndex);
+
+			for (FantaTeam[] pairing : round) {
+				FantaTeam home = pairing[0];
+				FantaTeam away = pairing[1];
+				matches.add(new Match(matchDay, home, away));
+			}
+		}
+		return matches;
+	}
+
+
 
 	public void calculateGrades(MatchDaySerieA matchDay, League league, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
