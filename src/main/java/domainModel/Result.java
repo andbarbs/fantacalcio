@@ -27,7 +27,7 @@ public class Result {
 
     protected Result() {}
 
-    Result(double team1Points, double team2Points, int team1Goals, int team2Goals, Match match) {
+    public Result(double team1Points, double team2Points, int team1Goals, int team2Goals, Match match) {
     	this.match = match;
         this.team1Points = team1Points;
         this.team2Points = team2Points;
