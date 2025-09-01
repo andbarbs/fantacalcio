@@ -68,4 +68,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
 	}
 
+	@Override
+	public Optional<MatchDaySerieA> getMatchDay(LocalDate date) {
+		//TODO implementa
+		return Optional.empty();
+	}
 }

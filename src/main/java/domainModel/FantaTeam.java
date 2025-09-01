@@ -60,6 +60,12 @@ public class FantaTeam {
         this.contracts = contracts;
     }
 
+    public boolean isSameTeam(Object o){
+        if (o == null || getClass() != o.getClass()) return false;
+        FantaTeam fantaTeam = (FantaTeam) o;
+        return Objects.equals(name, fantaTeam.name) && Objects.equals(league, fantaTeam.league) && Objects.equals(fantaManager, fantaTeam.fantaManager);
+    }
+
     // entry point for strongly-typed Player lookup
     public FantaTeamViewer extract() {
     	return new FantaTeamViewer(this);
