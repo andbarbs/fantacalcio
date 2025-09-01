@@ -179,11 +179,21 @@ public class UserService {
 			DayOfWeek day = today.getDayOfWeek();
 			
 			Match match = lineUp.getMatch();
-			if(today.isAfter(match.getMatchDaySerieA().getDate()))
+			LocalDate matchDate = match.getMatchDaySerieA().getDate();
+			if(today.isAfter(matchDate))
 				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
 			
 			if(day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
+
+			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
+			if(previousMatchDay.isPresent()){
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(),lineUp.getTeam().getLeague(), lineUp.getTeam());
+				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
+				if(previousMatchResult.isEmpty()){
+					throw new UnsupportedOperationException("The grades for the previous match were not calculated");
+				}
+			}
 			
 			League league = lineUp.getTeam().getLeague();
 			FantaUser user = lineUp.getTeam().getFantaManager();
