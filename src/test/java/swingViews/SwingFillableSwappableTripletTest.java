@@ -32,8 +32,8 @@ public class SwingFillableSwappableTripletTest extends AssertJSwingJUnit5TestCas
 	// a test-private abstract implementor of FillableSwappable intended for mocking
 	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable> {}
 	
-	@Mock TestFillableSwappable mockFillable1, mockFillable2, mockFillable3;
-	JPanel fakeWidget1, fakeWidget2, fakeWidget3;
+	private @Mock TestFillableSwappable mockFillable1, mockFillable2, mockFillable3;
+	private JPanel fakeWidget1, fakeWidget2, fakeWidget3;
 
 	// the SUT reference
 	private SwingFillableSwappableTriplet<TestFillableSwappable> triplet;	
