@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import businessLogic.repositories.MatchDayRepository;
 import domainModel.MatchDaySerieA;
+import domainModel.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -20,15 +21,18 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public List<MatchDaySerieA> getAllMatchDays() {		
+	public List<MatchDaySerieA> getAllMatchDays() {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
 		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+
 		criteriaQuery.select(root);
-		//TODO controllare che la lista sia in ordine ovvero prima ho la prima giornata poi la seconda etc etc
-		return entityManager.createQuery(criteriaQuery).getResultList();	
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(MatchDaySerieA_.DATE)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
+
 
 	@Override
 	public Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date) {
