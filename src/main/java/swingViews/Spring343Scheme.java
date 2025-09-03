@@ -316,4 +316,9 @@ public class Spring343Scheme extends SpringSchemePanel {
 		content11.setBackground(Color.YELLOW);
 		slot11.add(content11);
 	}
+
+	@Override
+	public void accept(SpringSchemeVisitor visitor) {
+		visitor.visit343Scheme(this);
+	}
 }

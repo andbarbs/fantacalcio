@@ -76,5 +76,13 @@ public abstract class SpringSchemePanel extends JPanel {
 	public abstract List<JPanel> getDefenderSlots();
 	public abstract List<JPanel> getMidfielderSlots();
 	public abstract List<JPanel> getForwardSlots();
+	
+	public interface SpringSchemeVisitor {
+		void visit433Scheme(Spring433Scheme scheme433);
+		void visit343Scheme(Spring343Scheme scheme343);
+		void visit532Scheme(Spring532Scheme scheme532);
+	}
+	
+	public abstract void accept(SpringSchemeVisitor visitor);
 
 }

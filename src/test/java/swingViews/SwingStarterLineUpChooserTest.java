@@ -1,13 +1,18 @@
 package swingViews;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.assertj.swing.annotation.GUITest;
@@ -33,6 +38,11 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 @ExtendWith(MockitoExtension.class)
 public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 	
+	private static final Forward FAKE_FORWARD = new Forward(null, null);
+	private static final Midfielder FAKE_MIDFIELDER = new Midfielder(null, null);
+	private static final Defender FAKE_DEFENDER = new Defender(null, null);
+	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null);
+	
 	private Spring433Scheme panel433;
 	private Spring343Scheme panel343;
 	private Spring532Scheme panel532;
@@ -53,7 +63,10 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 	private SelectorWidgetPair<Midfielder> midPair1, midPair2, midPair3, midPair4;
 	private SelectorWidgetPair<Forward> forwPair1, forwPair2, forwPair3;
 	
-	private List<SelectorWidgetPair<?>> pairs;
+	private List<SelectorWidgetPair<?>> pairs, pairsIn433, pairsIn343, pairsIn532;
+	private List<SelectorWidgetPair<Defender>> defPairs;
+	private List<SelectorWidgetPair<Midfielder>> midPairs;
+	private List<SelectorWidgetPair<Forward>> forwPairs;
 	
 	private @Mock Consumer<Selector<? extends Player>> mockConsumer;
 
@@ -61,7 +74,7 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 	private SwingStarterLineUpChooser chooser;
 
 	@BeforeEach
-	public void testCaseSpecificSetup(
+	void testCaseSpecificSetup(
 			@Mock Selector<Goalkeeper> mockGoalieSel,
 			@Mock Selector<Defender> mockDefSel1, 
 			@Mock Selector<Defender> mockDefSel2, 
@@ -100,10 +113,7 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 			forwPair2 = new SelectorWidgetPair<>(mockForwSel2, new JPanel()); 
 			forwPair3 = new SelectorWidgetPair<>(mockForwSel3, new JPanel()); 
 			
-			pairs = List.of(goaliePair, 
-					defPair1, defPair2, defPair3, defPair4, defPair5, 
-					midPair1, midPair2, midPair3, midPair4, 
-					forwPair1, forwPair2, forwPair3);
+			populatePairsLists();
 			
 			Dimension screenSize = f.getToolkit().getScreenSize();
 			Dimension availableWindow = new Dimension(
@@ -121,6 +131,8 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 			
 			// instantiates SUT
 			chooser = new SwingStarterLineUpChooser(
+					false,
+					
 					availableWindow,
 					
 					panel433, panel343, panel532,
@@ -156,6 +168,35 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 
 //		swap1_2 = window.button("swap1_2");
 //		swap2_3 = window.button("swap2_3");
+	}
+
+	private void populatePairsLists() {
+		// by role
+		defPairs = List.of(defPair1, defPair2, defPair3, defPair4, defPair5);
+		midPairs = List.of(midPair1, midPair2, midPair3, midPair4);
+		forwPairs = List.of(forwPair1, forwPair2, forwPair3);
+		
+		pairs = List.of(goaliePair, 
+				defPair1, defPair2, defPair3, defPair4, defPair5, 
+				midPair1, midPair2, midPair3, midPair4, 
+				forwPair1, forwPair2, forwPair3);
+		
+		// by scheme
+		pairsIn433 = List.of(
+				goaliePair, 
+				defPair1, defPair2, defPair3, defPair4, 
+				midPair1, midPair2, midPair3, 
+				forwPair1, forwPair2, forwPair3);
+		pairsIn343 = List.of(
+				goaliePair, 
+				defPair1, defPair2, defPair3,
+				midPair1, midPair2, midPair3, midPair4,
+				forwPair1, forwPair2, forwPair3);
+		pairsIn532 = List.of(
+				goaliePair, 
+				defPair1, defPair2, defPair3, defPair4, defPair5,
+				midPair1, midPair2, midPair3,
+				forwPair1, forwPair2);
 	}
 
 	@Nested
@@ -194,31 +235,29 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 			window.radioButton(withText("5-3-2")).requireNotSelected();
 			
 			// AND widgets within 433 are added to the 433 panel
-			List<SelectorWidgetPair<?>> pairsIn433 = List.of(
-					goaliePair, 
-					defPair1, defPair2, defPair3, defPair4, 
-					midPair1, midPair2, midPair3, 
-					forwPair1, forwPair2, forwPair3);
 			pairsIn433.stream().map(pair -> pair.widget).forEach(fakeWidget -> {
 				assertThat(fakeWidget.getParent().getParent()).isSameAs(panel433);
 			});
 
-			// AND widgets outside 433 have no parent
+			// while widgets outside 433 have no parent
 			pairs.stream()
 				.filter(pair -> !pairsIn433.contains(pair))
 				.map(pair -> pair.widget).forEach(fakeWidget -> {
 					assertThat(fakeWidget.getParent()).isNull();
 			});
+			
+			// with no selectors being excluded
+			verifyNoInteractions(mockConsumer);
 		}		
 	}
 	
 	@Nested
-	@DisplayName("switches to a different scheme")
-	class SwitchesSchemes {			
-		
+	@DisplayName("allows a graphical user to")
+	class ForGraphicalUsers {
+
 		@Nested
-		@DisplayName("when the user picks")
-		class OnUserPicking {			
+		@DisplayName("access widgets for")
+		class SwitchesSchemes {
 			
 			@Test
 			@GUITest
@@ -226,39 +265,29 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 			public void widgetsAddedTo343() {
 				
 				// WHEN the user selects the '3-4-3' scheme
-				window.radioButton(withText("3-4-3")).click();				
-
+				window.radioButton(withText("3-4-3")).click();
+				robot.waitForIdle();
+				
 				// THEN only the '3-4-3' radio button is selected
 				window.radioButton(withText("4-3-3")).requireNotSelected();
 				window.radioButton(withText("3-4-3")).requireSelected();
 				window.radioButton(withText("5-3-2")).requireNotSelected();
 				
 				// AND widgets within '3-4-3' are added to the 343 panel
-				List<SelectorWidgetPair<?>> pairsIn343 = List.of(
-						goaliePair, 
-						defPair1, defPair2, defPair3,
-						midPair1, midPair2, midPair3, midPair4,
-						forwPair1, forwPair2, forwPair3);
 				pairsIn343.stream().map(pair -> pair.widget).forEach(fakeWidget -> {
 					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel343);
 				});
 				
+				// WHILE widgets not within '3-4-3' are without parent
+				pairs.stream().filter(pair -> !pairsIn343.contains(pair))
+				.forEach(pair -> assertThat(pair.widget.getParent()).isNull());
+				
 				// AND widgets within '4-3-3' but not within '3-4-3' are excluded
-				List<SelectorWidgetPair<?>> excludedPairs = List.of(
-						defPair4);
-				excludedPairs.stream().forEach(pair -> {
-					assertThat(pair.widget.getParent()).isNull();
-					verify(mockConsumer).accept(pair.selector);
-				});
-
-				// AND widgets outside both '4-3-3' and '3-4-3' are untouched
-				pairs.stream()
-					.filter(pair -> !pairsIn343.contains(pair))
-					.filter(pair -> !excludedPairs.contains(pair))
-					.forEach(pair -> {
-						assertThat(pair.widget.getParent()).isNull();
-						verify(mockConsumer, never()).accept(pair.selector);
-				});
+				pairsIn433.stream().filter(pair -> !pairsIn343.contains(pair))
+				.forEach(pair -> verify(mockConsumer).accept(pair.selector));
+				
+				// with no other selectors being excluded
+				verifyNoMoreInteractions(mockConsumer);
 			}
 			
 			@Test
@@ -267,40 +296,171 @@ public class SwingStarterLineUpChooserTest extends AssertJSwingJUnit5TestCase {
 			public void widgetsAddedTo532() {
 				
 				// WHEN the user selects the '5-3-2' scheme
-				window.radioButton(withText("5-3-2")).click();				
-
+				window.radioButton(withText("5-3-2")).click();
+				robot.waitForIdle();
+				
 				// THEN only the '5-3-2' radio button is selected
 				window.radioButton(withText("4-3-3")).requireNotSelected();
 				window.radioButton(withText("3-4-3")).requireNotSelected();
 				window.radioButton(withText("5-3-2")).requireSelected();
 				
 				// AND widgets within '5-3-2' are added to the 532 panel
-				List<SelectorWidgetPair<?>> pairsIn532 = List.of(
-						goaliePair, 
-						defPair1, defPair2, defPair3, defPair4, defPair5,
-						midPair1, midPair2, midPair3,
-						forwPair1, forwPair2);
 				pairsIn532.stream().map(pair -> pair.widget).forEach(fakeWidget -> {
 					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel532);
 				});
-
+				
+				// while widgets not within '5-3-2' are without parent
+				pairs.stream().filter(pair -> !pairsIn532.contains(pair))
+				.forEach(pair -> assertThat(pair.widget.getParent()).isNull());
+				
 				// AND widgets within '4-3-3' but not within '5-3-2' are excluded
-				List<SelectorWidgetPair<?>> excludedPairs = List.of(
-						forwPair3);
-				excludedPairs.stream().forEach(pair -> {
-					assertThat(pair.widget.getParent()).isNull();
-					verify(mockConsumer).accept(pair.selector);
-				});
-
-				// AND widgets outside both '4-3-3' and '5-3-2' are untouched
-				pairs.stream()
-					.filter(pair -> !pairsIn532.contains(pair))
-					.filter(pair -> !excludedPairs.contains(pair))
-					.forEach(pair -> {
-						assertThat(pair.widget.getParent()).isNull();
-						verify(mockConsumer, never()).accept(pair.selector);
-				});
+				pairsIn433.stream().filter(pair -> !pairsIn532.contains(pair))
+				.forEach(pair -> verify(mockConsumer).accept(pair.selector));
+				
+				// with no other selectors being excluded
+				verifyNoMoreInteractions(mockConsumer);
 			}
 		}
 	}
+	
+	@Nested
+	@DisplayName("allows a programmatic client to")
+	class ForClients {
+		
+		@Test
+		@GUITest
+		@DisplayName("retrieve selectors")
+		public void retrieveSelectors() {
+
+			assertThat(chooser.getGoalieSelector()).isSameAs(goaliePair.selector);
+			assertThat(chooser.getDefenderSelectors()).containsExactlyElementsOf(
+					defPairs.stream().map(pair -> pair.selector).collect(Collectors.toList()));
+			assertThat(chooser.getMidfielderSelectors()).containsExactlyElementsOf(
+					midPairs.stream().map(pair -> pair.selector).collect(Collectors.toList()));
+			assertThat(chooser.getForwardSelectors()).containsExactlyElementsOf(
+					forwPairs.stream().map(pair -> pair.selector).collect(Collectors.toList()));
+		}
+
+		@Nested
+		@DisplayName("query the existence of a starter choice")
+		class SelectionSet {
+
+			
+
+			@Nested
+			@DisplayName("under")
+			class Under {
+
+				@Test
+				@GUITest
+				@DisplayName("the '3-4-3' scheme")
+				public void selectionSet343() {
+
+					// GIVEN the current scheme is '3-4-3'
+					chooser.currentSchemePanel = panel343;
+
+					// AND only some selectors in '3-4-3' report being non-empty
+					when(goaliePair.selector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));
+					defPairs.stream().filter(pair -> pairsIn343.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
+					midPairs.stream().filter(pair -> pairsIn343.contains(pair)).map(pair -> pair.selector).forEach(
+							selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
+
+					// THEN no starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isFalse());
+
+					// BUT GIVEN all selectors in '3-4-3' report being non-empty
+					forwPairs.stream().filter(pair -> pairsIn343.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
+
+					// THEN a starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isTrue());
+				}
+
+				@Test
+				@GUITest
+				@DisplayName("the '4-3-3' scheme")
+				public void selectionSet433() {
+
+					// GIVEN the current scheme is '4-3-3'
+					chooser.currentSchemePanel = panel433;
+
+					// AND only some selectors in '4-3-3' report being non-empty
+					when(goaliePair.selector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));
+					defPairs.stream().filter(pair -> pairsIn433.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
+					midPairs.stream().filter(pair -> pairsIn433.contains(pair)).map(pair -> pair.selector).forEach(
+							selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
+
+					// THEN no starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isFalse());
+
+					// BUT GIVEN all selectors in '4-3-3' report being non-empty
+					forwPairs.stream().filter(pair -> pairsIn433.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
+
+					// THEN a starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isTrue());
+				}
+
+				@Test
+				@GUITest
+				@DisplayName("the '5-3-2' scheme")
+				public void selectionSet532() {
+
+					// GIVEN the current scheme is '5-3-2'
+					chooser.currentSchemePanel = panel532;
+
+					// AND only some selectors in '5-3-2' report being non-empty
+					when(goaliePair.selector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));
+					defPairs.stream().filter(pair -> pairsIn532.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
+					midPairs.stream().filter(pair -> pairsIn532.contains(pair)).map(pair -> pair.selector).forEach(
+							selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
+
+					// THEN no starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isFalse());
+
+					// BUT GIVEN all selectors in '5-3-2' report being non-empty
+					forwPairs.stream().filter(pair -> pairsIn532.contains(pair)).map(pair -> pair.selector)
+							.forEach(selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
+
+					// THEN a starter choice is reported as present
+					GuiActionRunner.execute(() -> assertThat(chooser.hasChoice()).isTrue());
+				}
+			}
+		}
+		
+		@Nested
+		@DisplayName("retrieve the starter choice")
+		class Allows {
+			
+			@Nested
+			@DisplayName("when one is present")
+			class SelectionSet {
+				
+				@Test
+				@GUITest
+				@DisplayName("ghshh")
+				public void widgetsAddedTo343() {
+					
+				}
+			}
+			
+			@Nested
+			@DisplayName("when none is present")
+			class SelectionCleared {
+				
+				@Test
+				@GUITest
+				@DisplayName("shgsfdh")
+				public void widgetsAddedTo343() {
+					
+				}
+			}
+		}
+	}
+
+
 }
+
