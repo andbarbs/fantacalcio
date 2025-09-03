@@ -25,24 +25,16 @@ public class Grade {
 	
 	@Basic(optional=false)
 	private double mark;
-	
-	@Basic(optional=false)
-	private int goals;
-	
-	@Basic(optional=false)
-	private int assists;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private NewsPaper newsPaper;
 
 	protected Grade() {}
 	
-	public Grade(Player player, MatchDaySerieA matchDay, double mark, int goals, int assists, NewsPaper newsPaper) {
+	public Grade(Player player, MatchDaySerieA matchDay, double mark, NewsPaper newsPaper) {
 		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
-		this.goals = goals;
-		this.assists = assists;
 		this.newsPaper = newsPaper;
 	}
 
@@ -54,21 +46,13 @@ public class Grade {
 		return player;
 	}
 
-	public int getGoals() {
-		return goals;
-	}
-
-	public int getAssists() {
-		return assists;
-	}
-
 	public NewsPaper getNewsPaper() {
 		return newsPaper;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(assists, player, goals, mark, matchDay);
+		return Objects.hash(player, mark, matchDay);
 	}
 
 	@Override
@@ -80,7 +64,7 @@ public class Grade {
 		if (getClass() != obj.getClass())
 			return false;
 		Grade other = (Grade) obj;
-		return assists == other.assists && Objects.equals(player, other.player) && goals == other.goals
+		return Objects.equals(player, other.player)
 				&& Double.doubleToLongBits(mark) == Double.doubleToLongBits(other.mark)
 				&& Objects.equals(matchDay, other.matchDay);
 	}	

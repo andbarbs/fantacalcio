@@ -1,14 +1,12 @@
 package domainModel;
 
 import java.util.Objects;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+import jakarta.persistence.*;
 
 @Entity
 public abstract class Player {
+	public static enum Club {ATALANTA, BOLOGNA, CAGLIARI, COMO, CREMONESE, FIORENTINA, GENOA, INTER, JUVENTUS, LAZIO, LECCE, MILAN, NAPOLI, PARMA, PISA, ROMA, SASSUOLO, TORINO, UDINESE, VERONA}
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,16 +17,17 @@ public abstract class Player {
     
     @Basic(optional=false)
     private String surname;
-    
+
     @Basic(optional=false)
-    private String team;
+	@Enumerated(EnumType.STRING)
+    private String club;
     
     protected Player() {}
 
     Player(String name, String surname, String team) {
         this.name = name;
         this.surname = surname;
-		this.team = team;
+		this.club = team;
     }
 
     // Getter
@@ -42,22 +41,17 @@ public abstract class Player {
     }
 
 	@Override
-	public int hashCode() {
-		return Objects.hash(name, surname);
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		Player player = (Player) o;
+		return Objects.equals(id, player.id) && Objects.equals(name, player.name) && Objects.equals(surname, player.surname) && Objects.equals(club, player.club);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Player other = (Player) obj;
-		return Objects.equals(name, other.name) && Objects.equals(surname, other.surname);
+	public int hashCode() {
+		return Objects.hash(id, name, surname, club);
 	}
-	
+
 	public static interface PlayerVisitor {
 		void visitGoalkeeper(Goalkeeper goalkeeper);
 		void visitDefender(Defender defender);
