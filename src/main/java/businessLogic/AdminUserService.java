@@ -165,6 +165,14 @@ public class AdminUserService extends UserService {
 				int goalTeam1 = goals(resultTeam1);
 				int goalTeam2 = goals(resultTeam2);
 				Result result = new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match);
+				if(goalTeam1 > goalTeam2){
+					match.getTeam1().setPoints(match.getTeam1().getPoints() + 3);
+				} else if(goalTeam1 < goalTeam2){
+					match.getTeam2().setPoints(match.getTeam2().getPoints() + 3);
+				} else if(goalTeam1 == goalTeam2){
+					match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
+					match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
+				}
 				context.getResultsRepository().saveResult(result);
 			}
 		});
@@ -255,7 +263,6 @@ public class AdminUserService extends UserService {
 				}
 			} else {
 				found = true;
-
 			}
 		}
 		matchDayToCalculate = context.getMatchDayRepository().getMatchDay(localDate);
