@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
-import swingViews.SwingStarterLineUpChooser.Selector;
 
 /**
  * implements the mandated members of an {@linkplain CompetitiveOrderedDealer}
@@ -26,7 +25,7 @@ import swingViews.SwingStarterLineUpChooser.Selector;
  * @param <T> the type for options in this dealer
  */
 public abstract class OrderedDealerPresenter<T> 
-				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T>, Selector<T> {	
+				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T> {	
 
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 	

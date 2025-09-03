@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import domainModel.Player;
+import swingViews.SwingStarterLineUpChooser.Selector;
 
 /** 
  * implements an MVP Presenter for a gadget capable of being part of 
@@ -21,7 +22,8 @@ import domainModel.Player;
  * @param <P> the type for options in the {@code StarterPlayerSelector}
  * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of competitive selection
  */
-public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> {
+public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
+			implements Selector<P> {
 
 	public StarterPlayerSelector(OrderedDealerView<P> view) {
 		super(view);
@@ -100,6 +102,15 @@ public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresen
 		super.selectionCleared();
 
 		listeners.forEach(l -> l.selectionClearedOn(this));
+	}
+	
+	// NEW OBSERVABLE INFRASTRUCTURE
+	
+	private List<SelectorListener> newListeners = new ArrayList<>();
+
+	@Override
+	public void add(SelectorListener listener) {
+		newListeners.add(listener);
 	}
 
 }

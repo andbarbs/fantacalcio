@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -30,13 +32,21 @@ import javax.swing.border.TitledBorder;
 
 import domainModel.Player;
 import domainModel.Player.*;
+import swingViews.SpringSchemePanel.SpringSchemeVisitor;
 
 @SuppressWarnings("serial")
 public class SwingStarterLineUpChooser extends JPanel {
 	
-	public static interface Selector<T> {
-		public Optional<T> getSelection();
-		public void setSelection(Optional<T> option);
+	// interfaces (will belong in their own file)
+	
+	public interface Selector<T> {
+		public interface SelectorListener {
+			void selectionMade();
+			void selectionCleared();
+		}
+		void add(SelectorListener listener);
+		Optional<T> getSelection();
+		void setSelection(Optional<T> option);
 	}
 
 	// inner type for the MVP Pres + View pair
@@ -55,11 +65,13 @@ public class SwingStarterLineUpChooser extends JPanel {
 	private Spring433Scheme panel433;
 	private Spring343Scheme panel343;
 	private Spring532Scheme panel532;
+	
+	SpringSchemePanel currentSchemePanel = null;
 
-	private List<SelectorWidgetPair<Goalkeeper>> goalieSelectorPairs;
-	private List<SelectorWidgetPair<Defender>> defSelectorPairs;
-	private List<SelectorWidgetPair<Midfielder>> midSelectorPairs;
-	private List<SelectorWidgetPair<Forward>> forwSelectorPairs;
+	private List<SelectorWidgetPair<Goalkeeper>> goaliePairs;
+	private List<SelectorWidgetPair<Defender>> defPairs;
+	private List<SelectorWidgetPair<Midfielder>> midPairs;
+	private List<SelectorWidgetPair<Forward>> forwPairs;
 
 	// static PNG dependency
 	private static final String FIELD_PNG_PATH = "/gui_images/raster_field.png";
@@ -79,7 +91,9 @@ public class SwingStarterLineUpChooser extends JPanel {
 	private Consumer<Selector<? extends Player>> onSelectorExlcluded;	
 	
 	// public instantiation point
-	public SwingStarterLineUpChooser(			
+	public SwingStarterLineUpChooser(
+			boolean isDesignTime,
+			
 			Dimension availableWindow,
 			
 			Spring433Scheme panel433, Spring343Scheme panel343, Spring532Scheme panel532,
@@ -106,25 +120,26 @@ public class SwingStarterLineUpChooser extends JPanel {
 		this.panel433 = panel433;
 		this.panel343 = panel343;
 		this.panel532 = panel532;
-		this.onSelectorExlcluded = onSelectorExlcluded;
 
-		this.goalieSelectorPairs = List.of(
+		this.goaliePairs = List.of(
 				new SelectorWidgetPair<Goalkeeper>(goalieSelector, goalieSelectorWidget));
-		this.defSelectorPairs = List.of(
+		this.defPairs = List.of(
 				new SelectorWidgetPair<Defender>(defSelector1, defSelectorWidget1),
 				new SelectorWidgetPair<Defender>(defSelector2, defSelectorWidget2),
 				new SelectorWidgetPair<Defender>(defSelector3, defSelectorWidget3),
 				new SelectorWidgetPair<Defender>(defSelector4, defSelectorWidget4),
 				new SelectorWidgetPair<Defender>(defSelector5, defSelectorWidget5));
-		this.midSelectorPairs = List.of(
+		this.midPairs = List.of(
 				new SelectorWidgetPair<Midfielder>(midSelector1, midSelectorWidget1),
 				new SelectorWidgetPair<Midfielder>(midSelector2, midSelectorWidget2),
 				new SelectorWidgetPair<Midfielder>(midSelector3, midSelectorWidget3),
 				new SelectorWidgetPair<Midfielder>(midSelector4, midSelectorWidget4));
-		this.forwSelectorPairs = List.of(
+		this.forwPairs = List.of(
 				new SelectorWidgetPair<Forward>(forwSelector1, forwSelectorWidget1),
 				new SelectorWidgetPair<Forward>(forwSelector2, forwSelectorWidget2),
 				new SelectorWidgetPair<Forward>(forwSelector3, forwSelectorWidget3));
+		
+		this.onSelectorExlcluded = onSelectorExlcluded;
 
 		initGraphics(availableWindow);
 
@@ -134,12 +149,14 @@ public class SwingStarterLineUpChooser extends JPanel {
 		schemesHolder.add(panel532, "532");
 
 		// 7) wires scheme switch-up logic to the radios
-		ActionListener flip = e -> {
-			switchToScheme(b433.isSelected() ? "433" : b343.isSelected() ? "343" : "532");
-		};
-		b433.addActionListener(flip);
-		b343.addActionListener(flip);
-		b532.addActionListener(flip);
+		if (!isDesignTime) {
+			ActionListener flip = e -> {
+				switchToScheme(b433.isSelected() ? "433" : b343.isSelected() ? "343" : "532");
+			};
+			b433.addActionListener(flip);
+			b343.addActionListener(flip);
+			b532.addActionListener(flip);
+		}
 		
 		// 8) switch to default scheme
 		switchToScheme("433");
@@ -210,135 +227,141 @@ public class SwingStarterLineUpChooser extends JPanel {
 	 *                     instantiation fails
 	 */
 	SwingStarterLineUpChooser() throws IOException {
+		double widthRatio = 0.25;
 
-		// calls initGraphics on the PNG's native dimensions
-		BufferedImage fieldimage = ImageIO.read(getClass().getResourceAsStream(FIELD_PNG_PATH));
-		Dimension unscaledDim = new Dimension(fieldimage.getWidth(), fieldimage.getHeight());
-		initGraphics(unscaledDim);
+		// calls initGraphics on a size acceptable for WB	
+		Dimension screenSize = getToolkit().getScreenSize();
+		Dimension availableWindow = new Dimension((int) (screenSize.width * widthRatio), screenSize.height);
+		initGraphics(availableWindow);
 
 		// 6) instantiates only one token scheme panel and adds it to CardLayout
 		this.panel433 = new Spring433Scheme(true);
 		schemesHolder.add(panel433, "433");
 
 		// 7) instatiates and adds as many selectors as will fit the token scheme panel
-		Dimension availableWindow = SpringSchemePanel.recommendedSlotDimensions(unscaledDim);
-		Dimension reducedAvailableWindow = // ensures selectors actually fit inside slots after insets
-				new Dimension(availableWindow.width - 5, availableWindow.height - 10);
+		Dimension slotDims = SpringSchemePanel.recommendedSlotDimensions(
+				eventualFieldDimension(availableWindow));
 
-		panel433.getGoalieSlot().add(new SwingSubPlayerSelector<Goalkeeper>(reducedAvailableWindow));
+		panel433.getGoalieSlot().add(new SwingSubPlayerSelector<Goalkeeper>(slotDims));
 		
-		panel433.getDef1().add(new SwingSubPlayerSelector<Defender>(reducedAvailableWindow));
-		panel433.getDef2().add(new SwingSubPlayerSelector<Defender>(reducedAvailableWindow));
-		panel433.getDef3().add(new SwingSubPlayerSelector<Defender>(reducedAvailableWindow));
-		panel433.getDef4().add(new SwingSubPlayerSelector<Defender>(reducedAvailableWindow));
+		panel433.getDef1().add(new SwingSubPlayerSelector<Defender>(slotDims));
+		panel433.getDef2().add(new SwingSubPlayerSelector<Defender>(slotDims));
+		panel433.getDef3().add(new SwingSubPlayerSelector<Defender>(slotDims));
+		panel433.getDef4().add(new SwingSubPlayerSelector<Defender>(slotDims));
 		
-		panel433.getMid1().add(new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow));
-		panel433.getMid2().add(new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow));
-		panel433.getMid3().add(new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow));
+		panel433.getMid1().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
+		panel433.getMid2().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
+		panel433.getMid3().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
 		
-		panel433.getForw1().add(new SwingSubPlayerSelector<Forward>(reducedAvailableWindow));
-		panel433.getForw2().add(new SwingSubPlayerSelector<Forward>(reducedAvailableWindow));
-		panel433.getForw3().add(new SwingSubPlayerSelector<Forward>(reducedAvailableWindow));		
+		panel433.getForw1().add(new SwingSubPlayerSelector<Forward>(slotDims));
+		panel433.getForw2().add(new SwingSubPlayerSelector<Forward>(slotDims));
+		panel433.getForw3().add(new SwingSubPlayerSelector<Forward>(slotDims));		
 
 		// 8) sets explanatory borders
 		setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229), 2), "BorderLayout", TitledBorder.LEADING,
 				TitledBorder.TOP, null, new Color(184, 207, 229)));
 		layeredPane.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229), 2),
-				"\"layered\" - GridBagLayout", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(184, 207, 229)));
+				"\"layeredPane\" - GridBagLayout", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(184, 207, 229)));
 		schemesHolder.setBorder(
 				new TitledBorder(new LineBorder(new Color(184, 207, 229), 2), "\"schemesHolder\" - CardLayout",
 						TitledBorder.LEADING, TitledBorder.TOP, null, new Color(184, 207, 229)));
 		switcher.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229), 2), "\"switcher\" - FlowLayout",
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(184, 207, 229)));
 
-		// 9) sets private design-time dimensions
-		setPreferredSize(layeredPane.getPreferredSize());
+		// 9) sets JPanel's WB design-time dimensions
+		setPreferredSize(getPreferredSize());
 	}
 
 	private void switchToScheme(String targetSchemeKey) {
-
-//		// i) remove all selectors from old parent slots
-//		Stream.concat(
-//				Stream.concat(goalieSelectorPairs.stream(), defSelectorPairs.stream()),
-//				Stream.concat(midSelectorPairs.stream(), forwSelectorPairs.stream()))
-//				.forEach(pair -> Optional.ofNullable(pair.widget.getParent())
-//						.ifPresent(parent -> {
-//							parent.remove(pair.widget);
-//							onSelectorExlcluded.accept(pair.presenter);
-//						}));
-
-		// ii) establish user choice of next scheme given CardLayout's String key
+		
+		// i) establish user choice of next scheme given CardLayout's String key
 		SpringSchemePanel targetSchemePanel = 
 				targetSchemeKey.equals("343") ? panel343 : targetSchemeKey.equals("532") ? panel532 : panel433;
 
-		// iii) re-attach as many selectors as we have slots for each role
-		System.out.println("attaching goalie");
-		attachWidgets(targetSchemePanel.getGoalieSlots(), goalieSelectorPairs);
-		System.out.println("attaching defs");
-		attachWidgets(targetSchemePanel.getDefenderSlots(), defSelectorPairs);
-		System.out.println("attaching mids");
-		attachWidgets(targetSchemePanel.getMidfielderSlots(), midSelectorPairs);
-		System.out.println("attaching forwds");
-		attachWidgets(targetSchemePanel.getForwardSlots(), forwSelectorPairs);
+		// ii) re-attach as many selectors as we have slots for each role
+		moveWidgets(targetSchemePanel.getGoalieSlots(), goaliePairs);
+		moveWidgets(targetSchemePanel.getDefenderSlots(), defPairs);
+		moveWidgets(targetSchemePanel.getMidfielderSlots(), midPairs);
+		moveWidgets(targetSchemePanel.getForwardSlots(), forwPairs);
 
-		// iv) show the right card
+		// iii) show the right card
 		((CardLayout) schemesHolder.getLayout()).show(schemesHolder, targetSchemeKey);
 
-		// v) redraw
+		// iv) redraw
 		schemesHolder.revalidate();
 		schemesHolder.repaint();
+		
+		// v) update bookkeeping
+		currentSchemePanel = targetSchemePanel;
 	}
 
-	private <T extends Player> void attachWidgets(List<JPanel> slots, List<SelectorWidgetPair<T>> pairs) {
-//		int i = 0;
-
-//		// add selectors to slots: there could be more selectors than slots
-//		for (; i < slots.size(); i++) {
-//			slots.get(i).add(pairs.get(i).widget);
-//		}
-//
-//		// empty out selectors that were previously shown but will no longer be
-//		for (; i < pairs.size(); i++) {
-//			if (pairs.get(i).widget.getParent() != null) {
-//				pairs.get(i).widget
-//				onSelectorExlcluded.accept(pairs.get(i).presenter);
-//			}
-//		}
-		
+	private <T extends Player> void moveWidgets(List<JPanel> slots, List<SelectorWidgetPair<T>> pairs) {
 		IntStream.range(0, pairs.size()).forEach(i -> {
 			Optional.ofNullable(pairs.get(i).widget.getParent()).ifPresent(parent -> {
 				parent.remove(pairs.get(i).widget);
-				if (i >= slots.size()) {
-					System.out.printf("excluding selector %d of type %s with choice: %s\n", 
-							i, pairs.get(i).selector.getClass(),
-							pairs.get(i).selector.getSelection());
+				if (i >= slots.size())
 					onSelectorExlcluded.accept(pairs.get(i).selector);
-				}
 			});
 			if (i < slots.size()) {
 				slots.get(i).add(pairs.get(i).widget);
 			}
 		});
-		
-//		for (int j = 0; j < pairs.size(); j++) {
-//			if (pairs.get(j).widget.getParent() != null) {
-//				pairs.get(j).widget.getParent().remove(pairs.get(j).widget);
-//				if (j >= slots.size()) {
-//					System.out.printf("excluding selector %d of type %s with choice: %s\n", 
-//							j, pairs.get(j).selector.getClass(),
-//							pairs.get(j).selector.getSelection());
-//					onSelectorExlcluded.accept(pairs.get(j).selector);
-//				}
-//			}
-//			if (j < slots.size()) {
-//				slots.get(j).add(pairs.get(j).widget);
-//			}
-//		}
-		
-		
-		
-		
 	}
+	
+	public boolean hasChoice() {		
+		var visitor = new SpringSchemeVisitor() {
+			boolean selectionExists;
+			
+			@Override
+			public void visit532Scheme(Spring532Scheme scheme532) {
+				selectionExists = Stream.of(goaliePairs.get(0),
+						defPairs.get(0), defPairs.get(1), defPairs.get(2), defPairs.get(3), defPairs.get(4),
+						midPairs.get(0), midPairs.get(1), midPairs.get(2), 
+						forwPairs.get(0), forwPairs.get(1))
+					.map(pair -> pair.selector)
+					.allMatch(selector -> selector.getSelection().isPresent());
+			}
+			
+			@Override
+			public void visit433Scheme(Spring433Scheme scheme433) {
+				selectionExists = Stream.of(goaliePairs.get(0),
+						defPairs.get(0), defPairs.get(1), defPairs.get(2), defPairs.get(3),
+						midPairs.get(0), midPairs.get(1), midPairs.get(2), 
+						forwPairs.get(0), forwPairs.get(1), forwPairs.get(2))
+					.map(pair -> pair.selector)
+					.allMatch(selector -> selector.getSelection().isPresent());
+			}
+			
+			@Override
+			public void visit343Scheme(Spring343Scheme scheme343) {
+				selectionExists = Stream.of(goaliePairs.get(0),
+						defPairs.get(0), defPairs.get(1), defPairs.get(2),
+						midPairs.get(0), midPairs.get(1), midPairs.get(2), midPairs.get(3),
+						forwPairs.get(0), forwPairs.get(1), forwPairs.get(2))
+					.map(pair -> pair.selector)
+					.allMatch(selector -> selector.getSelection().isPresent());
+			}
+		};
+		currentSchemePanel.accept(visitor);
+		return visitor.selectionExists;
+	}	
+
+	public Selector<Goalkeeper> getGoalieSelector() {
+		return goaliePairs.get(0).selector;
+	}
+
+	public List<Selector<Defender>> getDefenderSelectors() {
+		return defPairs.stream().map(pair -> pair.selector).collect(Collectors.toList());
+	}
+
+	public List<Selector<Midfielder>> getMidfielderSelectors() {
+		return midPairs.stream().map(pair -> pair.selector).collect(Collectors.toList());
+	}
+	
+	public List<Selector<Forward>> getForwardSelectors() {
+		return forwPairs.stream().map(pair -> pair.selector).collect(Collectors.toList());
+	}
+	
 	
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
@@ -424,6 +447,8 @@ public class SwingStarterLineUpChooser extends JPanel {
 				
 				// III) instantiates Chooser
 				SwingStarterLineUpChooser chooser = new SwingStarterLineUpChooser(
+						false,
+						
 						availableWindow,
 						
 						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false),

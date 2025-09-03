@@ -316,4 +316,9 @@ public class Spring532Scheme extends SpringSchemePanel {
 	public List<JPanel> getForwardSlots() {
 		return List.of(slot10, slot11);
 	}
+
+	@Override
+	public void accept(SpringSchemeVisitor visitor) {
+		visitor.visit532Scheme(this);
+	}
 }
