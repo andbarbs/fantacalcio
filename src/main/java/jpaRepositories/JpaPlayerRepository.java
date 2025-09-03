@@ -1,6 +1,7 @@
 package jpaRepositories;
 
 import java.util.List;
+import java.util.Set;
 
 import businessLogic.repositories.PlayerRepository;
 import domainModel.Player;
@@ -70,5 +71,9 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
-
+	//TODO implementa
+	@Override
+	public Set<Player> findByClub(Player.Club club) {
+		return Set.of();
+	}
 }

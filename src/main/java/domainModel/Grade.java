@@ -50,6 +50,10 @@ public class Grade {
 		return newsPaper;
 	}
 
+	public MatchDaySerieA getMatchDay() {
+		return matchDay;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(player, mark, matchDay);
