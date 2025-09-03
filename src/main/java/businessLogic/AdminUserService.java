@@ -141,7 +141,7 @@ public class AdminUserService extends UserService {
 				throw new RuntimeException("The season hasn't started yet");
 			}
 			Optional<MatchDaySerieA> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
-			if(!matchDayToCalculate.isPresent()){
+			if(!(matchDayToCalculate.isPresent())){
 				throw new RuntimeException("There are no results to calculate");
 			}
 			if(!isLegalToCalculateResults(localDate)){
@@ -235,16 +235,16 @@ public class AdminUserService extends UserService {
 		LocalDate legalDate;
 		DayOfWeek dayOfWeek = matchDate.getDayOfWeek();
 		if(dayOfWeek == DayOfWeek.SATURDAY){
-			legalDate = matchDate.plusDays(2);
+			legalDate = matchDate.plusDays(3);
 		} else if (dayOfWeek == DayOfWeek.SUNDAY) {
-			legalDate = matchDate.plusDays(1);
+			legalDate = matchDate.plusDays(2);
 		} else{
 			legalDate = now.plusDays(1);
 		}
 		if(now.isBefore(legalDate)){
-			return true;
-		} else {
 			return false;
+		} else {
+			return true;
 		}
 	}
 
