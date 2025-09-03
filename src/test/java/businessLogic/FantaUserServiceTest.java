@@ -74,16 +74,15 @@ public class FantaUserServiceTest {
         				matchDay, 
         				new FantaTeam("TeamA", league, 10, fantaUser, contractsA),
         				new FantaTeam("TeamB", league, 10, fantaUser, contractsB)))));
-        //TODO controlla che un user ha due team
 
         // Stub the repository call
-        when(matchRepository.getAllMatches(eq(league))).thenReturn(expectedMatches);
+        when(matchRepository.getAllMatches(league)).thenReturn(expectedMatches);
 
         // Call the service method.
         Map<MatchDaySerieA, Set<Match>> actualMatches = userService.getAllMatches(league);
 
         // Verify that the repository method was called once, and with the correct league.
-        verify(matchRepository, times(1)).getAllMatches(eq(league));
+        verify(matchRepository).getAllMatches(league);
 
         // Assert that the result from the service is as expected.
         assertThat(expectedMatches).containsAllEntriesOf(actualMatches);

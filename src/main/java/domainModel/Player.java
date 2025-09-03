@@ -20,11 +20,11 @@ public abstract class Player {
 
     @Basic(optional=false)
 	@Enumerated(EnumType.STRING)
-    private String club;
+    private Club club;
     
     protected Player() {}
 
-    Player(String name, String surname, String team) {
+    Player(String name, String surname, Club team) {
         this.name = name;
         this.surname = surname;
 		this.club = team;
@@ -82,7 +82,7 @@ public abstract class Player {
 		
 		protected Goalkeeper () {}
 		
-		public Goalkeeper(String name, String surname, String team) {
+		public Goalkeeper(String name, String surname, Club team) {
 			super(name, surname, team);
 	    }
 
@@ -97,7 +97,7 @@ public abstract class Player {
 		
 		protected Defender () {}
 		
-		public Defender(String name, String surname, String team) {
+		public Defender(String name, String surname, Club team) {
 			super(name, surname, team);
 	    }
 
@@ -112,7 +112,7 @@ public abstract class Player {
 		
 		protected Midfielder() {}
 
-		public Midfielder(String name, String surname, String team) {
+		public Midfielder(String name, String surname, Club team) {
 			super(name, surname, team);
 	    }
 
@@ -127,7 +127,7 @@ public abstract class Player {
 		
 		protected Forward() {}
 		
-		public Forward(String name, String surname, String team) {
+		public Forward(String name, String surname, Club team) {
 			super(name, surname, team);
 	    }
 

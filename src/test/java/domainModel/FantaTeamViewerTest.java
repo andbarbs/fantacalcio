@@ -13,6 +13,7 @@ import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
+import domainModel.Player.Club;
 
 public class FantaTeamViewerTest {
 
@@ -21,32 +22,32 @@ public class FantaTeamViewerTest {
         // Create players for each role.
 
         // Goalkeepers
-        Goalkeeper keeper1 = new Goalkeeper("Manuel", "Neuer", "Juventus");
-        Goalkeeper keeper2 = new Goalkeeper("Alisson", "Becker", "Juventus");
-        Goalkeeper keeper3 = new Goalkeeper("David", "de Gea", "Juventus");
-        Goalkeeper keeper4 = new Goalkeeper("Ederson", "Motta", "Juventus");
-        Goalkeeper keeper5 = new Goalkeeper("Jan", "Oblak", "Juventus");
+        Goalkeeper keeper1 = new Goalkeeper("Manuel", "Neuer", Club.JUVENTUS);
+        Goalkeeper keeper2 = new Goalkeeper("Alisson", "Becker", Club.JUVENTUS);
+        Goalkeeper keeper3 = new Goalkeeper("David", "de Gea", Club.JUVENTUS);
+        Goalkeeper keeper4 = new Goalkeeper("Ederson", "Motta", Club.JUVENTUS);
+        Goalkeeper keeper5 = new Goalkeeper("Jan", "Oblak", Club.JUVENTUS);
 
         // Defenders
-        Defender defender1 = new Defender("Virgil", "van Dijk", "Juventus");
-        Defender defender2 = new Defender("Sergio", "Ramos", "Juventus");
-        Defender defender3 = new Defender("Raphael", "Varane", "Juventus");
-        Defender defender4 = new Defender("Gerard", "Piqué", "Juventus");
-        Defender defender5 = new Defender("Thiago", "Silva", "Juventus");
+        Defender defender1 = new Defender("Virgil", "van Dijk", Club.JUVENTUS);
+        Defender defender2 = new Defender("Sergio", "Ramos", Club.JUVENTUS);
+        Defender defender3 = new Defender("Raphael", "Varane", Club.JUVENTUS);
+        Defender defender4 = new Defender("Gerard", "Piqué", Club.JUVENTUS);
+        Defender defender5 = new Defender("Thiago", "Silva", Club.JUVENTUS);
 
         // Midfielders
-        Midfielder midfielder1 = new Midfielder("Luka", "Modrić", "Barcellona");
-        Midfielder midfielder2 = new Midfielder("Andrés", "Iniesta", "Barcellona");
-        Midfielder midfielder3 = new Midfielder("Kevin", "De Bruyne", "Barcellona");
-        Midfielder midfielder4 = new Midfielder("N'Golo", "Kanté", "Barcellona");
-        Midfielder midfielder5 = new Midfielder("Toni", "Kroos", "Barcellona");
+        Midfielder midfielder1 = new Midfielder("Luka", "Modrić", Club.TORINO);
+        Midfielder midfielder2 = new Midfielder("Andrés", "Iniesta", Club.TORINO);
+        Midfielder midfielder3 = new Midfielder("Kevin", "De Bruyne", Club.TORINO);
+        Midfielder midfielder4 = new Midfielder("N'Golo", "Kanté", Club.TORINO);
+        Midfielder midfielder5 = new Midfielder("Toni", "Kroos", Club.TORINO);
 
         // Forwards
-        Forward forward1 = new Forward("Lionel", "Messi", "Barcellona");
-        Forward forward2 = new Forward("Cristiano", "Ronaldo", "Barcellona");
-        Forward forward3 = new Forward("Neymar", "Jr", "Barcellona");
-        Forward forward4 = new Forward("Robert", "Lewandowski", "Barcellona");
-        Forward forward5 = new Forward("Kylian", "Mbappé", "Barcellona");
+        Forward forward1 = new Forward("Lionel", "Messi", Club.TORINO);
+        Forward forward2 = new Forward("Cristiano", "Ronaldo", Club.TORINO);
+        Forward forward3 = new Forward("Neymar", "Jr", Club.TORINO);
+        Forward forward4 = new Forward("Robert", "Lewandowski", Club.TORINO);
+        Forward forward5 = new Forward("Kylian", "Mbappé", Club.TORINO);
 
         // Create an empty set for contracts.
         Set<Contract> contracts = new HashSet<>();
