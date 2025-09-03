@@ -8,6 +8,7 @@ import businessLogic.repositories.MatchDayRepository;
 import domainModel.MatchDaySerieA;
 import domainModel.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -74,7 +75,21 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 
 	@Override
 	public Optional<MatchDaySerieA> getMatchDay(LocalDate date) {
-		//TODO implementa
-		return Optional.empty();
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
+		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+
+		// WHERE date = :date
+		criteriaQuery.select(root)
+				.where(criteriaBuilder.equal(root.get(MatchDaySerieA_.date), date));
+
+		try {
+			MatchDaySerieA result = entityManager.createQuery(criteriaQuery).getSingleResult();
+			return Optional.of(result);
+		} catch (NoResultException e) {
+			return Optional.empty();
+		}
 	}
+
 }
