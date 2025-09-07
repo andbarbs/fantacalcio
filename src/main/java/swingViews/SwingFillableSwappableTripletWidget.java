@@ -20,6 +20,8 @@ import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.SwingFillableSwappableTriplet.FillableSwappableTripletWidget;
+
 import javax.swing.ImageIcon;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
@@ -38,22 +40,18 @@ import java.awt.Color;
  * @param <T> the type for sequence members
  * @implNote sizing of this {@code JPanel} is computed as a function of member
  *           widget's {@linkplain JPanel#getPreferredSize()} dimensions. See the
- *           {@linkplain SwingFillableSwappableTriplet#SwingFillableSwappableTriplet
+ *           {@linkplain SwingFillableSwappableTripletWidget#SwingFillableSwappableTriplet
  *           (boolean, FillableSwappable, JPanel, FillableSwappable, JPanel, FillableSwappable, JPanel)
  *           public constructor}
  */
 @SuppressWarnings("serial")
-public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> extends JPanel {
+public class SwingFillableSwappableTripletWidget extends JPanel implements FillableSwappableTripletWidget {
 	
-	// sequence creation & listening
-	private T member1, member2, member3;	
-	private FillableSwappableSequence<T> sequenceDriver;
-	private FillableSwappableSequenceListener<T> sequenceListener;
+	// Controller ref
+	private FillableSwappableTripletController controller;
 	
-	// Widget ref
-	public interface FillableSwappableTripletWidget {
-		void setSwappingFirstPair(boolean enabled);
-		void setSwappingSecondPair(boolean enabled);
+	public void setController(FillableSwappableTripletController controller) {
+		this.controller = controller;
 	}
 
 	// graphical appearance
@@ -74,7 +72,7 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 	 */
 	
 	/**
-	 * provides {@linkplain SwingFillableSwappableTriplet}'s <b>public</b>
+	 * provides {@linkplain SwingFillableSwappableTripletWidget}'s <b>public</b>
 	 * instantiation point.
 	 * 
 	 * <p><h1>Relative sizing</h1>
@@ -100,14 +98,10 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 	 * @param fillable3    the third sequence member
 	 * @param widget3      the third member's widget
 	 */
-	public SwingFillableSwappableTriplet(boolean isDesignTime, 
-					T fillable1, JPanel widget1,
-					T fillable2, JPanel widget2, 
-					T fillable3, JPanel widget3) {
-
-		this.member1 = Objects.requireNonNull(fillable1);
-		this.member2 = Objects.requireNonNull(fillable2);
-		this.member3 = Objects.requireNonNull(fillable3);
+	public SwingFillableSwappableTripletWidget(boolean isDesignTime, 
+					JPanel widget1,
+					JPanel widget2, 
+					JPanel widget3) {
 
 		// creates springs for the Panel based on widgets' preferred dimensions
 		Dimension maxWidgetSize = new Dimension(
@@ -115,34 +109,6 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 				Stream.of(widget1, widget2, widget3).map(widget -> widget.getPreferredSize().height).max(Math::max).get());
 		Spring panelWidth = Spring.constant((int)(maxWidgetSize.width * TRIPLET_W_OVER_VIEW_W));
 		Spring panelHeight = Spring.constant((int)(maxWidgetSize.height * TRIPLET_H_OVER_VIEW_H));
-
-		// creates fillable-swappable sequence and attaches listener
-		if (!isDesignTime) {			
-			sequenceDriver = FillableSwappableSequence.createSequence(List.of(fillable1, fillable2, fillable3));
-			sequenceListener = new FillableSwappableSequenceListener<T>() {
-				
-				// disables swap buttons according to notifications from the sequence driver
-				@Override
-				public void becameEmpty(T emptiedGadget) {
-					// System.out.println("content removed from a gadget!");
-					if (emptiedGadget == member3)
-						swapMembers2and3.setEnabled(false);
-					else if (emptiedGadget == member2)
-						swapMembers1and2.setEnabled(false);
-				}
-				
-				// enables swap buttons according to notifications from the sequence driver
-				@Override
-				public void becameFilled(T filledGadget) {
-					// System.out.println("content added to a gadget!");
-					if (filledGadget == member2)
-						swapMembers1and2.setEnabled(true);
-					else if (filledGadget == member3)
-						swapMembers2and3.setEnabled(true);
-				}
-			};
-			sequenceDriver.attachListener(sequenceListener);
-		}
 
 		// sets visual appearance
 		SpringLayout layout = new SpringLayout();
@@ -166,7 +132,7 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 	 * @throws IOException if {@code SwingSubPlayerSelector}'s sizing-augmented
 	 *                     instantiation fails
 	 */
-	SwingFillableSwappableTriplet() throws IOException {
+	SwingFillableSwappableTripletWidget() throws IOException {
 
 		// chooses arbitrary dimensions for the triplet
 		Dimension selectorDims = new Dimension(120, 225); // appropriate dims for rendering a selector
@@ -214,7 +180,7 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// System.out.println("asking driver to swap 1 and 2");
-				sequenceDriver.swapRight(member1);
+				controller.swapFirstPair();
 			}
 		});
 
@@ -226,7 +192,7 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// System.out.println("asking driver to swap 2 and 3");
-				sequenceDriver.swapRight(member2);
+				controller.swapSecondPair();
 			}
 		});
 
@@ -280,14 +246,16 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 		layout.putConstraint(SpringLayout.VERTICAL_CENTER, widget3, 0, SpringLayout.VERTICAL_CENTER, this);
 	}
 
-	// needed by unit tests to install hard composite
-	void setSequenceDriver(FillableSwappableSequence<T> mockSequence) {
-		this.sequenceDriver = mockSequence;
-	}
 	
-	// needed by unit tests to simulate driver notifications
-	FillableSwappableSequenceListener<T> getSequenceListener() {
-		return sequenceListener;
+
+	@Override
+	public void setSwappingFirstPair(boolean enabled) {
+		swapMembers1and2.setEnabled(enabled);
+	}
+
+	@Override
+	public void setSwappingSecondPair(boolean enabled) {
+		swapMembers2and3.setEnabled(enabled);
 	}
 
 	public static void main(String[] args) {
@@ -296,7 +264,6 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			
 			Dimension selectorDims = new Dimension(120, 225);
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>> chooser;
 			try {
 				SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
 				SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
@@ -310,15 +277,13 @@ public class SwingFillableSwappableTriplet<T extends FillableSwappable<T>> exten
 				view2.setPresenter(selPres2);
 				view3.setPresenter(selPres3);
 				
-				chooser = new SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(false,
-						selPres1, view1,
-						selPres2, view2,
-						selPres3, view3);
+				SwingFillableSwappableTripletWidget tripletWidget = 
+						new SwingFillableSwappableTripletWidget(false, view1, view2, view3);
 				CompetitiveOptionDealingGroup.initializeDealing(Set.of(selPres1, selPres2, selPres3),
 						List.of(new Defender("Giorgio", "Chiellini"), new Defender("Gerard", "Piqué"),
 								new Defender("Sergio", "Ramos"), new Defender("Thiago", "Silva"),
 								new Defender("Virgil", "van Dijk")));
-				frame.setContentPane(chooser);
+				frame.setContentPane(tripletWidget);
 				frame.pack();
 				frame.setLocationRelativeTo(null);
 				frame.setVisible(true);
