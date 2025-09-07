@@ -20,7 +20,7 @@ import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
-import swingViews.SwingFillableSwappableTriplet.FillableSwappableTripletWidget;
+import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
 
 import javax.swing.ImageIcon;
 import java.awt.Insets;

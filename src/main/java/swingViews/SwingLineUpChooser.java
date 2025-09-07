@@ -85,20 +85,20 @@ public class SwingLineUpChooser extends JPanel {
 	
 
 	private SwingStarterLineUpChooserWidget starterChooser;
-	private SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet;
-	private SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet;
-	private SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet;
-	private SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet;
+	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet;
+	private FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet;
+	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet;
+	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet;
 
 
 	// public instantiation point
 	public SwingLineUpChooser(
 			boolean isDesignTime,
 			SwingStarterLineUpChooserWidget starterChooser,
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet,
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet,
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet,
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet) {
+			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet,
+			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet,
+			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet,
+			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet) {
 		
 				this.starterChooser = starterChooser;
 				this.goalieTriplet = goalieTriplet;

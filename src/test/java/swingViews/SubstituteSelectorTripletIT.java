@@ -56,18 +56,21 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			view3.setPresenter(selPres3);
 			
 			// sets up the SUT
-			SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>> chooser = 
-						new SwingFillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(false,
-					selPres1, view1,
-					selPres2, view2,
-					selPres3, view3);
+			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> triplet = 
+					new FillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(
+							selPres1, selPres2, selPres3);
+			SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(
+					false, view1, view2, view3);
+			triplet.setWidget(widget);
+			widget.setController(triplet);
+			
 			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(selPres1, selPres2, selPres3), 
 					List.of(chiellini, pique, ramos, silva, vanDijk));  // in alphabetical order
 			
 			// sets up the test Frame
 			JFrame f = new JFrame("Test Frame");
-			f.add(chooser);
+			f.add(widget);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
