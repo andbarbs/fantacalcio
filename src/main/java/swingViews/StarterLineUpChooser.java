@@ -1,0 +1,313 @@
+package swingViews;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.io.IOException;
+import java.awt.Dimension;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import domainModel.Player;
+import domainModel.Player.*;
+import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpSchemes.*;
+
+public class StarterLineUpChooser implements StarterLineUpChooserController, SwingLineUpChooser.StarterLineUpChooser {	
+
+	// injected dependencies
+	private Selector<Goalkeeper> goalieSelector;
+	private List<Selector<Defender>> defPairs;
+	private List<Selector<Midfielder>> midPairs;
+	private List<Selector<Forward>> forwPairs;
+	
+	private Collection<Selector<? extends Player>> selectorsIn532;
+	private Collection<Selector<? extends Player>> selectorsIn433;
+	private Collection<Selector<? extends Player>> selectorsIn343;
+	
+	private Consumer<Selector<? extends Player>> onSelectorExlcluded;	
+
+	LineUpScheme currentScheme;
+	
+	// public instantiation point
+	public StarterLineUpChooser(
+			Selector<Goalkeeper> goalieSelector,
+			
+			Selector<Defender> defSelector1,
+			Selector<Defender> defSelector2,
+			Selector<Defender> defSelector3,
+			Selector<Defender> defSelector4,
+			Selector<Defender> defSelector5,
+			
+			Selector<Midfielder> midSelector1,
+			Selector<Midfielder> midSelector2,
+			Selector<Midfielder> midSelector3,
+			Selector<Midfielder> midSelector4,
+			
+			Selector<Forward> forwSelector1,
+			Selector<Forward> forwSelector2,
+			Selector<Forward> forwSelector3,			
+			
+			Consumer<Selector<? extends Player>> onSelectorExlcluded) {
+
+		this.goalieSelector = goalieSelector;
+		this.defPairs = List.of(defSelector1, defSelector2, defSelector3, defSelector4, defSelector5);
+		this.midPairs = List.of(midSelector1, midSelector2, midSelector3, midSelector4);
+		this.forwPairs = List.of(forwSelector1, forwSelector2, forwSelector3);
+		
+		this.onSelectorExlcluded = onSelectorExlcluded;
+		
+		// by-role Selector collections
+		this.selectorsIn532 = List.of(goalieSelector, 
+				defSelector1, defSelector2, defSelector3, defSelector4, defSelector5,
+				midSelector1, midSelector2, midSelector3,
+				forwSelector1, forwSelector2);
+		this.selectorsIn433 = List.of(goalieSelector, 
+				defSelector1, defSelector2, defSelector3, defSelector4,
+				midSelector1, midSelector2, midSelector3,
+				forwSelector1, forwSelector2, forwSelector3);
+		this.selectorsIn343 = List.of(goalieSelector, 
+				defSelector1, defSelector2, defSelector3,
+				midSelector1, midSelector2, midSelector3, midSelector4,
+				forwSelector1, forwSelector2, forwSelector3);
+	}
+	
+	// As a StarterLineUpChooser
+	
+	
+	public boolean hasChoice() {
+		var visitor = new LineUpScheme.LineUpSchemeVisitor() {
+			boolean selectionExists;
+
+			@Override
+			public void visit532(Scheme532 scheme532) {
+				selectionExists = selectorsIn532.stream().allMatch(
+						selector -> selector.getSelection().isPresent());
+			}
+
+			@Override
+			public void visit433(Scheme433 scheme433) {
+				selectionExists = selectorsIn433.stream().allMatch(
+						selector -> selector.getSelection().isPresent());
+			}
+
+			@Override
+			public void visit343(Scheme343 scheme343) {
+				selectionExists = selectorsIn343.stream().allMatch(
+						selector -> selector.getSelection().isPresent());
+			}
+		};
+		currentScheme.accept(visitor);
+		return visitor.selectionExists;
+	}
+	
+	private List<StarterLineUpChooserListener> listeners = new ArrayList<>();
+
+	@Override
+	public void attachListener(StarterLineUpChooserListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public LineUpScheme getCurrentScheme() {
+		return currentScheme;
+	}
+
+	@Override
+	public Selector<Goalkeeper> getGoalieSelector() {
+		return goalieSelector;
+	}
+
+	@Override
+	public List<Selector<Defender>> getDefenderSelectors() {
+		return List.copyOf(defPairs);
+	}
+
+	@Override
+	public List<Selector<Midfielder>> getMidfielderSelectors() {
+		return List.copyOf(midPairs);
+	}
+	
+	@Override
+	public List<Selector<Forward>> getForwardSelectors() {
+		return List.copyOf(forwPairs);
+	}
+	
+	
+	// As a Controller
+
+	// interface for vertical collaborator
+	public interface StarterLineUpChooserWidget {
+		void switchTo(LineUpScheme scheme);
+	}
+
+	private StarterLineUpChooserWidget widget;
+
+	public void setWidget(StarterLineUpChooserWidget widget) {
+		this.widget = widget;
+	}
+	
+	@Override
+	public void switchToScheme(LineUpScheme newScheme) {
+		
+		// 1) processes excluded Selectors
+		Optional.ofNullable(currentScheme).ifPresent(scheme -> {
+			selectorsIn(scheme).stream()
+				.filter(selector -> !selectorsIn(newScheme).contains(selector))
+				.forEach(onSelectorExlcluded);
+		});
+		
+		// 2) asks Widget to rearrange Selector widgets
+		widget.switchTo(newScheme);
+
+		// 3) updates bookkeeping
+		currentScheme = newScheme;
+		
+		// 4) notifies Listeners
+		listeners.forEach(listener -> listener.schemeChangedOn(this));		
+	}
+
+	private Collection<Selector<? extends Player>> selectorsIn(LineUpScheme scheme) {
+		return scheme.equals(new Scheme433()) ? selectorsIn433 :
+				scheme.equals(new Scheme343()) ? selectorsIn343 : selectorsIn532;
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			JFrame frame = new JFrame("starter chooser demo");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			
+			try {
+				Dimension screenSize = frame.getToolkit().getScreenSize();
+				Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
+				Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
+						SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
+				
+				// I) initializes dependencies
+				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
+				StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<>(goalieView);
+				goalieView.setPresenter(goalieSelector);
+				
+				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
+						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
+								defView3 = new SwingSubPlayerSelector<Defender>(selectorDims),
+										defView4 = new SwingSubPlayerSelector<Defender>(selectorDims),
+												defView5 = new SwingSubPlayerSelector<Defender>(selectorDims);
+				StarterPlayerSelector<Defender> defPres1 = new StarterPlayerSelector<Defender>(defView1),
+						defPres2 = new StarterPlayerSelector<Defender>(defView2),
+								defPres3 = new StarterPlayerSelector<Defender>(defView3),
+										defPres4 = new StarterPlayerSelector<Defender>(defView4),
+												defPres5 = new StarterPlayerSelector<Defender>(defView5);
+				defView1.setPresenter(defPres1);
+				defView2.setPresenter(defPres2);
+				defView3.setPresenter(defPres3);
+				defView4.setPresenter(defPres4);
+				defView5.setPresenter(defPres5);
+				
+				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+								midView3 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+										midView4 = new SwingSubPlayerSelector<Midfielder>(selectorDims);
+				StarterPlayerSelector<Midfielder> midPres1 = new StarterPlayerSelector<Midfielder>(midView1),
+						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
+								midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
+										midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
+				midView1.setPresenter(midPres1);
+				midView2.setPresenter(midPres2);
+				midView3.setPresenter(midPres3);
+				midView4.setPresenter(midPres4);
+				
+				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
+						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
+								forwView3 = new SwingSubPlayerSelector<Forward>(selectorDims);
+				StarterPlayerSelector<Forward> forwPres1 = new StarterPlayerSelector<Forward>(forwView1),
+						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
+								forwPres3 = new StarterPlayerSelector<Forward>(forwView3);
+				forwView1.setPresenter(forwPres1);
+				forwView2.setPresenter(forwPres2);
+				forwView3.setPresenter(forwPres3);
+				
+				// II) initializes competition
+				CompetitiveOptionDealingGroup.initializeDealing(
+						Set.of(goalieSelector), 
+						List.of(new Goalkeeper("Gianluigi", "Buffon")));
+				CompetitiveOptionDealingGroup.initializeDealing(
+						Set.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
+						List.of(new Defender("Paolo", "Maldini"), 
+								new Defender("Franco", "Baresi"), 
+								new Defender("Alessandro", "Nesta"), 
+								new Defender("Giorgio", "Chiellini"), 
+								new Defender("Leonardo", "Bonucci")));
+				CompetitiveOptionDealingGroup.initializeDealing(
+						Set.of(midPres1, midPres2, midPres3, midPres4), 
+						List.of(new Midfielder("Andrea", "Pirlo"), 
+								new Midfielder("Daniele", "De Rossi"), 
+								new Midfielder("Marco", "Verratti"), 
+								new Midfielder("Claudio", "Marchisio")));
+				CompetitiveOptionDealingGroup.initializeDealing(
+						Set.of(forwPres1, forwPres2, forwPres3), 
+						List.of(new Forward("Roberto", "Baggio"), 
+								new Forward("Francesco", "Totti"), 
+								new Forward("Alessandro", "Del Piero"), 
+								new Forward("Lorenzo", "Insigne")));
+				
+				// III) instantiates Chooser
+				StarterLineUpChooser controller = new StarterLineUpChooser(
+						goalieSelector,
+						
+						defPres1,
+						defPres2,
+						defPres3,
+						defPres4,
+						defPres5,
+						
+						midPres1,
+						midPres2,
+						midPres3,
+						midPres4,
+						
+						forwPres1,
+						forwPres2,
+						forwPres3,
+						
+						presenter -> presenter.setSelection(Optional.empty()));
+				
+				SwingStarterLineUpChooserWidget widget = new SwingStarterLineUpChooserWidget(
+						false, 
+						
+						availableWindow, 
+						
+						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false), 
+						
+						goalieView, 
+						
+						defView1,
+						defView2, 
+						defView3, 
+						defView4, 
+						defView5, 
+						
+						midView1, 
+						midView2, 
+						midView3, 
+						midView4, 
+						
+						forwView1,						
+						forwView2, 
+						forwView3);
+				
+				controller.setWidget(widget);
+				widget.setController(controller);
+				
+				frame.setContentPane(widget);		
+				frame.pack();
+				frame.setLocationRelativeTo(null);
+				frame.setVisible(true);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+}
