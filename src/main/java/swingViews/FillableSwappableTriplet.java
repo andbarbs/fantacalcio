@@ -16,7 +16,7 @@ import java.util.Set;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 
-// TODO: are JButton icons considered raster components? If so, address their scaling!
+// TODO: javadoc is pre-splitting!!
 
 /**
  * a {@code JPanel} responsible for wiring up and providing graphical access to
@@ -35,7 +35,6 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 	// sequence creation & listening
 	private T member1, member2, member3;	
 	private FillableSwappableSequence<T> sequenceDriver;
-	private FillableSwappableSequenceListener<T> sequenceListener;
 	
 	// Widget ref
 	public interface FillableSwappableTripletWidget {
@@ -76,16 +75,15 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 	 * @param fillable3    the third sequence member
 	 * @param widget3      the third member's widget
 	 */
-	public FillableSwappableTriplet(T fillable1, T fillable2, T fillable3) {
+	public FillableSwappableTriplet(FillableSwappableSequence<T> sequence, T fillable1, T fillable2, T fillable3) {
 
 		this.member1 = Objects.requireNonNull(fillable1);
 		this.member2 = Objects.requireNonNull(fillable2);
 		this.member3 = Objects.requireNonNull(fillable3);
 
 		// creates fillable-swappable sequence and attaches listener
-		sequenceDriver = FillableSwappableSequence.createSequence(List.of(
-				Objects.requireNonNull(fillable1), fillable2, fillable3));
-		sequenceListener = new FillableSwappableSequenceListener<T>() {
+		this.sequenceDriver = sequence;
+		sequenceDriver.attachListener(new FillableSwappableSequenceListener<T>() {
 			
 			// disables swap buttons according to notifications from the sequence driver
 			@Override
@@ -106,18 +104,7 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 				else if (filledGadget == member3)
 					widget.setSwappingSecondPair(true);
 			}
-		};
-		sequenceDriver.attachListener(sequenceListener);
-	}	
-
-	// needed by unit tests to install hard composite
-	void setSequenceDriver(FillableSwappableSequence<T> mockSequence) {
-		this.sequenceDriver = mockSequence;
-	}
-	
-	// needed by unit tests to simulate driver notifications
-	FillableSwappableSequenceListener<T> getSequenceListener() {
-		return sequenceListener;
+		});
 	}
 
 	@Override
@@ -149,8 +136,9 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 				view1.setPresenter(selPres1);
 				view2.setPresenter(selPres2);
 				view3.setPresenter(selPres3);
-				
+						
 				triplet = new FillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(
+						FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 						selPres1, selPres2, selPres3);
 				
 				SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(

@@ -58,6 +58,7 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			// sets up the SUT
 			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> triplet = 
 					new FillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(
+							FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 							selPres1, selPres2, selPres3);
 			SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(
 					false, view1, view2, view3);
@@ -158,5 +159,19 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
         assertThat(combo1).hasSelected(pique).amongOptions(chiellini, pique, ramos, vanDijk);        
         assertThat(combo2).hasSelected(silva).amongOptions(chiellini,ramos, silva, vanDijk);        
         assertThat(combo3).hasSelected(null).amongOptions(chiellini, ramos, vanDijk);        
+    }
+    
+    @Test @GUITest
+    public void testUpdateDoesNotTriggerCollapse() {
+
+        combo1.selectItem("Giorgio Chiellini");
+        combo2.selectItem("Gerard Piqué");
+        combo3.selectItem("Thiago Silva");
+        
+        combo1.selectItem("Sergio Ramos");
+        
+        assertThat(combo1).hasSelected(ramos).amongOptions(chiellini, ramos, vanDijk);        
+        assertThat(combo2).hasSelected(pique).amongOptions(chiellini, pique, vanDijk);        
+        assertThat(combo3).hasSelected(silva).amongOptions(chiellini, silva, vanDijk);        
     }
 }

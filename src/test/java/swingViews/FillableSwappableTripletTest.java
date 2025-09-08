@@ -1,6 +1,7 @@
 package swingViews;
 
 import static org.mockito.Mockito.verify;
+
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,10 +9,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import swingViews.FillableSwappableSequence.FillableSwappable;
+import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
 
 @DisplayName("A FillableSwappableTriplet")
@@ -22,13 +26,15 @@ public class FillableSwappableTripletTest {
 	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable> {}
 	
 	private @Mock TestFillableSwappable mockFillable1, mockFillable2, mockFillable3;
+	private @Mock FillableSwappableSequence<TestFillableSwappable> mockSequence;	
 
 	// the SUT reference
 	private FillableSwappableTriplet<TestFillableSwappable> triplet;
 
 	@BeforeEach
-	public void testCaseSpecificSetup() {		
-		triplet = new FillableSwappableTriplet<TestFillableSwappable>( 
+	public void testCaseSpecificSetup() {
+		triplet = new FillableSwappableTriplet<TestFillableSwappable>(
+				mockSequence,
 				mockFillable1, mockFillable2, mockFillable3);
 	}
 	
@@ -37,10 +43,14 @@ public class FillableSwappableTripletTest {
 	class FromSequenceToWidget {
 
 		private @Mock FillableSwappableTripletWidget mockWidget;
+		
+		// allows tests to exercise the actual Listener instance that the SUT attaches to the sequence
+		private @Captor ArgumentCaptor<FillableSwappableSequenceListener<TestFillableSwappable>> listenerCaptor;
 
 		@BeforeEach
 		void testCaseSpecificSetup() {
 			triplet.setWidget(mockWidget);
+			verify(mockSequence).attachListener(listenerCaptor.capture());
 		}
 		
 		@Nested
@@ -58,7 +68,7 @@ public class FillableSwappableTripletTest {
 					
 					// WHEN driver notifies second selector filled
 					GuiActionRunner.execute(() -> {
-						triplet.getSequenceListener().becameFilled(mockFillable2);
+						listenerCaptor.getValue().becameFilled(mockFillable2);
 					});
 					
 					// THEN the Widget is requested to enable swapping first pair
@@ -72,7 +82,7 @@ public class FillableSwappableTripletTest {
 					
 					// WHEN driver notifies third selector filled
 					GuiActionRunner.execute(() -> {
-						triplet.getSequenceListener().becameFilled(mockFillable3);
+						listenerCaptor.getValue().becameFilled(mockFillable3);
 					});
 					
 					// THEN the Widget is requested to enable swapping first pair
@@ -96,7 +106,7 @@ public class FillableSwappableTripletTest {
 					
 					// WHEN driver notifies third selector emptied
 					GuiActionRunner.execute(() -> {
-						triplet.getSequenceListener().becameEmpty(mockFillable3);
+						listenerCaptor.getValue().becameEmpty(mockFillable3);
 					});
 					
 					// THEN the Widget is requested to disable swapping first pair
@@ -110,7 +120,7 @@ public class FillableSwappableTripletTest {
 					
 					// WHEN driver notifies second selector emptied
 					GuiActionRunner.execute(() -> {
-						triplet.getSequenceListener().becameEmpty(mockFillable2);
+						listenerCaptor.getValue().becameEmpty(mockFillable2);
 					});
 					
 					// THEN the Widget is requested to disable swapping first pair
@@ -123,15 +133,7 @@ public class FillableSwappableTripletTest {
 	@Nested
 	@DisplayName("forwards Widget swap requests to Sequence")
 	class FromWidgetToSequence {
-
-		@Mock
-		FillableSwappableSequence<TestFillableSwappable> mockSequence;
-
-		@BeforeEach
-		void wireUpMockSelectorsAndSequence() {
-			triplet.setSequenceDriver(mockSequence);
-		}
-
+		
 		@Nested
 		@DisplayName("when asked by user to")
 		class OnUserClickTo {
