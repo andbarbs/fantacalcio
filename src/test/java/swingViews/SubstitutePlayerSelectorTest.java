@@ -5,12 +5,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
+import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorListener;
 import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
 
 import java.util.ArrayList;
@@ -38,17 +42,18 @@ class SubstitutePlayerSelectorTest {
 			new Midfielder("Beta", null), 
 			new Midfielder("Gamma", null),
 			new Midfielder("Delta", null));
-	
-
-	@BeforeEach
-	void commonSetup() {
-		presenter.attachDriver(groupDriver);
-		presenter.attachDriver(sequenceDriver);
-	}
 
 	@Nested
 	@DisplayName("as an member of an ordered dealer group")
 	class AsAnOrderedOptionDealer {
+		
+		@BeforeEach
+		void setup() {
+			presenter.attachDriver(groupDriver);
+			presenter.attachDriver(sequenceDriver);
+			
+			verify(sequenceDriver).attachListener(any());  // discounts this interaction
+		}
 
 		@Test
 		@DisplayName("when attaching options")
@@ -60,7 +65,7 @@ class SubstitutePlayerSelectorTest {
 			verify(view).initOptions(INITIAL_OPTIONS);
 
 			// no interaction back to the drivers
-			verifyNoInteractions(groupDriver, sequenceDriver);
+			verifyNoMoreInteractions(groupDriver, sequenceDriver);
 		}
 		
 		@Test
@@ -101,8 +106,12 @@ class SubstitutePlayerSelectorTest {
 	class AsAFillableSwappable {
 		
 		@BeforeEach
-		void fillableSwappableSetup() {			
+		void setup() {
 			presenter.options = new ArrayList<>(INITIAL_OPTIONS);
+			presenter.attachDriver(groupDriver);
+			presenter.attachDriver(sequenceDriver);
+			
+			verify(sequenceDriver).attachListener(any());  // discounts this interaction
 		}
 
 		@Nested
@@ -318,9 +327,16 @@ class SubstitutePlayerSelectorTest {
 	@DisplayName("as an MVP Presenter")
 	class AsAnMVPPresenter {
 		
-		/*
+		/**
 		 * presenter.options initialized only where needed
 		 */
+		@BeforeEach
+		void setup() {
+			presenter.attachDriver(groupDriver);
+			presenter.attachDriver(sequenceDriver);
+			
+			verify(sequenceDriver).attachListener(any());  // discounts this interaction
+		}
 
 		@Nested
 		@DisplayName("when notified of a selection")
@@ -379,20 +395,21 @@ class SubstitutePlayerSelectorTest {
 	}
 
 	@Nested
-	@DisplayName("as a public Selector")
+	@DisplayName("as a public Selector, allows clients to")
 	class AsAPublicSelector {
 		
 		@BeforeEach
 		void setupWithOptions() {
-			presenter.options = new ArrayList<>(INITIAL_OPTIONS);
+			presenter.options = new ArrayList<>(INITIAL_OPTIONS);presenter.attachDriver(groupDriver);
+			presenter.attachDriver(sequenceDriver);
 		}
 		
 		@Nested
-		@DisplayName("when the selection is queried")
+		@DisplayName("query the selection")
 		class OnGetSelection {
 			
 			@Test
-			@DisplayName("and a selection exists")
+			@DisplayName("when a selection exists")
 			void withExistingSelection() {				
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
@@ -401,22 +418,26 @@ class SubstitutePlayerSelectorTest {
 			}
 			
 			@Test
-			@DisplayName("and no selection exists")
+			@DisplayName("when no selection exists")
 			void withNoExistingSelection() {				
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options are "Alpha", "Delta"
 				presenter.currentSelection = -1; 				  // no prior selection
 				
 				assertThat(presenter.getSelection()).isEmpty();
 			}
-
 		}
 		
 		@Nested
-		@DisplayName("when the selection is set")
+		@DisplayName("set the selection")
 		class onSetSelection {
 			
+			@BeforeEach
+			void discountsAttachmentInteraction() {
+				verify(sequenceDriver).attachListener(any());  // discounts this interaction
+			}
+			
 			@Test
-			@DisplayName("and no previous selection existed")
+			@DisplayName("when no previous selection existed")
 			void WithNoPriorSelection() {				
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options are "Alpha", "Delta"
 				presenter.currentSelection = -1; 				  // no prior selection
@@ -434,7 +455,7 @@ class SubstitutePlayerSelectorTest {
 			}
 			
 			@Test
-			@DisplayName("and a previous selection existed")
+			@DisplayName("when a previous selection existed")
 			void WithPriorSelection() {				
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
@@ -453,7 +474,7 @@ class SubstitutePlayerSelectorTest {
 			}
 			
 			@Nested
-			@DisplayName("but the provided option does not belong")
+			@DisplayName("except with the option provided not belonging")
 			class WithInvalidOption {
 				
 				@Test
@@ -468,11 +489,11 @@ class SubstitutePlayerSelectorTest {
 							.hasMessageContaining("not found among this dealer's available options");
 
 					// THEN no interactions should have occurred with collaborators
-					verifyNoInteractions(view, groupDriver, sequenceDriver);
+					verifyNoMoreInteractions(view, groupDriver, sequenceDriver);
 				}
 				
 				@Test
-				@DisplayName("to any dealer in this group dealer")
+				@DisplayName("to any dealer in this group")
 				void withUnknownOption() {
 					presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
@@ -483,14 +504,16 @@ class SubstitutePlayerSelectorTest {
 							.hasMessageContaining("not found in dealer group option list");
 
 					// THEN no interactions should have occurred with collaborators
-					verifyNoInteractions(view, groupDriver, sequenceDriver);
+					verifyNoMoreInteractions(view, groupDriver, sequenceDriver);
 				}
 			}
 		}
 		
 		@Test
-		@DisplayName("when the selection is cleared")
-		void ClearingSelection() {				
+		@DisplayName("clear the selection")
+		void ClearingSelection() {
+			verify(sequenceDriver).attachListener(any());  // discounts this interaction
+			
 			presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 			presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 			
@@ -504,6 +527,58 @@ class SubstitutePlayerSelectorTest {
 			// AND the sequence driver is notified of emptying
 			verify(sequenceDriver).contentRemoved(presenter);
 			verifyNoMoreInteractions(groupDriver, sequenceDriver);
+		}
+		
+		@Nested
+		@DisplayName("be informed of")
+		class SelectorListener {
+			
+			private @Captor ArgumentCaptor<FillableSwappableSequenceListener
+						<SubstitutePlayerSelector<Midfielder>>> sequenceListenerCaptor;
+			
+			private @Mock SubstitutePlayerSelectorListener<Midfielder> mockListener;
+			
+			@BeforeEach
+			void setUp() {
+				// captures the Sequence listener installed by presenter.attachDriver
+				verify(sequenceDriver).attachListener(sequenceListenerCaptor.capture());
+				
+				presenter.attachListener(mockListener);
+			}
+			
+			@Test
+			@DisplayName("a \"selection-set\" event on the Selector")
+			void SelectionSetEvent(@Mock SubstitutePlayerSelector<Midfielder> other) {
+				
+				// WHEN the Sequence broadcasts a "filled" event for this Selector
+				sequenceListenerCaptor.getValue().becameFilled(presenter);
+				
+				// THEN listeners for this Selector are notified of a "selection-made" event
+				verify(mockListener).selectionMadeOn(presenter);
+				
+				// BUT WHEN the Sequence broadcasts a "filled" event for another Selector
+				sequenceListenerCaptor.getValue().becameFilled(other);
+				
+				// THEN listeners for this Selector are not engaged
+				verifyNoMoreInteractions(mockListener, sequenceDriver);
+			}
+			
+			@Test
+			@DisplayName("a \"selection-cleared\" event on the Selector")
+			void SelectionClearedEvent(@Mock SubstitutePlayerSelector<Midfielder> other) {	
+
+				// WHEN the Sequence broadcasts an "emptied" event for this Selector
+				sequenceListenerCaptor.getValue().becameEmpty(presenter);
+				
+				// THEN listeners for this Selectors are notified of a "selection-cleared" event
+				verify(mockListener).selectionClearedOn(presenter);
+				
+				// BUT WHEN the Sequence broadcasts an "emptied" event for another Selector
+				sequenceListenerCaptor.getValue().becameEmpty(other);
+				
+				// THEN listeners for this Selector are not engaged
+				verifyNoMoreInteractions(mockListener, sequenceDriver);
+			}			
 		}
 	}
 }
