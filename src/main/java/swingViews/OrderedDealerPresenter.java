@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
 
 /**
- * implements the mandated members of an {@linkplain CompetitiveOrderedDealer}
+ * implements the mandated members of a {@linkplain CompetitiveOrderedDealer}
  * as a Presenter in the sense of the <b>MVP pattern</b>.
  * 
  * <p>Subclasses are free to implement the behavioral responsibilities of 
@@ -181,7 +181,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * <p><h1>Notification Redundancy</h1>
 	 * {@code OrderedDealerView} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
-	 * redundant {@code #selectedOption(int)} notification.<p>		
+	 * redundant {@code selectedOption(int)} notification.<p>		
 	 * 
 	 * @param position the position of the option having been selected 
 	 * 		relative to the {@code OrderedDealerView}'s current option list
@@ -224,7 +224,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * <p><h1>Notification Redundancy</h1>
 	 * {@code OrderedDealerView} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
-	 * redundant {@code #selectionCleared()} notification.
+	 * redundant {@code selectionCleared()} notification.
 	 */
 	public void selectionCleared() {
 		if (currentSelection != null && // false before option attachment

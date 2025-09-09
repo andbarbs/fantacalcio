@@ -48,7 +48,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		 */	
 		public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
 			
-			//TODO introdurre un setNextFillable(boolean)
+			//TODO rimpiazzare con un setNextFillable(boolean)
 			/**
 			 * requests the {@linkplain SubstitutePlayerSelectorView} to take on 
 			 * <i>next-fillable</i> status.
@@ -93,7 +93,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	
 	/** 
 	 * causes a {@code SubstitutePlayerSelector} to clear its selection 
-	 * and retire the corresponding option , as requested by the 
+	 * and retire the corresponding option, as requested by the 
 	 * {@linkplain FillableSwappableSequence} during a <i>collapse operation</i>,
 	 * <b>without</b> notifying back the sequence driver.
 	 * @implNote this is a local operation with respect to the dealer group, 
@@ -116,14 +116,14 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 * <ul>
 	 * 		<li>restoring <i><b>{@code other}</i></b>'s selected option
 	 * 		<li>setting the newly restored option as the selected one
-	 * 		<li>retiring the previously selected option, if applicable
+	 * 		<li>retiring the previously selected option, if existing
 	 * </ul>
 	 * 
 	 * @implNote 
 	 * <ol>
 	 * 		<li>this is a local operation with respect to the dealer group, 
 	 * 			i.e. it does not notify the {@linkplain CompetitiveOptionDealingGroup}
-	 * 		<li>this operation does not rely on temporarily clearing the View's selection
+	 * 		<li>this operation does <b>not</b> rely on temporarily clearing the View's selection
 	 * </ol>
 	 */
 	@Override
@@ -159,7 +159,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 * <ol>
 	 * 		<li>this is a local operation with respect to the dealer group, 
 	 * 			i.e. it does not notify the {@linkplain CompetitiveOptionDealingGroup}
-	 * 		<li>this operation does not rely on temporarily clearing the View's selection
+	 * 		<li>this operation does <b>not</b> rely on temporarily clearing the View's selection
 	 * </ol>
 	 */
 	@Override
@@ -192,18 +192,46 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	
 	// 3. OrderedDealerPresenter: response to selection events
 	
+	/**
+	 * ensures the sequence driver is notified when Selector <i>enters</i> "filled"
+	 * state, but not during selection updates (Selector <i>remains</i> in "filled"
+	 * state)
+	 */
+	@Override
+	public void selectedOption(int position) {
+		Optional<P> selection = getSelection();
+		super.selectedOption(position);
+		if (selection.isEmpty())
+			sequenceDriver.contentAdded(this);	
+	}
+	
+	/**
+	 * ensures the group driver is notified every time an option needs to be
+	 * withdrawn from competitors
+	 */
 	@Override
 	protected void selectionSetFor(int absoluteIndex) {
-		System.out.println("about to call driver.selectionMadeOn");
 		groupDriver.selectionMadeOn(this, absoluteIndex);
-		sequenceDriver.contentAdded(this);
+	}
+	
+	/**
+	 * ensures the sequence driver is notified when Selector <i>enters</i> "empty"
+	 * state, but not during selection updates (Selector remains in <i>"filled"</i>
+	 * state)
+	 */
+	@Override
+	public void selectionCleared() {
+		super.selectionCleared();		
+		sequenceDriver.contentRemoved(this);
 	}
 
+	/**
+	 * ensures the group driver is notified every time an option needs to be
+	 * added back to competitors
+	 */
 	@Override
 	protected void selectionClearedFor(int absoluteIndex) {
-		System.out.println("about to call driver.selectionClearedOn");
 		groupDriver.selectionClearedOn(this, absoluteIndex);
-		sequenceDriver.contentRemoved(this);
 	}
 	
 }

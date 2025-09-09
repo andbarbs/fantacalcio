@@ -24,27 +24,20 @@ import static org.mockito.Mockito.*;
 @DisplayName("A StarterPlayerSelector")
 class StarterPlayerSelectorTest {
 
-	// collaborator Mocks
-	@Mock
-	private OrderedDealerPresenter.OrderedDealerView<Midfielder> view;
+	// collaborator Mocks	
+	private @Mock OrderedDealerPresenter.OrderedDealerView<Midfielder> view;	
+	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> driver;	
+	private @Mock StarterPlayerSelectorListener<Midfielder> listener;
 	
-	@Mock
-	private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> driver;
-	
-	@Mock
-	private StarterPlayerSelectorListener<Midfielder> listener;
-	
-	// SUT instance 
-	@InjectMocks
-	private StarterPlayerSelector<Midfielder> presenter;
+	// SUT instance 	
+	private @InjectMocks StarterPlayerSelector<Midfielder> presenter;
 
 	// global option pool
 	private static final List<Midfielder> INITIAL_OPTIONS = List.of(
 			new Midfielder("Alpha", null), 
 			new Midfielder("Beta", null), 
 			new Midfielder("Gamma", null),
-			new Midfielder("Delta", null));
-	
+			new Midfielder("Delta", null));	
 
 	@BeforeEach
 	void commonSetup() {
@@ -59,13 +52,14 @@ class StarterPlayerSelectorTest {
 		@Test
 		@DisplayName("when attaching options")
 		void attachOptions() {
+			
 			// WHEN attaching options
 			presenter.attachOptions(INITIAL_OPTIONS);
 
 			// THEN it should command the view to initialize its own options
 			verify(view).initOptions(INITIAL_OPTIONS);
 
-			// no interaction back to the driver
+			// AND have no interaction back to the driver
 			verifyNoInteractions(driver, listener);
 		}
 		
@@ -99,9 +93,7 @@ class StarterPlayerSelectorTest {
 
 			// AND no feedback is sent to the driver
 			verifyNoMoreInteractions(driver, listener);
-		}
-
-		
+		}		
 	}
 
 	@Nested
@@ -144,14 +136,13 @@ class StarterPlayerSelectorTest {
 				// THEN the driver is notified of the clearance and the new selection, in order
 				InOrder inOrder = inOrder(driver);
 				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(driver).selectionMadeOn(presenter, 3); // New selection "Delta"
+				inOrder.verify(driver).selectionMadeOn(presenter, 3);    // New selection "Delta"
 				verifyNoMoreInteractions(driver);
 
-				// AND listeners are notified of the new selection
+				// AND listeners are only notified of the new selection
 				verify(listener).selectionMadeOn(presenter);
 				verifyNoMoreInteractions(listener);
 			}
-
 		}
 		
 		@Test
@@ -167,7 +158,6 @@ class StarterPlayerSelectorTest {
 			verify(driver).selectionClearedOn(presenter, 3);
 			// AND listeners are notified of a selection clearance
 			verify(listener).selectionClearedOn(presenter);
-
 		}
 	}
 
@@ -201,7 +191,6 @@ class StarterPlayerSelectorTest {
 				
 				assertThat(presenter.getSelection()).isEmpty();
 			}
-
 		}
 		
 		@Nested
@@ -240,8 +229,8 @@ class StarterPlayerSelectorTest {
 				// AND the driver is notified of the clearance and the new selection, in order
 				InOrder inOrder = inOrder(driver);
 				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(driver).selectionMadeOn(presenter, 3); // New selection "Delta"
-				// AND listeners are notified of the selection
+				inOrder.verify(driver).selectionMadeOn(presenter, 3);    // New selection "Delta"
+				// AND listeners are only notified of the selection
 				verify(listener).selectionMadeOn(presenter);
 				verifyNoMoreInteractions(driver, listener);
 			}

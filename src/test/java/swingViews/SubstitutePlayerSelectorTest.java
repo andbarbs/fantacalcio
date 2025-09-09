@@ -24,18 +24,13 @@ import static swingViews.OrderedDealerPresenter.NO_SELECTION;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("A SubstitutePlayerSelector")
 class SubstitutePlayerSelectorTest {
-
-	@Mock
-	private SubstitutePlayerSelectorView<Midfielder> view;
 	
-	@Mock
-	private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;
+	private @Mock SubstitutePlayerSelectorView<Midfielder> view;	
+	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;	
+	private @Mock FillableSwappableSequence<SubstitutePlayerSelector<Midfielder>> sequenceDriver;	
 	
-	@Mock
-	private FillableSwappableSequence<SubstitutePlayerSelector<Midfielder>> sequenceDriver;
-	
-	@InjectMocks
-	private SubstitutePlayerSelector<Midfielder> presenter;
+	// the SUT instance
+	private @InjectMocks SubstitutePlayerSelector<Midfielder> presenter;
 
 	// global option pool
 	private static final List<Midfielder> INITIAL_OPTIONS = List.of(
@@ -64,8 +59,8 @@ class SubstitutePlayerSelectorTest {
 			// THEN it should command the view to initialize its own options
 			verify(view).initOptions(INITIAL_OPTIONS);
 
-			// no interaction back to the driver
-			verifyNoInteractions(groupDriver);
+			// no interaction back to the drivers
+			verifyNoInteractions(groupDriver, sequenceDriver);
 		}
 		
 		@Test
@@ -81,7 +76,7 @@ class SubstitutePlayerSelectorTest {
 			verify(view).removeOptionAt(2);
 
 			// AND no feedback is sent back to the driver
-			verifyNoMoreInteractions(groupDriver);
+			verifyNoMoreInteractions(groupDriver, sequenceDriver);
 		}
 		
 		@Test
@@ -97,10 +92,8 @@ class SubstitutePlayerSelectorTest {
 			verify(view).insertOptionAt(new Midfielder("Gamma", null), 1);
 
 			// AND no feedback is sent to the driver
-			verifyNoMoreInteractions(groupDriver);
-		}
-
-		
+			verifyNoMoreInteractions(groupDriver, sequenceDriver);
+		}		
 	}
 	
 	@Nested
@@ -134,8 +127,7 @@ class SubstitutePlayerSelectorTest {
 				inOrder.verify(view).removeOptionAt(1);
 				
 				// AND neither driver has been contacted
-				verifyNoMoreInteractions(groupDriver, sequenceDriver);
-				
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);				
 			}
 
 			@Nested
@@ -319,16 +311,15 @@ class SubstitutePlayerSelectorTest {
 				// AND neither driver has been contacted
 				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}	
-		}
-		
+		}		
 	}	
 
 	@Nested
 	@DisplayName("as an MVP Presenter")
 	class AsAnMVPPresenter {
 		
-		/**
-		 * presenter.options does not need to be initialized
+		/*
+		 * presenter.options initialized only where needed
 		 */
 
 		@Nested
@@ -344,27 +335,30 @@ class SubstitutePlayerSelectorTest {
 				// WHEN the view notifies a selection for "Delta" (relative position 1)
 				presenter.selectedOption(1);
 
-				// THEN the driver is notified of the new selection for "Delta" (absolute index 3)
+				// THEN the group driver is notified of the new selection for "Delta" (absolute index 3)
 				verify(groupDriver).selectionMadeOn(presenter, 3);
-				verifyNoMoreInteractions(groupDriver);
+				// AND the sequence driver is notified of filling
+				verify(sequenceDriver).contentAdded(presenter);
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}
 
 			@Test
 			@DisplayName("and a previous selection existed")
-			void withPriorSelection() {				
+			void withPriorSelection() {
+				presenter.options = new ArrayList<>(INITIAL_OPTIONS);
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 
 				// WHEN the view notifies a selection for "Delta" (relative position 1)
 				presenter.selectedOption(1);
 
-				// THEN the driver is notified of the clearance and the new selection, in order
+				// THEN the group driver is notified of the clearance and the new selection, in order
 				InOrder inOrder = inOrder(groupDriver);
 				inOrder.verify(groupDriver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(groupDriver).selectionMadeOn(presenter, 3); // New selection "Delta"
-				verifyNoMoreInteractions(groupDriver);
+				inOrder.verify(groupDriver).selectionMadeOn(presenter, 3); 	  // New selection "Delta"
+				// AND the sequence driver is not notified
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}
-
 		}
 		
 		@Test
@@ -376,9 +370,11 @@ class SubstitutePlayerSelectorTest {
 			// WHEN the view notifies a selection clearance for "Delta"
 			presenter.selectionCleared();
 
-			// THEN driver is notified of a selection clearance for "Delta" (absolute index 3)
+			// THEN the group driver is notified of a selection clearance for "Delta" (absolute index 3)
 			verify(groupDriver).selectionClearedOn(presenter, 3);
-
+			// AND the sequence driver is notified of emptying
+			verify(sequenceDriver).contentRemoved(presenter);
+			verifyNoMoreInteractions(groupDriver, sequenceDriver);
 		}
 	}
 
@@ -432,7 +428,9 @@ class SubstitutePlayerSelectorTest {
 				verify(view).selectOptionAt(1);
 				// AND the driver is notified of selection for "Delta" (absolute index 3)
 				verify(groupDriver).selectionMadeOn(presenter, 3);
-				verifyNoMoreInteractions(groupDriver);
+				// AND the sequence driver is notified of filling
+				verify(sequenceDriver).contentAdded(presenter);
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}
 			
 			@Test
@@ -446,11 +444,12 @@ class SubstitutePlayerSelectorTest {
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(view).selectOptionAt(1);
-				// AND the driver is notified of the clearance and the new selection, in order
+				// AND the group driver is notified of the clearance and the new selection, in order
 				InOrder inOrder = inOrder(groupDriver);
 				inOrder.verify(groupDriver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(groupDriver).selectionMadeOn(presenter, 3); // New selection "Delta"
-				verifyNoMoreInteractions(groupDriver);
+				inOrder.verify(groupDriver).selectionMadeOn(presenter, 3);    // New selection "Delta"
+				// AND the sequence driver is not notified
+				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}
 			
 			@Nested
@@ -500,8 +499,11 @@ class SubstitutePlayerSelectorTest {
 
 			// THEN the view is commanded to clear its selection
 			verify(view).selectOptionAt(-1);
-			// AND the group driver is notified
+			// AND the group driver is notified of a selection clearance for "Alpha" (absolute index 0)
 			verify(groupDriver).selectionClearedOn(presenter, 0);
+			// AND the sequence driver is notified of emptying
+			verify(sequenceDriver).contentRemoved(presenter);
+			verifyNoMoreInteractions(groupDriver, sequenceDriver);
 		}
 	}
 }

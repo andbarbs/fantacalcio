@@ -9,9 +9,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import domainModel.Player.*;
-import swingViews.StarterLineUpChooserController.LineUpScheme;
-import swingViews.StarterLineUpChooserController.LineUpSchemes;
-import swingViews.StarterLineUpChooserController.LineUpScheme.LineUpSchemeVisitor;
 
 @SuppressWarnings("serial")
 public class SwingLineUpChooser extends JPanel {
