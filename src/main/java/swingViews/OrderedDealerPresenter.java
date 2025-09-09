@@ -252,7 +252,7 @@ public abstract class OrderedDealerPresenter<T>
 	protected abstract void selectionClearedFor(int absoluteIndex);
 	
 	
-	// 3. Selection querying/setting APIs for clients and subclasses
+	// 3. a public Selector - Selection querying/setting APIs for clients and subclasses
 
 	/**
 	 * @return an {@code Optional} containing the option currently selected on
@@ -307,6 +307,43 @@ public abstract class OrderedDealerPresenter<T>
 		currentSelection = absoluteIndex;
 		view.selectOptionAt(
 				currentSelection != NO_SELECTION ? mask.indexOf(currentSelection) : -1);		
+	}
+	
+	/**
+	 * an interface for clients wishing to be notified of <i>selection events</i> occurring
+	 * on an {@link OrderedDealerPresenter} instance.
+
+	 * @param <Q> the type for options in the observed {@link OrderedDealerPresenter}
+	 */
+	public interface OrderedDealerPresenterListener<Q> {
+
+		/**
+		 * will be called on {@link OrderedDealerPresenterListener}s when a selection
+		 * has been made on an observed {@link OrderedDealerPresenter}.
+		 * 
+		 * @param selector the observed {@link OrderedDealerPresenter} instance which has
+		 *                 received a selection
+		 */
+		void selectionMadeOn(OrderedDealerPresenter<Q> selector);
+
+		/**
+		 * will be called on {@link OrderedDealerPresenterListener}s when the selection
+		 * on an observed {@link OrderedDealerPresenter} has been cleared.
+		 * 
+		 * @param selector the observed {@link OrderedDealerPresenter} instance whose
+		 *                 selection has been cleared
+		 */
+		void selectionClearedOn(OrderedDealerPresenter<Q> selector);
+	}
+
+	private List<OrderedDealerPresenterListener<T>> listeners = new ArrayList<>();
+
+	public void attachListener(OrderedDealerPresenterListener<T> listener) {
+		listeners.add(listener);
+	}
+	
+	protected List<OrderedDealerPresenterListener<T>> listeners() {
+		return listeners;
 	}
 	
 }

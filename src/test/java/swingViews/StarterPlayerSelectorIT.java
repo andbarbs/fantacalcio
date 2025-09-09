@@ -22,9 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
-import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
+import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
+// TODO: are we doing IT at a higher level?
 
 @DisplayName("Starter Player Selector: MVP Presenter + View integration test")
 @ExtendWith(MockitoExtension.class)
@@ -51,7 +52,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
     	private StarterPlayerSelector<Defender> compPlayerSelector;    	
     	@Mock private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Defender>, Defender> driver;    	
-    	@Mock private StarterPlayerSelectorListener<Defender> listener;
+    	@Mock private OrderedDealerPresenterListener<Defender> listener;
 
     	@BeforeEach
     	public void testCaseSpecificSetup() {    		

@@ -1,37 +1,45 @@
 package swingViews;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import domainModel.Player;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
  * <h1></h1>implements an MVP Presenter for a gadget capable of being part of
  * <ol>
- * <li>a <i>group</i> where each gadget allows <i>competitive dealing</i> of one
- * instance of {@linkplain Player}, or one if its sub-types, from a group-wide
- * list
- * <li>an <i>ordered group</i> of gadgets which only permits the user to enter
- * selections <i>sequentially</i>
+ * <li>a {@linkplain CompetitiveOptionDealingGroup <i>competitive dealing
+ * group</i>} having as options instances of {@linkplain Player}, or one if its
+ * sub-types
+ * <li>an <i>ordered group</i> of gadgets which
+ * {@linkplain FillableSwappableSequence only permits selections to be entered
+ * <i>sequentially</i>}
  * </ol>
  * 
- * <p>
- * These two functionalities are fully realized when, respectively,
- * <ol>
- * <li>a <i>{@code Set}</i> of {@code SubstitutePlayerSelector} instances are
- * made to collaborate with a {@linkplain CompetitiveOptionDealingGroup}
- * <li>a <i>{@code List}</i> of {@code SubstitutePlayerSelector} instances are
- * made to collaborate with a {@linkplain FillableSwappableSequence}
- * </ol>
- * through the facilities defined by those types.
- * </p>
+ * <h1>Listener notification policy</h1> 
+ * Once a {@code SubstitutePlayerSelector}
+ * instance is made to participate in a
+ * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}
+ * <b>and</b> in a {@linkplain FillableSwappableSequence fillable-swappable
+ * sequence}, an {@link OrderedDealerPresenterListener} attached to it will be
+ * notified of
+ * <ul>
+ * 	<li>a <i>selection-made</i> event whenever an option on the <i>previously
+ * 	empty</i> {@code Selector} is selected
+ * 	<li>a <i>selection-cleared</i> event whenever the selection on the
+ * 	{@code Selector} is cleared, after <i>{@linkplain FillableSwappableSequence
+ * 	sequence} operations</i> have taken place
+ * </ul>
  * 
- * @param <P> the type for options in the {@code StarterPlayerSelector}
- * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of
- *      competitive dealing, {@linkplain FillableSwappableSequence}
+ * @param <P> the type for options in the {@code SubstitutePlayerSelector}
+ * @see
+ *      <ul>
+ *      <li>{@linkplain CompetitiveOptionDealingGroup} for the semantics of
+ *      <i>competitive dealing</i> and how to initialize it
+ *      <li>{@linkplain FillableSwappableSequence} for the semantics of a
+ *      <i>fillable-swappable sequence</i> and how to initialize it
  */
 public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P>
 		implements FillableSwappable<SubstitutePlayerSelector<P>> {
@@ -88,47 +96,6 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 		this.view = view;
 	}
 
-	/**
-	 * an interface for clients wishing to be notified of selection events occurring
-	 * on a {@link StarterPlayerSelector} instance.
-	 */
-	public interface SubstitutePlayerSelectorListener<Q extends Player> {
-
-		/**
-		 * will be called on {@code StarterPlayerSelectorListener} s when a selection
-		 * has been made on an observed {@code StarterPlayerSelector}.
-		 * 
-		 * <p>
-		 * In the event of the selection being <i>updated</i>, only this method will be
-		 * invoked - i.e., no {@linkplain #selectionClearedOn(StarterPlayerSelector)}
-		 * notification shall be sent
-		 * 
-		 * @param selector the observed {@code StarterPlayerSelector} instance which has
-		 *                 received a selection
-		 */
-		void selectionMadeOn(SubstitutePlayerSelector<Q> selector);
-
-		/**
-		 * will be called on {@code StarterPlayerSelectorListener} s when the selection
-		 * on an observed {@code StarterPlayerSelector} has been cleared.
-		 * 
-		 * <p>
-		 * In the event of the selection being <i>updated</i>, only
-		 * {@linkplain #selectionMadeOn(StarterPlayerSelector)} will be invoked - i.e.,
-		 * this method shall not be called
-		 * 
-		 * @param selector the observed {@code StarterPlayerSelector} instance whose
-		 *                 selection has been cleared
-		 */
-		void selectionClearedOn(SubstitutePlayerSelector<Q> selector);
-	}
-
-	private List<SubstitutePlayerSelectorListener<P>> listeners = new ArrayList<>();
-
-	public void attachListener(SubstitutePlayerSelectorListener<P> listener) {
-		listeners.add(listener);
-	}
-
 	// 2. FillableSwappable: mandated functions
 
 	private FillableSwappableSequence<SubstitutePlayerSelector<P>> sequenceDriver;
@@ -142,13 +109,13 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 			@Override
 			public void becameEmpty(SubstitutePlayerSelector<P> emptiedMember) {
 				if (emptiedMember == SubstitutePlayerSelector.this)
-					listeners.forEach(listener -> listener.selectionClearedOn(SubstitutePlayerSelector.this));
+					listeners().forEach(listener -> listener.selectionClearedOn(SubstitutePlayerSelector.this));
 			}
 
 			@Override
 			public void becameFilled(SubstitutePlayerSelector<P> filledMember) {
 				if (filledMember == SubstitutePlayerSelector.this)
-					listeners.forEach(listener -> listener.selectionMadeOn(SubstitutePlayerSelector.this));
+					listeners().forEach(listener -> listener.selectionMadeOn(SubstitutePlayerSelector.this));
 			}
 		});
 	}
@@ -261,9 +228,9 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	// 3. OrderedDealerPresenter: response to selection events
 
 	/**
-	 * ensures the sequence driver is notified when Selector <i>enters</i> "filled"
-	 * state, but not during selection updates (Selector <i>remains</i> in "filled"
-	 * state)
+	 * ensures the sequence driver - and thereby listeners - are only notified when
+	 * Selector <i>enters</i> "filled" state, but not during selection updates
+	 * (Selector <i>remains</i> in "filled" state)
 	 */
 	@Override
 	public void selectedOption(int position) {
@@ -283,9 +250,9 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	}
 
 	/**
-	 * ensures the sequence driver is notified when Selector <i>enters</i> "empty"
-	 * state, but not during selection updates (Selector remains in <i>"filled"</i>
-	 * state)
+	 * ensures the sequence driver - and thereby listeners - are only notified when
+	 * Selector <i>enters</i> "empty" state, but not during selection updates
+	 * (Selector remains in <i>"filled"</i> state)
 	 */
 	@Override
 	public void selectionCleared() {

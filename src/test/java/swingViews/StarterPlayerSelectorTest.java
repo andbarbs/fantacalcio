@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
-import swingViews.StarterPlayerSelector.StarterPlayerSelectorListener;
+import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ import static org.mockito.Mockito.*;
 class StarterPlayerSelectorTest {
 
 	// collaborator Mocks	
-	private @Mock OrderedDealerPresenter.OrderedDealerView<Midfielder> view;	
-	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> driver;	
-	private @Mock StarterPlayerSelectorListener<Midfielder> listener;
+	private @Mock OrderedDealerPresenter.OrderedDealerView<Midfielder> mockView;	
+	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> mockGroupDriver;	
+	private @Mock OrderedDealerPresenterListener<Midfielder> mockListener;
 	
 	// SUT instance 	
 	private @InjectMocks StarterPlayerSelector<Midfielder> presenter;
@@ -41,8 +41,8 @@ class StarterPlayerSelectorTest {
 
 	@BeforeEach
 	void commonSetup() {
-		presenter.attachDriver(driver);
-		presenter.attachListener(listener);
+		presenter.attachDriver(mockGroupDriver);
+		presenter.attachListener(mockListener);
 	}
 
 	@Nested
@@ -57,10 +57,10 @@ class StarterPlayerSelectorTest {
 			presenter.attachOptions(INITIAL_OPTIONS);
 
 			// THEN it should command the view to initialize its own options
-			verify(view).initOptions(INITIAL_OPTIONS);
+			verify(mockView).initOptions(INITIAL_OPTIONS);
 
 			// AND have no interaction back to the driver
-			verifyNoInteractions(driver, listener);
+			verifyNoInteractions(mockGroupDriver, mockListener);
 		}
 		
 		@Test
@@ -73,10 +73,10 @@ class StarterPlayerSelectorTest {
 			presenter.retireOption(3);
 
 			// THEN the view is commanded to remove "Delta" (relative position 2)
-			verify(view).removeOptionAt(2);
+			verify(mockView).removeOptionAt(2);
 
 			// AND no feedback is sent back to the driver
-			verifyNoMoreInteractions(driver, listener);
+			verifyNoMoreInteractions(mockGroupDriver, mockListener);
 		}
 		
 		@Test
@@ -89,10 +89,10 @@ class StarterPlayerSelectorTest {
 			presenter.restoreOption(2);
 
 			// THEN the view is commanded to insert "Gamma" (relative position 1)
-			verify(view).insertOptionAt(new Midfielder("Gamma", null), 1);
+			verify(mockView).insertOptionAt(new Midfielder("Gamma", null), 1);
 
 			// AND no feedback is sent to the driver
-			verifyNoMoreInteractions(driver, listener);
+			verifyNoMoreInteractions(mockGroupDriver, mockListener);
 		}		
 	}
 
@@ -101,9 +101,8 @@ class StarterPlayerSelectorTest {
 	class AsAnMVPPresenter {
 		
 		/**
-		 * presenter.options does not need to be initialized
+		 * presenter.options initialized only where needed
 		 */
-
 		@Nested
 		@DisplayName("when notified of a selection")
 		class OnSelectedOption {
@@ -118,15 +117,16 @@ class StarterPlayerSelectorTest {
 				presenter.selectedOption(1);
 
 				// THEN the driver is notified of the new selection for "Delta" (absolute index 3)
-				verify(driver).selectionMadeOn(presenter, 3);
+				verify(mockGroupDriver).selectionMadeOn(presenter, 3);
 				// AND the listener is notified
-				verify(listener).selectionMadeOn(presenter);
-				verifyNoMoreInteractions(driver, listener);
+				verify(mockListener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(mockGroupDriver, mockListener);
 			}
 
 			@Test
 			@DisplayName("and a previous selection existed")
-			void withPriorSelection() {				
+			void withPriorSelection() {
+				presenter.options = new ArrayList<>(INITIAL_OPTIONS);
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 
@@ -134,14 +134,12 @@ class StarterPlayerSelectorTest {
 				presenter.selectedOption(1);
 
 				// THEN the driver is notified of the clearance and the new selection, in order
-				InOrder inOrder = inOrder(driver);
-				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(driver).selectionMadeOn(presenter, 3);    // New selection "Delta"
-				verifyNoMoreInteractions(driver);
-
-				// AND listeners are only notified of the new selection
-				verify(listener).selectionMadeOn(presenter);
-				verifyNoMoreInteractions(listener);
+				InOrder inOrder = inOrder(mockGroupDriver);
+				inOrder.verify(mockGroupDriver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
+				inOrder.verify(mockGroupDriver).selectionMadeOn(presenter, 3);    // New selection "Delta"
+				verifyNoMoreInteractions(mockGroupDriver);
+				// AND listeners are NOT notified
+				verifyNoMoreInteractions(mockListener);
 			}
 		}
 		
@@ -155,9 +153,9 @@ class StarterPlayerSelectorTest {
 			presenter.selectionCleared();
 
 			// THEN driver is notified of a selection clearance for "Delta" (absolute index 3)
-			verify(driver).selectionClearedOn(presenter, 3);
+			verify(mockGroupDriver).selectionClearedOn(presenter, 3);
 			// AND listeners are notified of a selection clearance
-			verify(listener).selectionClearedOn(presenter);
+			verify(mockListener).selectionClearedOn(presenter);
 		}
 	}
 
@@ -207,12 +205,12 @@ class StarterPlayerSelectorTest {
 				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
-				verify(view).selectOptionAt(1);
+				verify(mockView).selectOptionAt(1);
 				// AND the driver is notified of selection for "Delta" (absolute index 3)
-				verify(driver).selectionMadeOn(presenter, 3);
+				verify(mockGroupDriver).selectionMadeOn(presenter, 3);
 				// AND listeners are notified of the selection
-				verify(listener).selectionMadeOn(presenter);
-				verifyNoMoreInteractions(driver, listener);
+				verify(mockListener).selectionMadeOn(presenter);
+				verifyNoMoreInteractions(mockGroupDriver, mockListener);
 			}
 			
 			@Test
@@ -225,14 +223,13 @@ class StarterPlayerSelectorTest {
 				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
-				verify(view).selectOptionAt(1);
+				verify(mockView).selectOptionAt(1);
 				// AND the driver is notified of the clearance and the new selection, in order
-				InOrder inOrder = inOrder(driver);
-				inOrder.verify(driver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
-				inOrder.verify(driver).selectionMadeOn(presenter, 3);    // New selection "Delta"
-				// AND listeners are only notified of the selection
-				verify(listener).selectionMadeOn(presenter);
-				verifyNoMoreInteractions(driver, listener);
+				InOrder inOrder = inOrder(mockGroupDriver);
+				inOrder.verify(mockGroupDriver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
+				inOrder.verify(mockGroupDriver).selectionMadeOn(presenter, 3);    // New selection "Delta"
+				// AND listeners are NOT notified
+				verifyNoMoreInteractions(mockGroupDriver, mockListener);
 			}
 			
 			@Nested
@@ -251,7 +248,7 @@ class StarterPlayerSelectorTest {
 							.hasMessageContaining("not found among this dealer's available options");
 
 					// THEN no interactions should have occurred with collaborators
-					verifyNoInteractions(view, driver, listener);
+					verifyNoInteractions(mockView, mockGroupDriver, mockListener);
 				}
 				
 				@Test
@@ -266,7 +263,7 @@ class StarterPlayerSelectorTest {
 							.hasMessageContaining("not found in dealer group option list");
 
 					// THEN no interactions should have occurred with collaborators
-					verifyNoInteractions(view, driver, listener);
+					verifyNoInteractions(mockView, mockGroupDriver, mockListener);
 				}
 			}
 		}
@@ -281,10 +278,10 @@ class StarterPlayerSelectorTest {
 			presenter.setSelection(Optional.empty());
 
 			// THEN the view is commanded to clear its selection
-			verify(view).selectOptionAt(-1);
+			verify(mockView).selectOptionAt(-1);
 			// AND the driver and listener are notified
-			verify(driver).selectionClearedOn(presenter, 0);
-			verify(listener).selectionClearedOn(presenter);
+			verify(mockGroupDriver).selectionClearedOn(presenter, 0);
+			verify(mockListener).selectionClearedOn(presenter);
 		}
 	}
 }

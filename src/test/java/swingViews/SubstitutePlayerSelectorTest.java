@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
-import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorListener;
+import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
 import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
 
 import java.util.ArrayList;
@@ -372,7 +372,7 @@ class SubstitutePlayerSelectorTest {
 				InOrder inOrder = inOrder(groupDriver);
 				inOrder.verify(groupDriver).selectionClearedOn(presenter, 0); // Old selection "Alpha"
 				inOrder.verify(groupDriver).selectionMadeOn(presenter, 3); 	  // New selection "Delta"
-				// AND the sequence driver is not notified
+				// AND the sequence driver is NOT notified
 				verifyNoMoreInteractions(groupDriver, sequenceDriver);
 			}
 		}
@@ -536,7 +536,7 @@ class SubstitutePlayerSelectorTest {
 			private @Captor ArgumentCaptor<FillableSwappableSequenceListener
 						<SubstitutePlayerSelector<Midfielder>>> sequenceListenerCaptor;
 			
-			private @Mock SubstitutePlayerSelectorListener<Midfielder> mockListener;
+			private @Mock OrderedDealerPresenterListener<Midfielder> mockListener;
 			
 			@BeforeEach
 			void setUp() {
