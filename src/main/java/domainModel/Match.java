@@ -17,14 +17,14 @@ public class Match {
     private FantaTeam team1;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private FantaTeam Team2;
+    private FantaTeam team2;
 
     protected Match() {}
 
     public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
         this.matchDaySerieA = matchDaySerieA;
         this.team1 = team1;
-        Team2 = team2;
+        this.team2 = team2;
     }
 
     // Getters
@@ -34,7 +34,7 @@ public class Match {
     }
 
     public FantaTeam getTeam2() {
-        return Team2;
+        return team2;
     }
     
     public MatchDaySerieA getMatchDaySerieA() {
@@ -45,12 +45,12 @@ public class Match {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Match match = (Match) o;
-        return Objects.equals(matchDaySerieA, match.matchDaySerieA) && Objects.equals(team1, match.team1) && Objects.equals(Team2, match.Team2);
+        return Objects.equals(matchDaySerieA, match.matchDaySerieA) && Objects.equals(team1, match.team1) && Objects.equals(team2, match.team2);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(matchDaySerieA, team1, Team2);
+        return Objects.hash(matchDaySerieA, team1, team2);
     }
 }
 

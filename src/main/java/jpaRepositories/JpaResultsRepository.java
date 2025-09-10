@@ -5,7 +5,11 @@ import java.util.Optional;
 import businessLogic.repositories.ResultsRepository;
 import domainModel.Match;
 import domainModel.Result;
+import domainModel.Result_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 public class JpaResultsRepository extends BaseJpaRepository implements ResultsRepository {
 
@@ -15,14 +19,21 @@ public class JpaResultsRepository extends BaseJpaRepository implements ResultsRe
 
 	@Override
 	public Optional<Result> getResult(Match match) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
+    	EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Result> query = cb.createQuery(Result.class);
+        Root<Result> root = query.from(Result.class);
+
+        query.select(root).where(
+                cb.equal(root.get(Result_.match), match)
+        );
+
+        return em.createQuery(query).getResultList().stream().findFirst();
 	}
 
 	@Override
 	public void saveResult(Result result) {
-		// TODO Auto-generated method stub
-
+		getEntityManager().persist(result);
 	}
 
 }

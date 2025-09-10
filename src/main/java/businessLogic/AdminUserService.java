@@ -18,7 +18,7 @@ public class AdminUserService extends UserService {
 				.inTransaction((context) -> context.getContractRepository().saveContract(new Contract(team, player)));
 	}
 
-	public Set<NewsPaper> getAllNewspapers() {
+	public List<NewsPaper> getAllNewspapers() {
 		return transactionManager.fromTransaction((context) -> context.getNewspaperRepository().getAllNewspapers());
 	}
 

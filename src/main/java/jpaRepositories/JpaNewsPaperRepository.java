@@ -1,11 +1,13 @@
 package jpaRepositories;
 
-import java.util.Set;
-
+import java.util.List;
 import businessLogic.repositories.NewsPaperRepository;
 import domainModel.League;
 import domainModel.NewsPaper;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 public class JpaNewsPaperRepository extends BaseJpaRepository implements NewsPaperRepository {
 
@@ -14,13 +16,19 @@ public class JpaNewsPaperRepository extends BaseJpaRepository implements NewsPap
 	}
 
 	@Override
-	public Set<NewsPaper> getAllNewspapers() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<NewsPaper> getAllNewspapers() {
+    	EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<NewsPaper> query = cb.createQuery(NewsPaper.class);
+        Root<NewsPaper> root = query.from(NewsPaper.class);
+
+        query.select(root);
+
+        return em.createQuery(query).getResultList();
 	}
 
 	@Override
-	public void setNewsPaperForLeague(NewsPaper newspaper, League league) {
+	public void setNewsPaperForLeague(NewsPaper newspaper, League league) { // Non ha senso perché la lega ha il newspaper nel costruttore, al massimo si mette un setter
 		// TODO Auto-generated method stub
 
 	}
