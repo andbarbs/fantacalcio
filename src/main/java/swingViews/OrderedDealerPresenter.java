@@ -1,6 +1,7 @@
 package swingViews;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -9,23 +10,35 @@ import java.util.stream.IntStream;
 import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
 
 /**
- * implements the mandated members of a {@linkplain CompetitiveOrderedDealer}
- * as a Presenter in the sense of the <b>MVP pattern</b>.
+ * implements
+ * <ol>
+ * <li>all members of {@linkplain CompetitiveOrderedDealer}
+ * <li>all members of {@linkplain Selector}
+ * </ol>
+ * as a Controller in a bidirectional collaboration scheme inspired by the
+ * <b>MVP pattern</b>.
  * 
- * <p>Subclasses are free to implement the behavioral responsibilities of 
- * {@linkplain CompetitiveOrderedDealer}, i.e. notifying the driver, through the 
- * {@linkplain #groupDriver} field and hooks {@linkplain #selectionSetFor(int)} 
- * and {@linkplain #selectionClearedFor(int)}, which complete Presenter 
- * response to View notifications.
+ * <p>
+ * Subclasses are free to implement the behavioral responsibilities of those
+ * types, namely
+ * <ol>
+ * 	<li>their policy for notifying the {@linkplain CompetitiveOptionDealingGroup
+ * 	group driver}, through the {@link #groupDriver} field and hooks
+ * 	{@link #selectionSetFor(int)} and {@link #selectionClearedFor(int)}
+ * 	<li>their policy for notifying {@linkplain SelectorListener listener}s,
+ * 	through the {@link #listeners()} getter
+ * </ol>
  * 
  * @implNote {@linkplain CompetitiveOrderedDealer} members do not leak back into
- * 		the driver, as long as the {@linkplain OrderedDealerView}
- * 		collaborator does <i>not</i> notify back the {@code OrderedDealerPresenter} 
- * 		for mutations induced by the {@code OrderedDealerPresenter} itself
- * @param <T> the type for options in this dealer
+ *           the driver, as long as the {@linkplain OrderedDealerView}
+ *           collaborator does <i>not</i> notify back the
+ *           {@code OrderedDealerPresenter} for mutations induced by the
+ *           {@code OrderedDealerPresenter} itself
+ * @param <T> the type for options in this Selector/Dealer
  */
 public abstract class OrderedDealerPresenter<T> 
-				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T> {	
+				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T>,
+							Selector<T> {	
 
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 	
@@ -252,21 +265,24 @@ public abstract class OrderedDealerPresenter<T>
 	protected abstract void selectionClearedFor(int absoluteIndex);
 	
 	
-	// 3. a public Selector - Selection querying/setting APIs for clients and subclasses
+	// 3. a public Selector
 
-	/**
-	 * @return an {@code Optional} containing the option currently selected on
-	 * this dealer, or an empty one if the dealer has no selection
-	 */
+	@Override
 	public Optional<T> getSelection() {
 		return Optional.ofNullable(
 				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
 	}
 	
 	/**
-	 * @param option an {@code Optional} containing the option to be set on 
-	 * this dealer, or an empty one if one wishes to clear the dealer's selection 
+	 * @throws IllegalArgumentException if the option provided is not
+	 *                                  <ul>
+	 *                                  <li>among the options available in this
+	 *                                  {@code dealer}'s group
+	 *                                  <li>among those available on this
+	 *                                  {@code dealer}
+	 *                                  </ul>
 	 */
+	@Override
 	public void setSelection(Optional<T> option) {
 		option.ifPresentOrElse(o -> {
 			if (!options.contains(o))
@@ -285,7 +301,21 @@ public abstract class OrderedDealerPresenter<T>
 			view.selectOptionAt(NO_SELECTION);
 			selectionCleared();
 		});
+	}	
+
+	private Collection<SelectorListener<T>> listeners = new ArrayList<>();
+
+	@Override
+	public void attachListener(SelectorListener<T> listener) {
+		this.listeners.add(listener);		
 	}
+	
+	protected Collection<SelectorListener<T>> listeners() {
+		return listeners;
+	}
+	
+	
+	// Selection setting API for subclasses
 	
 	/**
 	 * allows subclasses to set one of the available options as the selection,
@@ -301,49 +331,11 @@ public abstract class OrderedDealerPresenter<T>
 		if (!(absoluteIndex == NO_SELECTION || mask.contains(absoluteIndex))) 
 			throw new IllegalArgumentException(String.format(
 					"OrderedDealerPresenter.selectOption: Illegal Argument\n" +
-					"option: %d not found among this dealer's available options: %s\n", 
-					absoluteIndex, mask));
+							"option: %d not found among this dealer's available options: %s\n", 
+							absoluteIndex, mask));
 		
 		currentSelection = absoluteIndex;
 		view.selectOptionAt(
 				currentSelection != NO_SELECTION ? mask.indexOf(currentSelection) : -1);		
 	}
-	
-	/**
-	 * an interface for clients wishing to be notified of <i>selection events</i> occurring
-	 * on an {@link OrderedDealerPresenter} instance.
-
-	 * @param <Q> the type for options in the observed {@link OrderedDealerPresenter}
-	 */
-	public interface OrderedDealerPresenterListener<Q> {
-
-		/**
-		 * will be called on {@link OrderedDealerPresenterListener}s when a selection
-		 * has been made on an observed {@link OrderedDealerPresenter}.
-		 * 
-		 * @param selector the observed {@link OrderedDealerPresenter} instance which has
-		 *                 received a selection
-		 */
-		void selectionMadeOn(OrderedDealerPresenter<Q> selector);
-
-		/**
-		 * will be called on {@link OrderedDealerPresenterListener}s when the selection
-		 * on an observed {@link OrderedDealerPresenter} has been cleared.
-		 * 
-		 * @param selector the observed {@link OrderedDealerPresenter} instance whose
-		 *                 selection has been cleared
-		 */
-		void selectionClearedOn(OrderedDealerPresenter<Q> selector);
-	}
-
-	private List<OrderedDealerPresenterListener<T>> listeners = new ArrayList<>();
-
-	public void attachListener(OrderedDealerPresenterListener<T> listener) {
-		listeners.add(listener);
-	}
-	
-	protected List<OrderedDealerPresenterListener<T>> listeners() {
-		return listeners;
-	}
-	
 }

@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
-import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
+import swingViews.Selector.SelectorListener;
 import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
 
 import java.util.ArrayList;
@@ -531,12 +531,12 @@ class SubstitutePlayerSelectorTest {
 		
 		@Nested
 		@DisplayName("be informed of")
-		class SelectorListener {
+		class NotifiesSelectorListeners {
 			
 			private @Captor ArgumentCaptor<FillableSwappableSequenceListener
 						<SubstitutePlayerSelector<Midfielder>>> sequenceListenerCaptor;
 			
-			private @Mock OrderedDealerPresenterListener<Midfielder> mockListener;
+			private @Mock SelectorListener<Midfielder> mockListener;
 			
 			@BeforeEach
 			void setUp() {

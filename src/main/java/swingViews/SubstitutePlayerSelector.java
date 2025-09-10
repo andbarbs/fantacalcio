@@ -4,7 +4,6 @@ import java.util.Optional;
 import domainModel.Player;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
-import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
@@ -23,8 +22,7 @@ import swingViews.OrderedDealerPresenter.OrderedDealerView;
  * instance is made to participate in a
  * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}
  * <b>and</b> in a {@linkplain FillableSwappableSequence fillable-swappable
- * sequence}, an {@link OrderedDealerPresenterListener} attached to it will be
- * notified of
+ * sequence}, a {@link SelectorListener} attached to it will be notified of
  * <ul>
  * 	<li>a <i>selection-made</i> event whenever an option on the <i>previously
  * 	empty</i> {@code Selector} is selected

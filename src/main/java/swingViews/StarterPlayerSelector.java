@@ -1,7 +1,5 @@
 package swingViews;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import domainModel.Player;
@@ -14,8 +12,8 @@ import domainModel.Player;
  * <h1>Listener notification policy</h1> 
  * Once a {@code StarterPlayerSelector}
  * instance is made to participate in a
- * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}, an
- * {@link OrderedDealerPresenterListener} attached to it will be notified of
+ * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}, a
+ * {@link SelectorListener} attached to it will be notified of
  * <ul>
  * 	<li>a <i>selection-made</i> event whenever an option on the <i>previously
  * 	empty</i> {@code Selector} is selected
@@ -27,8 +25,7 @@ import domainModel.Player;
  * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of
  *      competitive dealing and how to initialize it
  */
-public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> 
-			implements LineUpChooser.StarterLineUpChooserDelegate.Selector<P> {
+public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> {
 
 	public StarterPlayerSelector(OrderedDealerView<P> view) {
 		super(view);
@@ -78,13 +75,13 @@ public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresen
 		groupDriver.selectionClearedOn(this, absoluteIndex);
 	}	
 	
-	// NEW OBSERVABLE INFRASTRUCTURE
-	
-	private List<SelectorListener> newListeners = new ArrayList<>();
-
-	@Override
-	public void add(SelectorListener listener) {
-		newListeners.add(listener);
-	}
+//	// NEW OBSERVABLE INFRASTRUCTURE
+//	
+//	private List<SelectorListener> newListeners = new ArrayList<>();
+//
+//	@Override
+//	public void add(SelectorListener listener) {
+//		newListeners.add(listener);
+//	}
 
 }
