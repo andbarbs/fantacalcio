@@ -24,7 +24,7 @@ public class NewsPaperService {
 				throw new RuntimeException("Now you can't assign the votes");
 			}
 			for (Grade grade : grades) {
-				if ((grade.getMatchDay().equals(matchDaySerieA.get()))) {  // Non manca un NOT in questa condizione?
+				if (!(grade.getMatchDay().equals(matchDaySerieA.get()))) {
 					throw new RuntimeException("The match date is not correct");
 				}
 				if (grade.getMark() < -5 || grade.getMark() > 25) {
