@@ -5,11 +5,13 @@ import domainModel.FantaTeam;
 import domainModel.League;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
+import domainModel.Match_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class JpaMatchRepository extends BaseJpaRepository implements MatchRepository {
 
@@ -17,17 +19,35 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
 
     @Override
     public Match getMatchByMatchDay(MatchDaySerieA matchDaySerieA, League league, FantaTeam fantaTeam) {
-        return null;
+    	EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Match> query = cb.createQuery(Match.class);
+        Root<Match> root = query.from(Match.class);
+
+        query.select(root).where(
+                cb.and(
+                    cb.equal(root.get(Match_.matchDaySerieA), matchDaySerieA),
+                    cb.or(
+                        cb.equal(root.get(Match_.team1), fantaTeam),
+                        cb.equal(root.get(Match_.team2), fantaTeam)))
+        );
+
+        return em.createQuery(query).getResultList().getFirst();
     }
 
     @Override
     public List<Match> getAllMatchesByMatchDay(MatchDaySerieA matchDaySerieA, League league) {
-        return List.of();
-    }
+    	EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Match> query = cb.createQuery(Match.class);
+        Root<Match> root = query.from(Match.class);
 
-    @Override
-    public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
-        return Map.of();
+        query.select(root).where(
+                cb.and(
+                    cb.equal(root.get(Match_.matchDaySerieA), matchDaySerieA))
+        );
+
+        return em.createQuery(query).getResultList();
     }
 
     @Override
