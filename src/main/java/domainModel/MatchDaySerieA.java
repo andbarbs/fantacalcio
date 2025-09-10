@@ -11,19 +11,20 @@ import jakarta.persistence.Id;
 
 @Entity
 public class MatchDaySerieA {
-	
+
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-	
-	@Basic(optional=false)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Basic(optional = false)
 	private String name;
-	
-	@Basic(optional=false)
+
+	@Basic(optional = false)
 	private LocalDate date;
-	
-	protected MatchDaySerieA() {}
-	
+
+	protected MatchDaySerieA() {
+	}
+
 	public MatchDaySerieA(String name, LocalDate date) {
 		this.name = name;
 		this.date = date;
@@ -53,9 +54,5 @@ public class MatchDaySerieA {
 		MatchDaySerieA other = (MatchDaySerieA) obj;
 		return Objects.equals(date, other.date) && Objects.equals(name, other.name);
 	}
-	
-	
-	
-	
 
 }
