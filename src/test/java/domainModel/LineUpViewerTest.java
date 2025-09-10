@@ -18,20 +18,20 @@ public class LineUpViewerTest {
     @Test
     public void testLineUpViewer() {
         // Create starter players
-        Goalkeeper starterGK = new Goalkeeper("John", "Doe", "Barcellona");
-        Defender starterDef = new Defender("Alan", "Smith", "Barcellona");
-        Midfielder starterMid = new Midfielder("Bruce", "Wayne", "Barcellona");
-        Forward starterFwd = new Forward("Clark", "Kent", "Barcellona");
+        Goalkeeper starterGK = new Goalkeeper("John", "Doe", Club.PISA);
+        Defender starterDef = new Defender("Alan", "Smith", Club.PISA);
+        Midfielder starterMid = new Midfielder("Bruce", "Wayne", Club.PISA);
+        Forward starterFwd = new Forward("Clark", "Kent", Club.PISA);
 
         // Create substitute players
-        Goalkeeper position2Glk = new Goalkeeper("SubGk1", "McFly", "Barcellona");
-        Goalkeeper position1Glk = new Goalkeeper("SubGk2", "McFly", "Barcellona");
-        Defender position2Def = new Defender("SubDef1", "McFly", "Barcellona");
-        Defender position1Def = new Defender("SubDef2", "McFly", "Barcellona");
-        Midfielder subMid1 = new Midfielder("SubMid1", "McFly", "Barcellona");
-        Forward position3For = new Forward("SubFwd1", "McFly", "Barcellona");
-        Forward position1For = new Forward("SubFwd2", "McFly", "Barcellona");
-        Forward position2For = new Forward("SubFwd3", "McFly", "Barcellona");
+        Goalkeeper position2Glk = new Goalkeeper("SubGk1", "McFly", Club.PISA);
+        Goalkeeper position1Glk = new Goalkeeper("SubGk2", "McFly", Club.PISA);
+        Defender position2Def = new Defender("SubDef1", "McFly", Club.PISA);
+        Defender position1Def = new Defender("SubDef2", "McFly", Club.PISA);
+        Midfielder subMid1 = new Midfielder("SubMid1", "McFly", Club.PISA);
+        Forward position3For = new Forward("SubFwd1", "McFly", Club.PISA);
+        Forward position1For = new Forward("SubFwd2", "McFly", Club.PISA);
+        Forward position2For = new Forward("SubFwd3", "McFly", Club.PISA);
 
         // Create an empty set for fieldings
         Set<Fielding> fieldings = new HashSet<>();

@@ -16,5 +16,7 @@ public interface MatchRepository {
 	List<Match> getAllMatchesByMatchDay(MatchDaySerieA matchDaySerieA, League league);
 
 	Map<MatchDaySerieA, Set<Match>> getAllMatches(League league);
+
+	void saveMatch(Match match);
 	
 }

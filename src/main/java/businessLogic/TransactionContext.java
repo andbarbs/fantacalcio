@@ -91,4 +91,5 @@ public class TransactionContext {
 	public NewsPaperRepository getNewspaperRepository() {
 		return newspaperRepository;
 	}
+
 }

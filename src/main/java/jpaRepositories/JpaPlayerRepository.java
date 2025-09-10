@@ -1,6 +1,7 @@
 package jpaRepositories;
 
 import java.util.List;
+import java.util.Set;
 
 import businessLogic.repositories.PlayerRepository;
 import domainModel.Player;
@@ -59,16 +60,15 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 	}
 
 	@Override
-	public List<Player> findByTeam(String team) {
+	public Set<Player> findByClub(Player.Club team) {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 
 		criteriaQuery.select(root).where(criteriaBuilder.and(
-				criteriaBuilder.equal(root.get(Player_.team), team)));
+				criteriaBuilder.equal(root.get(Player_.club), team)));
 
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		return Set.copyOf(entityManager.createQuery(criteriaQuery).getResultList());
 	}
-
 }

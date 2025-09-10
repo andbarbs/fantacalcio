@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import domainModel.Player.Club;
+
 class JpaGradeRepositoryTest {
 
 	private static SessionFactory sessionFactory;
@@ -106,11 +108,11 @@ class JpaGradeRepositoryTest {
 	@DisplayName("getAllMatchGrades() when two grades have been persisted")
 	public void testGetAllMatchGradesWhenTwoGradesExist() {
 
-		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", "Juventus");
-		Player player2 = new Player.Forward("Gigi", "Riva", "Cagliari");
+		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		Player player2 = new Player.Forward("Gigi", "Riva", Club.CAGLIARI);
 
-		Grade voto1 = new Grade(player1, matchDay, 6.0, 0, 1, newsPaper);
-		Grade voto2 = new Grade(player1, matchDay, 8.0, 2, 0, newsPaper);
+		Grade voto1 = new Grade(player1, matchDay, 6.0, newsPaper);
+		Grade voto2 = new Grade(player1, matchDay, 8.0, newsPaper);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(player1);
@@ -129,8 +131,8 @@ class JpaGradeRepositoryTest {
 	@DisplayName("saveGrade should persist correctly")
 	void testSaveGradePersistsCorrectly() {
 
-		Player totti = new Player.Forward("Francesco", "Totti", "Roma");
-		Grade grade = new Grade(totti, matchDay, 9.0, 2, 1, newsPaper);
+		Player totti = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		Grade grade = new Grade(totti, matchDay, 9.0, newsPaper);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(totti);

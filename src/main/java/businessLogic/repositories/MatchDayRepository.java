@@ -14,4 +14,6 @@ public interface MatchDayRepository {
 
 	Optional<MatchDaySerieA> getNextMatchDay(LocalDate date);
 
+	Optional<MatchDaySerieA> getMatchDay(LocalDate date);
+
 }

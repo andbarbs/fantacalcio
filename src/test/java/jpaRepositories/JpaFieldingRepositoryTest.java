@@ -33,6 +33,7 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 import jakarta.persistence.EntityManager;
+import domainModel.Player.Club;
 
 class JpaFieldingRepositoryTest {
 
@@ -98,24 +99,24 @@ class JpaFieldingRepositoryTest {
 	public void testGetAllFieldings() {
 		entityManager.getTransaction().begin();
 
-		Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", "Juventus");
-		Goalkeeper gk2 = new Goalkeeper("Samir", "Handanović", "Inter");
+		Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", Club.JUVENTUS);
+		Goalkeeper gk2 = new Goalkeeper("Samir", "Handanović", Club.INTER);
 
-		Defender d1 = new Defender("Paolo", "Maldini", "Milan");
-		Defender d2 = new Defender("Franco", "Baresi", "Juventus");
-		Defender d3 = new Defender("Alessandro", "Nesta", "Lazio");
-		Defender d4 = new Defender("Giorgio", "Chiellini", "Juventus");
-		Defender d5 = new Defender("Leonardo", "Bonucci", "Juventus");
+		Defender d1 = new Defender("Paolo", "Maldini", Club.MILAN);
+		Defender d2 = new Defender("Franco", "Baresi", Club.JUVENTUS);
+		Defender d3 = new Defender("Alessandro", "Nesta", Club.LAZIO);
+		Defender d4 = new Defender("Giorgio", "Chiellini", Club.JUVENTUS);
+		Defender d5 = new Defender("Leonardo", "Bonucci", Club.JUVENTUS);
 
-		Midfielder m1 = new Midfielder("Andrea", "Pirlo", "Juventus");
-		Midfielder m2 = new Midfielder("Daniele", "De Rossi", "Roma");
-		Midfielder m3 = new Midfielder("Marco", "Verratti", "PSG");
-		Midfielder m4 = new Midfielder("Claudio", "Marchisio", "Juventus");
+		Midfielder m1 = new Midfielder("Andrea", "Pirlo", Club.JUVENTUS);
+		Midfielder m2 = new Midfielder("Daniele", "De Rossi", Club.ROMA);
+		Midfielder m3 = new Midfielder("Marco", "Verratti", Club.CREMONESE);
+		Midfielder m4 = new Midfielder("Claudio", "Marchisio", Club.JUVENTUS);
 
-		Forward f1 = new Forward("Roberto", "Baggio", "Bologna");
-		Forward f2 = new Forward("Francesco", "Totti", "Roma");
-		Forward f3 = new Forward("Alessandro", "Del Piero", "Juventus");
-		Forward f4 = new Forward("Lorenzo", "Insigne", "Napoli");
+		Forward f1 = new Forward("Roberto", "Baggio", Club.ROMA);
+		Forward f2 = new Forward("Francesco", "Totti", Club.ROMA);
+		Forward f3 = new Forward("Alessandro", "Del Piero", Club.JUVENTUS);
+		Forward f4 = new Forward("Lorenzo", "Insigne", Club.NAPOLI);
 
 		List<Player> players = List.of(gk1, gk2, d1, d2, d3, d4, d5, m1, m2, m3, m4, f1, f2, f3, f4);
 		

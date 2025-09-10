@@ -6,7 +6,9 @@ import java.util.Optional;
 
 import businessLogic.repositories.MatchDayRepository;
 import domainModel.MatchDaySerieA;
+import domainModel.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -20,15 +22,18 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public List<MatchDaySerieA> getAllMatchDays() {		
+	public List<MatchDaySerieA> getAllMatchDays() {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
 		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
-		criteriaQuery.select(root);
 
-		return entityManager.createQuery(criteriaQuery).getResultList();	
+		criteriaQuery.select(root);
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(MatchDaySerieA_.DATE)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
+
 
 	@Override
 	public Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date) {
@@ -66,6 +71,25 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 
 		List<MatchDaySerieA> resultList = query.getResultList();
 		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
+	}
+
+	@Override
+	public Optional<MatchDaySerieA> getMatchDay(LocalDate date) {
+		EntityManager entityManager = getEntityManager();
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
+		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+
+		// WHERE date = :date
+		criteriaQuery.select(root)
+				.where(criteriaBuilder.equal(root.get(MatchDaySerieA_.date), date));
+
+		try {
+			MatchDaySerieA result = entityManager.createQuery(criteriaQuery).getSingleResult();
+			return Optional.of(result);
+		} catch (NoResultException e) {
+			return Optional.empty();
+		}
 	}
 
 }

@@ -25,6 +25,7 @@ import domainModel.League;
 import domainModel.NewsPaper;
 import domainModel.Player;
 import domainModel.Player.Forward;
+import domainModel.Player.Club;
 import jakarta.persistence.EntityManager;
 
 @DisplayName("tests for HibernateContractRepository")
@@ -73,7 +74,7 @@ class JpaContractRepositoryTest {
 			t.persist(league);
 			team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
 			t.persist(team);
-			player = new Player.Forward("Lionel", "Messi", "Barcellona");
+			player = new Player.Forward("Lionel", "Messi", Club.PISA);
 			t.persist(player);
 		});
 		
@@ -95,7 +96,7 @@ class JpaContractRepositoryTest {
 	@DisplayName("getContract() when contract exists")
 	public void testGetContractWithContractExisting() {
 
-		Player player2 = new Player.Defender("Giorgio", "Chiellini", "Juventus");
+		Player player2 = new Player.Defender("Giorgio", "Chiellini", Club.JUVENTUS);
 		Contract contract1 = new Contract(team, player);
 		Contract contract2 = new Contract(team, player2);
 

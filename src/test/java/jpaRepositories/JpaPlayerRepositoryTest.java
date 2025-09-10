@@ -69,8 +69,8 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findAll() when two players have been persisted")
 	public void testFindAllTwoPlayersExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
-		Player messi = new Forward("Lionel", "Messi", "Barcellona");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		Player messi = new Forward("Lionel", "Messi", Club.PISA);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -83,7 +83,7 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("addPlayer() with a non-persisted player")
 	public void testAddPlayerWithNonPersistedPlayer() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
 
 		entityManager.getTransaction().begin(); // Start the transaction
 		assertTrue(playerRepository.addPlayer(buffon));
@@ -98,7 +98,7 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("addPlayer() does not add an already persisted player")
 	public void testAddPlayerWithAlreadyPersistedPlayer() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
 
 		sessionFactory.inTransaction(session -> session.persist(buffon));
 
@@ -109,8 +109,8 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findBySurname when the player does not exist")
 	public void testFindBySurnameWhenPlayerDoesNotExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
-		Player messi = new Forward("Lionel", "Messi", "Barcellona");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		Player messi = new Forward("Lionel", "Messi", Club.PISA);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -125,9 +125,9 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findBySurname when the players exists")
 	public void testFindBySurnameWhenPlayerExists() {
-		Player marcus = new Forward("Marcus", "Thuram", "Inter");
-		Player kephren = new Forward("Kephren", "Thuram", "Juventus");
-		Player eljif = new Forward("Eljif", "Elmas", "Napoli");
+		Player marcus = new Forward("Marcus", "Thuram", Club.INTER);
+		Player kephren = new Forward("Kephren", "Thuram", Club.JUVENTUS);
+		Player eljif = new Forward("Eljif", "Elmas", Club.NAPOLI);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(marcus);
@@ -142,15 +142,15 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findByTeam when the player does not exist")
 	public void testFindByTeamWhenPlayerDoesNotExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
-		Player messi = new Forward("Lionel", "Messi", "Barcellona");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		Player messi = new Forward("Lionel", "Messi", Club.PISA);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
 			session.persist(messi);
 		});
 
-		assertThat(playerRepository.findByTeam("Napoli")).isEmpty();
+		assertThat(playerRepository.findByClub(Club.NAPOLI)).isEmpty();
 		entityManager.close();
 
 	}
@@ -158,9 +158,9 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findByTeam when the players exists")
 	public void testFindByTeamWhenPlayerExists() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", "Juventus");
-		Player messi = new Forward("Lionel", "Messi", "Barcellona");
-		Player yamal = new Forward("Lamine", "Yamal", "Barcellona");
+		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		Player messi = new Forward("Lionel", "Messi", Club.MILAN);
+		Player yamal = new Forward("Lamine", "Yamal", Club.MILAN);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(buffon);
@@ -168,7 +168,7 @@ class JpaPlayerRepositoryTest {
 			session.persist(yamal);
 		});
 
-		assertThat(playerRepository.findByTeam("Barcellona")).containsExactlyInAnyOrder(messi, yamal);
+		assertThat(playerRepository.findByClub(Club.MILAN)).containsExactlyInAnyOrder(messi, yamal);
 		entityManager.close();
 	}
 
