@@ -22,9 +22,7 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 import swingViews.StarterLineUpChooser.StarterLineUpChooserWidget;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpSchemes.*;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.Selector;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.StarterLineUpChooserListener;
+import swingViews.LineUpScheme.*;
 
 @DisplayName("A SwingStarterLineUpChooser")
 @ExtendWith(MockitoExtension.class)
@@ -105,12 +103,10 @@ public class StarterLineUpChooserTest {
 	class AsStarterLineUpChooserController {
 		
 		private @Mock StarterLineUpChooserWidget mockWidget;
-		private @Mock StarterLineUpChooserListener mockListener;
 		
 		@BeforeEach
 		void testCaseSpecificSetup() {
 			chooser.setWidget(mockWidget);
-			chooser.attachListener(mockListener);
 		}
 
 		@Nested
@@ -130,10 +126,6 @@ public class StarterLineUpChooserTest {
 				
 				// AND the Widget is instructed to switch to '4-3-3'
 				verify(mockWidget).switchTo(new Scheme433());
-				
-				// AND listeners are notified and can retrieve the new scheme
-				verify(mockListener).schemeChangedOn(chooser);
-				assertThat(chooser.getCurrentScheme()).isEqualTo(new Scheme433());
 			}
 			
 			@Test
@@ -149,10 +141,6 @@ public class StarterLineUpChooserTest {
 				
 				// AND the Widget is instructed to switch to '3-4-3'
 				verify(mockWidget).switchTo(new Scheme343());
-				
-				// AND listeners are notified and can retrieve the new scheme
-				verify(mockListener).schemeChangedOn(chooser);
-				assertThat(chooser.getCurrentScheme()).isEqualTo(new Scheme343());
 			}
 			
 			@Test
@@ -168,10 +156,6 @@ public class StarterLineUpChooserTest {
 				
 				// AND the Widget is instructed to switch to '5-3-2'
 				verify(mockWidget).switchTo(new Scheme532());
-				
-				// AND listeners are notified and can retrieve the new scheme
-				verify(mockListener).schemeChangedOn(chooser);
-				assertThat(chooser.getCurrentScheme()).isEqualTo(new Scheme532());
 			}
 		}
 	}
@@ -180,7 +164,7 @@ public class StarterLineUpChooserTest {
 	@DisplayName("allows a programmatic client to")
 	class ForClients {
 		
-		// TODO: remove non-mandated responsibilities!!		
+		// TODO: all of this has to move to LineUpChooser!!
 		
 		@Test
 		@GUITest
@@ -188,9 +172,9 @@ public class StarterLineUpChooserTest {
 		public void retrieveSelectors() {
 
 			assertThat(chooser.getGoalieSelector()).isEqualTo(goalieSelector);
-			assertThat(chooser.getDefenderSelectors()).containsExactlyElementsOf(defSels);
-			assertThat(chooser.getMidfielderSelectors()).containsExactlyElementsOf(midSels);
-			assertThat(chooser.getForwardSelectors()).containsExactlyElementsOf(forwSels);
+			assertThat(chooser.getAllDefSelectors()).containsExactlyElementsOf(defSels);
+			assertThat(chooser.getAllMidSelectors()).containsExactlyElementsOf(midSels);
+			assertThat(chooser.getAllForwSelectors()).containsExactlyElementsOf(forwSels);
 		}
 
 		@Nested

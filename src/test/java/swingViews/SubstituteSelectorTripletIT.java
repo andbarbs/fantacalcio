@@ -56,8 +56,8 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			view3.setPresenter(selPres3);
 			
 			// sets up the SUT
-			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> triplet = 
-					new FillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(
+			FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>> triplet = 
+					new FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>>(
 							FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 							selPres1, selPres2, selPres3);
 			SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(

@@ -1,6 +1,5 @@
 package swingViews;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +11,9 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import domainModel.Player;
 import domainModel.Player.*;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpSchemes.*;
+import swingViews.LineUpScheme.*;
 
-public class StarterLineUpChooser implements StarterLineUpChooserController, SwingLineUpChooser.StarterLineUpChooser {	
+public class StarterLineUpChooser implements StarterLineUpChooserController, LineUpChooser.StarterLineUpChooserDelegate {	
 
 	// injected dependencies
 	private Selector<Goalkeeper> goalieSelector;
@@ -101,41 +100,46 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Swi
 		currentScheme.accept(visitor);
 		return visitor.selectionExists;
 	}
-	
-	private List<StarterLineUpChooserListener> listeners = new ArrayList<>();
-
-	@Override
-	public void attachListener(StarterLineUpChooserListener listener) {
-		listeners.add(listener);
-	}
-
-	@Override
-	public LineUpScheme getCurrentScheme() {
-		return currentScheme;
-	}
-
 	@Override
 	public Selector<Goalkeeper> getGoalieSelector() {
 		return goalieSelector;
 	}
 
 	@Override
-	public List<Selector<Defender>> getDefenderSelectors() {
+	public List<Selector<Defender>> getAllDefSelectors() {
 		return List.copyOf(defPairs);
 	}
 
 	@Override
-	public List<Selector<Midfielder>> getMidfielderSelectors() {
+	public List<Selector<Midfielder>> getAllMidSelectors() {
 		return List.copyOf(midPairs);
 	}
 	
 	@Override
-	public List<Selector<Forward>> getForwardSelectors() {
+	public List<Selector<Forward>> getAllForwSelectors() {
 		return List.copyOf(forwPairs);
 	}
 	
+	@Override
+	public List<Selector<Defender>> getCurrentDefSelectors() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public List<Selector<Midfielder>> getCurrentMidSelectors() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public List<Selector<Forward>> getCurrentForwSelectors() {
+		// TODO Auto-generated method stub
+		return null;
+	}	
 	
 	// As a Controller
+
 
 	// interface for vertical collaborator
 	public interface StarterLineUpChooserWidget {
@@ -162,10 +166,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Swi
 		widget.switchTo(newScheme);
 
 		// 3) updates bookkeeping
-		currentScheme = newScheme;
-		
-		// 4) notifies Listeners
-		listeners.forEach(listener -> listener.schemeChangedOn(this));		
+		currentScheme = newScheme;	
 	}
 
 	private Collection<Selector<? extends Player>> selectorsIn(LineUpScheme scheme) {
@@ -254,51 +255,25 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Swi
 				
 				// III) instantiates Chooser
 				StarterLineUpChooser controller = new StarterLineUpChooser(
-						goalieSelector,
-						
-						defPres1,
-						defPres2,
-						defPres3,
-						defPres4,
-						defPres5,
-						
-						midPres1,
-						midPres2,
-						midPres3,
-						midPres4,
-						
-						forwPres1,
-						forwPres2,
-						forwPres3,
-						
+						goalieSelector,						
+						defPres1, defPres2, defPres3, defPres4, defPres5,
+						midPres1, midPres2, midPres3, midPres4,
+						forwPres1, forwPres2, forwPres3,
 						presenter -> presenter.setSelection(Optional.empty()));
 				
 				SwingStarterLineUpChooserWidget widget = new SwingStarterLineUpChooserWidget(
 						false, 
-						
-						availableWindow, 
-						
+						availableWindow, 						
 						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false), 
-						
 						goalieView, 
-						
-						defView1,
-						defView2, 
-						defView3, 
-						defView4, 
-						defView5, 
-						
-						midView1, 
-						midView2, 
-						midView3, 
-						midView4, 
-						
-						forwView1,						
-						forwView2, 
-						forwView3);
+						defView1, defView2, defView3, defView4, defView5, 
+						midView1, midView2, midView3, midView4, 						
+						forwView1, forwView2, forwView3);
 				
 				controller.setWidget(widget);
 				widget.setController(controller);
+				
+				controller.switchToScheme(new Scheme433());
 				
 				frame.setContentPane(widget);		
 				frame.pack();

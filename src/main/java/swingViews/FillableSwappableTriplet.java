@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import domainModel.Player;
 import domainModel.Player.Defender;
 
 import java.awt.Dimension;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.LineUpChooser.SubstituteTripletChooserDelegate;
 
 // TODO: javadoc is pre-splitting!!
 
@@ -30,7 +32,8 @@ import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
  *           (boolean, FillableSwappable, JPanel, FillableSwappable, JPanel, FillableSwappable, JPanel)
  *           public constructor}
  */
-public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements FillableSwappableTripletController {
+public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappable<T> & Selector<Q>> 
+		implements FillableSwappableTripletController, SubstituteTripletChooserDelegate<Q> {
 	
 	// sequence creation & listening
 	private T member1, member2, member3;	
@@ -123,7 +126,7 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			
 			Dimension selectorDims = new Dimension(120, 225);
-			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> triplet;
+			FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>> triplet;
 			try {
 				SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
 				SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
@@ -137,7 +140,7 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 				view2.setPresenter(selPres2);
 				view3.setPresenter(selPres3);
 						
-				triplet = new FillableSwappableTriplet<SubstitutePlayerSelector<Defender>>(
+				triplet = new FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>>(
 						FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 						selPres1, selPres2, selPres3);
 				
@@ -160,6 +163,11 @@ public class FillableSwappableTriplet<T extends FillableSwappable<T>> implements
 				e.printStackTrace();
 			}
 		});
+	}
+
+	@Override
+	public List<Selector<Q>> getSelectors() {
+		return List.of(member1, member2, member3);
 	}
 
 }

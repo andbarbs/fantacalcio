@@ -14,6 +14,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import domainModel.Player.Defender;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
@@ -23,17 +24,17 @@ import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
 public class FillableSwappableTripletTest {
 	
 	// a test-private abstract implementor of FillableSwappable intended for mocking
-	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable> {}
+	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable>, Selector<Defender> {}
 	
 	private @Mock TestFillableSwappable mockFillable1, mockFillable2, mockFillable3;
 	private @Mock FillableSwappableSequence<TestFillableSwappable> mockSequence;	
 
 	// the SUT reference
-	private FillableSwappableTriplet<TestFillableSwappable> triplet;
+	private FillableSwappableTriplet<Defender, TestFillableSwappable> triplet;
 
 	@BeforeEach
 	public void testCaseSpecificSetup() {
-		triplet = new FillableSwappableTriplet<TestFillableSwappable>(
+		triplet = new FillableSwappableTriplet<Defender, TestFillableSwappable>(
 				mockSequence,
 				mockFillable1, mockFillable2, mockFillable3);
 	}

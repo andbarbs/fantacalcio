@@ -25,9 +25,7 @@ import javax.swing.border.TitledBorder;
 
 import domainModel.Player;
 import domainModel.Player.*;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpScheme;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpScheme.LineUpSchemeVisitor;
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpSchemes.*;
+import swingViews.LineUpScheme.*;
 import swingViews.StarterLineUpChooser.StarterLineUpChooserWidget;
 
 @SuppressWarnings("serial")
@@ -228,8 +226,6 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 		this.controller = controller;
 	}
 
-
-
 	private void switchToScheme(String targetSchemeKey) {
 		
 		// i) establish user choice of next scheme given CardLayout's String key
@@ -267,16 +263,19 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 			
 			@Override
 			public void visit532(Scheme532 scheme532) {
+				b532.setSelected(true);
 				switchToScheme("532");
 			}
 			
 			@Override
 			public void visit433(Scheme433 scheme433) {
+				b433.setSelected(true);
 				switchToScheme("433");
 			}
 			
 			@Override
 			public void visit343(Scheme343 scheme343) {
+				b343.setSelected(true);
 				switchToScheme("343");
 			}
 		});

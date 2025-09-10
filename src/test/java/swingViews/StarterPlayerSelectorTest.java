@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
-import swingViews.OrderedDealerPresenter.OrderedDealerPresenterListener;
+import swingViews.Selector.SelectorListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ class StarterPlayerSelectorTest {
 	// collaborator Mocks	
 	private @Mock OrderedDealerPresenter.OrderedDealerView<Midfielder> mockView;	
 	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> mockGroupDriver;	
-	private @Mock OrderedDealerPresenterListener<Midfielder> mockListener;
+	private @Mock SelectorListener<Midfielder> mockListener;
 	
 	// SUT instance 	
 	private @InjectMocks StarterPlayerSelector<Midfielder> presenter;

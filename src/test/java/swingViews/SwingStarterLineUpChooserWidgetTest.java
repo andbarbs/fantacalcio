@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import swingViews.SwingLineUpChooser.StarterLineUpChooser.LineUpSchemes.*;
+import swingViews.LineUpScheme.*;
 import swingViews.StarterLineUpChooser.StarterLineUpChooserWidget;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
@@ -41,7 +41,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 	private List<JPanel> widgets, widgetsIn433, widgetsIn343, widgetsIn532;
 
 	// the SUT reference
-	private SwingStarterLineUpChooserWidget chooser;
+	private SwingStarterLineUpChooserWidget widget;
 
 	@BeforeEach
 	void testCaseSpecificSetup() {
@@ -85,31 +85,17 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			});
 			
 			// instantiates SUT
-			chooser = new SwingStarterLineUpChooserWidget(
-					false,
-					
-					availableWindow,
-					
-					panel433, panel343, panel532,
-					
+			widget = new SwingStarterLineUpChooserWidget(
+					false,					
+					availableWindow,					
+					panel433, panel343, panel532,					
 					goalieWidget,					
-					defWidget1,
-					defWidget2,
-					defWidget3,
-					defWidget4,
-					defWidget5,
-					
-					midWidget1,
-					midWidget2,
-					midWidget3,
-					midWidget4,
-					
-					forwWidget1,
-					forwWidget2,
-					forwWidget3);
+					defWidget1, defWidget2, defWidget3, defWidget4, defWidget5,					
+					midWidget1, midWidget2, midWidget3, midWidget4,					
+					forwWidget1, forwWidget2, forwWidget3);
 
 			// sets up the test Frame			
-			f.add(chooser);
+			f.add(widget);
 			f.pack();
 			f.setLocationRelativeTo(null);
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -166,6 +152,11 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				window.radioButton(withText("4-3-3"));
 				window.radioButton(withText("3-4-3"));
 				window.radioButton(withText("5-3-2"));
+				
+				// none of which is selected
+				window.radioButton(withText("4-3-3")).requireNotSelected();
+				window.radioButton(withText("3-4-3")).requireNotSelected();
+				window.radioButton(withText("5-3-2")).requireNotSelected();
 			}
 		}		
 	}
@@ -179,7 +170,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 		
 		@BeforeEach
 		void testCaseSpecificSetup() {
-			chooser.setController(controller);
+			widget.setController(controller);
 		}		
 
 		@Nested
@@ -236,7 +227,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 
 		@BeforeEach
 		void testCaseSpecificSetup() {
-			asWidget = chooser;
+			asWidget = widget;
 			
 			// GIVEN selector widgets are forcibly removed from whatever scheme
 			GuiActionRunner.execute(() -> {
@@ -257,10 +248,12 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				// WHEN the Controller requests changing to the '3-4-3' scheme
 				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme343()));
 				
-				// THEN widgets within '3-4-3' are added to the 343 panel
-				widgetsIn343.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel343));
+				// THEN the '3-4-3' radio button becomes selected
+				window.radioButton(withText("3-4-3")).requireSelected();
 				
+				// AND widgets within '3-4-3' are added to the 343 panel
+				widgetsIn343.stream().forEach(fakeWidget ->
+					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel343));				
 				// WHILE widgets not within '3-4-3' are without parent
 				widgets.stream().filter(Widget -> !widgetsIn343.contains(Widget))
 				.forEach(Widget -> assertThat(Widget.getParent()).isNull());
@@ -274,10 +267,12 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				// WHEN the Controller requests changing to the '5-3-2' scheme
 				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme532()));
 				
-				// THEN widgets within '5-3-2' are added to the 532 panel
-				widgetsIn532.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel532));
+				// THEN the '5-3-2' radio button becomes selected
+				window.radioButton(withText("5-3-2")).requireSelected();
 				
+				// AND  widgets within '5-3-2' are added to the 532 panel
+				widgetsIn532.stream().forEach(fakeWidget ->
+					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel532));				
 				// WHILE widgets not within '5-3-2' are without parent
 				widgets.stream().filter(Widget -> !widgetsIn532.contains(Widget))
 				.forEach(Widget -> assertThat(Widget.getParent()).isNull());
@@ -291,10 +286,12 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				// WHEN the Controller requests changing to the '4-3-3' scheme
 				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme433()));
 				
-				// THEN widgets within '4-3-3' are added to the 433 panel
-				widgetsIn433.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel433));
+				// THEN the '4-3-3' radio button becomes selected
+				window.radioButton(withText("4-3-3")).requireSelected();
 				
+				// AND widgets within '4-3-3' are added to the 433 panel
+				widgetsIn433.stream().forEach(fakeWidget ->
+					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel433));				
 				// WHILE widgets not within '4-3-3' are without parent
 				widgets.stream().filter(Widget -> !widgetsIn433.contains(Widget))
 				.forEach(Widget -> assertThat(Widget.getParent()).isNull());

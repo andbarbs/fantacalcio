@@ -9,101 +9,34 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import domainModel.Player.*;
+import swingViews.LineUpScheme.*;
 
 @SuppressWarnings("serial")
-public class SwingLineUpChooser extends JPanel {
-	
-	public interface StarterLineUpChooser {
-		
-		// interface for Selector collaborator (will belong in their own file)
-		
-		public interface Selector<T> {
-			public interface SelectorListener {
-				void selectionMade();
-				void selectionCleared();
-			}
-			void add(SelectorListener listener);
-			Optional<T> getSelection();
-			void setSelection(Optional<T> option);
-		}
-		
-		Selector<Goalkeeper> getGoalieSelector();
-		List<Selector<Defender>> getDefenderSelectors();
-		List<Selector<Midfielder>> getMidfielderSelectors();		
-		List<Selector<Forward>> getForwardSelectors();
-		
-		// Visitable scheme type
-		public static abstract class LineUpScheme {
+public class SwingLineUpChooserWidget extends JPanel {
 
-			public interface LineUpSchemeVisitor {
-				void visit433(LineUpSchemes.Scheme433 scheme433);
-				void visit343(LineUpSchemes.Scheme343 scheme343);
-				void visit532(LineUpSchemes.Scheme532 scheme532);
-			}
-
-			abstract void accept(LineUpSchemeVisitor visitor);
-
-			@Override
-			public boolean equals(Object obj) {
-				return getClass().equals(obj.getClass());
-			}
-		}
-
-		public static abstract class LineUpSchemes {
-			public static class Scheme433 extends LineUpScheme {
-				@Override
-				void accept(LineUpSchemeVisitor visitor) {
-					visitor.visit433(this);
-				}
-			}
-
-			public static class Scheme343 extends LineUpScheme {
-				@Override
-				void accept(LineUpSchemeVisitor visitor) {
-					visitor.visit343(this);
-				}
-			}
-
-			public static class Scheme532 extends LineUpScheme {
-				@Override
-				void accept(LineUpSchemeVisitor visitor) {
-					visitor.visit532(this);
-				}
-			}
-		}
-		
-		interface StarterLineUpChooserListener {
-			void schemeChangedOn(StarterLineUpChooser chooser);
-		}
-		
-		void attachListener(StarterLineUpChooserListener listener);
-		LineUpScheme getCurrentScheme();
-	}
-	
-
-	private SwingStarterLineUpChooserWidget starterChooser;
-	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet;
-	private FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet;
-	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet;
-	private FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet;
+	private JPanel starterChooserWidget;
+	private JPanel goalieTripletWidget;
+	private JPanel defTripletWidget;
+	private JPanel midTripletWidget;
+	private JPanel forwTripletWidget;
 
 
 	// public instantiation point
-	public SwingLineUpChooser(
+	public SwingLineUpChooserWidget(
 			boolean isDesignTime,
-			SwingStarterLineUpChooserWidget starterChooser,
-			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> goalieTriplet,
-			FillableSwappableTriplet<SubstitutePlayerSelector<Defender>> defTriplet,
-			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> midTriplet,
-			FillableSwappableTriplet<SubstitutePlayerSelector<Goalkeeper>> forwTriplet) {
-		
-				this.starterChooser = starterChooser;
-				this.goalieTriplet = goalieTriplet;
-				this.defTriplet = defTriplet;
-				this.midTriplet = midTriplet;
-				this.forwTriplet = forwTriplet;
-
-		
+			JPanel starterChooserWidget,
+			JPanel goalieTripletWidget,
+			JPanel defTripletWidget,
+			JPanel midTripletWidget,
+			JPanel forwTripletWidget) {
+				
+				this.starterChooserWidget = starterChooserWidget;
+				this.goalieTripletWidget = goalieTripletWidget;
+				this.defTripletWidget = defTripletWidget;
+				this.midTripletWidget = midTripletWidget;
+				this.forwTripletWidget = forwTripletWidget;
+				
+				add(starterChooserWidget);
 	}
 
 	
@@ -118,13 +51,13 @@ public class SwingLineUpChooser extends JPanel {
 	 * @throws IOException if {@code SwingSubPlayerSelector}'s sizing-augmented
 	 *                     instantiation fails
 	 */
-	SwingLineUpChooser() throws IOException {
+	SwingLineUpChooserWidget() throws IOException {
 		Dimension screenSize = getToolkit().getScreenSize();
 		Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
 		Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
 				SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
 		
-		this.starterChooser = new SwingStarterLineUpChooserWidget(
+		this.starterChooserWidget = new SwingStarterLineUpChooserWidget(
 				true, 
 				
 				availableWindow, 
@@ -148,10 +81,10 @@ public class SwingLineUpChooser extends JPanel {
 				new SwingSubPlayerSelector<Forward>(selectorDims), 
 				new SwingSubPlayerSelector<Forward>(selectorDims));
 		
-		add(starterChooser);		
+		add(starterChooserWidget);		
 
 		// 9) sets private design-time dimensions
-		setPreferredSize(starterChooser.getPreferredSize());
+		setPreferredSize(starterChooserWidget.getPreferredSize());
 	}
 	
 	
@@ -237,34 +170,33 @@ public class SwingLineUpChooser extends JPanel {
 								new Forward("Alessandro", "Del Piero"), 
 								new Forward("Lorenzo", "Insigne")));
 				
-				// III) instantiates Chooser
-//				SwingLineUpChooser chooser = new SwingLineUpChooser(
-//						false,
-//						
-//						availableWindow,
-//						
-//						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false),
-//						
-//						goaliePresenter, goalieView,
-//						
-//						defPres1, defView1,
-//						defPres2, defView2,
-//						defPres3, defView3,
-//						defPres4, defView4,
-//						defPres5, defView5,
-//						
-//						midPres1, midView1,
-//						midPres2, midView2,
-//						midPres3, midView3,
-//						midPres4, midView4,
-//						
-//						forwPres1, forwView1,
-//						forwPres2, forwView2,
-//						forwPres3, forwView3,
-//						
-//						presenter -> presenter.setSelection(Optional.empty()));
-//				
-//				frame.setContentPane(chooser);		
+				// III) instantiates StarterChooser
+				SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
+						false,						
+						availableWindow,						
+						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false),						
+						goalieView,						
+						defView1, defView2, defView3, defView4, defView5,						
+						midView1, midView2, midView3, midView4,
+						forwView1, forwView2, forwView3);
+				
+				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
+						goaliePresenter,						
+						defPres1, defPres2, defPres3, defPres4, defPres5,						
+						midPres1, midPres2, midPres3, midPres4,						
+						forwPres1, forwPres2, forwPres3,						
+						presenter -> presenter.setSelection(Optional.empty()));
+				
+				starterWidget.setController(starterChooser);
+				starterChooser.setWidget(starterWidget);
+				
+				starterChooser.switchToScheme(new Scheme433());
+				
+				// IV) instantiates LineUpChooserWidget
+				SwingLineUpChooserWidget chooserWidget = new SwingLineUpChooserWidget(
+						false, starterWidget, null, null, null, null);
+				
+				frame.setContentPane(chooserWidget);		
 				frame.pack();
 				frame.setLocationRelativeTo(null);
 				frame.setVisible(true);
