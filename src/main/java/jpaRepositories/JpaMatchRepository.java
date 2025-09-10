@@ -52,6 +52,6 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
 
     @Override
     public void saveMatch(Match match) {
-
+    	getEntityManager().persist(match);
     }
 }
