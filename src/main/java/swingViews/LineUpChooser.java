@@ -53,8 +53,9 @@ public class LineUpChooser {
 		this.widget = mockWidget;		
 	}
 	
-	private boolean hasStarterGoalieChoice, hasStarterDefChoice, hasStarterMidChoice, hasStarterForwChoice;
-	private boolean hasSubsGoaliesChoice, hasSubsDefsChoice, hasSubsMidsChoice, hasSubsForwsChoice;
+	// visible to unit tests for set-up
+	boolean hasStarterGoalieChoice, hasStarterDefChoice, hasStarterMidChoice, hasStarterForwChoice;
+	boolean hasSubsGoaliesChoice, hasSubsDefsChoice, hasSubsMidsChoice, hasSubsForwsChoice;
 
 	private void possiblyEnableSaving() {
 		if (hasStarterGoalieChoice && hasStarterDefChoice && hasStarterMidChoice && hasStarterForwChoice
@@ -107,8 +108,11 @@ public class LineUpChooser {
 			
 			@Override
 			public void selectionClearedOn(Selector<Defender> selector) {
-				hasStarterDefChoice = false;
-				widget.disableSavingLineUp();
+				if (hasStarterDefChoice = starterChooser.getCurrentDefSelectors().stream()
+						.allMatch(sel -> sel.getSelection().isPresent()))
+					possiblyEnableSaving();
+				else
+					widget.disableSavingLineUp();
 			}
 		};		
 		this.starterChooser.getAllDefSelectors().forEach(sel -> sel.attachListener(starterDefListener));
@@ -123,8 +127,11 @@ public class LineUpChooser {
 			
 			@Override
 			public void selectionClearedOn(Selector<Midfielder> selector) {
-				hasStarterMidChoice = false;
-				widget.disableSavingLineUp();
+				if (hasStarterMidChoice = starterChooser.getCurrentMidSelectors().stream()
+						.allMatch(sel -> sel.getSelection().isPresent()))
+					possiblyEnableSaving();
+				else
+					widget.disableSavingLineUp();
 			}
 		};
 		this.starterChooser.getAllMidSelectors().forEach(sel -> sel.attachListener(starterMidListener));
@@ -140,8 +147,11 @@ public class LineUpChooser {
 			
 			@Override
 			public void selectionClearedOn(Selector<Forward> selector) {
-				hasStarterForwChoice = false;
-				widget.disableSavingLineUp();
+				if (hasStarterForwChoice = starterChooser.getCurrentForwSelectors().stream()
+						.allMatch(sel -> sel.getSelection().isPresent()))
+					possiblyEnableSaving();
+				else
+					widget.disableSavingLineUp();
 			}
 		};
 		this.starterChooser.getAllForwSelectors().forEach(sel -> sel.attachListener(starterForwListener));
