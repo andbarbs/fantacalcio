@@ -141,11 +141,12 @@ public class LineUpChooser {
 			@Override
 			public void selectionClearedOn(Selector<T> selector) {
 				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
-						.allMatch(Optional::isPresent))
-					if (hasChoice())
+						.allMatch(Optional::isPresent)) {
+					if (hasChoice())   // why???
 						widget.enableSavingLineUp();
-					else
+				} else {
 						widget.disableSavingLineUp();
+				}
 			}
 		};
 	}
