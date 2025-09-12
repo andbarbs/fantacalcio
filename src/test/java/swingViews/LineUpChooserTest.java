@@ -344,94 +344,6 @@ public class LineUpChooserTest {
 						}
 					}					
 				}
-				
-//				/**
-//				 * examines the case where a choice emerges due to
-//				 * some selectors being excluded 
-//				 */
-//				@Nested
-//				@DisplayName("as a result of a scheme change excluding")
-//				class FollowingExclusion {
-//					
-//					@Captor ArgumentCaptor<SelectorListener<Defender>> starterDefListener;
-//					@Captor ArgumentCaptor<SelectorListener<Midfielder>> starterMidListener;			
-//					@Captor ArgumentCaptor<SelectorListener<Forward>> starterForwListener;
-//					
-//					@Test
-//					@DisplayName("a defender")
-//					public void ExcludedStarterDefender() {
-//						starterDefs.forEach(sel -> verify(sel).attachListener(starterDefListener.capture()));
-//
-//						// GIVEN all other Listeners have registered a choice
-//						affirmAllListenerFlags();
-//						chooser.hasStarterDefChoice = false;
-//
-//						// AND Starter Delegate reports those in the scheme as current starter selectors
-//						when(starterChooser.getCurrentDefSelectors()).thenReturn(
-//								starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
-//						// AND selectors in the scheme report being non-empty
-//						starterDefs.stream().filter(selsInCurrentScheme::contains).forEach(
-//								selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
-//
-//						// WHEN the Listener is notified of 'selection-cleared' 
-//						// for a selector outside the current scheme
-//						starterDefListener.getValue().selectionClearedOn(starterDefs.stream()
-//								.filter(sel -> !selsInCurrentScheme.contains(sel)).findFirst().get());
-//
-//						// THEN the Widget is commanded to enable line-up saving
-//						verify(mockWidget).enableSavingLineUp();
-//					}
-//					
-//					@Test
-//					@DisplayName("a midfielder")
-//					public void ExcludedStarterMidfielder() {
-//						starterMids.forEach(sel -> verify(sel).attachListener(starterMidListener.capture()));
-//
-//						// GIVEN all other Listeners have registered a choice
-//						affirmAllListenerFlags();
-//						chooser.hasStarterMidChoice = false;
-//
-//						// AND Starter Delegate reports those in the scheme as current starter selectors
-//						when(starterChooser.getCurrentMidSelectors()).thenReturn(
-//								starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
-//						// AND selectors in the scheme report being non-empty
-//						starterMids.stream().filter(selsInCurrentScheme::contains).forEach(
-//								selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
-//
-//						// WHEN the Listener is notified of 'selection-cleared' 
-//						// for a selector outside the current scheme
-//						starterMidListener.getValue().selectionClearedOn(starterMids.stream()
-//								.filter(sel -> !selsInCurrentScheme.contains(sel)).findFirst().get());
-//
-//						// THEN the Widget is commanded to enable line-up saving
-//						verify(mockWidget).enableSavingLineUp();
-//					}
-//					
-//					@Test
-//					@DisplayName("a forward")
-//					public void ExcludedStarterForward() {
-//						starterForws.forEach(sel -> verify(sel).attachListener(starterForwListener.capture()));
-//
-//						// GIVEN all other Listeners have registered a choice
-//						affirmAllListenerFlags();
-//						chooser.hasStarterForwChoice = false;
-//
-//						// AND Starter Delegate reports those in the scheme as current starter selectors
-//						when(starterChooser.getCurrentForwSelectors()).thenReturn(
-//								starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
-//						// AND selectors in the scheme report being non-empty
-//						starterForws.stream().filter(selsInCurrentScheme::contains).forEach(
-//								selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
-//
-//						// WHEN the Listener is notified of 'selection-cleared' 
-//						// for a selector outside the current scheme
-//						starterForwListener.getValue().selectionClearedOn(starterForws.stream()
-//								.filter(sel -> !selsInCurrentScheme.contains(sel)).findFirst().get());
-//
-//						// THEN the Widget is commanded to enable line-up saving
-//						verify(mockWidget).enableSavingLineUp();
-//					}
-//				}
 			}			
 		}
 		
@@ -652,6 +564,123 @@ public class LineUpChooserTest {
 					}					
 				}
 			}			
+		}
+	}
+	
+	@Nested
+	@DisplayName("processes scheme changes")
+	class ConsumersForSchemeChanges {
+		
+		@Nested
+		@DisplayName("ensuring Listeners are attached to current scheme")
+		class AttachingRemovingListeners {
+			
+		}
+
+		@Nested
+		@DisplayName("keeping group choices correct when group")
+		class KeepingGroupChoicesCorrect {
+
+			@Nested
+			@DisplayName("shrinks")
+			class WhenGroupShrinks {
+
+				@Nested
+				@DisplayName("and remaining Selectors")
+				class AndRemainingSelectors {
+
+					@Nested
+					@DisplayName("produce a choice")
+					class ProduceAChoice {
+
+						@Nested
+						@DisplayName("in the case of")
+						class ForGroup {
+
+							@Test
+							@DisplayName("defenders")
+							public void efwffwf() {
+
+							}
+
+							@Test
+							@DisplayName("midfielders")
+							public void sfdsdsfs() {
+
+							}
+
+							@Test
+							@DisplayName("forwards")
+							public void sdfssfssf() {
+
+							}
+						}
+					}
+
+					@Nested
+					@DisplayName("do not produce a choice")
+					class DoNotProduceAChoice {
+
+						@Nested
+						@DisplayName("in the case of")
+						class ForGroup {
+
+							@Test
+							@DisplayName("defenders")
+							public void efwffwf() {
+
+							}
+
+							@Test
+							@DisplayName("midfielders")
+							public void sfdsdsfs() {
+
+							}
+
+							@Test
+							@DisplayName("forwards")
+							public void sdfssfssf() {
+
+							}
+						}
+
+					}
+				}
+			}
+
+			@Nested
+			@DisplayName("expands")
+			class WhenGroupExpands {
+
+				@Nested
+				@DisplayName("in the case of")
+				class ForGroup {
+
+					@Test
+					@DisplayName("defenders")
+					public void efwffwf() {
+
+					}
+
+					@Test
+					@DisplayName("midfielders")
+					public void sfdsdsfs() {
+
+					}
+
+					@Test
+					@DisplayName("forwards")
+					public void sdfssfssf() {
+
+					}
+				}
+			}
+		}
+	
+		@Nested
+		@DisplayName("salvaging selections that would be lost")
+		class SalvagingSelections {
+			
 		}
 	}
 	
