@@ -42,22 +42,26 @@ public class NewsPaperService {
 	}
 
 	public Optional<MatchDaySerieA> getMatchDay() {
-		return transactionManager.fromTransaction((context) -> {
-			LocalDate now = LocalDate.now();
-			DayOfWeek dayOfWeek = now.getDayOfWeek();
-			Optional<MatchDaySerieA> matchDaySerieA = Optional.empty();
-			if (dayOfWeek == DayOfWeek.SATURDAY) {
-				matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-			} else if (dayOfWeek == DayOfWeek.SUNDAY) {
-				matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-				if (matchDaySerieA.isEmpty()) {
-					matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-				}
-			} else if (dayOfWeek == DayOfWeek.MONDAY) {
-				matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-			}
-			return matchDaySerieA;
-		});
+	    return transactionManager.fromTransaction((context) -> {
+	        LocalDate now = today(); // use protected today() instead of LocalDate.now()
+	        DayOfWeek dayOfWeek = now.getDayOfWeek();
+	        Optional<MatchDaySerieA> matchDaySerieA = Optional.empty();
+	        if (dayOfWeek == DayOfWeek.SATURDAY) {
+	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
+	        } else if (dayOfWeek == DayOfWeek.SUNDAY) {
+	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
+	            if (matchDaySerieA.isEmpty()) {
+	                matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
+	            }
+	        } else if (dayOfWeek == DayOfWeek.MONDAY) {
+	            matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
+	        }
+	        return matchDaySerieA;
+	    });
+	}
+	
+	protected LocalDate today() {
+		return LocalDate.now();
 	}
 
 }
