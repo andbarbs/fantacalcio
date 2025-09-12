@@ -47,6 +47,8 @@ public interface Selector<T> {
 	
 	void attachListener(SelectorListener<T> listener);
 	
+	void removeListener(SelectorListener<T> listener);
+	
 	/**
 	 * @return an {@code Optional} containing the option currently selected on this
 	 *         {@code Selector}, or an empty one if the {@code Selector} has no
@@ -60,4 +62,5 @@ public interface Selector<T> {
 	 *               {@code Selector}'s selection
 	 */
 	void setSelection(Optional<T> option);
+	
 }

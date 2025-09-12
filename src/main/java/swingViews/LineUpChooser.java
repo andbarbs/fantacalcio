@@ -33,6 +33,9 @@ public class LineUpChooser {
 		void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender);
 		void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder);
 		void setEntryForwConsumer(Consumer<Selector<Forward>> enterForward);
+		void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender);
+		void setExitMidConsumer(Consumer<Selector<Midfielder>> capture);
+		void setExitForwConsumer(Consumer<Selector<Forward>> capture);
 	}
 
 	private StarterLineUpChooserDelegate starterChooser;
@@ -104,13 +107,37 @@ public class LineUpChooser {
 
 		// 2. sets Consumers into the Starter Delegate for the other three roles
 		SelectorListener<Defender> starterDefListener = listener(hasStarterDefChoice, starterChooser::getCurrentDefSelectors);		
-		this.starterChooser.setEntryDefConsumer(selector -> selector.attachListener(starterDefListener));
+		this.starterChooser.setEntryDefConsumer(selector -> {
+			selector.attachListener(starterDefListener);
+			hasStarterDefChoice.flag = false;
+		});
+		this.starterChooser.setExitDefConsumer(selector -> {
+			selector.removeListener(starterDefListener);
+			hasStarterDefChoice.flag = starterChooser.getCurrentDefSelectors().stream().map(Selector::getSelection)
+					.allMatch(Optional::isPresent);
+		});
 
 		SelectorListener<Midfielder> starterMidListener = listener(hasStarterMidChoice, starterChooser::getCurrentMidSelectors);
-		this.starterChooser.setEntryMidConsumer(selector -> selector.attachListener(starterMidListener));
+		this.starterChooser.setEntryMidConsumer(selector -> {
+			selector.attachListener(starterMidListener);
+			hasStarterMidChoice.flag = false;
+		});
+		this.starterChooser.setExitMidConsumer(selector -> {
+			selector.removeListener(starterMidListener);
+			hasStarterMidChoice.flag = starterChooser.getCurrentMidSelectors().stream().map(Selector::getSelection)
+					.allMatch(Optional::isPresent);
+		});
 
 		SelectorListener<Forward> starterForwListener = listener(hasStarterForwChoice, starterChooser::getCurrentForwSelectors);
-		this.starterChooser.setEntryForwConsumer(selector -> selector.attachListener(starterForwListener));
+		this.starterChooser.setEntryForwConsumer(selector -> {
+			selector.attachListener(starterForwListener);
+			hasStarterForwChoice.flag = false;
+		});
+		this.starterChooser.setExitForwConsumer(selector -> {
+			selector.removeListener(starterForwListener);
+			hasStarterForwChoice.flag = starterChooser.getCurrentForwSelectors().stream().map(Selector::getSelection)
+					.allMatch(Optional::isPresent);
+		});
 
 		// 3. attaches Listeners to substitute Selectors
 		SelectorListener<Goalkeeper> substituteGoalieListener = listener(hasSubsGoaliesChoice, goalieTriplet::getSelectors);

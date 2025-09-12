@@ -1,6 +1,7 @@
 package swingViews;
 
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,74 +37,76 @@ public class LineUpChooserTest {
 	private static final Defender FAKE_DEFENDER = new Defender(null, null);
 	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null);
 	
-	private @Mock LineUpChooserWidget mockWidget;	
+	// first-level dependencies
+	private @Mock LineUpChooserWidget mockWidget;
+	private @Mock StarterLineUpChooserDelegate starterChooser;	
+	private @Mock SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
+	private @Mock SubstituteTripletChooserDelegate<Defender> defTriplet;
+	private @Mock SubstituteTripletChooserDelegate<Midfielder> midTriplet;
+	private @Mock SubstituteTripletChooserDelegate<Forward> forwTriplet;
 
+	// second-level dependencies
+	private @Mock Selector<Goalkeeper> starterGoalie;
+	private @Mock Selector<Defender> starterDef1, starterDef2, starterDef3, starterDef4, starterDef5;
+	private @Mock Selector<Midfielder> starterMid1, starterMid2, starterMid3, starterMid4;
+	private @Mock Selector<Forward> starterForw1, starterForw2, starterForw3;
+	
+	private @Mock Selector<Goalkeeper> tripletGoalie1, tripletGoalie2, tripletGoalie3;
+	private @Mock Selector<Defender> tripletDef1, tripletDef2, tripletDef3;
+	private @Mock Selector<Midfielder> tripletMid1, tripletMid2, tripletMid3;
+	private @Mock Selector<Forward> tripletForw1, tripletForw2, tripletForw3;
+
+	// selector lists
+	private List<Selector<?>> selsInCurrentScheme;
+	private List<Selector<Goalkeeper>> tripletGoalies;
+	private List<Selector<Defender>> starterDefs, tripletDefs;
+	private List<Selector<Midfielder>> starterMids, tripletMids;
+	private List<Selector<Forward>> starterForws, tripletForws;
+	
+	private void populateSelsLists() {
+		// starters, by role
+		starterDefs = List.of(starterDef1, starterDef2, starterDef3, starterDef4, starterDef5);
+		starterMids = List.of(starterMid1, starterMid2, starterMid3, starterMid4);
+		starterForws = List.of(starterForw1, starterForw2, starterForw3);
+		
+		// starters, in a fictitious current scheme
+		selsInCurrentScheme = List.of(
+				starterGoalie, 
+				starterDef1, starterDef2, starterDef3,
+				starterMid1, starterMid2, starterMid3, 
+				starterForw1, starterForw2);
+		
+		// triplet, by role
+		tripletGoalies = List.of(tripletGoalie1, tripletGoalie2, tripletGoalie3);
+		tripletDefs = List.of(tripletDef1, tripletDef2, tripletDef3);
+		tripletMids = List.of(tripletMid1, tripletMid2, tripletMid3);
+		tripletForws = List.of(tripletForw1, tripletForw2, tripletForw3);
+	}
+	
+	// the SUT reference
+	private LineUpChooser chooser;
+
+	@BeforeEach
+	void instantiateSUT() {
+
+		populateSelsLists();
+
+		// stubs Delegates to allow listener attachments in SUT constructor
+		when(starterChooser.getGoalieSelector()).thenReturn(starterGoalie);
+		when(goalieTriplet.getSelectors()).thenReturn(tripletGoalies);
+		when(defTriplet.getSelectors()).thenReturn(tripletDefs);
+		when(midTriplet.getSelectors()).thenReturn(tripletMids);
+		when(forwTriplet.getSelectors()).thenReturn(tripletForws);
+
+		// instantiates SUT
+		chooser = new LineUpChooser(starterChooser, goalieTriplet, defTriplet, midTriplet, forwTriplet);
+		chooser.setWidget(mockWidget);
+	}
+	
 	@Nested
 	@DisplayName("commands its Widget to")
 	class OrdersWidgetTo {
-		
-		private @Mock Selector<Goalkeeper> starterGoalie;
-		private @Mock Selector<Defender> starterDef1, starterDef2, starterDef3, starterDef4, starterDef5;
-		private @Mock Selector<Midfielder> starterMid1, starterMid2, starterMid3, starterMid4;
-		private @Mock Selector<Forward> starterForw1, starterForw2, starterForw3;
-		
-		private @Mock Selector<Goalkeeper> tripletGoalie1, tripletGoalie2, tripletGoalie3;
-		private @Mock Selector<Defender> tripletDef1, tripletDef2, tripletDef3;
-		private @Mock Selector<Midfielder> tripletMid1, tripletMid2, tripletMid3;
-		private @Mock Selector<Forward> tripletForw1, tripletForw2, tripletForw3;
-		
-		private @Mock StarterLineUpChooserDelegate starterChooser;
-		private @Mock SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
-		private @Mock SubstituteTripletChooserDelegate<Defender> defTriplet;
-		private @Mock SubstituteTripletChooserDelegate<Midfielder> midTriplet;
-		private @Mock SubstituteTripletChooserDelegate<Forward> forwTriplet;
-		
-		private List<Selector<?>> selsInCurrentScheme;
-		private List<Selector<Goalkeeper>> tripletGoalies;
-		private List<Selector<Defender>> starterDefs, tripletDefs;
-		private List<Selector<Midfielder>> starterMids, tripletMids;
-		private List<Selector<Forward>> starterForws, tripletForws;
-		
-		private void populateSelsLists() {
-			// starters, by role
-			starterDefs = List.of(starterDef1, starterDef2, starterDef3, starterDef4, starterDef5);
-			starterMids = List.of(starterMid1, starterMid2, starterMid3, starterMid4);
-			starterForws = List.of(starterForw1, starterForw2, starterForw3);
-			
-			// starters, in a fictitious current scheme
-			selsInCurrentScheme = List.of(
-					starterGoalie, 
-					starterDef1, starterDef2, starterDef3,
-					starterMid1, starterMid2, starterMid3, 
-					starterForw1, starterForw2);
-			
-			// triplet, by role
-			tripletGoalies = List.of(tripletGoalie1, tripletGoalie2, tripletGoalie3);
-			tripletDefs = List.of(tripletDef1, tripletDef2, tripletDef3);
-			tripletMids = List.of(tripletMid1, tripletMid2, tripletMid3);
-			tripletForws = List.of(tripletForw1, tripletForw2, tripletForw3);
-		}
-		
-		// the SUT reference
-		private LineUpChooser chooser;
-		
-		@BeforeEach
-		void testCaseSpecificSetup() {
-			
-			populateSelsLists();
-			
-			// stubs Delegates to allow listener attachments in SUT constructor
-			when(starterChooser.getGoalieSelector()).thenReturn(starterGoalie);				
-			
-			when(goalieTriplet.getSelectors()).thenReturn(tripletGoalies);
-			when(defTriplet.getSelectors()).thenReturn(tripletDefs);
-			when(midTriplet.getSelectors()).thenReturn(tripletMids);
-			when(forwTriplet.getSelectors()).thenReturn(tripletForws);
-			
-			// instantiates SUT
-			chooser = new LineUpChooser(starterChooser,	goalieTriplet, defTriplet, midTriplet, forwTriplet);
-			chooser.setWidget(mockWidget);
-		}		
+				
 
 		private void affirmAllChoiceFlags() {
 			chooser.hasStarterGoalieChoice.flag = true;
@@ -130,8 +133,8 @@ public class LineUpChooserTest {
 				 * 
 				 * 	1. upon instantiation
 				 * 		i.  it attaches Listeners to starter goalie & all substitute Selectors
-				 * 		ii. it sets Consumers into the Starter Delegate for 
-				 * 			Selector entry into the current scheme
+				 * 		ii. it sets Consumers into the Starter Delegate for the latter 
+				 * 			to process Selectors entering the current scheme
 				 * 	
 				 * 	2. said Consumers attach Listeners to Selectors
 				 */
@@ -361,12 +364,11 @@ public class LineUpChooserTest {
 				 * 
 				 * 	1. upon instantiation
 				 * 		i.  it attaches Listeners to starter goalie & all substitute Selectors
-				 * 		ii. it sets Consumers into the Starter Delegate for 
-				 * 			Selector entry into the current scheme
+				 * 		ii. it sets Consumers into the Starter Delegate for the latter 
+				 * 			to process Selectors entering the current scheme
 				 * 	
 				 * 	2. said Consumers attach Listeners to Selectors
 				 */
-				@Nested
 				@DisplayName("under the current scheme")
 				class UnderCurrentScheme {
 					
@@ -570,17 +572,108 @@ public class LineUpChooserTest {
 	@Nested
 	@DisplayName("processes scheme changes")
 	class ConsumersForSchemeChanges {
-		
+
+		/**
+		 * TEST ISOLATION 
+		 * these tests make the following assumptions about the SUT:
+		 * 
+		 * 	1. upon instantiation, it sets Consumers into the Starter Delegate 
+		 * 	   for the latter to process Selectors 
+		 * 		i.  exiting the current scheme 
+		 * 		ii. entering the current scheme
+		 */
 		@Nested
-		@DisplayName("ensuring Listeners are attached to current scheme")
+		@DisplayName("ensuring Listeners only monitor the current scheme")
 		class AttachingRemovingListeners {
 			
+			@Nested
+			@DisplayName("in the case of")
+			class ForGroup {
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> entryDefConsumer;
+				@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> exitDefConsumer;
+				@Captor	ArgumentCaptor<SelectorListener<Defender>> defListener;
+
+				@Test
+				@DisplayName("defenders")
+				public void AffirmsDefenderChoice(@Mock Selector<Defender> dummySelector) {
+					verify(starterChooser).setEntryDefConsumer(entryDefConsumer.capture());
+					verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
+					
+					// WHEN the entry Consumer is made to process a Selector
+					entryDefConsumer.getValue().accept(dummySelector);
+					
+					// THEN a Listener is attached to that Selector 
+					verify(dummySelector).attachListener(defListener.capture());
+					
+					// AND WHEN the exit Consumer is made to process the same Selector
+					exitDefConsumer.getValue().accept(dummySelector);
+					
+					// THEN the previously attached Listener is removed from the Selector
+					verify(dummySelector).removeListener(defListener.getValue());
+				}				
+
+				@Captor ArgumentCaptor<Consumer<Selector<Midfielder>>> entryMidConsumer;
+				@Captor ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
+				@Captor ArgumentCaptor<SelectorListener<Midfielder>> midListener;
+
+				@Test
+				@DisplayName("midfielders")
+				public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> dummySelector) {
+					verify(starterChooser).setEntryMidConsumer(entryMidConsumer.capture());
+					verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
+
+					// WHEN the entry Consumer is made to process a Selector
+					entryMidConsumer.getValue().accept(dummySelector);
+
+					// THEN a Listener is attached to that Selector
+					verify(dummySelector).attachListener(midListener.capture());
+
+					// AND WHEN the exit Consumer is made to process the same Selector
+					exitMidConsumer.getValue().accept(dummySelector);
+
+					// THEN the previously attached Listener is removed from the Selector
+					verify(dummySelector).removeListener(midListener.getValue());
+				}
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> entryForwConsumer;
+				@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
+				@Captor	ArgumentCaptor<SelectorListener<Forward>> forwListener;
+
+				@Test
+				@DisplayName("forwards")
+				public void AffirmsForwardChoice(@Mock Selector<Forward> dummySelector) {
+					verify(starterChooser).setEntryForwConsumer(entryForwConsumer.capture());
+					verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
+					
+					// WHEN the entry Consumer is made to process a Selector
+					entryForwConsumer.getValue().accept(dummySelector);
+					
+					// THEN a Listener is attached to that Selector 
+					verify(dummySelector).attachListener(forwListener.capture());
+					
+					// AND WHEN the exit Consumer is made to process the same Selector
+					exitForwConsumer.getValue().accept(dummySelector);
+					
+					// THEN the previously attached Listener is removed from the Selector
+					verify(dummySelector).removeListener(forwListener.getValue());
+				}
+			}			
 		}
 
 		@Nested
 		@DisplayName("keeping group choices correct when group")
 		class KeepingGroupChoicesCorrect {
 
+			/**
+			 * TEST ISOLATION 
+			 * these tests make the following assumptions about the SUT:
+			 * 
+			 * 	1. upon instantiation, it sets Consumers into the Starter Delegate 
+			 * 	   for the latter to process Selectors 
+			 * 		i.  exiting the current scheme 
+			 * 		ii. entering the current scheme
+			 */
 			@Nested
 			@DisplayName("shrinks")
 			class WhenGroupShrinks {
@@ -588,7 +681,7 @@ public class LineUpChooserTest {
 				@Nested
 				@DisplayName("and remaining Selectors")
 				class AndRemainingSelectors {
-
+					
 					@Nested
 					@DisplayName("produce a choice")
 					class ProduceAChoice {
@@ -597,22 +690,70 @@ public class LineUpChooserTest {
 						@DisplayName("in the case of")
 						class ForGroup {
 
+							@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> exitDefConsumer;
+
 							@Test
 							@DisplayName("defenders")
-							public void efwffwf() {
-
+							public void AffirmsDefenderChoice(@Mock Selector<Defender> dummySelector) {
+								verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentDefSelectors()).thenReturn(
+										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND those Selectors report being non-empty
+								starterDefs.stream().filter(selsInCurrentScheme::contains).forEach(
+										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitDefConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is affirmed
+								assertThat(chooser.hasStarterDefChoice.flag).isTrue();
 							}
+							
+							@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
 
 							@Test
 							@DisplayName("midfielders")
-							public void sfdsdsfs() {
-
+							public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> dummySelector) {
+								verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(
+										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND those Selectors report being non-empty
+								starterMids.stream().filter(selsInCurrentScheme::contains).forEach(
+										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitMidConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is affirmed
+								assertThat(chooser.hasStarterMidChoice.flag).isTrue();
 							}
+
+							@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
 
 							@Test
 							@DisplayName("forwards")
-							public void sdfssfssf() {
-
+							public void AffirmsForwardChoice(@Mock Selector<Forward> dummySelector) {
+								verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(
+										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND those Selectors report being non-empty
+								starterForws.stream().filter(selsInCurrentScheme::contains).forEach(
+										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitForwConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is affirmed
+								assertThat(chooser.hasStarterForwChoice.flag).isTrue();
 							}
 						}
 					}
@@ -625,29 +766,91 @@ public class LineUpChooserTest {
 						@DisplayName("in the case of")
 						class ForGroup {
 
+							@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> exitDefConsumer;
+
 							@Test
 							@DisplayName("defenders")
-							public void efwffwf() {
-
+							public void LeavesDefenderChoiceAbsent(@Mock Selector<Defender> dummySelector) {
+								verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
+								chooser.hasStarterDefChoice.flag = true;
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentDefSelectors()).thenReturn(
+										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND one of those Selectors reports being empty
+								starterDefs.stream().filter(selsInCurrentScheme::contains).findFirst()
+										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitDefConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is negated
+								assertThat(chooser.hasStarterDefChoice.flag).isFalse();
 							}
+							
+							@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
 
 							@Test
 							@DisplayName("midfielders")
-							public void sfdsdsfs() {
-
+							public void LeavesMidfielderChoiceAbsent(@Mock Selector<Midfielder> dummySelector) {
+								verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
+								chooser.hasStarterMidChoice.flag = true;
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(
+										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND one of those Selectors reports being empty
+								starterMids.stream().filter(selsInCurrentScheme::contains).findFirst()
+										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitMidConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is negated
+								assertThat(chooser.hasStarterMidChoice.flag).isFalse();
 							}
+
+							@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
 
 							@Test
 							@DisplayName("forwards")
-							public void sdfssfssf() {
-
+							public void LeavesForwardChoiceAbsent(@Mock Selector<Forward> dummySelector) {
+								verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
+								chooser.hasStarterForwChoice.flag = true;
+								
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(
+										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								// AND one of those Selectors reports being empty
+								starterForws.stream().filter(selsInCurrentScheme::contains).findFirst()
+										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
+								
+								// WHEN the exit Consumer is made to process a Selector
+								// (regardless of the Selector's state) 
+								exitForwConsumer.getValue().accept(dummySelector);
+								
+								// THEN the corresponding choice flag is negated
+								assertThat(chooser.hasStarterForwChoice.flag).isFalse();
 							}
 						}
-
 					}
 				}
 			}
 
+			/**
+			 * TEST ISOLATION 
+			 * these tests make the following assumptions about the SUT:
+			 * 
+			 * 	1. upon instantiation, it sets Consumers into the Starter Delegate 
+			 * 	   for the latter to process Selectors 
+			 * 		i.  exiting the current scheme 
+			 * 		ii. entering the current scheme
+			 * 
+			 * 	2. said Consumers enforce the invariant that a Selector entering
+			 * 	   the current scheme is always empty
+			 */
 			@Nested
 			@DisplayName("expands")
 			class WhenGroupExpands {
@@ -656,22 +859,52 @@ public class LineUpChooserTest {
 				@DisplayName("in the case of")
 				class ForGroup {
 
+					@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> entryDefConsumer;
+
 					@Test
 					@DisplayName("defenders")
-					public void efwffwf() {
-
+					public void LeavesDefenderChoiceAbsent(@Mock Selector<Defender> dummySelector) {
+						verify(starterChooser).setEntryDefConsumer(entryDefConsumer.capture());
+						chooser.hasStarterDefChoice.flag = true;
+						
+						// WHEN the entry Consumer is made to process a Selector
+						// (regardless of the Selector's state) 
+						entryDefConsumer.getValue().accept(dummySelector);
+						
+						// THEN the corresponding choice flag is negated
+						assertThat(chooser.hasStarterDefChoice.flag).isFalse();
 					}
+					
+					@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> entryMidConsumer;
 
 					@Test
 					@DisplayName("midfielders")
-					public void sfdsdsfs() {
-
+					public void LeavesMidfielderChoiceAbsent(@Mock Selector<Midfielder> dummySelector) {
+						verify(starterChooser).setEntryMidConsumer(entryMidConsumer.capture());
+						chooser.hasStarterMidChoice.flag = true;
+						
+						// WHEN the entry Consumer is made to process a Selector
+						// (regardless of the Selector's state) 
+						entryMidConsumer.getValue().accept(dummySelector);
+						
+						// THEN the corresponding choice flag is negated
+						assertThat(chooser.hasStarterMidChoice.flag).isFalse();
 					}
+
+					@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> entryForwConsumer;
 
 					@Test
 					@DisplayName("forwards")
-					public void sdfssfssf() {
-
+					public void LeavesForwardChoiceAbsent(@Mock Selector<Forward> dummySelector) {
+						verify(starterChooser).setEntryForwConsumer(entryForwConsumer.capture());
+						chooser.hasStarterForwChoice.flag = true;
+						
+						// WHEN the entry Consumer is made to process a Selector
+						// (regardless of the Selector's state) 
+						entryForwConsumer.getValue().accept(dummySelector);
+						
+						// THEN the corresponding choice flag is negated
+						assertThat(chooser.hasStarterForwChoice.flag).isFalse();
 					}
 				}
 			}
@@ -687,8 +920,6 @@ public class LineUpChooserTest {
 	@Nested
 	@DisplayName("allows a programmatic client to")
 	class ForClients {
-		
-		// TODO: all of this has to move to LineUpChooser!!
 		
 		@Nested
 		@DisplayName("retrieve the starter choice")
