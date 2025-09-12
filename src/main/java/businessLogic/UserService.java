@@ -47,7 +47,7 @@ public class UserService {
 		return transactionManager.fromTransaction((context) -> {
 
 			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
-			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>(null);
+			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
 			
 			for (MatchDaySerieA matchDay : allMatchDays) {
 				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
@@ -126,7 +126,7 @@ public class UserService {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
-			if (!requestingTeam.isSameTeam(fantaTeam) || !offeringTeam.isSameTeam(fantaTeam)) {
+			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
 			Proposal.RejectedProposal rejectedProposal = new Proposal.RejectedProposal(proposal.getOfferedContract(),
@@ -149,7 +149,7 @@ public class UserService {
 				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
 				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get())
-						.isEmpty()) {
+						.isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
 				return context.getProposalRepository().saveProposal(newProposal);
@@ -195,9 +195,13 @@ public class UserService {
 				.fromTransaction((context) -> context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
 	}
 
+	protected LocalDate today() {
+		return LocalDate.now();
+	}
+	
 	public void saveLineUp(LineUp lineUp) {
 		transactionManager.inTransaction((context) -> {
-			LocalDate today = LocalDate.now();
+			LocalDate today = today();
 			DayOfWeek day = today.getDayOfWeek();
 
 			// Check if is a valid date to save the lineUp
@@ -257,7 +261,7 @@ public class UserService {
 		});
 	}
 
-	private Optional<Contract> searchContract(FantaTeam team, Player player) {
+	protected Optional<Contract> searchContract(FantaTeam team, Player player) {
 		return team.getContracts().stream().filter(c -> c.getTeam().equals(team) && c.getPlayer().equals(player))
 				.findFirst();
 	}
