@@ -105,7 +105,7 @@ public class LineUpChooserTest {
 	
 	@Nested
 	@DisplayName("commands its Widget to")
-	class OrdersWidgetTo {
+	class ListenersOrderingWidgetTo {
 				
 
 		private void affirmAllChoiceFlags() {
@@ -570,8 +570,8 @@ public class LineUpChooserTest {
 	}
 	
 	@Nested
-	@DisplayName("processes scheme changes")
-	class ConsumersForSchemeChanges {
+	@DisplayName("supervises scheme changes")
+	class ConsumersTaclkingSchemeChanges {
 
 		/**
 		 * TEST ISOLATION 
@@ -910,40 +910,150 @@ public class LineUpChooserTest {
 			}
 		}
 	
+		/**
+		 * TEST ISOLATION 
+		 * these tests make the following assumptions about the SUT:
+		 * 
+		 * 	1. upon instantiation, it sets Consumers into the Starter Delegate 
+		 * 	   for the latter to process Selectors exiting the current scheme
+		 */
 		@Nested
 		@DisplayName("salvaging selections that would be lost")
 		class SalvagingSelections {
 			
-		}
-	}
-	
-	@Nested
-	@DisplayName("allows a programmatic client to")
-	class ForClients {
-		
-		@Nested
-		@DisplayName("retrieve the starter choice")
-		class Allows {
-			
 			@Nested
-			@DisplayName("when one is present")
-			class SelectionSet {
-				
+			@DisplayName("in the case of")
+			class ForGroup {
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> exitDefConsumer;
+
 				@Test
-				@DisplayName("ghshh")
-				public void widgetsAddedTo343() {
-					
+				@DisplayName("defenders")
+				public void AffirmsDefenderChoice(@Mock Selector<Defender> exitingSelector,
+						@Mock Selector<Defender> substituteSelector) {
+					verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
+
+					// GIVEN the triplet reports a Selector as the next fillable
+					when(defTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+
+					// AND the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitDefConsumer.getValue().accept(exitingSelector);
+
+					// THEN the substitute Selector is given the exiting Selector's selection
+					verify(substituteSelector).setSelection(Optional.of(FAKE_DEFENDER));
+				}
+				
+				@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
+
+				@Test
+				@DisplayName("midfielders")
+				public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> exitingSelector,
+						@Mock Selector<Midfielder> substituteSelector) {
+					verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
+
+					// GIVEN the triplet reports a Selector as the next fillable
+					when(midTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+
+					// AND the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitMidConsumer.getValue().accept(exitingSelector);
+
+					// THEN the substitute Selector is given the exiting Selector's selection
+					verify(substituteSelector).setSelection(Optional.of(FAKE_MIDFIELDER));
+				}
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
+
+				@Test
+				@DisplayName("forwards")
+				public void AffirmsForwardChoice(@Mock Selector<Forward> exitingSelector,
+						@Mock Selector<Forward> substituteSelector) {
+					verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
+
+					// GIVEN the triplet reports a Selector as the next fillable
+					when(forwTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+
+					// AND the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitForwConsumer.getValue().accept(exitingSelector);
+
+					// THEN the substitute Selector is given the exiting Selector's selection
+					verify(substituteSelector).setSelection(Optional.of(FAKE_FORWARD));
 				}
 			}
+		}
+		
+		/**
+		 * TEST ISOLATION 
+		 * these tests make the following assumptions about the SUT:
+		 * 
+		 * 	1. upon instantiation, it sets Consumers into the Starter Delegate 
+		 * 	   for the latter to process Selectors exiting the current scheme
+		 */
+		@Nested
+		@DisplayName("emptying Selectors leaving the current scheme")
+		class EmptiesExitingSelectors {
 			
 			@Nested
-			@DisplayName("when none is present")
-			class SelectionCleared {
-				
+			@DisplayName("in the case of")
+			class ForGroup {
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Defender>>> exitDefConsumer;
+
 				@Test
-				@DisplayName("shgsfdh")
-				public void widgetsAddedTo343() {
+				@DisplayName("defenders")
+				public void AffirmsDefenderChoice(@Mock Selector<Defender> exitingSelector) {
+					verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
+
+					// GIVEN the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitDefConsumer.getValue().accept(exitingSelector);
+
+					// THEN the exiting Selector is emptied
+					verify(exitingSelector).setSelection(Optional.empty());
+				}
+				
+				@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
+
+				@Test
+				@DisplayName("midfielders")
+				public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> exitingSelector) {
+					verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
+
+					// GIVEN the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitMidConsumer.getValue().accept(exitingSelector);
 					
+					// THEN the exiting Selector is emptied
+					verify(exitingSelector).setSelection(Optional.empty());
+				}
+
+				@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
+
+				@Test
+				@DisplayName("forwards")
+				public void AffirmsForwardChoice(@Mock Selector<Forward> exitingSelector) {
+					verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
+
+					// GIVEN the exiting Selector reports being non-empty
+					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD));
+
+					// WHEN the exit Consumer is made to process the exiting Selector
+					exitForwConsumer.getValue().accept(exitingSelector);
+
+					// THEN the exiting Selector is emptied
+					verify(exitingSelector).setSelection(Optional.empty());
 				}
 			}
 		}

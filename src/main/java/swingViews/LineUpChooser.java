@@ -43,6 +43,8 @@ public class LineUpChooser {
 	// a type for the Substitute Triplet Chooser delegate
 	public interface SubstituteTripletChooserDelegate<T extends Player> {
 		List<Selector<T>> getSelectors();
+
+		Optional<Selector<T>> getNextFillableSelector();
 	}
 
 	private SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
@@ -107,37 +109,19 @@ public class LineUpChooser {
 
 		// 2. sets Consumers into the Starter Delegate for the other three roles
 		SelectorListener<Defender> starterDefListener = listener(hasStarterDefChoice, starterChooser::getCurrentDefSelectors);		
-		this.starterChooser.setEntryDefConsumer(selector -> {
-			selector.attachListener(starterDefListener);
-			hasStarterDefChoice.flag = false;
-		});
-		this.starterChooser.setExitDefConsumer(selector -> {
-			selector.removeListener(starterDefListener);
-			hasStarterDefChoice.flag = starterChooser.getCurrentDefSelectors().stream().map(Selector::getSelection)
-					.allMatch(Optional::isPresent);
-		});
+		this.starterChooser.setEntryDefConsumer(entryConsumer(starterDefListener, hasStarterDefChoice));
+		this.starterChooser.setExitDefConsumer(exitConsumer(starterDefListener, defTriplet, hasStarterDefChoice,
+				starterChooser::getCurrentDefSelectors));
 
 		SelectorListener<Midfielder> starterMidListener = listener(hasStarterMidChoice, starterChooser::getCurrentMidSelectors);
-		this.starterChooser.setEntryMidConsumer(selector -> {
-			selector.attachListener(starterMidListener);
-			hasStarterMidChoice.flag = false;
-		});
-		this.starterChooser.setExitMidConsumer(selector -> {
-			selector.removeListener(starterMidListener);
-			hasStarterMidChoice.flag = starterChooser.getCurrentMidSelectors().stream().map(Selector::getSelection)
-					.allMatch(Optional::isPresent);
-		});
+		this.starterChooser.setEntryMidConsumer(entryConsumer(starterMidListener, hasStarterMidChoice));		
+		this.starterChooser.setExitMidConsumer(exitConsumer(starterMidListener, midTriplet, hasStarterMidChoice,
+				starterChooser::getCurrentMidSelectors));
 
 		SelectorListener<Forward> starterForwListener = listener(hasStarterForwChoice, starterChooser::getCurrentForwSelectors);
-		this.starterChooser.setEntryForwConsumer(selector -> {
-			selector.attachListener(starterForwListener);
-			hasStarterForwChoice.flag = false;
-		});
-		this.starterChooser.setExitForwConsumer(selector -> {
-			selector.removeListener(starterForwListener);
-			hasStarterForwChoice.flag = starterChooser.getCurrentForwSelectors().stream().map(Selector::getSelection)
-					.allMatch(Optional::isPresent);
-		});
+		this.starterChooser.setEntryForwConsumer(entryConsumer(starterForwListener, hasStarterForwChoice));
+		this.starterChooser.setExitForwConsumer(exitConsumer(starterForwListener, forwTriplet, hasStarterForwChoice,
+				starterChooser::getCurrentForwSelectors));
 
 		// 3. attaches Listeners to substitute Selectors
 		SelectorListener<Goalkeeper> substituteGoalieListener = listener(hasSubsGoaliesChoice, goalieTriplet::getSelectors);
@@ -151,6 +135,29 @@ public class LineUpChooser {
 
 		SelectorListener<Forward> substituteForwListener = listener(hasSubsForwsChoice, forwTriplet::getSelectors);
 		this.forwTriplet.getSelectors().forEach(sel -> sel.attachListener(substituteForwListener));
+	}
+
+	private <T extends Player> Consumer<Selector<T>> entryConsumer(SelectorListener<T> starterDefListener,
+			BooleanWrapper hasGroupChoice) {
+		return selector -> {
+			selector.attachListener(starterDefListener);
+			hasGroupChoice.flag = false;
+		};
+	}
+
+	private <T extends Player> Consumer<Selector<T>> exitConsumer(SelectorListener<T> listener,
+			SubstituteTripletChooserDelegate<T> triplet, BooleanWrapper hasGroupChoice,
+			Supplier<List<Selector<T>>> currentSchemeSelectors) {
+		return exitingSelector -> {
+			exitingSelector.removeListener(listener);
+			if (exitingSelector.getSelection().isPresent()) {
+				triplet.getNextFillableSelector()
+						.ifPresent(subSel -> subSel.setSelection(exitingSelector.getSelection()));
+				exitingSelector.setSelection(Optional.empty());
+			}
+			hasGroupChoice.flag = currentSchemeSelectors.get().stream().map(Selector::getSelection)
+					.allMatch(Optional::isPresent);
+		};
 	}
 
 	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
