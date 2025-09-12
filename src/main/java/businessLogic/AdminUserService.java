@@ -40,9 +40,15 @@ public class AdminUserService extends UserService {
 		});
 
 	}
-
-	private List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
+	
+	// package-private for tests
+	List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
 		int n = teams.size();
+		
+	    if (n < 2) {
+	        throw new IllegalArgumentException("At least 2 teams are required to generate a schedule.");
+	    }
+		
 		if (n % 2 != 0) {
 			throw new IllegalArgumentException("Number of teams must be even. Add a BYE if needed.");
 		}
@@ -231,7 +237,7 @@ public class AdminUserService extends UserService {
 	}
 
 	private boolean isLegalToCalculateResults(LocalDate matchDate){
-		LocalDate now = LocalDate.now();
+		LocalDate now = today();
 		LocalDate legalDate;
 		DayOfWeek dayOfWeek = matchDate.getDayOfWeek();
 		if(dayOfWeek == DayOfWeek.SATURDAY){
@@ -241,11 +247,11 @@ public class AdminUserService extends UserService {
 		} else{
 			legalDate = now.plusDays(1);
 		}
-		if(now.isBefore(legalDate)){
-			return false;
-		} else {
-			return true;
-		}
+		return !now.isBefore(legalDate);
+	}
+	
+	protected LocalDate today() {
+		return LocalDate.now();
 	}
 
 	private Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league, FantaUser user) {

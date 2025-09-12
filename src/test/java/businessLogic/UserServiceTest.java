@@ -27,17 +27,17 @@ class UserServiceTest {
 	private UserService userService;
 
 	// Mocked repositories
+    private MatchRepository matchRepository;
+    private GradeRepository gradeRepository;
+    private LineUpRepository lineUpRepository;
+    private ResultsRepository resultRepository;
+    private MatchDayRepository matchDayRepository;
+    private FantaTeamRepository fantaTeamRepository;
 	private LeagueRepository leagueRepository;
 	private FantaTeamRepository teamRepository;
-	private MatchRepository matchRepository;
-	private ResultsRepository resultsRepository;
-	private LineUpRepository lineUpRepository;
 	private PlayerRepository playerRepository;
-	private MatchDayRepository matchDayRepository;
 	private ProposalRepository proposalRepository;
-	private GradeRepository gradeRepository;
 	private ContractRepository contractRepository;
-	private Proposal.PendingProposal proposal;
 
 	@BeforeEach
 	void setUp() {
@@ -45,31 +45,30 @@ class UserServiceTest {
 		context = mock(TransactionContext.class);
 
 		// Mock repositories
-		leagueRepository = mock(LeagueRepository.class);
-		teamRepository = mock(FantaTeamRepository.class);
-		matchRepository = mock(MatchRepository.class);
-		resultsRepository = mock(ResultsRepository.class);
-		lineUpRepository = mock(LineUpRepository.class);
-		playerRepository = mock(PlayerRepository.class);
-		matchDayRepository = mock(MatchDayRepository.class);
-		proposalRepository = mock(ProposalRepository.class);
-		gradeRepository = mock(GradeRepository.class);
-		contractRepository = mock(ContractRepository.class);
-		proposal = mock(Proposal.PendingProposal.class);
+	    matchRepository = mock(MatchRepository.class);
+	    gradeRepository = mock(GradeRepository.class);
+	    lineUpRepository = mock(LineUpRepository.class);
+	    resultRepository = mock(ResultsRepository.class);
+	    matchDayRepository = mock(MatchDayRepository.class);
+	    fantaTeamRepository = mock(FantaTeamRepository.class);
+	    leagueRepository = mock(LeagueRepository.class);
+	    teamRepository = mock(FantaTeamRepository.class);
+	    playerRepository = mock(PlayerRepository.class);
+	    proposalRepository = mock(ProposalRepository.class);
+	    contractRepository = mock(ContractRepository.class);
 
 		// When context.getXRepository() is called, return the mocked repository
-		when(context.getLeagueRepository()).thenReturn(leagueRepository);
-		when(context.getTeamRepository()).thenReturn(teamRepository);
-		when(context.getMatchRepository()).thenReturn(matchRepository);
-		when(context.getResultsRepository()).thenReturn(resultsRepository);
-		when(context.getLineUpRepository()).thenReturn(lineUpRepository);
-		when(context.getPlayerRepository()).thenReturn(playerRepository);
-		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
-		when(context.getProposalRepository()).thenReturn(proposalRepository);
-		when(context.getGradeRepository()).thenReturn(gradeRepository);
-		when(context.getContractRepository()).thenReturn(contractRepository);
-		when(proposal.getRequestedContract()).thenReturn(mock(Contract.class));
-		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
+	    when(context.getMatchRepository()).thenReturn(matchRepository);
+	    when(context.getGradeRepository()).thenReturn(gradeRepository);
+	    when(context.getLineUpRepository()).thenReturn(lineUpRepository);
+	    when(context.getResultsRepository()).thenReturn(resultRepository);
+	    when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+	    when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
+	    when(context.getLeagueRepository()).thenReturn(leagueRepository);
+	    when(context.getTeamRepository()).thenReturn(teamRepository);
+	    when(context.getPlayerRepository()).thenReturn(playerRepository);
+	    when(context.getProposalRepository()).thenReturn(proposalRepository);
+	    when(context.getContractRepository()).thenReturn(contractRepository);
 
 		// For inTransaction
 		doAnswer(invocation -> {
@@ -309,7 +308,7 @@ class UserServiceTest {
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.of(prev));
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
-		when(resultsRepository.getResult(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
+		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
 		when(context.getMatchDayRepository().getNextMatchDay(any())).thenReturn(Optional.of(next));
 		when(context.getMatchRepository().getMatchByMatchDay(next, league, team)).thenReturn(nextMatch);
 
@@ -327,7 +326,7 @@ class UserServiceTest {
 		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.of(prev));
 		Match prevMatch = mock(Match.class);
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
-		when(resultsRepository.getResult(prevMatch)).thenReturn(Optional.empty());
+		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userService.getNextMatch(league, team, today)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("results for the previous match have not been calculated yet");
@@ -389,7 +388,7 @@ class UserServiceTest {
 	void testGetResultByMatch() {
 		Match match = mock(Match.class);
 		Result res = mock(Result.class);
-		when(resultsRepository.getResult(match)).thenReturn(Optional.of(res));
+		when(resultRepository.getResult(match)).thenReturn(Optional.of(res));
 
 		Optional<Result> result = userService.getResultByMatch(match);
 		assertThat(result).contains(res);
