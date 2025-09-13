@@ -1,17 +1,5 @@
 package businessLogic.presenter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import businessLogic.repositories.LeagueRepository;
-import presenters.abstractViews.LeagueView;
-import domainModel.League;
-import presenters.LeaguePresenter;
-
 class LeaguePresenterTest {
 /*
 	LeaguePresenter leaguePresenter;

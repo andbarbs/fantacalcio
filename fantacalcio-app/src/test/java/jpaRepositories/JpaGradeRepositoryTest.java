@@ -11,13 +11,9 @@ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class JpaGradeRepositoryTest {
 
 	private static SessionFactory sessionFactory;
-
-	private JpaGradeRepository gradeRepository;
 
 	private EntityManager entityManager;
 
@@ -50,7 +46,7 @@ class JpaGradeRepositoryTest {
 
 		// Instantiates the SUT using the static SessionFactory
 		entityManager = sessionFactory.createEntityManager();
-		gradeRepository = new JpaGradeRepository(entityManager);
+		new JpaGradeRepository(entityManager);
 	}
 
 	@AfterAll
@@ -81,9 +77,7 @@ class JpaGradeRepositoryTest {
 			session.persist(day2); session.persist(buffon); session.persist(gazzetta);
 			session.persist(voto1); session.persist(voto2);});
 
-		EntityManager repositorySession = sessionFactory.createEntityManager();
-		/*assertThat(gradeRepository.getAllMatchGrades()).
-				containsExactly(voto1, voto2); repositorySession.close(); */
+		sessionFactory.createEntityManager();
 	}
 
 }

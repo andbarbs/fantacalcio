@@ -4,201 +4,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.example</groupId>
-	<artifactId>Fantacalcio</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<groupId>com.fantacalcio.app</groupId>
+	<artifactId>fantacalcio</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
 	<properties>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mockito.version>4.11.0</mockito.version>
 	</properties>
 
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.hibernate.orm</groupId>
-				<artifactId>hibernate-platform</artifactId>
-				<version>6.6.11.Final</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.junit</groupId>
-				<artifactId>junit-bom</artifactId>
-				<version>5.9.2</version> <!-- or another version compatible with Mockito's requirements -->
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-
-	<dependencies>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-swing-junit</artifactId>
-			<version>3.17.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-jpamodelgen</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.persistence</groupId>
-			<artifactId>jakarta.persistence-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.transaction</groupId>
-			<artifactId>jakarta.transaction-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>[2.1.212,)</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- 1. Compile + JPA‐Metamodel generation -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
-				<configuration>
-					<source>11</source>
-					<target>11</target>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.hibernate.orm</groupId>
-							<artifactId>hibernate-jpamodelgen</artifactId>
-							<version>6.6.11.Final</version>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-			
-			<!-- build-helper instructions are reflected in Eclipse's .classpath -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.3.0</version>
-				<executions>
-				
-					<!-- adds Metamodel classes as a source folder -->
-					<execution>
-						<id>add-generated-sources</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>
-									${project.build.directory}/generated-sources/annotations</source>
-							</sources>
-						</configuration>
-					</execution>
-
-					<!-- adds gui-resources as a source folder to please WindowBuilder -->
-					<execution>
-						<id>add-gui-resources</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/main/gui-resources</source>
-							</sources>
-						</configuration>
-					</execution>
-
-					<!-- adds test-gui-resources as a source folder to please WindowBuilder -->
-					<execution>
-						<id>add-test-gui-resources</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/test/test-gui-resources</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- custom JVM args to alleviate the AssertJ Swing - JPMS mismatch -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.5</version>
-				<configuration>
-					<argLine>
-						--add-opens java.base/java.util=ALL-UNNAMED
-						--add-opens java.base/java.lang=ALL-UNNAMED
-						--add-opens java.desktop/java.awt=ALL-UNNAMED
-						--add-opens java.desktop/javax.swing=ALL-UNNAMED
-					</argLine>
-				</configuration>
-			</plugin>
-		</plugins>
-
-		<!-- sets exclusion rules for some resource folders  -->
-		<resources>
-			<resource> 
-				<directory>src/main/resources</directory> 
-			</resource>
-			<resource>
-				<directory>src/main/gui-resources</directory>
-				<filtering>false</filtering>
-			</resource>
-		</resources>
-
-		<testResources>
-			<testResource> 
-				<directory>src/test/resources</directory> 
-			</testResource>
-			<testResource>
-				<directory>src/test/test-gui-resources</directory>
-				<targetPath>images</targetPath>
-				<filtering>false</filtering>
-			</testResource>
-		</testResources>
-	</build>
-
+	<modules>
+		<!-- We will add module names here -->
+		<module>fantacalcio-app</module>
+		<module>scheme-generator-api</module>
+	</modules>
 
 </project>

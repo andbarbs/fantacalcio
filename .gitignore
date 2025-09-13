@@ -21,6 +21,8 @@ failed-gui-tests/
 .settings
 .springBeans
 .sts4-cache
+/bin/
+/fantacalcio-app/bin/
 
 ### NetBeans ###
 /nbproject/private/
@@ -37,5 +39,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
-/bin/
+
 /.apt_generated_tests/

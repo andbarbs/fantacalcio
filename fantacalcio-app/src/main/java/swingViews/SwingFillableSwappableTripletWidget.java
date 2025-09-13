@@ -19,7 +19,6 @@ import javax.swing.SwingUtilities;
 import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import swingViews.FillableSwappableSequence.FillableSwappable;
-import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
 
 import javax.swing.ImageIcon;

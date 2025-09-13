@@ -36,7 +36,11 @@ public class SwingLineUpChooserWidget extends JPanel {
 				this.midTripletWidget = midTripletWidget;
 				this.forwTripletWidget = forwTripletWidget;
 				
-				add(starterChooserWidget);
+				add(this.starterChooserWidget);
+				add(this.goalieTripletWidget);
+				add(this.defTripletWidget);
+				add(this.midTripletWidget);
+				add(this.forwTripletWidget);
 	}
 
 	
