@@ -5,8 +5,16 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fantacalcio.app.generator.api.GenerateScheme;
+import com.fantacalcio.app.generator.api.GenerateSchemes;
+
 // coincides with ThreePositionLineUp by definition of the game
 
+@GenerateSchemes({
+	@GenerateScheme(className = "Scheme433", defenders = 4, midfielders = 3, forwards = 3),
+    @GenerateScheme(className = "Scheme343", defenders = 3, midfielders = 4, forwards = 3),
+    @GenerateScheme(className = "Scheme532", defenders = 5, midfielders = 3, forwards = 2)
+})
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {LineUp_.MATCH, LineUp_.TEAM}))
 public abstract class LineUp {

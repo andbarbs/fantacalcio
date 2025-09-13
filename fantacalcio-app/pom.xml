@@ -90,6 +90,13 @@
 			<version>[2.1.212,)</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- Depends on the API to use the annotation -->
+		<dependency>
+			<groupId>com.fantacalcio.app</groupId>
+			<artifactId>scheme-generator-api</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -105,6 +112,11 @@
 							<groupId>org.hibernate.orm</groupId>
 							<artifactId>hibernate-jpamodelgen</artifactId>
 							<version>6.6.11.Final</version>
+						</path>
+						<path>
+							<groupId>com.fantacalcio.app</groupId>
+							<artifactId>scheme-generator-processor</artifactId>
+							<version>0.0.1-SNAPSHOT</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
