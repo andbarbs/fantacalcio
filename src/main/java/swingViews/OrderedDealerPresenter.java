@@ -310,6 +310,11 @@ public abstract class OrderedDealerPresenter<T>
 		this.listeners.add(listener);		
 	}
 	
+	@Override
+	public void removeListener(SelectorListener<T> listener) {
+		this.listeners.remove(listener);
+	}
+	
 	protected Collection<SelectorListener<T>> listeners() {
 		return listeners;
 	}

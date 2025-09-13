@@ -12,6 +12,7 @@ import java.beans.Beans;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import swingViews.FillableSwappableSequence.FillableSwappable;
@@ -168,6 +169,12 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 	@Override
 	public List<Selector<Q>> getSelectors() {
 		return List.of(member1, member2, member3);
+	}
+
+	@Override
+	public Optional<Selector<Q>> getNextFillableSelector() {
+		// TODO Auto-generated method stub
+		return Optional.empty();
 	}
 
 }

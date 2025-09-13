@@ -285,4 +285,40 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 			}
 		});
 	}
+
+	@Override
+	public void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setEntryForwConsumer(Consumer<Selector<Forward>> enterForward) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setExitMidConsumer(Consumer<Selector<Midfielder>> capture) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setExitForwConsumer(Consumer<Selector<Forward>> capture) {
+		// TODO Auto-generated method stub
+		
+	}
 }
