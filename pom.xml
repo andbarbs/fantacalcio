@@ -20,6 +20,7 @@
 		<!-- We will add module names here -->
 		<module>fantacalcio-app</module>
 		<module>scheme-generator-api</module>
+		<module>scheme-generator-processor</module>
 	</modules>
 
 </project>
