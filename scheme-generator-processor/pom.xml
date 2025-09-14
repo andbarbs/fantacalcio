@@ -31,6 +31,12 @@
 			<artifactId>auto-service-annotations</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<version>1.1.1</version>
+			<scope>provided</scope> <!-- 'provided' is best practice here -->
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -39,15 +45,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>com.google.auto.service</groupId>
-							<artifactId>auto-service</artifactId>
-							<version>1.1.1</version>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
+				<!-- The configuration section is no longer needed here -->
 			</plugin>
 		</plugins>
 	</build>
