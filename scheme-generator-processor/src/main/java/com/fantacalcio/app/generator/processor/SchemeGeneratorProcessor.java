@@ -49,28 +49,28 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	    ClassName starterLineUpClass = ClassName.get(domainPackage, "StarterLineUp");
 	    String playerClassString = "Player"; 
 	    // we lie about package structure to get imports for nested Player subtypes
-	    ClassName gkClass = ClassName.get(domainPackage + "." + playerClassString, "Goalkeeper");
+	    ClassName goalieClass = ClassName.get(domainPackage + "." + playerClassString, "Goalkeeper");
 	    ClassName defClass = ClassName.get(domainPackage + "." + playerClassString, "Defender");
 	    ClassName midClass = ClassName.get(domainPackage + "." + playerClassString, "Midfielder");
-	    ClassName fwdClass = ClassName.get(domainPackage + "." + playerClassString, "Forward");
+	    ClassName forwClass = ClassName.get(domainPackage + "." + playerClassString, "Forward");
 	   
-	    // 2. constructs Names for types to be generated
-		String targetPackage = domainPackage + "scheme";
+		// 2. constructs Names for types to be generated
+		String targetPackage = domainPackage + "." + "scheme";
 		String generatedClassString = scheme.className();
 		ClassName generatedClassName = ClassName.get(targetPackage, generatedClassString);
-		ClassName stepsClassName = generatedClassName.nestedClass("StarterLineUpBuilderSteps");
 		ClassName builderClassName = generatedClassName
 				.nestedClass("StarterLineUpBuilder" + generatedClassString.substring(6));
-	    ClassName readyForGk = stepsClassName.nestedClass("ReadyForGoalkeeper");
-	    ClassName readyForDef = stepsClassName.nestedClass("ReadyForDefenders");
-	    ClassName readyForMid = stepsClassName.nestedClass("ReadyForMidfielders");
-	    ClassName readyForFwd = stepsClassName.nestedClass("ReadyForForwards");
+		ClassName stepsClassName = generatedClassName.nestedClass(builderClassName.simpleName() + "Steps");
+		ClassName readyForGoalie = stepsClassName.nestedClass("ReadyForGoalkeeper");
+		ClassName readyForDefs = stepsClassName.nestedClass("ReadyForDefenders");
+		ClassName readyForMids = stepsClassName.nestedClass("ReadyForMidfielders");
+		ClassName readyForForws = stepsClassName.nestedClass("ReadyForForwards");
 	    
 	    // 3. generates parameter lists once for reuse
-	    List<ParameterSpec> goalieParams = generateParameters(gkClass, "goalie", 1);
+	    List<ParameterSpec> goalieParams = generateParameters(goalieClass, "goalie", 1);
 	    List<ParameterSpec> defenderParams = generateParameters(defClass, "defender", scheme.defenders());
 	    List<ParameterSpec> midfielderParams = generateParameters(midClass, "midfielder", scheme.midfielders());
-	    List<ParameterSpec> forwardParams = generateParameters(fwdClass, "forward", scheme.forwards());
+	    List<ParameterSpec> forwardParams = generateParameters(forwClass, "forward", scheme.forwards());
 
 	    // 4. builds the abstract interface methods
 	    String withGoalkeeperString = "withGoalkeeper";
@@ -81,17 +81,17 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 		MethodSpec withGoalieAbstract = MethodSpec.methodBuilder(withGoalkeeperString)
 	    		.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
 	    		.addParameters(goalieParams)
-	    		.returns(readyForDef)
+	    		.returns(readyForDefs)
 	    		.build();
 		MethodSpec withDefendersAbstract = MethodSpec.methodBuilder(withDefendersString)
 	    		.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
 	    		.addParameters(defenderParams)
-	    		.returns(readyForMid)
+	    		.returns(readyForMids)
 	    		.build();
 		MethodSpec withMidfieldersAbstract = MethodSpec.methodBuilder(withMidfieldersString)
 	    		.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
 	    		.addParameters(midfielderParams)
-	    		.returns(readyForFwd)
+	    		.returns(readyForForws)
 	    		.build();
 		MethodSpec withForwardsAbstract = MethodSpec.methodBuilder(withForwardsString)
 	    		.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
@@ -129,7 +129,7 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	            .addParameters(goalieParams)
 	            .addCode(implementorBody(goalieParams, true).build())
 	            .addStatement("return this")
-	            .returns(readyForDef)
+	            .returns(readyForDefs)
 	            .build();
 	    
 	    MethodSpec withDefendersConcrete = MethodSpec.methodBuilder(withDefendersString)
@@ -138,7 +138,7 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	            .addParameters(defenderParams)
 	            .addCode(implementorBody(defenderParams, true).build())
 	            .addStatement("return this")
-	            .returns(readyForMid)
+	            .returns(readyForMids)
 	            .build();
 	    
 	    MethodSpec withMidfieldersConcrete = MethodSpec.methodBuilder(withMidfieldersString)
@@ -147,7 +147,7 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	            .addParameters(midfielderParams)
 	            .addCode(implementorBody(midfielderParams, true).build())
 	            .addStatement("return this")
-	            .returns(readyForFwd)
+	            .returns(readyForForws)
 	            .build();
 	    
 	    String defendersList = defenderParams.stream().map(p -> p.name).collect(Collectors.joining(", "));
@@ -159,28 +159,31 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 				.addModifiers(Modifier.PUBLIC)
 				.addParameters(forwardParams)
 				.addCode(implementorBody(forwardParams, false)
-						.addStatement("return new $T(\n\t$L,\n\t$T.of($L),\n\t$T.of($L),\n\t$T.of($L))",
-								starterLineUpClass, goalieParams.get(0).name, // goalie1
-								List.class, defendersList, List.class, midfieldersList, List.class, forwardsList)
+						.addStatement("return new $T(\n\t$T.INSTANCE,\n\t$L,\n\t$T.of($L),\n\t$T.of($L),\n\t$T.of($L))",
+					            starterLineUpClass, 
+					            generatedClassName,
+					            goalieParams.get(0).name,
+					            List.class, defendersList,
+					            List.class, midfieldersList,
+					            List.class, forwardsList)
 						.build())
 				.returns(starterLineUpClass).build();
 
 	    // 8. builds the Builder class
 		TypeSpec.Builder concreteBuilder = TypeSpec.classBuilder(builderClassName.simpleName())
 				.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-				.addSuperinterface(readyForGk)
-				.addSuperinterface(readyForDef)
-				.addSuperinterface(readyForMid)
-				.addSuperinterface(readyForFwd)
+				.addSuperinterface(readyForGoalie)
+				.addSuperinterface(readyForDefs)
+				.addSuperinterface(readyForMids)
+				.addSuperinterface(readyForForws)
 				.addMethod(withGoalkeeperConcrete)
 				.addMethod(withDefendersConcrete)
 				.addMethod(withMidfieldersConcrete)
 				.addMethod(withForwardsConcrete)
-				.addFields(Stream.concat(
-								Stream.concat(goalieParams.stream(), defenderParams.stream()),
-								midfielderParams.stream())
+				.addFields(Stream.of(goalieParams, defenderParams, midfielderParams)
+					    .flatMap(List::stream)
 						.map(param -> FieldSpec.builder(param.type, param.name, Modifier.PRIVATE))
-						.map(FieldSpec.Builder::build).collect(Collectors.toList()));		
+						.map(FieldSpec.Builder::build).collect(Collectors.toList()));
 	    
 	    // 9. builds the final top-level class
 	    TypeSpec schemeClass = TypeSpec.classBuilder(generatedClassString)
@@ -189,17 +192,20 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	            .addField(FieldSpec.builder(generatedClassName, "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 	                .initializer("new $T()", generatedClassName)
 	                .build())
-	            .addMethod(MethodSpec.methodBuilder(starterLineUpClass.simpleName())
-	                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-	                .returns(readyForGk)
-	                .addStatement("return new $L()", builderClassName.simpleName())
-	                .build())
+				.addMethod(MethodSpec.methodBuilder(
+						starterLineUpClass.simpleName().substring(0, 1).toLowerCase()
+							+ starterLineUpClass.simpleName().substring(1))
+					.addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(readyForGoalie)
+					.addStatement("return new $L()", builderClassName.simpleName())
+					.build())
 	            .addType(stepsClass)
 	            .addType(concreteBuilder.build())
 	            .build();
 
 	    // 10. write the file to disk
-	    JavaFile javaFile = JavaFile.builder(targetPackage, schemeClass).build();
+	    JavaFile javaFile = JavaFile.builder(targetPackage, schemeClass)
+	    		.indent("\t")
+	    		.build();
 	    JavaFileObject fileObject = processingEnv.getFiler().createSourceFile(targetPackage + "." + generatedClassString);
 	    try (Writer writer = fileObject.openWriter()) {
 	        javaFile.writeTo(writer);
@@ -232,7 +238,7 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	    // 2. Add duplicate checks if there's more than one parameter
 	    if (params.size() > 1) {
 	        // Use a StringJoiner for clean "a.equals(b) || b.equals(c)" logic
-	        StringJoiner condition = new StringJoiner(" ||\n");
+	        StringJoiner condition = new StringJoiner(" ||\n\t\t");
 	        for (int i = 0; i < params.size(); i++) {
 	            for (int j = i + 1; j < params.size(); j++) {
 	                condition.add(String.format("%s.equals(%s)", params.get(i).name, params.get(j).name));
