@@ -73,10 +73,6 @@
 			<artifactId>hibernate-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-jpamodelgen</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>jakarta.persistence</groupId>
 			<artifactId>jakarta.persistence-api</artifactId>
 		</dependency>
