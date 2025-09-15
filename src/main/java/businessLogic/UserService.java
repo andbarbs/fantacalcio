@@ -29,6 +29,7 @@ public class UserService {
 	}
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
+		//TODO massimo 12 team nella lega altrimenti eccezione e testa
 		 transactionManager.inTransaction((context) -> {
 			 FantaUser user = fantaTeam.getFantaManager();
 			 List<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);

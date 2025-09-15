@@ -630,7 +630,7 @@ public class UserServiceTest {
 		Match match = mock(Match.class);
 		Grade grade = mock(Grade.class);
 		NewsPaper newsPaper = mock(NewsPaper.class);
-		//TODO correggi
+		//TODO correggi vedi se mock newspaper è neccessario
 		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match,  newsPaper);
 		assertThat(result).containsExactly(grade);

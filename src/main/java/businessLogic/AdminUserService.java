@@ -14,9 +14,12 @@ public class AdminUserService extends UserService {
 	}
 
 	public void setPlayerToTeam(FantaTeam team, Player player) {
+		//TODO controlla che il team non abbia già  25 player di cui 3 portieri 8 difensori e 8 centrocampisti e 6 attaccanti e testa
 		transactionManager
 				.inTransaction((context) -> context.getContractRepository().saveContract(new Contract(team, player)));
 	}
+
+	//TODO aggiungi rimuovi player controlla se il player è nel team e se lo è lo toglie altrimenti eccezione
 
 	public List<NewsPaper> getAllNewspapers() {
 		return transactionManager.fromTransaction((context) -> context.getNewspaperRepository().getAllNewspapers());
