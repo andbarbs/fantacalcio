@@ -162,5 +162,43 @@ class JpaLeagueRepositoryTest {
 		assertThat(leagueRepository.getLeaguesByUser(user)).containsExactlyInAnyOrder(league1, league2);
 
 	}
+	
+	@Test
+	@DisplayName("getAllTeams() should return all teams for the given league")
+	void testGetAllTeams() {
+	    NewsPaper newsPaper = new NewsPaper("gazzetta");
+	    FantaUser admin = new FantaUser("admin", "pswd");
+	    League league = new League(admin, "lega1", newsPaper, "1234");
+
+	    FantaUser manager1 = new FantaUser("user1", "pswd1");
+	    FantaUser manager2 = new FantaUser("user2", "pswd2");
+
+	    FantaTeam team1 = new FantaTeam("team1", league, 10, manager1, new HashSet<Contract>());
+	    FantaTeam team2 = new FantaTeam("team2", league, 20, manager2, new HashSet<Contract>());
+
+	    // League unrelated to test
+	    FantaUser admin2 = new FantaUser("admin2", "pswd2");
+	    League otherLeague = new League(admin2, "lega2", newsPaper, "5678");
+	    FantaUser otherManager = new FantaUser("other", "pswd3");
+	    FantaTeam otherTeam = new FantaTeam("otherTeam", otherLeague, 5, otherManager, new HashSet<Contract>());
+
+	    sessionFactory.inTransaction(session -> {
+	        session.persist(newsPaper);
+	        session.persist(admin);
+	        session.persist(league);
+	        session.persist(manager1);
+	        session.persist(manager2);
+	        session.persist(team1);
+	        session.persist(team2);
+	        session.persist(admin2);
+	        session.persist(otherLeague);
+	        session.persist(otherManager);
+	        session.persist(otherTeam);
+	    });
+
+	    assertThat(leagueRepository.getAllTeams(league))
+	        .containsExactlyInAnyOrder(team1, team2)
+	        .doesNotContain(otherTeam);
+	}
 
 }

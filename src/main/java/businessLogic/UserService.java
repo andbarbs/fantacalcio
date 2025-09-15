@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import businessLogic.repositories.LeagueRepository;
 import domainModel.*;
 
 public class UserService {
@@ -19,26 +20,33 @@ public class UserService {
 
 	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
-			if(context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
+			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
 				League league = new League(admin, leagueName, newsPaper, leagueCode);
 				context.getLeagueRepository().saveLeague(league);
-			}else{
+			} else {
 				throw new IllegalArgumentException("A league with the same league code already exists");
 			}
 		});
 	}
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
-		//TODO massimo 12 team nella lega altrimenti eccezione e testa
-		 transactionManager.inTransaction((context) -> {
-			 FantaUser user = fantaTeam.getFantaManager();
-			 List<League> UserLeagues = context.getLeagueRepository().getLeaguesByUser(user);
-			 if(UserLeagues.contains(league)) {
-				 throw new IllegalArgumentException("You have already a team in this league");
-			 } else {
-				 context.getTeamRepository().saveTeam(fantaTeam);
-			 }
-		 });
+		transactionManager.inTransaction((context) -> {
+
+			LeagueRepository leagueRepository = context.getLeagueRepository();
+
+			// testare
+			final int maxFantaTeamsPerLeague = 12;
+			if (leagueRepository.getAllTeams(league).size() >= maxFantaTeamsPerLeague)
+				throw new UnsupportedOperationException("Maximum 12 teams per league");
+			
+			FantaUser user = fantaTeam.getFantaManager();
+			List<League> UserLeagues = leagueRepository.getLeaguesByUser(user);
+			if (UserLeagues.contains(league)) {
+				throw new IllegalArgumentException("You have already a team in this league");
+			} else {
+				context.getTeamRepository().saveTeam(fantaTeam);
+			}
+		});
 	}
 
 	// Matches
@@ -49,7 +57,7 @@ public class UserService {
 
 			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
 			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
-			
+
 			for (MatchDaySerieA matchDay : allMatchDays) {
 				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
 			}
@@ -97,46 +105,44 @@ public class UserService {
 	}
 
 	public void acceptProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
-		transactionManager.inTransaction(
-				(context) -> {
-					FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
-					FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
-					Player offeredPlayer = proposal.getOfferedContract().getPlayer();
-					Player requestedPlayer = proposal.getRequestedContract().getPlayer();
-					if(!requestingTeam.isSameTeam(fantaTeam)){
-						throw new IllegalArgumentException("You are not involved in this proposal");
-					}
-					Optional<Contract> requestedContract =  searchContract(fantaTeam, requestedPlayer);
-					Optional<Contract> offeredContract = searchContract(offeringTeam, offeredPlayer);
-					if(requestedContract.isEmpty() || offeredContract.isEmpty()){
-						rejectProposal(proposal, fantaTeam);
-						throw new IllegalArgumentException("One or both players do not play anymore in the teams");
-					}
-					Contract receivedContract = new Contract(proposal.getOfferedContract().getTeam(),
-							proposal.getRequestedContract().getPlayer());
-					Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
-							proposal.getOfferedContract().getPlayer());
-					context.getContractRepository().deleteContract(proposal.getRequestedContract());
-					context.getContractRepository().deleteContract(proposal.getOfferedContract());
-					context.getContractRepository().saveContract(receivedContract);
-					context.getContractRepository().saveContract(givenContract);
-					context.getProposalRepository().deleteProposal(proposal);
-				});
+		transactionManager.inTransaction((context) -> {
+			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
+			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
+			Player offeredPlayer = proposal.getOfferedContract().getPlayer();
+			Player requestedPlayer = proposal.getRequestedContract().getPlayer();
+			if (!requestingTeam.isSameTeam(fantaTeam)) {
+				throw new IllegalArgumentException("You are not involved in this proposal");
+			}
+			Optional<Contract> requestedContract = searchContract(fantaTeam, requestedPlayer);
+			Optional<Contract> offeredContract = searchContract(offeringTeam, offeredPlayer);
+			if (requestedContract.isEmpty() || offeredContract.isEmpty()) {
+				rejectProposal(proposal, fantaTeam);
+				throw new IllegalArgumentException("One or both players do not play anymore in the teams");
+			}
+			Contract receivedContract = new Contract(proposal.getOfferedContract().getTeam(),
+					proposal.getRequestedContract().getPlayer());
+			Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
+					proposal.getOfferedContract().getPlayer());
+			context.getContractRepository().deleteContract(proposal.getRequestedContract());
+			context.getContractRepository().deleteContract(proposal.getOfferedContract());
+			context.getContractRepository().saveContract(receivedContract);
+			context.getContractRepository().saveContract(givenContract);
+			context.getProposalRepository().deleteProposal(proposal);
+		});
 	}
 
 	public void rejectProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
-		transactionManager.inTransaction(
-				(context) -> {
-					FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
-					FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
-					if(!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)){
-						throw new IllegalArgumentException("You are not involved in this proposal");
-					}
-					Proposal.RejectedProposal rejectedProposal = new Proposal.
-							RejectedProposal(proposal.getOfferedContract(), proposal.getRequestedContract());
-					context.getProposalRepository().deleteProposal(proposal);
-					context.getProposalRepository().saveProposal(rejectedProposal);
-				});
+		transactionManager.inTransaction((context) -> {
+			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
+			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
+			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
+				throw new IllegalArgumentException("You are not involved in this proposal");
+			}
+			Proposal.RejectedProposal rejectedProposal = new Proposal.RejectedProposal(proposal.getOfferedContract(),
+					proposal.getRequestedContract());
+			context.getProposalRepository().deleteProposal(proposal);
+			context.getProposalRepository().saveProposal(rejectedProposal);
+		});
 	}
 
 	public boolean createProposal(Player requestedPlayer, Player offeredPlayer, FantaTeam myTeam,
@@ -148,14 +154,15 @@ public class UserService {
 		return transactionManager.fromTransaction((context) -> {
 			Optional<Contract> requestedContract = searchContract(opponentTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
-			if(requestedContract.isPresent() && offeredContract.isPresent()){
+			if (requestedContract.isPresent() && offeredContract.isPresent()) {
 				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
-				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get()).isPresent()) {
+				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get())
+						.isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
 				return context.getProposalRepository().saveProposal(newProposal);
-			} else{
+			} else {
 				return false;
 			}
 		});
@@ -171,19 +178,19 @@ public class UserService {
 	// Teams
 
 	public List<FantaTeam> getAllFantaTeams(League league) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getTeamRepository().getAllTeams(league));
+		return transactionManager.fromTransaction((context) -> context.getTeamRepository().getAllTeams(league));
 	}
 
 	public FantaTeam getFantaTeamByUserAndLeague(League league, FantaUser user) {
-		return transactionManager.fromTransaction((context)->
-				context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
+		return transactionManager
+				.fromTransaction((context) -> context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
 	}
 
 	// Grades
 
 	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
-		return transactionManager.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
+		return transactionManager
+				.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
 	}
 
 	// Results
@@ -201,7 +208,7 @@ public class UserService {
 	protected LocalDate today() {
 		return LocalDate.now();
 	}
-	
+
 	public void saveLineUp(LineUp lineUp) {
 		transactionManager.inTransaction((context) -> {
 			LocalDate today = today();

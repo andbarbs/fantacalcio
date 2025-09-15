@@ -169,5 +169,53 @@ class JpaMatchDayRepositoryTest {
 
 		assertThat(matchDayRepository.getNextMatchDay(firstDate).get()).isEqualTo(nextDay);
 	}
+	
+	@Test
+	@DisplayName("getMatchDay() when the match day does not exist")
+	public void testGetMatchDayWhenNotExists() {
+	    LocalDate date = LocalDate.of(2020, 1, 12);
+
+	    sessionFactory.inTransaction(session -> {
+	        session.persist(new MatchDaySerieA("prima giornata", date.plusDays(7)));
+	    });
+
+	    assertThat(matchDayRepository.getMatchDay(date)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("getMatchDay() when the match day exists")
+	public void testGetMatchDayWhenExists() {
+	    LocalDate date = LocalDate.of(2020, 1, 12);
+	    MatchDaySerieA expected = new MatchDaySerieA("prima giornata", date);
+
+	    sessionFactory.inTransaction(session -> {
+	        session.persist(expected);
+	    });
+
+	    assertThat(matchDayRepository.getMatchDay(date))
+	        .isPresent()
+	        .get()
+	        .isEqualTo(expected);
+	}
+
+	@Test
+	@DisplayName("getMatchDay() when multiple days exist but only one matches")
+	public void testGetMatchDayWhenMultipleDaysExist() {
+	    LocalDate matchDate = LocalDate.of(2020, 1, 19);
+	    MatchDaySerieA expected = new MatchDaySerieA("seconda giornata", matchDate);
+
+	    sessionFactory.inTransaction(session -> {
+	        session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)));
+	        session.persist(expected);
+	        session.persist(new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26)));
+	    });
+
+	    assertThat(matchDayRepository.getMatchDay(matchDate))
+	        .isPresent()
+	        .get()
+	        .isEqualTo(expected);
+	}
+
+	
 
 }

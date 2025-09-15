@@ -1,5 +1,6 @@
 package businessLogic.repositories;
 
+import domainModel.FantaTeam;
 import domainModel.FantaUser;
 import domainModel.League;
 
@@ -13,5 +14,7 @@ public interface LeagueRepository {
 	boolean saveLeague(League league);
 
 	List<League> getLeaguesByUser(FantaUser user);
+	
+	List<FantaTeam> getAllTeams(League league);
 	
 }

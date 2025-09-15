@@ -2,7 +2,6 @@ package jpaRepositories;
 
 import java.util.List;
 import businessLogic.repositories.NewsPaperRepository;
-import domainModel.League;
 import domainModel.NewsPaper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -25,12 +24,6 @@ public class JpaNewsPaperRepository extends BaseJpaRepository implements NewsPap
         query.select(root);
 
         return em.createQuery(query).getResultList();
-	}
-
-	@Override
-	public void setNewsPaperForLeague(NewsPaper newspaper, League league) { // Non ha senso perché la lega ha il newspaper nel costruttore, al massimo si mette un setter
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -5,7 +5,13 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import businessLogic.repositories.ContractRepository;
 import domainModel.*;
+import domainModel.Player.Defender;
+import domainModel.Player.Forward;
+import domainModel.Player.Goalkeeper;
+import domainModel.Player.Midfielder;
+import domainModel.Player.PlayerVisitor;
 
 public class AdminUserService extends UserService {
 
@@ -14,21 +20,65 @@ public class AdminUserService extends UserService {
 	}
 
 	public void setPlayerToTeam(FantaTeam team, Player player) {
-		//TODO controlla che il team non abbia già  25 player di cui 3 portieri 8 difensori e 8 centrocampisti e 6 attaccanti e testa
-		transactionManager
-				.inTransaction((context) -> context.getContractRepository().saveContract(new Contract(team, player)));
+		transactionManager.inTransaction((context) -> {
+
+			if (team.getContracts().size() >= 25)
+				throw new UnsupportedOperationException("Maximum 25 players can be in a FantaTeam");
+
+			final int maxGoalkeepeers = 3;
+			final int maxDefenders = 8;
+			final int maxMidfielders = 8;
+			final int maxForward = 6;
+			int actualGoalkeepers = team.extract().goalkeepers().size();
+			int actualDefenders = team.extract().defenders().size();
+			int actualMidfielders = team.extract().midfielders().size();
+			int actualForwards = team.extract().forwards().size();
+
+			var visitor = new PlayerVisitor() {
+
+				private int role = -1;
+
+				@Override
+				public void visitGoalkeeper(Goalkeeper goalkeeper) {
+					role = 0;
+				}
+
+				@Override
+				public void visitDefender(Defender defender) {
+					role = 1;
+				}
+
+				@Override
+				public void visitMidfielder(Midfielder midfielder) {
+					role = 2;
+				}
+
+				@Override
+				public void visitForward(Forward forward) {
+					role = 3;
+				}
+			};
+
+			player.accept(visitor);
+			if ((visitor.role == 0 && maxGoalkeepeers > actualGoalkeepers)
+					|| (visitor.role == 1 && maxDefenders > actualDefenders)
+					|| (visitor.role == 2 && maxMidfielders > actualMidfielders)
+					|| (visitor.role == 3 && maxForward > actualForwards))
+				context.getContractRepository().saveContract(new Contract(team, player));
+		});
 	}
 
-	//TODO aggiungi rimuovi player controlla se il player è nel team e se lo è lo toglie altrimenti eccezione
+	public void removePlayerFromTeam(FantaTeam team, Player player) {
+		transactionManager.inTransaction((context) -> {
+			ContractRepository contractRepository = context.getContractRepository();
+			Optional<Contract> contract = contractRepository.getContract(team, player);
+			if (contract.isPresent())
+				contractRepository.deleteContract(contract.get());
+		});
+	}
 
 	public List<NewsPaper> getAllNewspapers() {
 		return transactionManager.fromTransaction((context) -> context.getNewspaperRepository().getAllNewspapers());
-	}
-
-	public void setNewspaperForLeague(NewsPaper newspaper, League adminLeague) {
-		transactionManager.inTransaction((context) -> {
-			context.getNewspaperRepository().setNewsPaperForLeague(newspaper, adminLeague);
-		});
 	}
 
 	public void generateCalendar(League league) {
@@ -37,21 +87,21 @@ public class AdminUserService extends UserService {
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 38);
 			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
 			List<Match> matches = createMatches(schedule, matchDaySerieA);
-			for(Match match: matches) {
+			for (Match match : matches) {
 				context.getMatchRepository().saveMatch(match);
 			}
 		});
 
 	}
-	
+
 	// package-private for tests
 	List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
 		int n = teams.size();
-		
-	    if (n < 2) {
-	        throw new IllegalArgumentException("At least 2 teams are required to generate a schedule.");
-	    }
-		
+
+		if (n < 2) {
+			throw new IllegalArgumentException("At least 2 teams are required to generate a schedule.");
+		}
+
 		if (n % 2 != 0) {
 			throw new IllegalArgumentException("Number of teams must be even. Add a BYE if needed.");
 		}
@@ -136,49 +186,51 @@ public class AdminUserService extends UserService {
 		return matches;
 	}
 
-
-
 	public void calculateGrades(FantaUser user, League league) {
-		//check if the user is the admin of the league
-		if(!(league.getAdmin().equals(user)))
+		// check if the user is the admin of the league
+		if (!(league.getAdmin().equals(user)))
 			throw new IllegalArgumentException("You are not the admin of the league");
 		transactionManager.inTransaction((context) -> {
-			//find the oldest match with no result
+			// find the oldest match with no result
 			LocalDate localDate = LocalDate.now();
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
-			if(previousMatchDay.isEmpty()){
+			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
 			}
 			Optional<MatchDaySerieA> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
-			if(!(matchDayToCalculate.isPresent())){
+			if (!(matchDayToCalculate.isPresent())) {
 				throw new RuntimeException("There are no results to calculate");
 			}
-			if(!isLegalToCalculateResults(localDate)){
+			if (!isLegalToCalculateResults(localDate)) {
 				throw new RuntimeException("The matches are not finished yet");
 			}
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDayToCalculate.get(), league);
+			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDayToCalculate.get(),
+					league);
 			for (Match match : allMatches) {
-				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match, league.getNewsPaper());
-				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match, match.getTeam1());
-				Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match, match.getTeam2());
+				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match,
+						league.getNewsPaper());
+				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
+						match.getTeam1());
+				Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
+						match.getTeam2());
 				Map<Player, Grade> gradesByPlayer = allMatchGrades.stream()
 						.collect(Collectors.toMap(Grade::getPlayer, g -> g));
 				double resultTeam1 = 0;
 				double resultTeam2 = 0;
-				if(lineUp1.isPresent()){
+				if (lineUp1.isPresent()) {
 					resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
 				}
-				if(lineUp2.isPresent()){
+				if (lineUp2.isPresent()) {
 					resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
 				}
 				int goalTeam1 = goals(resultTeam1);
 				int goalTeam2 = goals(resultTeam2);
 				Result result = new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match);
-				if(goalTeam1 > goalTeam2){
+				if (goalTeam1 > goalTeam2) {
 					match.getTeam1().setPoints(match.getTeam1().getPoints() + 3);
-				} else if(goalTeam1 < goalTeam2){
+				} else if (goalTeam1 < goalTeam2) {
 					match.getTeam2().setPoints(match.getTeam2().getPoints() + 3);
-				} else if(goalTeam1 == goalTeam2){
+				} else if (goalTeam1 == goalTeam2) {
 					match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
 					match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
 				}
@@ -189,25 +241,19 @@ public class AdminUserService extends UserService {
 
 	private double getTeamResult(LineUp lineUp, Map<Player, Grade> gradesByPlayer) {
 		double result = 0;
-		result += calculateRoleResults(lineUp.extract().starterGoalkeepers(),
-				lineUp.extract().substituteGoalkeepers(),
+		result += calculateRoleResults(lineUp.extract().starterGoalkeepers(), lineUp.extract().substituteGoalkeepers(),
 				gradesByPlayer);
-		result += calculateRoleResults(lineUp.extract().starterDefenders(),
-				lineUp.extract().substituteDefenders(),
+		result += calculateRoleResults(lineUp.extract().starterDefenders(), lineUp.extract().substituteDefenders(),
 				gradesByPlayer);
-		result += calculateRoleResults(lineUp.extract().starterMidfielders(),
-				lineUp.extract().substituteMidfielders(),
+		result += calculateRoleResults(lineUp.extract().starterMidfielders(), lineUp.extract().substituteMidfielders(),
 				gradesByPlayer);
-		result += calculateRoleResults(lineUp.extract().starterForwards(),
-				lineUp.extract().substituteForwards(),
+		result += calculateRoleResults(lineUp.extract().starterForwards(), lineUp.extract().substituteForwards(),
 				gradesByPlayer);
 
 		return result;
 	}
 
-	private double calculateRoleResults(
-			Set<? extends Player> starters,
-			List<? extends Player> substitutes,
+	private double calculateRoleResults(Set<? extends Player> starters, List<? extends Player> substitutes,
 			Map<Player, Grade> gradesByPlayer) {
 
 		double result = 0;
@@ -235,37 +281,40 @@ public class AdminUserService extends UserService {
 	}
 
 	private int goals(double points) {
-		if (points < 66.0) return 0;
+		if (points < 66.0)
+			return 0;
 		return 1 + (int) Math.floor((points - 66.0) / 6.0);
 	}
 
-	private boolean isLegalToCalculateResults(LocalDate matchDate){
+	private boolean isLegalToCalculateResults(LocalDate matchDate) {
 		LocalDate now = today();
 		LocalDate legalDate;
 		DayOfWeek dayOfWeek = matchDate.getDayOfWeek();
-		if(dayOfWeek == DayOfWeek.SATURDAY){
+		if (dayOfWeek == DayOfWeek.SATURDAY) {
 			legalDate = matchDate.plusDays(3);
 		} else if (dayOfWeek == DayOfWeek.SUNDAY) {
 			legalDate = matchDate.plusDays(2);
-		} else{
+		} else {
 			legalDate = now.plusDays(1);
 		}
 		return !now.isBefore(legalDate);
 	}
-	
+
 	protected LocalDate today() {
 		return LocalDate.now();
 	}
 
-	private Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league, FantaUser user) {
+	private Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context,
+			League league, FantaUser user) {
 		Optional<MatchDaySerieA> matchDayToCalculate;
 		boolean found = false;
-		while(!found){
+		while (!found) {
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
-			if(previousMatchDay.isPresent()){
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league, getFantaTeamByUserAndLeague(league, user));
+			if (previousMatchDay.isPresent()) {
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
+						getFantaTeamByUserAndLeague(league, user));
 				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
-				if(previousMatchResult.isPresent()){
+				if (previousMatchResult.isPresent()) {
 					found = true;
 				} else {
 					localDate = previousMatchDay.get().getDate();

@@ -125,59 +125,86 @@ class JpaMatchRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("getMatchByMatchDay() should return the match when team is either team1 or team2")
-	void testGetMatchByMatchDay() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD3", LocalDate.now());
-		FantaUser admin = new FantaUser("admin@" + "L003" + ".com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta " + "L003");
-		League league = new League(admin, "League " + "L003", np, "L003");
-		FantaUser user1 = new FantaUser("f@f.com", "pwd");
-		FantaTeam t1 = new FantaTeam("Team F", league, 0, user1, Set.of());
-		FantaUser user2 = new FantaUser("g@g.com", "pwd");
-		FantaTeam t2 = new FantaTeam("Team G", league, 0, user2, Set.of());
+	@DisplayName("getMatchByMatchDay() should return the correct match when team is team1")
+	void testGetMatchByMatchDayWithTeam1() {
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD5", LocalDate.now());
+	    FantaUser admin = new FantaUser("admin@L005.com", "pwd");
+	    NewsPaper np = new NewsPaper("Gazzetta L005");
+	    League league = new League(admin, "League L005", np, "L005");
+	    FantaUser user1 = new FantaUser("i@i.com", "pwd");
+	    FantaTeam t1 = new FantaTeam("Team I", league, 0, user1, Set.of());
+	    FantaUser user2 = new FantaUser("j@j.com", "pwd");
+	    FantaTeam t2 = new FantaTeam("Team J", league, 0, user2, Set.of());
 
-		Match match = new Match(matchDay, t1, t2);
+	    Match match = new Match(matchDay, t1, t2);
 
-		entityManager.getTransaction().begin();
-		entityManager.persist(matchDay);
-		entityManager.persist(league.getAdmin());
-		entityManager.persist(league.getNewsPaper());
-		entityManager.persist(league);
-		entityManager.persist(t1.getFantaManager());
-		entityManager.persist(t2.getFantaManager());
-		entityManager.persist(t1);
-		entityManager.persist(t2);
-		entityManager.persist(match);
-		entityManager.getTransaction().commit();
+	    entityManager.getTransaction().begin();
+	    entityManager.persist(matchDay);
+	    entityManager.persist(admin);
+	    entityManager.persist(np);
+	    entityManager.persist(league);
+	    entityManager.persist(user1);
+	    entityManager.persist(user2);
+	    entityManager.persist(t1);
+	    entityManager.persist(t2);
+	    entityManager.persist(match);
+	    entityManager.getTransaction().commit();
 
-		Match found1 = matchRepository.getMatchByMatchDay(matchDay, league, t1);
-		Match found2 = matchRepository.getMatchByMatchDay(matchDay, league, t2);
-
-		assertThat(found1).isEqualTo(match);
-		assertThat(found2).isEqualTo(match);
+	    Match found = matchRepository.getMatchByMatchDay(matchDay, league, t1);
+	    assertThat(found).isEqualTo(match);
 	}
 
 	@Test
-	@DisplayName("getMatchByMatchDay() should return empty when no match exists")
-	void testGetMatchByMatchDayWhenNoMatch() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD4", LocalDate.now());
-		FantaUser admin = new FantaUser("admin@" + "L004" + ".com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta " + "L004");
-		League league = new League(admin, "League " + "L004", np, "L004");
-		FantaUser user = new FantaUser("h@h.com", "pwd");
-		FantaTeam t1 = new FantaTeam("Team H", league, 0, user, Set.of());
+	@DisplayName("getMatchByMatchDay() should return the correct match when team is team2")
+	void testGetMatchByMatchDayWithTeam2() {
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD6", LocalDate.now());
+	    FantaUser admin = new FantaUser("admin@L006.com", "pwd");
+	    NewsPaper np = new NewsPaper("Gazzetta L006");
+	    League league = new League(admin, "League L006", np, "L006");
+	    FantaUser user1 = new FantaUser("k@k.com", "pwd");
+	    FantaTeam t1 = new FantaTeam("Team K", league, 0, user1, Set.of());
+	    FantaUser user2 = new FantaUser("l@l.com", "pwd");
+	    FantaTeam t2 = new FantaTeam("Team L", league, 0, user2, Set.of());
 
-		entityManager.getTransaction().begin();
-		entityManager.persist(matchDay);
-		entityManager.persist(league.getAdmin());
-		entityManager.persist(league.getNewsPaper());
-		entityManager.persist(league);
-		entityManager.persist(t1.getFantaManager());
-		entityManager.persist(t1);
-		entityManager.getTransaction().commit();
+	    Match match = new Match(matchDay, t1, t2);
 
-		List<Match> results = matchRepository.getAllMatchesByMatchDay(matchDay, league);
+	    entityManager.getTransaction().begin();
+	    entityManager.persist(matchDay);
+	    entityManager.persist(admin);
+	    entityManager.persist(np);
+	    entityManager.persist(league);
+	    entityManager.persist(user1);
+	    entityManager.persist(user2);
+	    entityManager.persist(t1);
+	    entityManager.persist(t2);
+	    entityManager.persist(match);
+	    entityManager.getTransaction().commit();
 
-		assertThat(results).isEmpty();
+	    Match found = matchRepository.getMatchByMatchDay(matchDay, league, t2);
+	    assertThat(found).isEqualTo(match);
 	}
+
+	@Test
+	@DisplayName("getMatchByMatchDay() should throw NoSuchElementException when no match exists")
+	void testGetMatchByMatchDayWhenNoMatchExists() {
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD7", LocalDate.now());
+	    FantaUser admin = new FantaUser("admin@L007.com", "pwd");
+	    NewsPaper np = new NewsPaper("Gazzetta L007");
+	    League league = new League(admin, "League L007", np, "L007");
+	    FantaUser user1 = new FantaUser("m@m.com", "pwd");
+	    FantaTeam t1 = new FantaTeam("Team M", league, 0, user1, Set.of());
+
+	    entityManager.getTransaction().begin();
+	    entityManager.persist(matchDay);
+	    entityManager.persist(admin);
+	    entityManager.persist(np);
+	    entityManager.persist(league);
+	    entityManager.persist(user1);
+	    entityManager.persist(t1);
+	    entityManager.getTransaction().commit();
+
+	    assertThatThrownBy(() -> matchRepository.getMatchByMatchDay(matchDay, league, t1))
+	        .isInstanceOf(java.util.NoSuchElementException.class);
+	}
+
 }

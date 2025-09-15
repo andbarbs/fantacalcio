@@ -14,7 +14,7 @@ import businessLogic.repositories.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import domainModel.FantaUser;
+
 import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
@@ -625,8 +625,8 @@ public class UserServiceTest {
 	void testGetAllMatchGrades() {
 		Match match = mock(Match.class);
 		Grade grade = mock(Grade.class);
-		NewsPaper newsPaper = mock(NewsPaper.class);
-		//TODO correggi vedi se mock newspaper è neccessario
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		
 		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match,  newsPaper);
 		assertThat(result).containsExactly(grade);

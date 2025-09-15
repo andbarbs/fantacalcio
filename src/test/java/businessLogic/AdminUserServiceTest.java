@@ -82,13 +82,186 @@ class AdminUserServiceTest {
 	}
 
 	@Test
-	void testSetPlayerToTeam() {
+	void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
+		FantaTeam team = mock(FantaTeam.class);
+		when(team.getContracts()).thenReturn(new HashSet<>());
+
+		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
+		when(viewer.goalkeepers()).thenReturn(Set.of());
+		when(viewer.defenders()).thenReturn(Set.of());
+		when(viewer.midfielders()).thenReturn(Set.of());
+		when(viewer.forwards()).thenReturn(Set.of());
+		when(team.extract()).thenReturn(viewer);
+
+		Player.Goalkeeper gk = mock(Player.Goalkeeper.class);
+		doAnswer(inv -> {
+			((Player.PlayerVisitor) inv.getArgument(0)).visitGoalkeeper(gk);
+			return null;
+		}).when(gk).accept(any());
+
+		service.setPlayerToTeam(team, gk);
+
+		verify(contractRepository).saveContract(argThat(c -> c.getTeam().equals(team) && c.getPlayer().equals(gk)));
+	}
+
+	@Test
+	void testSetPlayerToTeam_Throws_WhenTeamHas25Players() {
+		FantaTeam team = mock(FantaTeam.class);
+		Set<Contract> contracts = new HashSet<>();
+		for (int i = 0; i < 25; i++)
+			contracts.add(mock(Contract.class));
+		when(team.getContracts()).thenReturn(contracts);
+
+		Player player = mock(Player.class);
+
+		assertThatThrownBy(() -> service.setPlayerToTeam(team, player))
+				.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("Maximum 25 players");
+	}
+
+	@Test
+	void testSetPlayerToTeam_DoesNotSave_WhenGoalkeepersLimitReached() {
+		// team vuoto
+		FantaTeam team = mock(FantaTeam.class);
+		when(team.getContracts()).thenReturn(new HashSet<>());
+
+		// crea 3 veri portieri
+		Player.Goalkeeper gk1 = new Player.Goalkeeper("P1", "Test", Player.Club.ATALANTA);
+		Player.Goalkeeper gk2 = new Player.Goalkeeper("P2", "Test", Player.Club.BOLOGNA);
+		Player.Goalkeeper gk3 = new Player.Goalkeeper("P3", "Test", Player.Club.CAGLIARI);
+
+		// costruisci un vero viewer
+		FantaTeamViewer viewer = new FantaTeamViewer(team) {
+			@Override
+			public Set<Player.Goalkeeper> goalkeepers() {
+				return Set.of(gk1, gk2, gk3);
+			}
+
+			@Override
+			public Set<Player.Defender> defenders() {
+				return Set.of();
+			}
+
+			@Override
+			public Set<Player.Midfielder> midfielders() {
+				return Set.of();
+			}
+
+			@Override
+			public Set<Player.Forward> forwards() {
+				return Set.of();
+			}
+		};
+
+		when(team.extract()).thenReturn(viewer);
+
+		// nuovo portiere da aggiungere
+		Player.Goalkeeper gk = new Player.Goalkeeper("New", "Keeper", Player.Club.ROMA);
+
+		// act
+		service.setPlayerToTeam(team, gk);
+
+		// assert
+		verify(contractRepository, never()).saveContract(any());
+	}
+
+	@Test
+	void testSetPlayerToTeam_DoesNotSave_WhenDefendersLimitReached() {
+		FantaTeam team = mock(FantaTeam.class);
+		when(team.getContracts()).thenReturn(new HashSet<>());
+
+		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
+		when(viewer.defenders()).thenReturn(Set.of(mock(Player.Defender.class), mock(Player.Defender.class),
+				mock(Player.Defender.class), mock(Player.Defender.class), mock(Player.Defender.class),
+				mock(Player.Defender.class), mock(Player.Defender.class), mock(Player.Defender.class)));
+		when(viewer.goalkeepers()).thenReturn(Set.of());
+		when(viewer.midfielders()).thenReturn(Set.of());
+		when(viewer.forwards()).thenReturn(Set.of());
+		when(team.extract()).thenReturn(viewer);
+
+		Player.Defender def = mock(Player.Defender.class);
+		doAnswer(inv -> {
+			((Player.PlayerVisitor) inv.getArgument(0)).visitDefender(def);
+			return null;
+		}).when(def).accept(any());
+
+		service.setPlayerToTeam(team, def);
+
+		verify(contractRepository, never()).saveContract(any());
+	}
+
+	@Test
+	void testSetPlayerToTeam_DoesNotSave_WhenMidfieldersLimitReached() {
+		FantaTeam team = mock(FantaTeam.class);
+		when(team.getContracts()).thenReturn(new HashSet<>());
+
+		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
+		when(viewer.midfielders()).thenReturn(Set.of(mock(Player.Midfielder.class), mock(Player.Midfielder.class),
+				mock(Player.Midfielder.class), mock(Player.Midfielder.class), mock(Player.Midfielder.class),
+				mock(Player.Midfielder.class), mock(Player.Midfielder.class), mock(Player.Midfielder.class)));
+		when(viewer.goalkeepers()).thenReturn(Set.of());
+		when(viewer.defenders()).thenReturn(Set.of());
+		when(viewer.forwards()).thenReturn(Set.of());
+		when(team.extract()).thenReturn(viewer);
+
+		Player.Midfielder mid = mock(Player.Midfielder.class);
+		doAnswer(inv -> {
+			((Player.PlayerVisitor) inv.getArgument(0)).visitMidfielder(mid);
+			return null;
+		}).when(mid).accept(any());
+
+		service.setPlayerToTeam(team, mid);
+
+		verify(contractRepository, never()).saveContract(any());
+	}
+
+	@Test
+	void testSetPlayerToTeam_DoesNotSave_WhenForwardsLimitReached() {
+		FantaTeam team = mock(FantaTeam.class);
+		when(team.getContracts()).thenReturn(new HashSet<>());
+
+		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
+		when(viewer.forwards())
+				.thenReturn(Set.of(mock(Player.Forward.class), mock(Player.Forward.class), mock(Player.Forward.class),
+						mock(Player.Forward.class), mock(Player.Forward.class), mock(Player.Forward.class)));
+		when(viewer.goalkeepers()).thenReturn(Set.of());
+		when(viewer.defenders()).thenReturn(Set.of());
+		when(viewer.midfielders()).thenReturn(Set.of());
+		when(team.extract()).thenReturn(viewer);
+
+		Player.Forward fw = mock(Player.Forward.class);
+		doAnswer(inv -> {
+			((Player.PlayerVisitor) inv.getArgument(0)).visitForward(fw);
+			return null;
+		}).when(fw).accept(any());
+
+		service.setPlayerToTeam(team, fw);
+
+		verify(contractRepository, never()).saveContract(any());
+	}
+
+	@Test
+	void testRemovePlayerFromTeam_WhenContractExists() {
+		FantaTeam team = mock(FantaTeam.class);
+		Player player = mock(Player.class);
+		Contract contract = mock(Contract.class);
+
+		when(contractRepository.getContract(team, player)).thenReturn(Optional.of(contract));
+
+		service.removePlayerFromTeam(team, player);
+
+		verify(contractRepository).deleteContract(contract);
+	}
+
+	@Test
+	void testRemovePlayerFromTeam_WhenContractDoesNotExist() {
 		FantaTeam team = mock(FantaTeam.class);
 		Player player = mock(Player.class);
 
-		service.setPlayerToTeam(team, player);
+		when(contractRepository.getContract(team, player)).thenReturn(Optional.empty());
 
-		verify(contractRepository).saveContract(argThat(c -> c.getTeam().equals(team) && c.getPlayer().equals(player)));
+		service.removePlayerFromTeam(team, player);
+
+		verify(contractRepository, never()).deleteContract(any());
 	}
 
 	@Test
@@ -100,16 +273,6 @@ class AdminUserServiceTest {
 		List<NewsPaper> result = service.getAllNewspapers();
 
 		assertThat(result).containsExactly(np1, np2);
-	}
-
-	@Test
-	void testSetNewspaperForLeague() {
-		NewsPaper newspaper = mock(NewsPaper.class);
-		League league = mock(League.class);
-
-		service.setNewspaperForLeague(newspaper, league);
-
-		verify(newspaperRepository).setNewsPaperForLeague(newspaper, league);
 	}
 
 	@Test
