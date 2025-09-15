@@ -626,9 +626,10 @@ class UserServiceTest {
 	void testGetAllMatchGrades() {
 		Match match = mock(Match.class);
 		Grade grade = mock(Grade.class);
-		when(context.getGradeRepository().getAllMatchGrades(match)).thenReturn(List.of(grade));
-
-		List<Grade> result = userService.getAllMatchGrades(match);
+		NewsPaper newsPaper = mock(NewsPaper.class);
+		//TODO correggi
+		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
+		List<Grade> result = userService.getAllMatchGrades(match,  newsPaper);
 		assertThat(result).containsExactly(grade);
 	}
 

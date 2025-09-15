@@ -179,8 +179,8 @@ public class UserService {
 
 	// Grades
 
-	public List<Grade> getAllMatchGrades(Match match) {
-		return transactionManager.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match));
+	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+		return transactionManager.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
 	}
 
 	// Results

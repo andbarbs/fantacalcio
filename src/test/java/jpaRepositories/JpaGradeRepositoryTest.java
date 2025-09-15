@@ -101,7 +101,7 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();
+		assertThat(gradeRepository.getAllMatchGrades(match, null)).isEmpty();
 	}
 
 	@Test
@@ -122,8 +122,7 @@ class JpaGradeRepositoryTest {
 		});
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-
-		assertThat(gradeRepository.getAllMatchGrades(match)).containsExactly(voto1, voto2);
+		assertThat(gradeRepository.getAllMatchGrades(match, null)).containsExactly(voto1, voto2);
 		repositorySession.close();
 	}
 

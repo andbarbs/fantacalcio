@@ -155,7 +155,7 @@ public class AdminUserService extends UserService {
 			}
 			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDayToCalculate.get(), league);
 			for (Match match : allMatches) {
-				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match);
+				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match, league.getNewsPaper());
 				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match, match.getTeam1());
 				Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match, match.getTeam2());
 				Map<Player, Grade> gradesByPlayer = allMatchGrades.stream()
