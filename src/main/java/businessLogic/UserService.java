@@ -42,25 +42,37 @@ public class UserService {
 
 	// Matches
 
-	public Map<MatchDaySerieA, Set<Match>> getAllMatches(League league) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getMatchRepository().getAllMatches(league));
+	public Map<MatchDaySerieA, List<Match>> getAllMatches(League league) {
+
+		return transactionManager.fromTransaction((context) -> {
+
+			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
+			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
+			
+			for (MatchDaySerieA matchDay : allMatchDays) {
+				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
+			}
+
+			return map;
+
+		});
 	}
 
 	public Match getNextMatch(League league, FantaTeam fantaTeam, LocalDate date) {
 		return transactionManager.fromTransaction((context) -> {
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
 			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league, fantaTeam);
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
+						fantaTeam);
 				Optional<Result> result = context.getResultsRepository().getResult(previousMatch);
-				if(result.isEmpty()){
+				if (result.isEmpty()) {
 					throw new RuntimeException("The results for the previous match have not been calculated yet");
 				}
 			}
 			Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
-			if(nextMatchDay.isEmpty()){
+			if (nextMatchDay.isEmpty()) {
 				throw new RuntimeException("The league ended");
-			}else{
+			} else {
 				return context.getMatchRepository().getMatchByMatchDay(nextMatchDay.get(), league, fantaTeam);
 			}
 		});
@@ -69,21 +81,18 @@ public class UserService {
 	// Players
 
 	public List<Player> getAllPlayers() {
-		return transactionManager.fromTransaction(
-				(context) -> context.getPlayerRepository().findAll());
+		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findAll());
 	}
 
 	public List<Player> getPlayersBySurname(String surname) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getPlayerRepository().findBySurname(surname));
+		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findBySurname(surname));
 	}
-
 
 	// Proposals
 
 	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getProposalRepository().getMyProposals(league, team));
+		return transactionManager
+				.fromTransaction((context) -> context.getProposalRepository().getMyProposals(league, team));
 	}
 
 	public void acceptProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
@@ -172,29 +181,32 @@ public class UserService {
 
 	// Grades
 
-	public List<Grade> getAllMatchGrades(Match match) {
-		return transactionManager.fromTransaction(
-				(context) -> context.getGradeRepository().getAllMatchGrades(match));
+	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+		return transactionManager.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
 	}
 
-	//Results
+	// Results
 
 	public Optional<Result> getResultByMatch(Match match) {
-		return transactionManager.fromTransaction((context)-> context.getResultsRepository().getResult(match));
+		return transactionManager.fromTransaction((context) -> context.getResultsRepository().getResult(match));
 
 	}
 
 	public Optional<LineUp> getLineUpByMatch(Match match, FantaTeam fantaTeam) {
-		return transactionManager.fromTransaction((context) ->
-				context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
-    }
+		return transactionManager
+				.fromTransaction((context) -> context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
+	}
 
+	protected LocalDate today() {
+		return LocalDate.now();
+	}
+	
 	public void saveLineUp(LineUp lineUp) {
 		transactionManager.inTransaction((context) -> {
-			LocalDate today = LocalDate.now();
+			LocalDate today = today();
 			DayOfWeek day = today.getDayOfWeek();
 
-			//Check if is a valid date to save the lineUp
+			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
 			LocalDate matchDate = match.getMatchDaySerieA().getDate();
 			if (today.isAfter(matchDate))
@@ -203,10 +215,11 @@ public class UserService {
 			if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
 
-			//Check if is legal to save the lineUP
+			// Check if is legal to save the lineUP
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
 			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), lineUp.getTeam().getLeague(), lineUp.getTeam());
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(),
+						lineUp.getTeam().getLeague(), lineUp.getTeam());
 				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
 				if (previousMatchResult.isEmpty()) {
 					throw new UnsupportedOperationException("The grades for the previous match were not calculated");
@@ -238,7 +251,8 @@ public class UserService {
 			// Validate ownership
 			for (Player player : allPlayers) {
 				if (!teamPlayers.contains(player)) {
-					throw new IllegalArgumentException("Player " + player + " does not belong to FantaTeam " + team.getName());
+					throw new IllegalArgumentException(
+							"Player " + player + " does not belong to FantaTeam " + team.getName());
 				}
 			}
 
@@ -249,9 +263,8 @@ public class UserService {
 		});
 	}
 
-	private Optional<Contract> searchContract(FantaTeam team, Player player) {
-		return team.getContracts().stream().filter(c -> c.getTeam().equals(team) &&
-				c.getPlayer().equals(player)).findFirst();
+	protected Optional<Contract> searchContract(FantaTeam team, Player player) {
+		return team.getContracts().stream().filter(c -> c.getTeam().equals(team) && c.getPlayer().equals(player))
+				.findFirst();
 	}
 }
-
