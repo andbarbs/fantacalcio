@@ -128,7 +128,7 @@ public class UserService {
 				(context) -> {
 					FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 					FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
-					if(!requestingTeam.isSameTeam(fantaTeam) || !offeringTeam.isSameTeam(fantaTeam)){
+					if(!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)){
 						throw new IllegalArgumentException("You are not involved in this proposal");
 					}
 					Proposal.RejectedProposal rejectedProposal = new Proposal.
@@ -150,7 +150,7 @@ public class UserService {
 			if(requestedContract.isPresent() && offeredContract.isPresent()){
 				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
-				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get()).isEmpty()) {
+				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get()).isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
 				return context.getProposalRepository().saveProposal(newProposal);

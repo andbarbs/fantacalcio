@@ -28,8 +28,6 @@ class JpaGradeRepositoryTest {
 	private NewsPaper newsPaper;
 	private League league;
 	private MatchDaySerieA matchDay;
-	private FantaTeam player1;
-	private FantaTeam player2;
 	private FantaUser user1;
 	private FantaUser user2;
 	private FantaTeam team1;
@@ -76,10 +74,6 @@ class JpaGradeRepositoryTest {
 			t.persist(league);
 			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
 			t.persist(matchDay);
-			player1 = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
-			t.persist(player1);
-			player2 = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
-			t.persist(player2);
 			user1 = new FantaUser("mail1", "pswd1");
 			t.persist(user1);
 			user2 = new FantaUser("mail2", "pswd2");
@@ -107,24 +101,23 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() when two grades have been persisted")
 	public void testGetAllMatchGradesWhenTwoGradesExist() {
-
 		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
 		Player player2 = new Player.Forward("Gigi", "Riva", Club.CAGLIARI);
 
 		Grade voto1 = new Grade(player1, matchDay, 6.0, newsPaper);
 		Grade voto2 = new Grade(player1, matchDay, 8.0, newsPaper);
-		//TODO Non passa bisogna assegnare i giocatori ad i team e creare un match con quei due team e quella matchday
+		Contract contract1 = new Contract(team1, player1);
+		Contract contract2 = new Contract(team1, player2);
 		sessionFactory.inTransaction(session -> {
 			session.persist(player1);
 			session.persist(player2);
 			session.persist(voto1);
 			session.persist(voto2);
+			session.persist(contract1);
+			session.persist(contract2);
 		});
 
-		EntityManager repositorySession = sessionFactory.createEntityManager();
-
-		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper )).containsExactly(voto1, voto2);
-		repositorySession.close();
+		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper)).containsExactly(voto1, voto2);
 	}
 
 	@Test

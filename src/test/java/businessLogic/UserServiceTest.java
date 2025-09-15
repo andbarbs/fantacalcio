@@ -23,10 +23,8 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 
-@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-    @Mock
     private MatchRepository matchRepository;
     private GradeRepository gradeRepository;
     private LineUpRepository lineUpRepository;
@@ -612,10 +610,11 @@ public class UserServiceTest {
 		FantaTeam myTeam = spy(new FantaTeam("My Team", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
 		FantaTeam opponentTeam = spy(
 				new FantaTeam("Opponent", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
-		Player player = mock(Goalkeeper.class);
+		Player requestedPlayer = mock(Goalkeeper.class);
+		Player offeredPlayer = mock(Goalkeeper.class);
 
-		Contract offeredContract = new Contract(myTeam, player);
-		Contract requestedContract = new Contract(opponentTeam, player);
+		Contract offeredContract = new Contract(myTeam, offeredPlayer);
+		Contract requestedContract = new Contract(opponentTeam, requestedPlayer);
 		myTeam.getContracts().add(offeredContract);
 		opponentTeam.getContracts().add(requestedContract);
 
@@ -623,7 +622,7 @@ public class UserServiceTest {
 				.thenReturn(Optional.empty());
 		when(context.getProposalRepository().saveProposal(any())).thenReturn(true);
 
-		assertThat(userService.createProposal(player, player, myTeam, opponentTeam)).isTrue();
+		assertThat(userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam)).isTrue();
 	}
 
 	@Test
