@@ -37,7 +37,6 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 				)
 		);
 
-
 		cq.select(gradeRoot).distinct(true); // avoid duplicates
 
 		return em.createQuery(cq).getResultList();
