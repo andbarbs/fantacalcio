@@ -83,21 +83,8 @@ class AdminUserServiceTest {
 
 	@Test
 	void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
-		FantaTeam team = mock(FantaTeam.class);
-		when(team.getContracts()).thenReturn(new HashSet<>());
-
-		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
-		when(viewer.goalkeepers()).thenReturn(Set.of());
-		when(viewer.defenders()).thenReturn(Set.of());
-		when(viewer.midfielders()).thenReturn(Set.of());
-		when(viewer.forwards()).thenReturn(Set.of());
-		when(team.extract()).thenReturn(viewer);
-
-		Player.Goalkeeper gk = mock(Player.Goalkeeper.class);
-		doAnswer(inv -> {
-			((Player.PlayerVisitor) inv.getArgument(0)).visitGoalkeeper(gk);
-			return null;
-		}).when(gk).accept(any());
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+		Player.Goalkeeper gk = new Player.Goalkeeper("Gigi", "Buffon", Player.Club.JUVENTUS);
 
 		service.setPlayerToTeam(team, gk);
 
@@ -106,144 +93,119 @@ class AdminUserServiceTest {
 
 	@Test
 	void testSetPlayerToTeam_Throws_WhenTeamHas25Players() {
-		FantaTeam team = mock(FantaTeam.class);
-		Set<Contract> contracts = new HashSet<>();
-		for (int i = 0; i < 25; i++)
-			contracts.add(mock(Contract.class));
-		when(team.getContracts()).thenReturn(contracts);
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+		Set<Contract> contracts = new HashSet<Contract>();
+		for (int i = 0; i < 25; i++) {
+			Player p = new Player.Midfielder("Player" + i, "Test", Player.Club.ATALANTA);
+			contracts.add(new Contract(team, p));
+		}
+		team.setContracts(contracts);
 
-		Player player = mock(Player.class);
+		Player newPlayer = new Player.Defender("New", "Player", Player.Club.BOLOGNA);
 
-		assertThatThrownBy(() -> service.setPlayerToTeam(team, player))
+		assertThatThrownBy(() -> service.setPlayerToTeam(team, newPlayer))
 				.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("Maximum 25 players");
 	}
 
 	@Test
 	void testSetPlayerToTeam_DoesNotSave_WhenGoalkeepersLimitReached() {
-		// team vuoto
-		FantaTeam team = mock(FantaTeam.class);
-		when(team.getContracts()).thenReturn(new HashSet<>());
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
 
-		// crea 3 veri portieri
-		Player.Goalkeeper gk1 = new Player.Goalkeeper("P1", "Test", Player.Club.ATALANTA);
-		Player.Goalkeeper gk2 = new Player.Goalkeeper("P2", "Test", Player.Club.BOLOGNA);
-		Player.Goalkeeper gk3 = new Player.Goalkeeper("P3", "Test", Player.Club.CAGLIARI);
+		Set<Contract> contracts = new HashSet<Contract>();
 
-		// costruisci un vero viewer
-		FantaTeamViewer viewer = new FantaTeamViewer(team) {
-			@Override
-			public Set<Player.Goalkeeper> goalkeepers() {
-				return Set.of(gk1, gk2, gk3);
-			}
+		// Add 3 goalkeepers to reach the limit
+		contracts.add(new Contract(team, new Player.Goalkeeper("G1", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Goalkeeper("G2", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Goalkeeper("G3", "C", Player.Club.CAGLIARI)));
 
-			@Override
-			public Set<Player.Defender> defenders() {
-				return Set.of();
-			}
+		team.setContracts(contracts);
 
-			@Override
-			public Set<Player.Midfielder> midfielders() {
-				return Set.of();
-			}
+		Player.Goalkeeper newGk = new Player.Goalkeeper("New", "Keeper", Player.Club.ROMA);
 
-			@Override
-			public Set<Player.Forward> forwards() {
-				return Set.of();
-			}
-		};
+		service.setPlayerToTeam(team, newGk);
 
-		when(team.extract()).thenReturn(viewer);
-
-		// nuovo portiere da aggiungere
-		Player.Goalkeeper gk = new Player.Goalkeeper("New", "Keeper", Player.Club.ROMA);
-
-		// act
-		service.setPlayerToTeam(team, gk);
-
-		// assert
 		verify(contractRepository, never()).saveContract(any());
 	}
 
 	@Test
 	void testSetPlayerToTeam_DoesNotSave_WhenDefendersLimitReached() {
-		FantaTeam team = mock(FantaTeam.class);
-		when(team.getContracts()).thenReturn(new HashSet<>());
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
 
-		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
-		when(viewer.defenders()).thenReturn(Set.of(mock(Player.Defender.class), mock(Player.Defender.class),
-				mock(Player.Defender.class), mock(Player.Defender.class), mock(Player.Defender.class),
-				mock(Player.Defender.class), mock(Player.Defender.class), mock(Player.Defender.class)));
-		when(viewer.goalkeepers()).thenReturn(Set.of());
-		when(viewer.midfielders()).thenReturn(Set.of());
-		when(viewer.forwards()).thenReturn(Set.of());
-		when(team.extract()).thenReturn(viewer);
+		Set<Contract> contracts = new HashSet<Contract>();
 
-		Player.Defender def = mock(Player.Defender.class);
-		doAnswer(inv -> {
-			((Player.PlayerVisitor) inv.getArgument(0)).visitDefender(def);
-			return null;
-		}).when(def).accept(any());
+		// Add 8 defenders to reach the limit
+		contracts.add(new Contract(team, new Player.Defender("G1", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Defender("G2", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Defender("G3", "C", Player.Club.CAGLIARI)));
+		contracts.add(new Contract(team, new Player.Defender("G4", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Defender("G5", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Defender("G6", "C", Player.Club.CAGLIARI)));
+		contracts.add(new Contract(team, new Player.Defender("G7", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Defender("G8", "C", Player.Club.CAGLIARI)));
 
-		service.setPlayerToTeam(team, def);
+		team.setContracts(contracts);
+
+		Player.Defender newDf = new Player.Defender("New", "Keeper", Player.Club.ROMA);
+
+		service.setPlayerToTeam(team, newDf);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
 
 	@Test
 	void testSetPlayerToTeam_DoesNotSave_WhenMidfieldersLimitReached() {
-		FantaTeam team = mock(FantaTeam.class);
-		when(team.getContracts()).thenReturn(new HashSet<>());
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
 
-		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
-		when(viewer.midfielders()).thenReturn(Set.of(mock(Player.Midfielder.class), mock(Player.Midfielder.class),
-				mock(Player.Midfielder.class), mock(Player.Midfielder.class), mock(Player.Midfielder.class),
-				mock(Player.Midfielder.class), mock(Player.Midfielder.class), mock(Player.Midfielder.class)));
-		when(viewer.goalkeepers()).thenReturn(Set.of());
-		when(viewer.defenders()).thenReturn(Set.of());
-		when(viewer.forwards()).thenReturn(Set.of());
-		when(team.extract()).thenReturn(viewer);
+		Set<Contract> contracts = new HashSet<Contract>();
 
-		Player.Midfielder mid = mock(Player.Midfielder.class);
-		doAnswer(inv -> {
-			((Player.PlayerVisitor) inv.getArgument(0)).visitMidfielder(mid);
-			return null;
-		}).when(mid).accept(any());
+		// Add 8 defenders to reach the limit
+		contracts.add(new Contract(team, new Player.Midfielder("G1", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Midfielder("G2", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Midfielder("G3", "C", Player.Club.CAGLIARI)));
+		contracts.add(new Contract(team, new Player.Midfielder("G4", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Midfielder("G5", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Midfielder("G6", "C", Player.Club.CAGLIARI)));
+		contracts.add(new Contract(team, new Player.Midfielder("G7", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Midfielder("G8", "C", Player.Club.CAGLIARI)));
 
-		service.setPlayerToTeam(team, mid);
+		team.setContracts(contracts);
+
+		Player.Midfielder newMf = new Player.Midfielder("New", "Keeper", Player.Club.ROMA);
+
+		service.setPlayerToTeam(team, newMf);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
 
 	@Test
 	void testSetPlayerToTeam_DoesNotSave_WhenForwardsLimitReached() {
-		FantaTeam team = mock(FantaTeam.class);
-		when(team.getContracts()).thenReturn(new HashSet<>());
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
 
-		FantaTeamViewer viewer = mock(FantaTeamViewer.class);
-		when(viewer.forwards())
-				.thenReturn(Set.of(mock(Player.Forward.class), mock(Player.Forward.class), mock(Player.Forward.class),
-						mock(Player.Forward.class), mock(Player.Forward.class), mock(Player.Forward.class)));
-		when(viewer.goalkeepers()).thenReturn(Set.of());
-		when(viewer.defenders()).thenReturn(Set.of());
-		when(viewer.midfielders()).thenReturn(Set.of());
-		when(team.extract()).thenReturn(viewer);
+		Set<Contract> contracts = new HashSet<Contract>();
 
-		Player.Forward fw = mock(Player.Forward.class);
-		doAnswer(inv -> {
-			((Player.PlayerVisitor) inv.getArgument(0)).visitForward(fw);
-			return null;
-		}).when(fw).accept(any());
+		// Add 8 defenders to reach the limit
+		contracts.add(new Contract(team, new Player.Forward("G1", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Forward("G2", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Forward("G3", "C", Player.Club.CAGLIARI)));
+		contracts.add(new Contract(team, new Player.Forward("G4", "A", Player.Club.ATALANTA)));
+		contracts.add(new Contract(team, new Player.Forward("G5", "B", Player.Club.BOLOGNA)));
+		contracts.add(new Contract(team, new Player.Forward("G6", "C", Player.Club.CAGLIARI)));
 
-		service.setPlayerToTeam(team, fw);
+		team.setContracts(contracts);
+
+		Player.Forward newFw = new Player.Forward("New", "Keeper", Player.Club.ROMA);
+
+		service.setPlayerToTeam(team, newFw);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
 
 	@Test
 	void testRemovePlayerFromTeam_WhenContractExists() {
-		FantaTeam team = mock(FantaTeam.class);
-		Player player = mock(Player.class);
-		Contract contract = mock(Contract.class);
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+		Player player = new Player.Forward("Cristiano", "Ronaldo", Player.Club.JUVENTUS);
+		Contract contract = new Contract(team, player);
+		team.setContracts(Set.of(contract));
 
 		when(contractRepository.getContract(team, player)).thenReturn(Optional.of(contract));
 
@@ -254,8 +216,8 @@ class AdminUserServiceTest {
 
 	@Test
 	void testRemovePlayerFromTeam_WhenContractDoesNotExist() {
-		FantaTeam team = mock(FantaTeam.class);
-		Player player = mock(Player.class);
+		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+		Player player = new Player.Defender("Giorgio", "Chiellini", Player.Club.JUVENTUS);
 
 		when(contractRepository.getContract(team, player)).thenReturn(Optional.empty());
 
@@ -266,8 +228,8 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGetAllNewspapers() {
-		NewsPaper np1 = mock(NewsPaper.class);
-		NewsPaper np2 = mock(NewsPaper.class);
+		NewsPaper np1 = new NewsPaper("Gazzetta");
+		NewsPaper np2 = new NewsPaper("Corriere");
 		when(newspaperRepository.getAllNewspapers()).thenReturn(List.of(np1, np2));
 
 		List<NewsPaper> result = service.getAllNewspapers();
@@ -277,36 +239,37 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGenerateCalendar_SavesMatches() {
-		League league = mock(League.class);
+		FantaUser admin = new FantaUser(null, null);
+		League league = new League(admin, "Serie A", null, null);
 
 		// Create 4 real teams (even number for round-robin)
-		FantaTeam team1 = new FantaTeam("Team1", null, 0, null, Set.of());
-		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, Set.of());
-		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, Set.of());
-		FantaTeam team4 = new FantaTeam("Team4", null, 0, null, Set.of());
+		FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
+		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
+		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
+		FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
 		List<FantaTeam> teams = List.of(team1, team2, team3, team4);
 
-		// 38 match days
+		// 38 match days (real objects are okay)
 		List<MatchDaySerieA> matchDays = new ArrayList<>();
-		for (int i = 0; i < 38; i++) {
-			matchDays.add(mock(MatchDaySerieA.class));
-		}
+		for (int i = 0; i < 38; i++)
+			matchDays.add(new MatchDaySerieA("match", LocalDate.now()));
 
 		// Mock repositories
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
 		when(matchDayRepository.getAllMatchDays()).thenReturn(matchDays);
 
-		// Call real method
 		service.generateCalendar(league);
 
-		// Verify matches saved
 		verify(matchRepository, atLeastOnce()).saveMatch(any(Match.class));
 	}
 
 	@Test
 	void testGenerateCalendar_LessThanTwoTeams_Throws() {
-		League league = mock(League.class);
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(mock(FantaTeam.class)));
+		FantaUser admin = new FantaUser(null, null);
+		League league = new League(admin, "Serie A", null, null);
+		FantaTeam onlyTeam = new FantaTeam("Solo", null, 0, null, new HashSet<>());
+
+		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(onlyTeam));
 
 		assertThatThrownBy(() -> service.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("At least 2 teams are required");
@@ -314,9 +277,13 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGenerateCalendar_OddNumberOfTeams_Throws() {
-		League league = mock(League.class);
-		List<FantaTeam> teams = List.of(mock(FantaTeam.class), mock(FantaTeam.class), mock(FantaTeam.class));
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
+		FantaUser admin = new FantaUser(null, null);
+		League league = new League(admin, "Serie A", null, null);
+		FantaTeam t1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
+		FantaTeam t3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
+
+		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(t1, t2, t3));
 
 		assertThatThrownBy(() -> service.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Number of teams must be even");
@@ -324,13 +291,14 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGenerateSchedule_EvenNumberOfTeams_Success() throws Exception {
-		FantaTeam t1 = mock(FantaTeam.class);
-		FantaTeam t2 = mock(FantaTeam.class);
-		FantaTeam t3 = mock(FantaTeam.class);
-		FantaTeam t4 = mock(FantaTeam.class);
+		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
+		FantaTeam t4 = new FantaTeam("T4", null, 0, null, new HashSet<>());
 
 		var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
 		method.setAccessible(true);
+
 		@SuppressWarnings("unchecked")
 		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(service, List.of(t1, t2, t3, t4));
 
@@ -344,9 +312,9 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGenerateSchedule_OddNumberOfTeams_Throws() throws Exception {
-		FantaTeam t1 = mock(FantaTeam.class);
-		FantaTeam t2 = mock(FantaTeam.class);
-		FantaTeam t3 = mock(FantaTeam.class);
+		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
 
 		assertThatThrownBy(() -> {
 			var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
@@ -358,10 +326,10 @@ class AdminUserServiceTest {
 
 	@Test
 	void testGenerateSchedule_DoubleRoundRobin_MirrorsCorrectly() throws Exception {
-		FantaTeam t1 = mock(FantaTeam.class);
-		FantaTeam t2 = mock(FantaTeam.class);
-		FantaTeam t3 = mock(FantaTeam.class);
-		FantaTeam t4 = mock(FantaTeam.class);
+		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
+		FantaTeam t4 = new FantaTeam("T4", null, 0, null, new HashSet<>());
 
 		var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
 		method.setAccessible(true);
@@ -370,7 +338,6 @@ class AdminUserServiceTest {
 
 		int firstLegRounds = schedule.size() / 2;
 
-		// Verify second leg is mirrored
 		for (int i = 0; i < firstLegRounds; i++) {
 			List<FantaTeam[]> firstLeg = schedule.get(i);
 			List<FantaTeam[]> secondLeg = schedule.get(i + firstLegRounds);
@@ -383,8 +350,30 @@ class AdminUserServiceTest {
 
 	@Test
 	void testCreateMatches_Success() {
-		FantaTeam t1 = mock(FantaTeam.class);
-		FantaTeam t2 = mock(FantaTeam.class);
+		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+
+		FantaTeam[] match = new FantaTeam[] { t1, t2 };
+		List<MatchDaySerieA> matchDays = List.of(new MatchDaySerieA(null, null));
+
+		List<FantaTeam[]> round = new ArrayList<>();
+		round.add(match);
+		List<List<FantaTeam[]>> schedule = new ArrayList<>();
+		schedule.add(round);
+
+		List<Match> matches = service.createMatches(schedule, matchDays);
+
+		assertThat(matches).hasSize(1);
+		assertThat(matches.get(0).getTeam1()).isEqualTo(t1);
+		assertThat(matches.get(0).getTeam2()).isEqualTo(t2);
+		assertThat(matches.get(0).getMatchDaySerieA()).isEqualTo(matchDays.get(0));
+	}
+
+	@Test
+	void testCreateMatches_MismatchThrows() {
+		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
+		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+
 		FantaTeam[] match = new FantaTeam[] { t1, t2 };
 
 		List<FantaTeam[]> round = new ArrayList<>();
@@ -392,28 +381,7 @@ class AdminUserServiceTest {
 		List<List<FantaTeam[]>> schedule = new ArrayList<>();
 		schedule.add(round);
 
-		MatchDaySerieA matchDay = mock(MatchDaySerieA.class);
-		List<MatchDaySerieA> matchDays = List.of(matchDay);
-
-		List<Match> matches = service.createMatches(schedule, matchDays);
-		assertThat(matches).hasSize(1);
-		assertThat(matches.get(0).getTeam1()).isEqualTo(t1);
-		assertThat(matches.get(0).getTeam2()).isEqualTo(t2);
-		assertThat(matches.get(0).getMatchDaySerieA()).isEqualTo(matchDay);
-	}
-
-	@Test
-	void testCreateMatches_MismatchThrows() {
-		FantaTeam team1 = new FantaTeam("A", null, 0, null, Set.of());
-		FantaTeam team2 = new FantaTeam("B", null, 0, null, Set.of());
-		FantaTeam[] teamsArray = new FantaTeam[] { team1, team2 };
-
-		List<FantaTeam[]> round = new ArrayList<>();
-		round.add(teamsArray);
-		List<List<FantaTeam[]>> schedule = new ArrayList<>();
-		schedule.add(round);
-
-		List<MatchDaySerieA> matchDays = List.of(); // empty, mismatch
+		List<MatchDaySerieA> matchDays = List.of(); // empty -> mismatch
 
 		assertThatThrownBy(() -> service.createMatches(schedule, matchDays))
 				.isInstanceOf(IllegalArgumentException.class)
@@ -422,10 +390,10 @@ class AdminUserServiceTest {
 
 	@Test
 	void testCreateMatches_MoreRoundsThanMatchDays_Throws() {
-		FantaTeam team1 = mock(FantaTeam.class);
-		FantaTeam team2 = mock(FantaTeam.class);
-		FantaTeam team3 = mock(FantaTeam.class);
-		FantaTeam team4 = mock(FantaTeam.class);
+	    FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
+	    FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
+	    FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
+	    FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
 
 		FantaTeam[] teamsArray1 = new FantaTeam[] { team1, team2 };
 		FantaTeam[] teamsArray2 = new FantaTeam[] { team3, team4 };
@@ -439,8 +407,6 @@ class AdminUserServiceTest {
 		schedule.add(round2);
 
 		List<MatchDaySerieA> matchDays = List.of(mock(MatchDaySerieA.class)); // only 1 match day
-
-		System.out.println(schedule.size() + ", " + matchDays.size());
 
 		assertThatThrownBy(() -> service.createMatches(schedule, matchDays))
 				.isInstanceOf(IllegalArgumentException.class)
@@ -459,24 +425,55 @@ class AdminUserServiceTest {
 
 	@Test
 	void testCalculateGrades_UserNotAdmin_Throws() {
-		FantaUser user = mock(FantaUser.class);
-		League league = mock(League.class);
-		when(league.getAdmin()).thenReturn(mock(FantaUser.class)); // different user
+	    // The user who is NOT the league admin
+	    FantaUser user = new FantaUser("user", "pswd");
 
-		assertThatThrownBy(() -> service.calculateGrades(user, league)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("You are not the admin of the league");
+	    // League with a different admin
+	    FantaUser admin = new FantaUser("admin", "pswd");
+	    NewsPaper newspaper = new NewsPaper("Gazzetta");
+	    League league = new League(admin, "league", newspaper, "12345");
+
+	    // Create a previous match day so that the "season started" check passes
+	    MatchDaySerieA previousMatchDay = new MatchDaySerieA(null, null);
+	    when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
+
+	    // Set up a match day to calculate with at least one match
+	    FantaTeam team1 = new FantaTeam("Team1", league, 0, user, Set.of());
+	    FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
+	    Match match = new Match(previousMatchDay, team1, team2);
+	    List<Match> matches = List.of(match);
+	    when(matchRepository.getAllMatchesByMatchDay(any(), eq(league))).thenReturn(matches);
+
+	    // Set up grades, lineups, and results so the calculation can proceed
+	    Grade grade1 = new Grade(new Player.Goalkeeper(null, null, null), previousMatchDay, 6.0, newspaper);
+	    Grade grade2 = new Grade(new Player.Forward(null, null, null), previousMatchDay, 7.0, newspaper);
+	    when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
+
+	    LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).build();
+	    LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).build();
+	    when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
+	    when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
+
+	    // Call the method; it should throw because `user` is not admin
+	    assertThatThrownBy(() -> service.calculateGrades(user, league))
+	            .isInstanceOf(IllegalArgumentException.class)
+	            .hasMessageContaining("You are not the admin of the league");
+
+	    // Ensure that no results were saved
+	    verify(context.getResultsRepository(), never()).saveResult(any());
 	}
 
 	@Test
 	void testCalculateGrades_SeasonNotStarted_Throws() {
-		FantaUser admin = mock(FantaUser.class);
-		League league = mock(League.class);
-		when(league.getAdmin()).thenReturn(admin);
+		FantaUser admin = new FantaUser(null, null);
+	    NewsPaper newspaper = new NewsPaper(null);
+		League league = new League(admin, "Serie A", newspaper, null);
 
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
+	    when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> service.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The season hasn't started yet");
+	    assertThatThrownBy(() -> service.calculateGrades(admin, league))
+	            .isInstanceOf(RuntimeException.class)
+	            .hasMessageContaining("The season hasn't started yet");
 	}
 
 	@Test
@@ -486,7 +483,7 @@ class AdminUserServiceTest {
 		method.setAccessible(true);
 
 		boolean result = (boolean) method.invoke(service, saturday);
-		assertThat(result).isFalse(); // cannot calculate immediately
+		assertThat(result).isFalse();
 	}
 
 	@Test

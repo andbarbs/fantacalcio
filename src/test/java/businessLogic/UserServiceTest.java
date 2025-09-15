@@ -15,18 +15,16 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
-import domainModel.Player.Midfielder;
 
 public class UserServiceTest {
 
-    private MatchRepository matchRepository;
-    private GradeRepository gradeRepository;
-    private LineUpRepository lineUpRepository;
-    private ResultsRepository resultRepository;
-    private MatchDayRepository matchDayRepository;
-    private FantaTeamRepository fantaTeamRepository;
+	private MatchRepository matchRepository;
+	private GradeRepository gradeRepository;
+	private LineUpRepository lineUpRepository;
+	private ResultsRepository resultRepository;
+	private MatchDayRepository matchDayRepository;
+	private FantaTeamRepository fantaTeamRepository;
 	private LeagueRepository leagueRepository;
 	private FantaTeamRepository teamRepository;
 	private PlayerRepository playerRepository;
@@ -42,30 +40,30 @@ public class UserServiceTest {
 		context = mock(TransactionContext.class);
 
 		// Mock repositories
-	    matchRepository = mock(MatchRepository.class);
-	    gradeRepository = mock(GradeRepository.class);
-	    lineUpRepository = mock(LineUpRepository.class);
-	    resultRepository = mock(ResultsRepository.class);
-	    matchDayRepository = mock(MatchDayRepository.class);
-	    fantaTeamRepository = mock(FantaTeamRepository.class);
-	    leagueRepository = mock(LeagueRepository.class);
-	    teamRepository = mock(FantaTeamRepository.class);
-	    playerRepository = mock(PlayerRepository.class);
-	    proposalRepository = mock(ProposalRepository.class);
-	    contractRepository = mock(ContractRepository.class);
+		matchRepository = mock(MatchRepository.class);
+		gradeRepository = mock(GradeRepository.class);
+		lineUpRepository = mock(LineUpRepository.class);
+		resultRepository = mock(ResultsRepository.class);
+		matchDayRepository = mock(MatchDayRepository.class);
+		fantaTeamRepository = mock(FantaTeamRepository.class);
+		leagueRepository = mock(LeagueRepository.class);
+		teamRepository = mock(FantaTeamRepository.class);
+		playerRepository = mock(PlayerRepository.class);
+		proposalRepository = mock(ProposalRepository.class);
+		contractRepository = mock(ContractRepository.class);
 
 		// When context.getXRepository() is called, return the mocked repository
-	    when(context.getMatchRepository()).thenReturn(matchRepository);
-	    when(context.getGradeRepository()).thenReturn(gradeRepository);
-	    when(context.getLineUpRepository()).thenReturn(lineUpRepository);
-	    when(context.getResultsRepository()).thenReturn(resultRepository);
-	    when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
-	    when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
-	    when(context.getLeagueRepository()).thenReturn(leagueRepository);
-	    when(context.getTeamRepository()).thenReturn(teamRepository);
-	    when(context.getPlayerRepository()).thenReturn(playerRepository);
-	    when(context.getProposalRepository()).thenReturn(proposalRepository);
-	    when(context.getContractRepository()).thenReturn(contractRepository);
+		when(context.getMatchRepository()).thenReturn(matchRepository);
+		when(context.getGradeRepository()).thenReturn(gradeRepository);
+		when(context.getLineUpRepository()).thenReturn(lineUpRepository);
+		when(context.getResultsRepository()).thenReturn(resultRepository);
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
+		when(context.getLeagueRepository()).thenReturn(leagueRepository);
+		when(context.getTeamRepository()).thenReturn(teamRepository);
+		when(context.getPlayerRepository()).thenReturn(playerRepository);
+		when(context.getProposalRepository()).thenReturn(proposalRepository);
+		when(context.getContractRepository()).thenReturn(contractRepository);
 
 		// For inTransaction
 		doAnswer(invocation -> {
@@ -75,11 +73,10 @@ public class UserServiceTest {
 		}).when(transactionManager).inTransaction(any());
 
 		// For fromTransaction
-		when(transactionManager.fromTransaction(any()))
-				.thenAnswer(invocation -> {
-					Function<TransactionContext, Object> code = invocation.getArgument(0);
-					return code.apply(context);
-				});
+		when(transactionManager.fromTransaction(any())).thenAnswer(invocation -> {
+			Function<TransactionContext, Object> code = invocation.getArgument(0);
+			return code.apply(context);
+		});
 
 		userService = new UserService(transactionManager);
 	}
@@ -105,7 +102,6 @@ public class UserServiceTest {
 		NewsPaper np = new NewsPaper("Gazzetta");
 		String leagueCode = "L001";
 
- 
 		League existingLeague = new League(admin, "Existing League", np, leagueCode);
 		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
 
@@ -266,8 +262,8 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllPlayers() {
-		Player p1 = mock(Player.class);
-		Player p2 = mock(Player.class);
+		Player p1 = new Player.Goalkeeper(null, null, null);
+		Player p2 = new Player.Goalkeeper(null, null, null);
 		when(context.getPlayerRepository().findAll()).thenReturn(List.of(p1, p2));
 
 		List<Player> result = userService.getAllPlayers();
@@ -276,7 +272,7 @@ public class UserServiceTest {
 
 	@Test
 	void testGetPlayersBySurname() {
-		Player p = mock(Player.class);
+		Player p = new Player.Goalkeeper(null, null, null);
 		when(context.getPlayerRepository().findBySurname("Rossi")).thenReturn(List.of(p));
 
 		List<Player> result = userService.getPlayersBySurname("Rossi");
@@ -285,9 +281,9 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllMatches() {
-		League league = mock(League.class);
-		MatchDaySerieA day1 = mock(MatchDaySerieA.class);
-		Match m1 = mock(Match.class);
+		League league = new League(null, null, null, null);
+		MatchDaySerieA day1 = new MatchDaySerieA(null, null);
+		Match m1 = new Match(day1, null, null);
 		when(context.getMatchDayRepository().getAllMatchDays()).thenReturn(List.of(day1));
 		when(context.getMatchRepository().getAllMatchesByMatchDay(day1, league)).thenReturn(List.of(m1));
 
@@ -297,12 +293,12 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch() {
-		League league = mock(League.class);
-		FantaTeam team = mock(FantaTeam.class);
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
-		MatchDaySerieA next = mock(MatchDaySerieA.class);
-		Match prevMatch = mock(Match.class);
-		Match nextMatch = mock(Match.class);
+		League league = new League(null, null, null, null);
+		FantaTeam team = new FantaTeam(null, league, 0, null, null);
+		MatchDaySerieA prev = new MatchDaySerieA(null, null);
+		MatchDaySerieA next = new MatchDaySerieA(null, null);
+		Match prevMatch = new Match(next, team, team);
+		Match nextMatch = new Match(next, team, team);
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.of(prev));
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
@@ -316,13 +312,13 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch_PreviousResultMissing() {
-		League league = mock(League.class);
-		FantaTeam team = mock(FantaTeam.class);
+		League league = new League(null, null, null, null);
+		FantaTeam team = new FantaTeam(null, league, 0, null, null);
 		LocalDate today = LocalDate.now();
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
+		MatchDaySerieA prev = new MatchDaySerieA(null, today);
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.of(prev));
-		Match prevMatch = mock(Match.class);
+		Match prevMatch = new Match(prev, team, team);
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
 
@@ -332,8 +328,8 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch_LeagueEnded() {
-		League league = mock(League.class);
-		FantaTeam team = mock(FantaTeam.class);
+		League league = new League(null, null, null, null);
+		FantaTeam team = new FantaTeam(null, league, 0, null, null);
 		LocalDate today = LocalDate.now();
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.empty());
@@ -345,7 +341,7 @@ public class UserServiceTest {
 
 	@Test
 	void testGetStandings() {
-		League league = mock(League.class);
+		League league = new League(null, null, null, null);
 		FantaTeam t1 = mock(FantaTeam.class);
 		FantaTeam t2 = mock(FantaTeam.class);
 
@@ -362,9 +358,9 @@ public class UserServiceTest {
 
 	@Test
 	void testGetFantaTeamByUserAndLeague() {
-		League league = mock(League.class);
-		FantaUser user = mock(FantaUser.class);
-		FantaTeam team = mock(FantaTeam.class);
+		League league = new League(null, null, null, null);
+		FantaUser user = new FantaUser(null, null);
+		FantaTeam team = new FantaTeam(null, league, 0, user, null);
 		when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(team);
 
 		FantaTeam result = userService.getFantaTeamByUserAndLeague(league, user);
@@ -373,9 +369,9 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllTeamProposals() {
-		League league = mock(League.class);
-		FantaTeam team = mock(FantaTeam.class);
-		Proposal p = mock(Proposal.class);
+		League league = new League(null, null, null, null);
+		FantaTeam team = new FantaTeam(null, league, 0, null, null);
+		Proposal p = new Proposal.PendingProposal(null, null);
 		when(context.getProposalRepository().getMyProposals(league, team)).thenReturn(List.of(p));
 
 		List<Proposal> result = userService.getAllTeamProposals(league, team);
@@ -384,8 +380,8 @@ public class UserServiceTest {
 
 	@Test
 	void testGetResultByMatch() {
-		Match match = mock(Match.class);
-		Result res = mock(Result.class);
+		Match match = new Match(null, null, null);
+		Result res = new Result(0, 0, 0, 0, match);
 		when(resultRepository.getResult(match)).thenReturn(Optional.of(res));
 
 		Optional<Result> result = userService.getResultByMatch(match);
@@ -394,8 +390,8 @@ public class UserServiceTest {
 
 	@Test
 	void testGetLineUpByMatch() {
-		Match match = mock(Match.class);
-		FantaTeam team = mock(FantaTeam.class);
+		Match match = new Match(null, null, null);
+		FantaTeam team = new FantaTeam(null, null, 0, null, null);
 		LineUp lineUp = mock(LineUp.class);
 		when(context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)).thenReturn(Optional.of(lineUp));
 
@@ -430,9 +426,9 @@ public class UserServiceTest {
 	void testAcceptProposal() {
 		// Setup teams and players
 		FantaTeam myTeam = mock(FantaTeam.class);
-		FantaTeam offeringTeam = mock(FantaTeam.class);
-		Player offeredPlayer = mock(Player.class);
-		Player requestedPlayer = mock(Player.class);
+		FantaTeam offeringTeam = new FantaTeam(null, null, 0, null, null);
+		Player offeredPlayer = new Player.Forward(null, null, null);
+		Player requestedPlayer = new Player.Midfielder(null, null, null);
 
 		// Contracts
 		Contract offeredContract = mock(Contract.class);
@@ -469,7 +465,7 @@ public class UserServiceTest {
 	@Test
 	void testAcceptProposal_ContractsMissing() {
 		FantaTeam myTeam = mock(FantaTeam.class);
-		FantaTeam offeringTeam = mock(FantaTeam.class);
+		FantaTeam offeringTeam = new FantaTeam(null, null, 0, null, null);
 		Player offeredPlayer = mock(Player.class);
 		Player requestedPlayer = mock(Player.class);
 
@@ -510,47 +506,43 @@ public class UserServiceTest {
 
 	@Test
 	void testRejectProposal() {
-	    // The team calling rejectProposal
-	    FantaTeam myTeam = mock(FantaTeam.class);
-	    
-	    // The other team involved in the proposal
-	    FantaTeam otherTeam = mock(FantaTeam.class);
+		// The team calling rejectProposal
+		FantaTeam myTeam = mock(FantaTeam.class);
 
-	    // Requested and offered contracts
-	    Contract requestedContract = mock(Contract.class);
-	    Contract offeredContract = mock(Contract.class);
+		// The other team involved in the proposal
+		FantaTeam otherTeam = new FantaTeam(null, null, 0, null, null);
 
-	    // Set the teams in the contracts
-	    when(requestedContract.getTeam()).thenReturn(myTeam);  // myTeam is requesting
-	    when(offeredContract.getTeam()).thenReturn(otherTeam); // other team is offering
+		// Requested and offered contracts
+		Contract requestedContract = mock(Contract.class);
+		Contract offeredContract = mock(Contract.class);
 
-	    // Create a mock proposal
-	    Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
-	    when(proposal.getRequestedContract()).thenReturn(requestedContract);
-	    when(proposal.getOfferedContract()).thenReturn(offeredContract);
+		// Set the teams in the contracts
+		when(requestedContract.getTeam()).thenReturn(myTeam); // myTeam is requesting
+		when(offeredContract.getTeam()).thenReturn(otherTeam); // other team is offering
 
-	    // Stub isSameTeam to make the involvement check succeed
-	    when(myTeam.isSameTeam(myTeam)).thenReturn(true);
-	    when(myTeam.isSameTeam(otherTeam)).thenReturn(false);
+		// Create a mock proposal
+		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		when(proposal.getRequestedContract()).thenReturn(requestedContract);
+		when(proposal.getOfferedContract()).thenReturn(offeredContract);
 
-	    // Call the method under test
-	    userService.rejectProposal(proposal, myTeam);
+		// Stub isSameTeam to make the involvement check succeed
+		when(myTeam.isSameTeam(myTeam)).thenReturn(true);
+		when(myTeam.isSameTeam(otherTeam)).thenReturn(false);
 
-	    // Verify repository interactions
-	    verify(context.getProposalRepository()).deleteProposal(proposal);
-	    verify(context.getProposalRepository()).saveProposal(any(Proposal.RejectedProposal.class));
+		// Call the method under test
+		userService.rejectProposal(proposal, myTeam);
+
+		// Verify repository interactions
+		verify(context.getProposalRepository()).deleteProposal(proposal);
+		verify(context.getProposalRepository()).saveProposal(any(Proposal.RejectedProposal.class));
 	}
-
-
-
-
 
 	@Test
 	void testRejectProposal_NotInvolved() {
 		FantaTeam myTeam = mock(FantaTeam.class);
 		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
-		FantaTeam reqTeam = mock(FantaTeam.class);
-		FantaTeam offTeam = mock(FantaTeam.class);
+		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
+		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
 		when(proposal.getRequestedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getRequestedContract().getTeam()).thenReturn(reqTeam);
 		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
@@ -563,10 +555,10 @@ public class UserServiceTest {
 
 	@Test
 	void testCreateProposal_DifferentRoles() {
-		FantaTeam myTeam = mock(FantaTeam.class);
-		FantaTeam opponentTeam = mock(FantaTeam.class);
-		Player requestedPlayer = mock(Midfielder.class);
-		Player offeredPlayer = mock(Forward.class);
+		FantaTeam myTeam = new FantaTeam(null, null, 0, null, null);
+		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, null);
+		Player requestedPlayer = new Player.Forward(null, null, null);
+		Player offeredPlayer = new Player.Goalkeeper(null, null, null);
 
 		assertThatThrownBy(() -> userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam))
 				.isInstanceOf(IllegalArgumentException.class)
@@ -575,19 +567,20 @@ public class UserServiceTest {
 
 	@Test
 	void testCreateProposal_ContractMissing() {
-		FantaTeam myTeam = mock(FantaTeam.class);
-		FantaTeam opponentTeam = mock(FantaTeam.class);
-		Player player = mock(Player.class);
+		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		Player player = new Player.Forward(null, null, null);
 
 		assertThat(userService.createProposal(player, player, myTeam, opponentTeam)).isFalse();
 	}
 
 	@Test
 	void testCreateProposal_AlreadyExists() {
-		FantaTeam myTeam = spy(new FantaTeam("My Team", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
-		FantaTeam opponentTeam = spy(
-				new FantaTeam("Opponent", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
-		Player player = mock(Goalkeeper.class);
+		League league = new League(null, null, null, null);
+		FantaUser user = new FantaUser(null, null);
+		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
+		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
+		Player player = new Player.Midfielder(null, null, null);
 
 		Contract offeredContract = new Contract(myTeam, player);
 		Contract requestedContract = new Contract(opponentTeam, player);
@@ -595,7 +588,7 @@ public class UserServiceTest {
 		opponentTeam.getContracts().add(requestedContract);
 
 		when(context.getProposalRepository().getProposal(offeredContract, requestedContract))
-				.thenReturn(Optional.of(mock(Proposal.class)));
+				.thenReturn(Optional.of(new Proposal.PendingProposal()));
 
 		assertThatThrownBy(() -> userService.createProposal(player, player, myTeam, opponentTeam))
 				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("The proposal already exists");
@@ -603,11 +596,12 @@ public class UserServiceTest {
 
 	@Test
 	void testCreateProposal_HappyPath() {
-		FantaTeam myTeam = spy(new FantaTeam("My Team", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
-		FantaTeam opponentTeam = spy(
-				new FantaTeam("Opponent", mock(League.class), 0, mock(FantaUser.class), new HashSet<>()));
-		Player requestedPlayer = mock(Goalkeeper.class);
-		Player offeredPlayer = mock(Goalkeeper.class);
+		League league = new League(null, null, null, null);
+		FantaUser user = new FantaUser(null, null);
+		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
+		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
+		Player offeredPlayer = new Player.Defender(null, null, null);
+		Player requestedPlayer = new Player.Defender(null, null, null);
 
 		Contract offeredContract = new Contract(myTeam, offeredPlayer);
 		Contract requestedContract = new Contract(opponentTeam, requestedPlayer);
@@ -623,12 +617,12 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllMatchGrades() {
-		Match match = mock(Match.class);
-		Grade grade = mock(Grade.class);
+		Match match = new Match(null, null, null);
+		Grade grade = new Grade(null, null, 0, null);
 		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		
+
 		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
-		List<Grade> result = userService.getAllMatchGrades(match,  newsPaper);
+		List<Grade> result = userService.getAllMatchGrades(match, newsPaper);
 		assertThat(result).containsExactly(grade);
 	}
 
