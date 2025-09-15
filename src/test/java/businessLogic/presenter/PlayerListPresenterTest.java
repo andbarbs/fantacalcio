@@ -1,17 +1,5 @@
 package businessLogic.presenter;
 
-import static org.mockito.Mockito.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import businessLogic.repositories.PlayerRepository;
-import presenters.abstractViews.PlayerView;
-import domainModel.Player;
-import presenters.PlayerListPresenter;
-
 public class PlayerListPresenterTest {
 /*
 	PlayerListPresenter playerPresenter;

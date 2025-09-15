@@ -1,18 +1,5 @@
 package businessLogic.presenter;
 
-import static org.mockito.Mockito.*;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import businessLogic.repositories.ContractRepository;
-import businessLogic.repositories.ProposalRepository;
-import presenters.abstractViews.ProposalView;
-import domainModel.League;
-import domainModel.Proposal;
-import domainModel.Player;
-import presenters.ProposalPresenter;
-
 class ProposalPresenterTest {
 /*
 	private ProposalPresenter proposalPresenter;
