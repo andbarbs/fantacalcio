@@ -101,7 +101,7 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-		assertThat(gradeRepository.getAllMatchGrades(match)).isEmpty();
+		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper )).isEmpty();
 	}
 
 	@Test
@@ -113,7 +113,7 @@ class JpaGradeRepositoryTest {
 
 		Grade voto1 = new Grade(player1, matchDay, 6.0, newsPaper);
 		Grade voto2 = new Grade(player1, matchDay, 8.0, newsPaper);
-
+		//TODO Non passa bisogna assegnare i giocatori ad i team e creare un match con quei due team e quella matchday
 		sessionFactory.inTransaction(session -> {
 			session.persist(player1);
 			session.persist(player2);
@@ -123,7 +123,7 @@ class JpaGradeRepositoryTest {
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
 
-		assertThat(gradeRepository.getAllMatchGrades(match)).containsExactly(voto1, voto2);
+		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper )).containsExactly(voto1, voto2);
 		repositorySession.close();
 	}
 

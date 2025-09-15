@@ -3,13 +3,11 @@ package jpaRepositories;
 import java.util.List;
 
 import businessLogic.repositories.GradeRepository;
-import domainModel.Match;
-import domainModel.Grade;
-import domainModel.Grade_;
+import domainModel.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 
 public class JpaGradeRepository extends BaseJpaRepository implements GradeRepository {
@@ -19,18 +17,29 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 	}
 
 	@Override
-	public List<Grade> getAllMatchGrades(Match match) {
-		EntityManager entityManager = getEntityManager();
-		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Grade> query = builder.createQuery(Grade.class);
-		Root<Grade> gradeRoot = query.from(Grade.class);
+	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+		EntityManager em = getEntityManager();
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Grade> cq = cb.createQuery(Grade.class);
+		Root<Grade> gradeRoot = cq.from(Grade.class);
 
-		gradeRoot.fetch(Grade_.player, JoinType.INNER);
-		gradeRoot.fetch(Grade_.matchDay, JoinType.INNER);
+		// Join Grade -> Player
+		Join<Grade, Player> playerJoin = gradeRoot.join(Grade_.player);
 
-		query.select(gradeRoot);
-		
-		return entityManager.createQuery(query).getResultList();
+		// Join Contract to filter players by FantaTeam
+		Root<Contract> contractRoot = cq.from(Contract.class);
+		cq.where(
+				cb.and(
+						cb.equal(gradeRoot.get(Grade_.matchDay), match.getMatchDaySerieA()),
+						cb.equal(gradeRoot.get(Grade_.newsPaper), newsPaper),
+						cb.equal(contractRoot.get(Contract_.player), playerJoin),
+						contractRoot.get(Contract_.team).in(match.getTeam1(), match.getTeam2())
+				)
+		);
+
+		cq.select(gradeRoot).distinct(true); // avoid duplicates
+
+		return em.createQuery(cq).getResultList();
 	}
 
 	@Override
