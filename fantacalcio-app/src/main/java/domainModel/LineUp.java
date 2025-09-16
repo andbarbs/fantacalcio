@@ -8,9 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.fantacalcio.app.generator.api.GenerateScheme;
-import com.fantacalcio.app.generator.api.GenerateSchemes;
-
 import domainModel.LineUp.LineUpBuilderSteps.ReadyForStarterLineUp;
 import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteDefenders;
 import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteForwards;
@@ -24,11 +21,6 @@ import domainModel.Player.Midfielder;
 
 // coincides with ThreePositionLineUp by definition of the game
 
-@GenerateSchemes({
-	@GenerateScheme(defenders = 4, midfielders = 3, forwards = 3),
-    @GenerateScheme(defenders = 3, midfielders = 4, forwards = 3),
-    @GenerateScheme(defenders = 5, midfielders = 3, forwards = 2)
-})
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {LineUp_.MATCH, LineUp_.TEAM}))
 public class LineUp {

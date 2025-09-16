@@ -1,11 +1,19 @@
 package domainModel;
 
+import com.fantacalcio.app.generator.api.GenerateScheme;
+import com.fantacalcio.app.generator.api.GenerateSchemes;
+
 import domainModel.scheme.Scheme343;
 import domainModel.scheme.Scheme433;
 import domainModel.scheme.Scheme532;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+@GenerateSchemes({
+	@GenerateScheme(defenders = 4, midfielders = 3, forwards = 3),
+    @GenerateScheme(defenders = 3, midfielders = 4, forwards = 3),
+    @GenerateScheme(defenders = 5, midfielders = 3, forwards = 2)
+})
 public abstract class Scheme {
 
 	private final int numDefenders;
@@ -42,7 +50,7 @@ public abstract class Scheme {
 	
 	public abstract void accept(SchemeVisitor visitor);
 	
-	@Converter(autoApply = true) // Automatically applies to all Scheme fields
+	@Converter
 	public static class SchemeConverter implements AttributeConverter<Scheme, String> {
 
 	    @Override

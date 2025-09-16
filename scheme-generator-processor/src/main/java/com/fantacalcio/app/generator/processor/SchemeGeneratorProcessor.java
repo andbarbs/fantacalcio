@@ -104,15 +104,19 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 
 	    // 5. builds Step Builder Interfaces
 	    TypeSpec readyForGkInterface = TypeSpec.interfaceBuilder("ReadyForGoalkeeper")
+	    		.addModifiers(Modifier.PUBLIC)
 	    		.addMethod(withGoalieAbstract)
 	    		.build();
 	    TypeSpec readyForDefInterface = TypeSpec.interfaceBuilder("ReadyForDefenders")
+	    		.addModifiers(Modifier.PUBLIC)
 	    		.addMethod(withDefendersAbstract)
 	    		.build();
 	    TypeSpec readyForMidInterface = TypeSpec.interfaceBuilder("ReadyForMidfielders")
+	    		.addModifiers(Modifier.PUBLIC)
 	    		.addMethod(withMidfieldersAbstract)
 	    		.build();
 	    TypeSpec readyForForwInterface = TypeSpec.interfaceBuilder("ReadyForForwards")
+	    		.addModifiers(Modifier.PUBLIC)
 	    		.addMethod(withForwardsAbstract)
 	    		.build();
 	    
