@@ -12,7 +12,7 @@ public abstract class Scheme {
 	private final int numMidfielders;
 	private final int numForwards;
 
-	public Scheme(int numDefenders, int numMidfielders, int numForwards) {
+	protected Scheme(int numDefenders, int numMidfielders, int numForwards) {
 		this.numDefenders = numDefenders;
 		this.numMidfielders = numMidfielders;
 		this.numForwards = numForwards;
@@ -43,7 +43,7 @@ public abstract class Scheme {
 	public abstract void accept(SchemeVisitor visitor);
 	
 	@Converter(autoApply = true) // Automatically applies to all Scheme fields
-	public class SchemeConverter implements AttributeConverter<Scheme, String> {
+	public static class SchemeConverter implements AttributeConverter<Scheme, String> {
 
 	    @Override
 	    public String convertToDatabaseColumn(Scheme scheme) {
@@ -67,6 +67,4 @@ public abstract class Scheme {
 	        };
 	    }
 	}
-
-
 }

@@ -34,6 +34,7 @@ import domainModel.Player.Midfielder;
 public class LineUp {
     // public static enum Module{_343, _433, _352}
 	
+	@Convert(converter = Scheme.SchemeConverter.class)
 	private Scheme scheme;
 
     @Id
@@ -107,17 +108,17 @@ public class LineUp {
 		return Objects.equals(match, other.match);
 	}
 	
-	public static LineUpBuilder build() {
+	public static LineUpBuilderSteps.ReadyForTeam build() {
 		return new LineUpBuilder();
 	}
 	
 	public static abstract class LineUpBuilderSteps {
 		
-		interface ReadyForTeam {
+		public interface ReadyForTeam {
 			ReadyForMatch forTeam(FantaTeam team);
 		}
 		
-		interface ReadyForMatch {
+		public interface ReadyForMatch {
 			ReadyForStarterLineUp inMatch(Match match);
 		}
 		
@@ -144,24 +145,24 @@ public class LineUp {
 			}			
 		}
 		
-		interface ReadyForStarterLineUp {
+		public interface ReadyForStarterLineUp {
 			ReadyForSubstituteGoalkeepers withStarterLineUp(StarterLineUp starters);
 		}
 		
-		interface ReadyForSubstituteGoalkeepers {
+		public interface ReadyForSubstituteGoalkeepers {
 			ReadyForSubstituteDefenders withSubstituteGoalkeepers(Goalkeeper goalie1, Goalkeeper goalie2, Goalkeeper goalie3);
 		}
 
-		interface ReadyForSubstituteDefenders {
+		public interface ReadyForSubstituteDefenders {
 			ReadyForSubstituteMidfielders withSubstituteDefenders(Defender defender1, Defender defender2, Defender defender3);
 		}
 
-		interface ReadyForSubstituteMidfielders {
+		public interface ReadyForSubstituteMidfielders {
 			ReadyForSubstituteForwards withSubstituteMidfielders(Midfielder midfielder1, Midfielder midfielder2,
 					Midfielder midfielder3);
 		}
 
-		interface ReadyForSubstituteForwards {
+		public interface ReadyForSubstituteForwards {
 			LineUp withSubstituteForwards(Forward forward1, Forward forward2, Forward forward3);
 		}		
 	}

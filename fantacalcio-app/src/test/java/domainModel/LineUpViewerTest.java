@@ -8,6 +8,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import domainModel.Player.*;
+import domainModel.scheme.Scheme433;
 import domainModel.Fielding.*;
 
 /**
@@ -40,7 +41,7 @@ public class LineUpViewerTest {
         // The _433LineUp constructor will link the set to each Fielding.
         Match match = new Match();
 		FantaTeam team = new FantaTeam();
-		_433LineUp lineUp = new _433LineUp(match, team, fieldings);
+		LineUp lineUp = new LineUp(Scheme433.INSTANCE, match, team, fieldings);
 
         // Add starter fieldings for each player.
         fieldings.add(new StarterFielding(starterGK, lineUp));
