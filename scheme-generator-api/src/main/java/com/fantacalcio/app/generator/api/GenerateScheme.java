@@ -6,7 +6,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Repeatable(GenerateSchemes.class)
 public @interface GenerateScheme {
-    String className();
     int defenders();
     int midfielders();
     int forwards();

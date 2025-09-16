@@ -43,20 +43,23 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 
 	private void generateSchemeClass(GenerateScheme scheme) throws IOException {
 
-	    // 1. constructs Names for existing domain classes
-	    String domainPackage = "domainModel";
-	    ClassName schemeBaseClass = ClassName.get(domainPackage, "Scheme");
-	    ClassName starterLineUpClass = ClassName.get(domainPackage, "StarterLineUp");
-	    String playerClassString = "Player"; 
-	    // we lie about package structure to get imports for nested Player subtypes
-	    ClassName goalieClass = ClassName.get(domainPackage + "." + playerClassString, "Goalkeeper");
-	    ClassName defClass = ClassName.get(domainPackage + "." + playerClassString, "Defender");
-	    ClassName midClass = ClassName.get(domainPackage + "." + playerClassString, "Midfielder");
-	    ClassName forwClass = ClassName.get(domainPackage + "." + playerClassString, "Forward");
+		// 1. constructs Names for existing domain classes
+		String domainPackage = "domainModel";
+		ClassName schemeBaseClass = ClassName.get(domainPackage, "Scheme");
+		ClassName starterLineUpClass = ClassName.get(domainPackage, "LineUp")
+				.nestedClass("LineUpBuilderSteps")
+				.nestedClass("StarterLineUp");
+		String playerClassString = "Player";
+		// we lie about package structure to get imports for nested Player subtypes
+		ClassName goalieClass = ClassName.get(domainPackage + "." + playerClassString, "Goalkeeper");
+		ClassName defClass = ClassName.get(domainPackage + "." + playerClassString, "Defender");
+		ClassName midClass = ClassName.get(domainPackage + "." + playerClassString, "Midfielder");
+		ClassName forwClass = ClassName.get(domainPackage + "." + playerClassString, "Forward");
 	   
 		// 2. constructs Names for types to be generated
 		String targetPackage = domainPackage + "." + "scheme";
-		String generatedClassString = scheme.className();
+		String generatedClassString = String.format("Scheme%d%d%d", 
+				scheme.defenders(), scheme.midfielders(), scheme.forwards());
 		ClassName generatedClassName = ClassName.get(targetPackage, generatedClassString);
 		ClassName builderClassName = generatedClassName
 				.nestedClass("StarterLineUpBuilder" + generatedClassString.substring(6));
@@ -186,21 +189,43 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 						.map(FieldSpec.Builder::build).collect(Collectors.toList()));
 	    
 	    // 9. builds the final top-level class
-	    TypeSpec schemeClass = TypeSpec.classBuilder(generatedClassString)
-	            .addModifiers(Modifier.PUBLIC)
-	            .superclass(schemeBaseClass)
-	            .addField(FieldSpec.builder(generatedClassName, "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-	                .initializer("new $T()", generatedClassName)
-	                .build())
-				.addMethod(MethodSpec.methodBuilder(
-						starterLineUpClass.simpleName().substring(0, 1).toLowerCase()
-							+ starterLineUpClass.simpleName().substring(1))
-					.addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(readyForGoalie)
-					.addStatement("return new $L()", builderClassName.simpleName())
-					.build())
-	            .addType(stepsClass)
-	            .addType(concreteBuilder.build())
-	            .build();
+		MethodSpec privateConstructor = MethodSpec.constructorBuilder()
+		    .addModifiers(Modifier.PRIVATE)
+		    .addStatement("super($L, $L, $L)", 
+		        scheme.defenders(), scheme.midfielders(), scheme.forwards())
+		    .build();
+
+		MethodSpec acceptMethod = MethodSpec.methodBuilder("accept")
+		    .addAnnotation(Override.class)
+		    .addModifiers(Modifier.PUBLIC)
+		    .returns(void.class)
+		    .addParameter(schemeBaseClass.nestedClass("SchemeVisitor"), "visitor")
+		    .addStatement("$N.$N(this)", "visitor", "visit" + generatedClassString) // Generates "visitor.visitScheme433(this);"
+		    .build();
+
+		TypeSpec schemeClass = TypeSpec.classBuilder(generatedClassString)
+		    .addModifiers(Modifier.PUBLIC)
+		    .superclass(schemeBaseClass)
+		    // Add the INSTANCE field
+		    .addField(FieldSpec.builder(generatedClassName, "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+		        .initializer("new $T()", generatedClassName)
+		        .build())
+		    // Add the new constructor
+		    .addMethod(privateConstructor)
+		    // the new accept method
+		    .addMethod(acceptMethod)
+		    // Add the static factory method for the builder
+		    .addMethod(MethodSpec.methodBuilder(
+		    		starterLineUpClass.simpleName().substring(0, 1).toLowerCase()
+		    		+ starterLineUpClass.simpleName().substring(1))
+		        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+		        .returns(readyForGoalie)
+		        .addStatement("return new $L()", builderClassName.simpleName())
+		        .build())
+		    // Add the nested classes
+		    .addType(stepsClass)
+		    .addType(concreteBuilder.build())
+		    .build();
 
 	    // 10. write the file to disk
 	    JavaFile javaFile = JavaFile.builder(targetPackage, schemeClass)

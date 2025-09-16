@@ -116,6 +116,13 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+				<dependencies>
+                <dependency>
+                    <groupId>com.fantacalcio.app</groupId>
+                    <artifactId>scheme-generator-processor</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
 			</plugin>
 
 			<!-- build-helper instructions are reflected in Eclipse's .classpath -->
