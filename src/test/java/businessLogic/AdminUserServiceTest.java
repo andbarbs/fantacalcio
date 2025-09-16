@@ -7,8 +7,12 @@ import businessLogic.repositories.*;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class AdminUserServiceTest {
@@ -37,18 +41,14 @@ class AdminUserServiceTest {
 
 		// Setup inTransaction
 		doAnswer(invocation -> {
-			@SuppressWarnings("unchecked")
-			java.util.function.Consumer<TransactionContext> code = (java.util.function.Consumer<TransactionContext>) invocation
-					.getArgument(0);
+			Consumer<TransactionContext> code = invocation.getArgument(0);
 			code.accept(context);
 			return null;
 		}).when(transactionManager).inTransaction(any());
 
 		// Setup fromTransaction
 		when(transactionManager.fromTransaction(any())).thenAnswer(invocation -> {
-			@SuppressWarnings("unchecked")
-			java.util.function.Function<TransactionContext, Object> code = (java.util.function.Function<TransactionContext, Object>) invocation
-					.getArgument(0);
+			Function<TransactionContext, Object> code = invocation.getArgument(0);
 			return code.apply(context);
 		});
 
@@ -390,10 +390,10 @@ class AdminUserServiceTest {
 
 	@Test
 	void testCreateMatches_MoreRoundsThanMatchDays_Throws() {
-	    FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
-	    FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
-	    FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
-	    FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
+		FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
+		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
+		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
+		FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
 
 		FantaTeam[] teamsArray1 = new FantaTeam[] { team1, team2 };
 		FantaTeam[] teamsArray2 = new FantaTeam[] { team3, team4 };
@@ -425,85 +425,131 @@ class AdminUserServiceTest {
 
 	@Test
 	void testCalculateGrades_UserNotAdmin_Throws() {
-	    // The user who is NOT the league admin
-	    FantaUser user = new FantaUser("user", "pswd");
+		// The user who is NOT the league admin
+		FantaUser user = new FantaUser("user", "pswd");
 
-	    // League with a different admin
-	    FantaUser admin = new FantaUser("admin", "pswd");
-	    NewsPaper newspaper = new NewsPaper("Gazzetta");
-	    League league = new League(admin, "league", newspaper, "12345");
+		// League with a different admin
+		FantaUser admin = new FantaUser("admin", "pswd");
+		NewsPaper newspaper = new NewsPaper("Gazzetta");
+		League league = new League(admin, "league", newspaper, "12345");
 
-	    // Create a previous match day so that the "season started" check passes
-	    MatchDaySerieA previousMatchDay = new MatchDaySerieA(null, null);
-	    when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
+		// Create a previous match day so that the "season started" check passes
+		MatchDaySerieA previousMatchDay = new MatchDaySerieA(null, null);
+		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
 
-	    // Set up a match day to calculate with at least one match
-	    FantaTeam team1 = new FantaTeam("Team1", league, 0, user, Set.of());
-	    FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
-	    Match match = new Match(previousMatchDay, team1, team2);
-	    List<Match> matches = List.of(match);
-	    when(matchRepository.getAllMatchesByMatchDay(any(), eq(league))).thenReturn(matches);
+		// Set up a match day to calculate with at least one match
+		FantaTeam team1 = new FantaTeam("Team1", league, 0, user, Set.of());
+		FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
+		Match match = new Match(previousMatchDay, team1, team2);
+		List<Match> matches = List.of(match);
+		when(matchRepository.getAllMatchesByMatchDay(any(), eq(league))).thenReturn(matches);
 
-	    // Set up grades, lineups, and results so the calculation can proceed
-	    Grade grade1 = new Grade(new Player.Goalkeeper(null, null, null), previousMatchDay, 6.0, newspaper);
-	    Grade grade2 = new Grade(new Player.Forward(null, null, null), previousMatchDay, 7.0, newspaper);
-	    when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
+		// Set up grades, lineups, and results so the calculation can proceed
+		Grade grade1 = new Grade(new Player.Goalkeeper(null, null, null), previousMatchDay, 6.0, newspaper);
+		Grade grade2 = new Grade(new Player.Forward(null, null, null), previousMatchDay, 7.0, newspaper);
+		when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
 
-	    LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).build();
-	    LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).build();
-	    when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
-	    when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
+		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).build();
+		LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).build();
+		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
+		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
 
-	    // Call the method; it should throw because `user` is not admin
-	    assertThatThrownBy(() -> service.calculateGrades(user, league))
-	            .isInstanceOf(IllegalArgumentException.class)
-	            .hasMessageContaining("You are not the admin of the league");
+		// Call the method; it should throw because `user` is not admin
+		assertThatThrownBy(() -> service.calculateGrades(user, league)).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("You are not the admin of the league");
 
-	    // Ensure that no results were saved
-	    verify(context.getResultsRepository(), never()).saveResult(any());
+		// Ensure that no results were saved
+		verify(context.getResultsRepository(), never()).saveResult(any());
 	}
 
 	@Test
 	void testCalculateGrades_SeasonNotStarted_Throws() {
 		FantaUser admin = new FantaUser(null, null);
-	    NewsPaper newspaper = new NewsPaper(null);
+		NewsPaper newspaper = new NewsPaper(null);
 		League league = new League(admin, "Serie A", newspaper, null);
 
-	    when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
+		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
 
-	    assertThatThrownBy(() -> service.calculateGrades(admin, league))
-	            .isInstanceOf(RuntimeException.class)
-	            .hasMessageContaining("The season hasn't started yet");
+		assertThatThrownBy(() -> service.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("The season hasn't started yet");
 	}
 
 	@Test
 	void testIsLegalToCalculateResults_Saturday() throws Exception {
-		LocalDate saturday = LocalDate.of(2025, 9, 13); // Saturday
-		var method = AdminUserService.class.getDeclaredMethod("isLegalToCalculateResults", LocalDate.class);
-		method.setAccessible(true);
+		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
+		LocalDate saturday = LocalDate.of(2025, 9, 13);
 
-		boolean result = (boolean) method.invoke(service, saturday);
-		assertThat(result).isFalse();
+		League league = mock(League.class);
+		FantaUser admin = mock(FantaUser.class);
+		when(league.getAdmin()).thenReturn(admin);
+
+		when(matchDayRepository.getPreviousMatchDay(saturday))
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+
+		// Override today() to return the Saturday we want to test
+		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return saturday;
+			}
+		};
+
+		when(serviceWithSaturday.getNextMatchDayToCalculate(saturday, context, league, admin))
+				.thenReturn(Optional.of(new MatchDaySerieA(null, saturday)));
+
+		assertThatThrownBy(() -> serviceWithSaturday.calculateGrades(admin, league))
+				.isInstanceOf(RuntimeException.class).hasMessageContaining("The matches are not finished yet");
 	}
 
 	@Test
-	void testIsLegalToCalculateResults_Sunday() throws Exception {
-		LocalDate sunday = LocalDate.of(2025, 9, 14); // Sunday
-		var method = AdminUserService.class.getDeclaredMethod("isLegalToCalculateResults", LocalDate.class);
-		method.setAccessible(true);
+	void testCalculateGrades_IllegalOnSunday() {
+		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
+		LocalDate sunday = LocalDate.of(2025, 9, 14);
 
-		boolean result = (boolean) method.invoke(service, sunday);
-		assertThat(result).isFalse();
+		League league = mock(League.class);
+		FantaUser admin = mock(FantaUser.class);
+		when(league.getAdmin()).thenReturn(admin);
+
+		when(matchDayRepository.getPreviousMatchDay(sunday))
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+
+		AdminUserService serviceWithSunday = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return sunday;
+			}
+		};
+
+		when(serviceWithSunday.getNextMatchDayToCalculate(sunday, context, league, admin))
+				.thenReturn(Optional.of(new MatchDaySerieA(null, sunday)));
+
+		assertThatThrownBy(() -> serviceWithSunday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("The matches are not finished yet");
 	}
 
 	@Test
-	void testIsLegalToCalculateResults_Weekday() throws Exception {
-		LocalDate monday = LocalDate.of(2025, 9, 15); // Monday
-		var method = AdminUserService.class.getDeclaredMethod("isLegalToCalculateResults", LocalDate.class);
-		method.setAccessible(true);
+	void testCalculateGrades_IllegalOnWeekday() {
+		LocalDate sunday = LocalDate.of(2025, 9, 14);
+		LocalDate monday = LocalDate.of(2025, 9, 15);
 
-		boolean result = (boolean) method.invoke(service, monday);
-		assertThat(result).isFalse();
+		League league = mock(League.class);
+		FantaUser admin = mock(FantaUser.class);
+
+		when(league.getAdmin()).thenReturn(admin);
+		when(matchDayRepository.getPreviousMatchDay(monday)).thenReturn(Optional.of(new MatchDaySerieA("", sunday)));
+
+		AdminUserService serviceWithMonday = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return monday;
+			}
+		};
+
+		when(serviceWithMonday.getNextMatchDayToCalculate(monday, context, league, admin))
+				.thenReturn(Optional.of(new MatchDaySerieA(null, monday)));
+
+		assertThatThrownBy(() -> serviceWithMonday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("The matches are not finished yet");
 	}
 
 }

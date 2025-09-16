@@ -125,7 +125,7 @@ class JpaLineUpRepositoryTest {
 				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
 				.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build());
 		entityManager.getTransaction().commit();
-		entityManager.clear(); // the Session is not closed! SUT instance is still used for verifications
+		entityManager.clear();
 
 		// Assert
 		sessionFactory.inTransaction((Session em) -> {

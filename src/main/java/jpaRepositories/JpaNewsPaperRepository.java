@@ -1,8 +1,11 @@
 package jpaRepositories;
 
 import java.util.List;
+import java.util.Optional;
+
 import businessLogic.repositories.NewsPaperRepository;
 import domainModel.NewsPaper;
+import domainModel.NewsPaper_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -16,14 +19,31 @@ public class JpaNewsPaperRepository extends BaseJpaRepository implements NewsPap
 
 	@Override
 	public List<NewsPaper> getAllNewspapers() {
-    	EntityManager em = getEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<NewsPaper> query = cb.createQuery(NewsPaper.class);
-        Root<NewsPaper> root = query.from(NewsPaper.class);
+		EntityManager em = getEntityManager();
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<NewsPaper> query = cb.createQuery(NewsPaper.class);
+		Root<NewsPaper> root = query.from(NewsPaper.class);
 
-        query.select(root);
+		query.select(root);
 
-        return em.createQuery(query).getResultList();
+		return em.createQuery(query).getResultList();
+	}
+
+	@Override
+	public Optional<NewsPaper> getNewspaper(String name) {
+		EntityManager em = getEntityManager();
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<NewsPaper> query = cb.createQuery(NewsPaper.class);
+		Root<NewsPaper> root = query.from(NewsPaper.class);
+
+		query.select(root).where(cb.equal(root.get(NewsPaper_.name), name));
+
+		return em.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
+	public void saveNewsPaper(NewsPaper newsPaper) {
+		getEntityManager().persist(newsPaper);
 	}
 
 }

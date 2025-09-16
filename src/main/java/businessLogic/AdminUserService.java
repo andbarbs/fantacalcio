@@ -192,7 +192,7 @@ public class AdminUserService extends UserService {
 			throw new IllegalArgumentException("You are not the admin of the league");
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
-			LocalDate localDate = LocalDate.now();
+			LocalDate localDate = today();
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
 			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
@@ -304,7 +304,7 @@ public class AdminUserService extends UserService {
 		return LocalDate.now();
 	}
 
-	private Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context,
+	Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context,
 			League league, FantaUser user) {
 		Optional<MatchDaySerieA> matchDayToCalculate;
 		boolean found = false;
