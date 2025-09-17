@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import domainModel.Player.*;
 import jakarta.persistence.EntityManager;
 
-@DisplayName("tests for HibernatePlayerRepository")
 class JpaPlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;

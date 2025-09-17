@@ -4,7 +4,6 @@ import businessLogic.repositories.LineUpRepository;
 import domainModel.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
@@ -24,18 +23,9 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
 
     @Override
     public void deleteLineUp(LineUp lineUp) {
-    	CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaDelete<LineUp> delete = cb.createCriteriaDelete(LineUp.class);
-        Root<LineUp> root = delete.from(LineUp.class);
-
-        delete.where(
-                cb.and(
-                        cb.equal(root.get(LineUp_.match), lineUp.getMatch()),
-                        cb.equal(root.get(LineUp_.team), lineUp.getTeam())
-                )
-        );
-
-        getEntityManager().createQuery(delete).executeUpdate();
+    	EntityManager entityManager = getEntityManager();
+    	LineUp managed = entityManager.merge(lineUp);
+        entityManager.remove(managed);
     }
 
     @Override

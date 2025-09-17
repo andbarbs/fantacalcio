@@ -28,7 +28,6 @@ import domainModel.Player.Forward;
 import domainModel.Player.Club;
 import jakarta.persistence.EntityManager;
 
-@DisplayName("tests for HibernateContractRepository")
 class JpaContractRepositoryTest {
 
 	private static SessionFactory sessionFactory;
@@ -64,7 +63,7 @@ class JpaContractRepositoryTest {
 		sessionFactory.getSchemaManager().truncateMappedObjects();
 		entityManager = sessionFactory.createEntityManager();
 		contractRepository = new JpaContractRepository(entityManager);
-		
+
 		sessionFactory.inTransaction(t -> {
 			user = new FantaUser("manager@example.com", "securePass");
 			t.persist(user);
@@ -77,7 +76,7 @@ class JpaContractRepositoryTest {
 			player = new Player.Forward("Lionel", "Messi", Club.PISA);
 			t.persist(player);
 		});
-		
+
 	}
 
 	@AfterAll
@@ -125,7 +124,7 @@ class JpaContractRepositoryTest {
 				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
 
 		assertThat(result).isEmpty();
-		
+
 		entityManager.close();
 
 	}
@@ -141,8 +140,14 @@ class JpaContractRepositoryTest {
 		entityManager.persist(contract);
 
 		team.setContracts(Set.of(contract));
+		
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
 
+	    entityManager.getTransaction().begin();
 		contractRepository.deleteContract(contract);
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
 
 		Optional<Contract> result = entityManager
 				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
@@ -151,19 +156,22 @@ class JpaContractRepositoryTest {
 		assertThat(result).isEmpty();
 
 		entityManager.close();
-		
+
 	}
 
 	@Test
 	@DisplayName("saveContract should persist correctly")
 	void testSaveContractPersistsCorrectly() {
 
+		entityManager.getTransaction().begin();
+		
 		Contract contract = new Contract(team, player);
 
-		sessionFactory.inTransaction(session -> {
-			session.persist(contract);
-		});
-
+		contractRepository.saveContract(contract);
+		
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
+		
 		sessionFactory.inTransaction((Session em) -> {
 			Optional<Contract> result = em
 					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
@@ -174,7 +182,6 @@ class JpaContractRepositoryTest {
 			assertThat(found.getTeam()).isEqualTo(team);
 			assertThat(found.getPlayer()).isEqualTo(player);
 		});
-
 	}
 
 }

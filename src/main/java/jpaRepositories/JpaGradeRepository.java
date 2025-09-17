@@ -45,7 +45,6 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 	@Override
 	public void saveGrade(Grade grade) {
 		getEntityManager().persist(grade);
-
 	}
 
 }

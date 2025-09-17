@@ -78,6 +78,72 @@ class JpaLineUpRepositoryTest {
 	}
 
 	@Test
+	@DisplayName("deleteLineUp should remove the LineUp by match and team")
+	void testDeleteLineUpRemovesCorrectly() {
+	    entityManager.getTransaction().begin();
+
+	    Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", Club.JUVENTUS);
+		Goalkeeper gk2 = new Goalkeeper("Samir", "Handanović", Club.INTER);
+
+		Defender d1 = new Defender("Paolo", "Maldini", Club.MILAN);
+		Defender d2 = new Defender("Franco", "Baresi", Club.JUVENTUS);
+		Defender d3 = new Defender("Alessandro", "Nesta", Club.LAZIO);
+		Defender d4 = new Defender("Giorgio", "Chiellini", Club.JUVENTUS);
+		Defender d5 = new Defender("Leonardo", "Bonucci", Club.JUVENTUS);
+
+		Midfielder m1 = new Midfielder("Andrea", "Pirlo", Club.JUVENTUS);
+		Midfielder m2 = new Midfielder("Daniele", "De Rossi", Club.ROMA);
+		Midfielder m3 = new Midfielder("Marco", "Verratti", Club.CREMONESE);
+		Midfielder m4 = new Midfielder("Claudio", "Marchisio", Club.JUVENTUS);
+
+		Forward f1 = new Forward("Roberto", "Baggio", Club.BOLOGNA);
+		Forward f2 = new Forward("Francesco", "Totti", Club.ROMA);
+		Forward f3 = new Forward("Alessandro", "Del Piero", Club.JUVENTUS);
+		Forward f4 = new Forward("Lorenzo", "Insigne", Club.NAPOLI);
+
+		List<Player> players = List.of(gk1, gk2, d1, d2, d3, d4, d5, m1, m2, m3, m4, f1, f2, f3, f4);
+
+		players.forEach(entityManager::persist);
+
+		// Contracts, FantaTeam and Match
+		Set<Contract> contracts = new HashSet<Contract>();
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, contracts);
+		players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
+
+		entityManager.persist(team);
+
+		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
+		entityManager.persist(opponent);
+
+		Match match = new Match(matchDay, team, opponent);
+		entityManager.persist(match);
+
+		// Build LineUp with starters and substitutes, save and commit
+		_433LineUp lineUp = new _433LineUp._443LineUpBuilder(match, team).withGoalkeeper(gk1)
+				.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
+				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
+				.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
+		entityManager.persist(lineUp);
+	    entityManager.getTransaction().commit();
+	    entityManager.clear();
+
+	    // Verify it exists
+	    Optional<LineUp> beforeDelete = lineUpRepository.getLineUpByMatchAndTeam(match, team);
+	    assertThat(beforeDelete).isPresent();
+
+	    // Delete
+	    entityManager.getTransaction().begin();
+	    lineUpRepository.deleteLineUp(lineUp);
+	    entityManager.getTransaction().commit();
+	    entityManager.clear();
+
+	    // Verify it is gone
+	    Optional<LineUp> afterDelete = lineUpRepository.getLineUpByMatchAndTeam(match, team);
+	    assertThat(afterDelete).isEmpty();
+	}
+
+	
+	@Test
 	@DisplayName("saveLineUp should persist a LineUp correctly")
 	void testSaveLineUpPersistsCorrectly() {
 		entityManager.getTransaction().begin();

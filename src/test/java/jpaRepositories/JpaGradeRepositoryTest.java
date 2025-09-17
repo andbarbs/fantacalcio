@@ -95,7 +95,7 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper )).isEmpty();
+		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper)).isEmpty();
 	}
 
 	@Test
@@ -124,14 +124,17 @@ class JpaGradeRepositoryTest {
 	@DisplayName("saveGrade should persist correctly")
 	void testSaveGradePersistsCorrectly() {
 
+		entityManager.getTransaction().begin();
+
 		Player totti = new Player.Forward("Francesco", "Totti", Club.ROMA);
 		Grade grade = new Grade(totti, matchDay, 9.0, newsPaper);
 
-		sessionFactory.inTransaction(session -> {
-			session.persist(totti);
-			session.persist(grade);
-		});
+		entityManager.persist(totti);
+		gradeRepository.saveGrade(grade);
 
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
+	    
 		sessionFactory.inTransaction((Session em) -> {
 			Optional<Grade> result = em
 					.createQuery("SELECT g FROM Grade g " + "WHERE g.player = :player " + "AND g.matchDay = :matchDay "
