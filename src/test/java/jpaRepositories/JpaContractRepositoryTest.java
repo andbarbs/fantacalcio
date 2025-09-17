@@ -170,7 +170,7 @@ class JpaContractRepositoryTest {
 		contractRepository.saveContract(contract);
 		
 		entityManager.getTransaction().commit();
-	    entityManager.clear();
+		entityManager.clear();
 		
 		sessionFactory.inTransaction((Session em) -> {
 			Optional<Contract> result = em
