@@ -15,6 +15,7 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import domainModel.Player.Club;
 import domainModel.Player.Goalkeeper;
 
 public class UserServiceTest {
@@ -109,7 +110,7 @@ public class UserServiceTest {
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("A league with the same league code already exists");
 	}
-
+	
 	@Test
 	void testJoinLeague() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
@@ -122,6 +123,24 @@ public class UserServiceTest {
 
 		verify(teamRepository, times(1)).saveTeam(team);
 	}
+	
+	@Test
+	void testJoinLeague_TooManyTeams() {
+		FantaUser user = new FantaUser("user@test.com", "pwd");
+		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L002");
+		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
+
+		List<FantaTeam> teamList = new ArrayList<FantaTeam>();
+		for (int i = 0; i < 30; i++) {
+			teamList.add(new FantaTeam(null, league, i, user, null));
+		}
+		when(leagueRepository.getAllTeams(league)).thenReturn(teamList);
+
+		assertThatThrownBy( () -> userService.joinLeague(team, league)).isInstanceOf(UnsupportedOperationException.class)
+			.hasMessageContaining("Maximum 12 teams per league");
+		
+	}
+	
 
 	@Test
 	void testJoinLeague_UserAlreadyInLeague() {
@@ -493,10 +512,6 @@ public class UserServiceTest {
 				return Optional.empty();
 			}
 
-			@Override
-			public void rejectProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
-				// no-op, just to avoid side effects
-			}
 		};
 
 		assertThatThrownBy(() -> testService.acceptProposal(proposal, myTeam))
@@ -538,13 +553,28 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void testRejectProposal_NotInvolved() {
+	void testRejectProposal_RequestedNotInvolved() {
 		FantaTeam myTeam = mock(FantaTeam.class);
 		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
 		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
 		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
 		when(proposal.getRequestedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getRequestedContract().getTeam()).thenReturn(reqTeam);
+		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
+		when(proposal.getOfferedContract().getTeam()).thenReturn(offTeam);
+
+		assertThatThrownBy(() -> userService.rejectProposal(proposal, myTeam))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("You are not involved in this proposal");
+	}
+
+	@Test
+	void testRejectProposal_OfferedNotInvolved() {
+		FantaTeam myTeam = mock(FantaTeam.class);
+		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
+		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
+		when(proposal.getRequestedContract()).thenReturn(new Contract(reqTeam, new Player.Goalkeeper(null, null, Club.ATALANTA)));
 		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getOfferedContract().getTeam()).thenReturn(offTeam);
 
@@ -566,12 +596,37 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void testCreateProposal_ContractMissing() {
+	void testCreateProposal_EveryContractMissing() {
 		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
 		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
-		Player player = new Player.Forward(null, null, null);
+		Player myPlayer = new Player.Forward(null, null, null);
+		Player oppPlayer = new Player.Forward(null, null, null);
 
-		assertThat(userService.createProposal(player, player, myTeam, opponentTeam)).isFalse();
+		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
+	}
+	
+	@Test
+	void testCreateProposal_RequestedContractMissing() {
+		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		Player myPlayer = new Player.Forward(null, null, null);
+		Player oppPlayer = new Player.Forward(null, null, null);
+
+		myTeam.setContracts(Set.of(new Contract(myTeam, myPlayer)));
+
+		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
+	}
+	
+	@Test
+	void testCreateProposal_OfferedContractMissing() {
+		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
+		Player myPlayer = new Player.Forward(null, null, null);
+		Player oppPlayer = new Player.Forward(null, null, null);
+		
+		opponentTeam.setContracts(Set.of(new Contract(opponentTeam, oppPlayer)));
+
+		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
 	}
 
 	@Test
@@ -624,6 +679,20 @@ public class UserServiceTest {
 		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match, newsPaper);
 		assertThat(result).containsExactly(grade);
+	}
+	
+	@Test
+	void testGetAllFantaTeams() {
+	    League league = new League(null, "My League", new NewsPaper("Gazzetta"), "L999");
+	    FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
+	    FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
+
+	    when(context.getTeamRepository().getAllTeams(league)).thenReturn(List.of(t1, t2));
+
+	    List<FantaTeam> result = userService.getAllFantaTeams(league);
+
+	    assertThat(result).containsExactly(t1, t2);
+	    verify(context.getTeamRepository(), times(1)).getAllTeams(league);
 	}
 
 }

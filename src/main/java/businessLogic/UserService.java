@@ -11,13 +11,13 @@ import domainModel.*;
 public class UserService {
 
 	protected final TransactionManager transactionManager;
-
+	
 	public UserService(TransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
 
 	// League
-
+	
 	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
 			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
@@ -34,11 +34,10 @@ public class UserService {
 
 			LeagueRepository leagueRepository = context.getLeagueRepository();
 
-			// testare
 			final int maxFantaTeamsPerLeague = 12;
 			if (leagueRepository.getAllTeams(league).size() >= maxFantaTeamsPerLeague)
 				throw new UnsupportedOperationException("Maximum 12 teams per league");
-			
+
 			FantaUser user = fantaTeam.getFantaManager();
 			List<League> UserLeagues = leagueRepository.getLeaguesByUser(user);
 			if (UserLeagues.contains(league)) {
@@ -115,6 +114,7 @@ public class UserService {
 			}
 			Optional<Contract> requestedContract = searchContract(fantaTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(offeringTeam, offeredPlayer);
+
 			if (requestedContract.isEmpty() || offeredContract.isEmpty()) {
 				rejectProposal(proposal, fantaTeam);
 				throw new IllegalArgumentException("One or both players do not play anymore in the teams");
@@ -135,6 +135,7 @@ public class UserService {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
+
 			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
@@ -154,6 +155,7 @@ public class UserService {
 		return transactionManager.fromTransaction((context) -> {
 			Optional<Contract> requestedContract = searchContract(opponentTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
+
 			if (requestedContract.isPresent() && offeredContract.isPresent()) {
 				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
 
@@ -229,6 +231,7 @@ public class UserService {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(),
 						lineUp.getTeam().getLeague(), lineUp.getTeam());
 				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
+
 				if (previousMatchResult.isEmpty()) {
 					throw new UnsupportedOperationException("The grades for the previous match were not calculated");
 				}
