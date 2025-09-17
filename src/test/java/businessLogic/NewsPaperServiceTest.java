@@ -25,7 +25,7 @@ class NewsPaperServiceTest {
 	private GradeRepository gradeRepository;
 	private PlayerRepository playerRepository;
 	private MatchDayRepository matchDayRepository;
-
+	
 	@BeforeEach
 	void setUp() {
 		transactionManager = mock(TransactionManager.class);
@@ -99,7 +99,18 @@ class NewsPaperServiceTest {
 	}
 
 	@Test
-	void testSetVoteToPlayers_InvalidMark() {
+	void testSetVoteToPlayers_InvalidMarkTooLow() {
+		NewsPaperService spyService = spy(service);
+		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+		when(grade.getMatchDay()).thenReturn(matchDay);
+		when(grade.getMark()).thenReturn(-10.0); // invalid
+
+		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade)))
+				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Marks must be between -5 and 25");
+	}
+	
+	@Test
+	void testSetVoteToPlayers_InvalidMarkTooHigh() {
 		NewsPaperService spyService = spy(service);
 		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 		when(grade.getMatchDay()).thenReturn(matchDay);
@@ -266,6 +277,18 @@ class NewsPaperServiceTest {
 		Optional<MatchDaySerieA> result = spyService.getMatchDay();
 
 		assertThat(result).contains(prev);
+	}
+	
+	@Test
+	void testGetMatchDay_Tuesday_ReturnsEmpty() {
+	    LocalDate tuesday = LocalDate.of(2025, 9, 23); // Tuesday
+	    NewsPaperService spyService = spy(service);
+	    doReturn(tuesday).when(spyService).today();
+
+	    Optional<MatchDaySerieA> result = spyService.getMatchDay();
+
+	    assertThat(result).isEmpty();
+	    verifyNoInteractions(matchDayRepository);
 	}
 
 }
