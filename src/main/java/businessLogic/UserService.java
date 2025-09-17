@@ -15,19 +15,8 @@ public class UserService {
 	public UserService(TransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
-
-	// League
 	
-	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
-		transactionManager.inTransaction((context) -> {
-			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
-				League league = new League(admin, leagueName, newsPaper, leagueCode);
-				context.getLeagueRepository().saveLeague(league);
-			} else {
-				throw new IllegalArgumentException("A league with the same league code already exists");
-			}
-		});
-	}
+	// League
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
 		transactionManager.inTransaction((context) -> {

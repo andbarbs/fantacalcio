@@ -19,7 +19,7 @@ class AdminUserServiceTest {
 
 	private TransactionManager transactionManager;
 	private TransactionContext context;
-	private AdminUserService service;
+	private AdminUserService adminUserService;
 
 	// Repositories
 	private MatchRepository matchRepository;
@@ -52,7 +52,7 @@ class AdminUserServiceTest {
 			return code.apply(context);
 		});
 
-		service = new AdminUserService(transactionManager);
+		adminUserService = new AdminUserService(transactionManager);
 
 		// Create mocks for all repositories
 		matchRepository = mock(MatchRepository.class);
@@ -82,11 +82,41 @@ class AdminUserServiceTest {
 	}
 
 	@Test
+	void testCreateLeague() {
+		FantaUser admin = new FantaUser("admin@test.com", "pwd");
+		NewsPaper np = new NewsPaper("Gazzetta");
+		String leagueCode = "L001";
+
+		// League code does not exist yet
+		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.empty());
+
+		adminUserService.createLeague("My League", admin, np, leagueCode);
+
+		// Verify that saveLeague was called
+		verify(leagueRepository, times(1)).saveLeague(any(League.class));
+	}
+
+	@Test
+	void testCreateLeague_LeagueCodeExists() {
+		FantaUser admin = new FantaUser("admin@test.com", "pwd");
+		NewsPaper np = new NewsPaper("Gazzetta");
+		String leagueCode = "L001";
+
+		League existingLeague = new League(admin, "Existing League", np, leagueCode);
+		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
+
+		assertThatThrownBy(() -> adminUserService.createLeague("New League", admin, np, leagueCode))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("A league with the same league code already exists");
+	}
+	
+
+	@Test
 	void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
 		Player.Goalkeeper gk = new Player.Goalkeeper("Gigi", "Buffon", Player.Club.JUVENTUS);
 
-		service.setPlayerToTeam(team, gk);
+		adminUserService.setPlayerToTeam(team, gk);
 
 		verify(contractRepository).saveContract(argThat(c -> c.getTeam().equals(team) && c.getPlayer().equals(gk)));
 	}
@@ -103,7 +133,7 @@ class AdminUserServiceTest {
 
 		Player newPlayer = new Player.Defender("New", "Player", Player.Club.BOLOGNA);
 
-		assertThatThrownBy(() -> service.setPlayerToTeam(team, newPlayer))
+		assertThatThrownBy(() -> adminUserService.setPlayerToTeam(team, newPlayer))
 				.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("Maximum 25 players");
 	}
 
@@ -122,7 +152,7 @@ class AdminUserServiceTest {
 
 		Player.Goalkeeper newGk = new Player.Goalkeeper("New", "Keeper", Player.Club.ROMA);
 
-		service.setPlayerToTeam(team, newGk);
+		adminUserService.setPlayerToTeam(team, newGk);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
@@ -147,7 +177,7 @@ class AdminUserServiceTest {
 
 		Player.Defender newDf = new Player.Defender("New", "Keeper", Player.Club.ROMA);
 
-		service.setPlayerToTeam(team, newDf);
+		adminUserService.setPlayerToTeam(team, newDf);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
@@ -172,7 +202,7 @@ class AdminUserServiceTest {
 
 		Player.Midfielder newMf = new Player.Midfielder("New", "Keeper", Player.Club.ROMA);
 
-		service.setPlayerToTeam(team, newMf);
+		adminUserService.setPlayerToTeam(team, newMf);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
@@ -195,7 +225,7 @@ class AdminUserServiceTest {
 
 		Player.Forward newFw = new Player.Forward("New", "Keeper", Player.Club.ROMA);
 
-		service.setPlayerToTeam(team, newFw);
+		adminUserService.setPlayerToTeam(team, newFw);
 
 		verify(contractRepository, never()).saveContract(any());
 	}
@@ -209,7 +239,7 @@ class AdminUserServiceTest {
 
 		when(contractRepository.getContract(team, player)).thenReturn(Optional.of(contract));
 
-		service.removePlayerFromTeam(team, player);
+		adminUserService.removePlayerFromTeam(team, player);
 
 		verify(contractRepository).deleteContract(contract);
 	}
@@ -221,7 +251,7 @@ class AdminUserServiceTest {
 
 		when(contractRepository.getContract(team, player)).thenReturn(Optional.empty());
 
-		service.removePlayerFromTeam(team, player);
+		adminUserService.removePlayerFromTeam(team, player);
 
 		verify(contractRepository, never()).deleteContract(any());
 	}
@@ -232,7 +262,7 @@ class AdminUserServiceTest {
 		NewsPaper np2 = new NewsPaper("Corriere");
 		when(newspaperRepository.getAllNewspapers()).thenReturn(List.of(np1, np2));
 
-		List<NewsPaper> result = service.getAllNewspapers();
+		List<NewsPaper> result = adminUserService.getAllNewspapers();
 
 		assertThat(result).containsExactly(np1, np2);
 	}
@@ -258,7 +288,7 @@ class AdminUserServiceTest {
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
 		when(matchDayRepository.getAllMatchDays()).thenReturn(matchDays);
 
-		service.generateCalendar(league);
+		adminUserService.generateCalendar(league);
 
 		verify(matchRepository, atLeastOnce()).saveMatch(any(Match.class));
 	}
@@ -271,7 +301,7 @@ class AdminUserServiceTest {
 
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(onlyTeam));
 
-		assertThatThrownBy(() -> service.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("At least 2 teams are required");
 	}
 
@@ -285,7 +315,7 @@ class AdminUserServiceTest {
 
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(t1, t2, t3));
 
-		assertThatThrownBy(() -> service.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Number of teams must be even");
 	}
 
@@ -300,7 +330,7 @@ class AdminUserServiceTest {
 		method.setAccessible(true);
 
 		@SuppressWarnings("unchecked")
-		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(service, List.of(t1, t2, t3, t4));
+		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(adminUserService, List.of(t1, t2, t3, t4));
 
 		int expectedRounds = (4 - 1) * 2; // double round robin
 		assertThat(schedule.size()).isEqualTo(expectedRounds);
@@ -319,7 +349,7 @@ class AdminUserServiceTest {
 		assertThatThrownBy(() -> {
 			var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
 			method.setAccessible(true);
-			method.invoke(service, List.of(t1, t2, t3));
+			method.invoke(adminUserService, List.of(t1, t2, t3));
 		}).hasCauseInstanceOf(IllegalArgumentException.class)
 				.satisfies(ex -> assertThat(ex.getCause().getMessage()).contains("Number of teams must be even"));
 	}
@@ -334,7 +364,7 @@ class AdminUserServiceTest {
 		var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
 		method.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(service, List.of(t1, t2, t3, t4));
+		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(adminUserService, List.of(t1, t2, t3, t4));
 
 		int firstLegRounds = schedule.size() / 2;
 
@@ -361,7 +391,7 @@ class AdminUserServiceTest {
 		List<List<FantaTeam[]>> schedule = new ArrayList<>();
 		schedule.add(round);
 
-		List<Match> matches = service.createMatches(schedule, matchDays);
+		List<Match> matches = adminUserService.createMatches(schedule, matchDays);
 
 		assertThat(matches).hasSize(1);
 		assertThat(matches.get(0).getTeam1()).isEqualTo(t1);
@@ -383,7 +413,7 @@ class AdminUserServiceTest {
 
 		List<MatchDaySerieA> matchDays = List.of(); // empty -> mismatch
 
-		assertThatThrownBy(() -> service.createMatches(schedule, matchDays))
+		assertThatThrownBy(() -> adminUserService.createMatches(schedule, matchDays))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Schedule rounds and matchDays must have the same size");
 	}
@@ -408,7 +438,7 @@ class AdminUserServiceTest {
 
 		List<MatchDaySerieA> matchDays = List.of(mock(MatchDaySerieA.class)); // only 1 match day
 
-		assertThatThrownBy(() -> service.createMatches(schedule, matchDays))
+		assertThatThrownBy(() -> adminUserService.createMatches(schedule, matchDays))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Schedule rounds and matchDays must have the same size");
 	}
@@ -418,7 +448,7 @@ class AdminUserServiceTest {
 		List<List<FantaTeam[]>> schedule = List.of();
 		List<MatchDaySerieA> matchDays = List.of();
 
-		List<Match> matches = service.createMatches(schedule, matchDays);
+		List<Match> matches = adminUserService.createMatches(schedule, matchDays);
 
 		assertThat(matches).isEmpty();
 	}
@@ -455,7 +485,7 @@ class AdminUserServiceTest {
 		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
 
 		// Call the method; it should throw because `user` is not admin
-		assertThatThrownBy(() -> service.calculateGrades(user, league)).isInstanceOf(IllegalArgumentException.class)
+		assertThatThrownBy(() -> adminUserService.calculateGrades(user, league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("You are not the admin of the league");
 
 		// Ensure that no results were saved
@@ -470,7 +500,7 @@ class AdminUserServiceTest {
 
 		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> service.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> adminUserService.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The season hasn't started yet");
 	}
 

@@ -83,35 +83,6 @@ public class UserServiceTest {
 	}
 
 	@Test
-	void testCreateLeague() {
-		FantaUser admin = new FantaUser("admin@test.com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta");
-		String leagueCode = "L001";
-
-		// League code does not exist yet
-		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.empty());
-
-		userService.createLeague("My League", admin, np, leagueCode);
-
-		// Verify that saveLeague was called
-		verify(leagueRepository, times(1)).saveLeague(any(League.class));
-	}
-
-	@Test
-	void testCreateLeague_LeagueCodeExists() {
-		FantaUser admin = new FantaUser("admin@test.com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta");
-		String leagueCode = "L001";
-
-		League existingLeague = new League(admin, "Existing League", np, leagueCode);
-		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
-
-		assertThatThrownBy(() -> userService.createLeague("New League", admin, np, leagueCode))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("A league with the same league code already exists");
-	}
-	
-	@Test
 	void testJoinLeague() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L002");
@@ -123,7 +94,7 @@ public class UserServiceTest {
 
 		verify(teamRepository, times(1)).saveTeam(team);
 	}
-	
+
 	@Test
 	void testJoinLeague_TooManyTeams() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
@@ -136,11 +107,10 @@ public class UserServiceTest {
 		}
 		when(leagueRepository.getAllTeams(league)).thenReturn(teamList);
 
-		assertThatThrownBy( () -> userService.joinLeague(team, league)).isInstanceOf(UnsupportedOperationException.class)
-			.hasMessageContaining("Maximum 12 teams per league");
-		
+		assertThatThrownBy(() -> userService.joinLeague(team, league)).isInstanceOf(UnsupportedOperationException.class)
+				.hasMessageContaining("Maximum 12 teams per league");
+
 	}
-	
 
 	@Test
 	void testJoinLeague_UserAlreadyInLeague() {
@@ -574,7 +544,8 @@ public class UserServiceTest {
 		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
 		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
 		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
-		when(proposal.getRequestedContract()).thenReturn(new Contract(reqTeam, new Player.Goalkeeper(null, null, Club.ATALANTA)));
+		when(proposal.getRequestedContract())
+				.thenReturn(new Contract(reqTeam, new Player.Goalkeeper(null, null, Club.ATALANTA)));
 		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getOfferedContract().getTeam()).thenReturn(offTeam);
 
@@ -604,7 +575,7 @@ public class UserServiceTest {
 
 		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
 	}
-	
+
 	@Test
 	void testCreateProposal_RequestedContractMissing() {
 		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
@@ -616,14 +587,14 @@ public class UserServiceTest {
 
 		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
 	}
-	
+
 	@Test
 	void testCreateProposal_OfferedContractMissing() {
 		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
 		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
 		Player myPlayer = new Player.Forward(null, null, null);
 		Player oppPlayer = new Player.Forward(null, null, null);
-		
+
 		opponentTeam.setContracts(Set.of(new Contract(opponentTeam, oppPlayer)));
 
 		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
@@ -680,19 +651,19 @@ public class UserServiceTest {
 		List<Grade> result = userService.getAllMatchGrades(match, newsPaper);
 		assertThat(result).containsExactly(grade);
 	}
-	
+
 	@Test
 	void testGetAllFantaTeams() {
-	    League league = new League(null, "My League", new NewsPaper("Gazzetta"), "L999");
-	    FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
-	    FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
+		League league = new League(null, "My League", new NewsPaper("Gazzetta"), "L999");
+		FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
+		FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
 
-	    when(context.getTeamRepository().getAllTeams(league)).thenReturn(List.of(t1, t2));
+		when(context.getTeamRepository().getAllTeams(league)).thenReturn(List.of(t1, t2));
 
-	    List<FantaTeam> result = userService.getAllFantaTeams(league);
+		List<FantaTeam> result = userService.getAllFantaTeams(league);
 
-	    assertThat(result).containsExactly(t1, t2);
-	    verify(context.getTeamRepository(), times(1)).getAllTeams(league);
+		assertThat(result).containsExactly(t1, t2);
+		verify(context.getTeamRepository(), times(1)).getAllTeams(league);
 	}
 
 }

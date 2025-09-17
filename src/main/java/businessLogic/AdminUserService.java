@@ -18,6 +18,17 @@ public class AdminUserService extends UserService {
 	public AdminUserService(TransactionManager transactionManager) {
 		super(transactionManager);
 	}
+	
+	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
+		transactionManager.inTransaction((context) -> {
+			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
+				League league = new League(admin, leagueName, newsPaper, leagueCode);
+				context.getLeagueRepository().saveLeague(league);
+			} else {
+				throw new IllegalArgumentException("A league with the same league code already exists");
+			}
+		});
+	}
 
 	public void setPlayerToTeam(FantaTeam team, Player player) {
 		transactionManager.inTransaction((context) -> {
