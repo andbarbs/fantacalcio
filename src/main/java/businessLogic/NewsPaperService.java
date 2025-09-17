@@ -53,7 +53,6 @@ public class NewsPaperService {
 	            if (matchDaySerieA.isEmpty()) {
 	                matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
 	            }
-	        // TODO testare questo branch
 	        } else if (dayOfWeek == DayOfWeek.MONDAY) {
 	            matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
 	        }

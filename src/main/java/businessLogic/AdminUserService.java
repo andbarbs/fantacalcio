@@ -198,13 +198,15 @@ public class AdminUserService extends UserService {
 				throw new RuntimeException("The season hasn't started yet");
 			}
 			Optional<MatchDaySerieA> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
-			if (!(matchDayToCalculate.isPresent())) {
+			if (matchDayToCalculate.isEmpty()) {
 				throw new RuntimeException("There are no results to calculate");
 			}
-			if (!isLegalToCalculateResults(localDate)) {
+			MatchDaySerieA matchDaySerieA = matchDayToCalculate.get();
+			if (!isLegalToCalculateResults(matchDaySerieA.getDate())) {
 				throw new RuntimeException("The matches are not finished yet");
 			}
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDayToCalculate.get(),
+			
+			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDaySerieA,
 					league);
 			for (Match match : allMatches) {
 				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match,
@@ -299,7 +301,7 @@ public class AdminUserService extends UserService {
 		}
 		return !now.isBefore(legalDate);
 	}
-
+	
 	protected LocalDate today() {
 		return LocalDate.now();
 	}

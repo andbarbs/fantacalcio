@@ -475,6 +475,34 @@ class AdminUserServiceTest {
 	}
 
 	@Test
+	void testCalculateGrades_NoResultsToCalculate_Throws() {
+
+		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
+		LocalDate saturday = LocalDate.of(2025, 9, 13);
+
+		League league = mock(League.class);
+		FantaUser admin = mock(FantaUser.class);
+		when(league.getAdmin()).thenReturn(admin);
+
+		when(matchDayRepository.getPreviousMatchDay(saturday))
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+
+		// Override today() to return the Saturday we want to test
+		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return saturday;
+			}
+		};
+
+		when(serviceWithSaturday.getNextMatchDayToCalculate(saturday, context, league, admin))
+				.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serviceWithSaturday.calculateGrades(admin, league))
+				.isInstanceOf(RuntimeException.class).hasMessageContaining("There are no results to calculate");
+	}
+
+	@Test
 	void testIsLegalToCalculateResults_Saturday() throws Exception {
 		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
 		LocalDate saturday = LocalDate.of(2025, 9, 13);
@@ -550,6 +578,67 @@ class AdminUserServiceTest {
 
 		assertThatThrownBy(() -> serviceWithMonday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The matches are not finished yet");
+	}
+
+	@Test
+	void testCalculateGrades_SavesResultsAndUpdatesPoints() {
+
+		FantaUser admin = new FantaUser("admin@example.com", "pwd");
+		NewsPaper newspaper = new NewsPaper("Gazzetta");
+		League league = new League(admin, "Serie A", newspaper, "1234");
+
+		LocalDate matchDate = LocalDate.of(2025, 9, 21); // Sunday
+		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1));
+		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate);
+
+		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(prevDay));
+
+		AdminUserService serviceWithFixedDate = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return matchDate.plusDays(5);
+			}
+
+			@Override
+			protected Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate d, TransactionContext c, League l,
+					FantaUser u) {
+				return Optional.of(dayToCalc);
+			}
+		};
+
+		// Teams
+		FantaTeam team1 = new FantaTeam("Team1", league, 0, admin, Set.of());
+		FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
+
+		// Match
+		Match match = new Match(dayToCalc, team1, team2);
+		when(matchRepository.getAllMatchesByMatchDay(dayToCalc, league))
+				.thenReturn(List.of(new Match(dayToCalc, team1, team2)));
+
+		// Players
+		Player.Goalkeeper gk1 = new Player.Goalkeeper("G1", "Alpha", Player.Club.ATALANTA);
+		Player.Goalkeeper gk2 = new Player.Goalkeeper("G2", "Beta", Player.Club.BOLOGNA);
+
+		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).withGoalkeeper(gk1).build();
+		LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).withGoalkeeper(gk2).build();
+
+		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
+		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
+
+		// Grades
+		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newspaper);
+		Grade grade2 = new Grade(gk2, dayToCalc, 60.0, newspaper);
+		when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
+
+		// Act
+		serviceWithFixedDate.calculateGrades(admin, league);
+
+		// Assert: Result persisted
+		verify(resultRepository).saveResult(any());
+
+		// Assert: team points updated
+		assertThat(team1.getPoints()).isEqualTo(3);
+		assertThat(team2.getPoints()).isEqualTo(0);
 	}
 
 }
