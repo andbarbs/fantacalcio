@@ -3,6 +3,7 @@ package businessLogic.repositories;
 import domainModel.FantaUser;
 import domainModel.League;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,6 +13,8 @@ public interface LeagueRepository {
 
 	boolean addLeague(League league);
 
-	Set<League> getLeaguesByUser(FantaUser user);
+	List<League> getLeaguesByUser(FantaUser user);
+
+	List<League> getAllTeams(League league);
 
 }

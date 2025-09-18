@@ -1,5 +1,6 @@
 package businessLogic.repositories;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,4 +14,6 @@ public interface MatchRepository {
 	Match getMatchByMatchDay(MatchDaySerieA matchDaySerieA, League league, FantaTeam fantaTeam);
 
 	Map<MatchDaySerieA, Set<Match>> getAllMatches(League league);
+
+	List<Match> getAllMatchesByMatchDay(MatchDaySerieA matchDay, League league);
 }

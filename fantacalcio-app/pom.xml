@@ -14,9 +14,8 @@
 	<name>fantacalcio-app</name>
 	<url>http://maven.apache.org</url>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mockito.version>5.19.0</mockito.version>
 	</properties>
-
 
 	<dependencyManagement>
 		<dependencies>
@@ -179,17 +178,31 @@
 				</executions>
 			</plugin>
 
-			<!-- custom JVM args to alleviate the AssertJ Swing - JPMS mismatch -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<!-- resolves the file path to the Mockito agent JAR -->
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
 				<configuration>
-					<argLine>
+					<!-- custom JVM args to alleviate the AssertJ Swing - JPMS
+					mismatch & Mockito agent atachment -->
+					<argLine>@{argLine}
 						--add-opens java.base/java.util=ALL-UNNAMED
 						--add-opens java.base/java.lang=ALL-UNNAMED
 						--add-opens java.desktop/java.awt=ALL-UNNAMED
 						--add-opens java.desktop/javax.swing=ALL-UNNAMED
+						-javaagent:${org.mockito:mockito-core:jar}
 					</argLine>
 				</configuration>
 			</plugin>

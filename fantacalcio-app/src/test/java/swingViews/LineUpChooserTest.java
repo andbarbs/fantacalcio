@@ -2,13 +2,26 @@ package swingViews;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,15 +30,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import businessLogic.UserService;
+import domainModel.FantaTeam;
+import domainModel.LineUp;
+import domainModel.Match;
+import domainModel.MatchDaySerieA;
 import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
+import domainModel.scheme.Scheme433;
 import swingViews.Selector.SelectorListener;
 import swingViews.LineUpChooser.LineUpChooserWidget;
 import swingViews.LineUpChooser.StarterLineUpChooserDelegate;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
+import swingViews.LineUpChooser.SubstituteSelectorDelegate;
 import swingViews.LineUpChooser.SubstituteTripletChooserDelegate;
 
 @DisplayName("A LineUpChooser")
@@ -38,6 +60,7 @@ public class LineUpChooserTest {
 	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null);
 	
 	// first-level dependencies
+	private @Mock UserService mockService;
 	private @Mock LineUpChooserWidget mockWidget;
 	private @Mock StarterLineUpChooserDelegate starterChooser;	
 	private @Mock SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
@@ -46,22 +69,25 @@ public class LineUpChooserTest {
 	private @Mock SubstituteTripletChooserDelegate<Forward> forwTriplet;
 
 	// second-level dependencies
-	private @Mock Selector<Goalkeeper> starterGoalie;
-	private @Mock Selector<Defender> starterDef1, starterDef2, starterDef3, starterDef4, starterDef5;
-	private @Mock Selector<Midfielder> starterMid1, starterMid2, starterMid3, starterMid4;
-	private @Mock Selector<Forward> starterForw1, starterForw2, starterForw3;
+	private @Mock StarterSelectorDelegate<Goalkeeper> starterGoalie;
+	private @Mock StarterSelectorDelegate<Defender> starterDef1, starterDef2, starterDef3, starterDef4, starterDef5;
+	private @Mock StarterSelectorDelegate<Midfielder> starterMid1, starterMid2, starterMid3, starterMid4;
+	private @Mock StarterSelectorDelegate<Forward> starterForw1, starterForw2, starterForw3;
 	
-	private @Mock Selector<Goalkeeper> tripletGoalie1, tripletGoalie2, tripletGoalie3;
-	private @Mock Selector<Defender> tripletDef1, tripletDef2, tripletDef3;
-	private @Mock Selector<Midfielder> tripletMid1, tripletMid2, tripletMid3;
-	private @Mock Selector<Forward> tripletForw1, tripletForw2, tripletForw3;
+	private @Mock SubstituteSelectorDelegate<Goalkeeper> tripletGoalie1, tripletGoalie2, tripletGoalie3;
+	private @Mock SubstituteSelectorDelegate<Defender> tripletDef1, tripletDef2, tripletDef3;
+	private @Mock SubstituteSelectorDelegate<Midfielder> tripletMid1, tripletMid2, tripletMid3;
+	private @Mock SubstituteSelectorDelegate<Forward> tripletForw1, tripletForw2, tripletForw3;
 
 	// selector lists
 	private List<Selector<?>> selsInCurrentScheme;
-	private List<Selector<Goalkeeper>> tripletGoalies;
-	private List<Selector<Defender>> starterDefs, tripletDefs;
-	private List<Selector<Midfielder>> starterMids, tripletMids;
-	private List<Selector<Forward>> starterForws, tripletForws;
+	private List<StarterSelectorDelegate<Defender>> starterDefs;
+	private List<StarterSelectorDelegate<Midfielder>> starterMids;
+	private List<StarterSelectorDelegate<Forward>> starterForws;
+	private List<SubstituteSelectorDelegate<Goalkeeper>> tripletGoalies;
+	private List<SubstituteSelectorDelegate<Defender>> tripletDefs;
+	private List<SubstituteSelectorDelegate<Midfielder>> tripletMids;
+	private List<SubstituteSelectorDelegate<Forward>> tripletForws;
 	
 	private void populateSelsLists() {
 		// starters, by role
@@ -86,6 +112,17 @@ public class LineUpChooserTest {
 	// the SUT reference
 	private LineUpChooser chooser;
 
+	private void affirmAllChoiceFlagsIn(LineUpChooser chooser) {
+		chooser.hasStarterGoalieChoice.flag = true;
+		chooser.hasStarterDefChoice.flag = true;
+		chooser.hasStarterMidChoice.flag = true;
+		chooser.hasStarterForwChoice.flag = true;
+		chooser.hasSubsGoaliesChoice.flag = true;
+		chooser.hasSubsDefsChoice.flag = true;
+		chooser.hasSubsMidsChoice.flag = true;
+		chooser.hasSubsForwsChoice.flag = true;
+	}
+
 	@BeforeEach
 	void instantiateSUT() {
 
@@ -99,26 +136,59 @@ public class LineUpChooserTest {
 		when(forwTriplet.getSelectors()).thenReturn(tripletForws);
 
 		// instantiates SUT
-		chooser = new LineUpChooser(starterChooser, goalieTriplet, defTriplet, midTriplet, forwTriplet);
+		chooser = new LineUpChooser(mockService, starterChooser, goalieTriplet, defTriplet, midTriplet, forwTriplet);
 		chooser.setWidget(mockWidget);
+		
+		// verifies constructor interactions (de facto, resetting mocks)
+		verify(starterChooser).getGoalieSelector();
+		verify(starterChooser).setEntryDefConsumer(any());
+		verify(starterChooser).setExitDefConsumer(any());
+		verify(starterChooser).setEntryMidConsumer(any());
+		verify(starterChooser).setExitMidConsumer(any());
+		verify(starterChooser).setEntryForwConsumer(any());
+		verify(starterChooser).setExitForwConsumer(any());
+		verify(goalieTriplet).getSelectors();
+		verify(defTriplet).getSelectors();
+		verify(midTriplet).getSelectors();
+		verify(forwTriplet).getSelectors();
 	}
+	
+//	@Test
+//	@DisplayName("can be initialized to a Team and Match")
+//	void whenConfigured() {
+//		
+//		// WHEN the SUT is inialized to a Team and Match
+//		FantaTeam team = new FantaTeam("Dream Team", null, 30, null, null);			
+//		Match match = new Match(null, team, null);
+//		chooser.initTo(team, match);
+//		
+//		// THEN its internal state records that
+//		assertThat(chooser.team).isSameAs(team);
+//		assertThat(chooser.match).isSameAs(match);
+//		
+//		class DefenderGroup extends CompetitiveOptionDealingGroup<OrderedDealerPresenter<Defender>, Defender> {}
+//		
+//		// AND Substitute Selectors are wired into a Sequence
+//        try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedStatic = 
+//                mockStatic(CompetitiveOptionDealingGroup.class)) {
+//            // Act
+//        	chooser.initTo(team, match);
+//
+//            // Assert
+//            mockedStatic.verify(
+//            		CompetitiveOptionDealingGroup.initializeDealing(Set.copyOf(starterDefs), team.extract().defenders()));
+//        }
+//		
+//		// AND all Selectors are made to compete
+//		
+//		// AND Starter Delegate is asked to arrange the default scheme
+//		
+//	}
 	
 	@Nested
 	@DisplayName("commands its Widget to")
-	class ListenersOrderingWidgetTo {
-				
+	class ListenersOrderingWidgetTo {				
 
-		private void affirmAllChoiceFlags() {
-			chooser.hasStarterGoalieChoice.flag = true;
-			chooser.hasStarterDefChoice.flag = true;
-			chooser.hasStarterMidChoice.flag = true;
-			chooser.hasStarterForwChoice.flag = true;
-			chooser.hasSubsGoaliesChoice.flag = true;
-			chooser.hasSubsDefsChoice.flag = true;
-			chooser.hasSubsMidsChoice.flag = true;
-			chooser.hasSubsForwsChoice.flag = true;
-		}
-		
 		@Nested
 		@DisplayName("enable saving the LineUp")
 		class EnableSaving {			
@@ -158,7 +228,7 @@ public class LineUpChooserTest {
 								verify(starterGoalie).attachListener(starterGoalieListener.capture());
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterGoalieChoice.flag = false;
 								
 								// AND starter Goalie selector reports being non-empty
@@ -182,7 +252,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterDefListener.capture());
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterDefChoice.flag = false;
 								
 								// AND Starter Delegate reports those in the scheme as current starter selectors
@@ -211,7 +281,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterMidListener.capture());
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterMidChoice.flag = false;
 								
 								// AND Starter Delegate reports those in the scheme as current starter selectors
@@ -239,7 +309,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterForwListener.capture());
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterForwChoice.flag = false;
 								
 								// AND Starter Delegate reports those in the scheme as current starter selectors
@@ -269,7 +339,7 @@ public class LineUpChooserTest {
 								tripletGoalies.forEach(sel -> verify(sel).attachListener(tripletGoalieListener.capture()));
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasSubsGoaliesChoice.flag = false;
 								
 								// AND all triplet selectors report being non-empty
@@ -290,7 +360,7 @@ public class LineUpChooserTest {
 								tripletDefs.forEach(sel -> verify(sel).attachListener(tripletDefListener.capture()));
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasSubsDefsChoice.flag = false;
 
 								// AND all triplet selectors report being non-empty
@@ -311,7 +381,7 @@ public class LineUpChooserTest {
 								tripletMids.forEach(sel -> verify(sel).attachListener(tripletMidListener.capture()));
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasSubsMidsChoice.flag = false;
 
 								// AND all triplet selectors report being non-empty
@@ -332,7 +402,7 @@ public class LineUpChooserTest {
 								tripletForws.forEach(sel -> verify(sel).attachListener(tripletForwListener.capture()));
 								
 								// GIVEN all other Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasSubsForwsChoice.flag = false;
 
 								// AND all triplet selectors report being non-empty
@@ -369,6 +439,7 @@ public class LineUpChooserTest {
 				 * 	
 				 * 	2. said Consumers attach Listeners to Selectors
 				 */
+				@Nested
 				@DisplayName("under the current scheme")
 				class UnderCurrentScheme {
 					
@@ -388,7 +459,7 @@ public class LineUpChooserTest {
 								verify(starterGoalie).attachListener(starterGoalieListener.capture());
 								
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// AND starter Goalie selector reports being empty
 								when(starterGoalie.getSelection()).thenReturn(Optional.empty());
@@ -411,7 +482,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterDefListener.capture());
 
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
 								when(starterChooser.getCurrentDefSelectors()).thenReturn(
@@ -437,7 +508,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterMidListener.capture());
 
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
 								when(starterChooser.getCurrentMidSelectors()).thenReturn(
@@ -463,7 +534,7 @@ public class LineUpChooserTest {
 								verify(dummySelector).attachListener(starterForwListener.capture());
 
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
 								when(starterChooser.getCurrentForwSelectors()).thenReturn(
@@ -491,7 +562,7 @@ public class LineUpChooserTest {
 								tripletGoalies.forEach(sel -> verify(sel).attachListener(tripletGoalieListener.capture()));
 								
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// AND one triplet selector reports being empty
 								when(tripletGoalies.get(0).getSelection()).thenReturn(Optional.empty());
@@ -511,7 +582,7 @@ public class LineUpChooserTest {
 								tripletDefs.forEach(sel -> verify(sel).attachListener(tripletDefListener.capture()));
 								
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// AND one triplet selector reports being empty
 								when(tripletDefs.get(0).getSelection()).thenReturn(Optional.empty());
@@ -531,7 +602,7 @@ public class LineUpChooserTest {
 								tripletMids.forEach(sel -> verify(sel).attachListener(tripletMidListener.capture()));
 								
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// AND one triplet selector reports being empty
 								when(tripletMids.get(0).getSelection()).thenReturn(Optional.empty());
@@ -551,7 +622,7 @@ public class LineUpChooserTest {
 								tripletForws.forEach(sel -> verify(sel).attachListener(tripletForwListener.capture()));
 								
 								// GIVEN all Listeners have registered a choice
-								affirmAllChoiceFlags();
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// AND one triplet selector reports being empty
 								when(tripletForws.get(0).getSelection()).thenReturn(Optional.empty());
@@ -569,6 +640,141 @@ public class LineUpChooserTest {
 		}
 	}
 	
+	@Nested
+	@DisplayName("handles a save request from the Widget")
+	class AsStarterLineUpChooserController {
+		
+		@Captor ArgumentCaptor<LineUp> lineUp;
+		
+		/**
+		 * note: the constructed LineUp is NOT fully valid
+		 * 		- it doesn't have duplicates in the same role and fielding
+		 * 		- (!) it does have duplicates across fieldings for the same role
+		 * 		- (!) players have no association to the Team
+		 */
+		@Test
+		@DisplayName("when a choice exists")
+		public void WhenChoiceExists() {
+			
+			// GIVEN the SUT's internal bookkeeping registers a choice
+			affirmAllChoiceFlagsIn(chooser);
+			
+			// GIVEN the SUT has been initialized with a Team and a Match
+			FantaTeam team = new FantaTeam("Dream Team", null, 30, null, new HashSet<>());			
+			Match match = new Match(
+					new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19)), 
+					team, 
+					new FantaTeam("Challengers", null, 25, null, new HashSet<>()));
+			
+			chooser.team = team;
+			chooser.match = match;
+			
+			// AND the Starter Delegate reports a current StarterLineUp
+			when(starterChooser.getCurrentStarterLineUp()).thenReturn(
+					Scheme433.starterLineUp()
+					.withGoalkeeper(new Goalkeeper("goalkeeper", "1"))
+					.withDefenders(
+							new Defender("defender", "1"), 
+							new Defender("defender", "2"),
+							new Defender("defender", "3"),
+							new Defender("defender", "4"))
+					.withMidfielders(
+							new Midfielder("midfielder", "1"), 
+							new Midfielder("midfielder", "2"),
+							new Midfielder("midfielder", "3"))
+					.withForwards(
+							new Forward("forward", "1"), 
+							new Forward("forward", "2"),
+							new Forward("forward", "3")));
+			
+			// AND triplet selectors report substitute lineups
+			IntStream.range(0, tripletDefs.size()).forEach(i -> {
+				when(tripletGoalies.get(i).getSelection()).thenReturn(
+						Optional.of(new Goalkeeper("goalkeeper", "" + (i + 1))));
+				when(tripletDefs.get(i).getSelection()).thenReturn(
+						Optional.of(new Defender("defender", "" + (i + 1))));
+				when(tripletMids.get(i).getSelection()).thenReturn(
+						Optional.of(new Midfielder("midfielder", "" + (i + 1))));
+				when(tripletForws.get(i).getSelection()).thenReturn(
+						Optional.of(new Forward("forward", "" + (i + 1))));
+			});
+			
+			// WHEN the Widget sends a "save LineUp" request
+			chooser.saveLineUp();
+			
+			// THEN the Starter Delegate is requested the current StarterLineUp choice
+			verify(starterChooser).getCurrentStarterLineUp();
+			
+			// AND triplet Selectors are queried
+			Stream.of(tripletGoalies, tripletDefs, tripletMids, tripletForws).flatMap(List::stream)
+					.forEach(selector -> verify(selector).getSelection());
+			
+			// AND the Service is requested to save a LineUp instance
+			verify(mockService).saveLineUp(lineUp.capture());
+			
+			// AND the SUT constructed the LineUp correctly
+			LineUp constructedLineUp = lineUp.getValue();
+			assertThat(constructedLineUp.getTeam()).isEqualTo(team);
+			assertThat(constructedLineUp.getMatch()).isEqualTo(match);
+			assertThat(constructedLineUp.getScheme()).isEqualTo(Scheme433.INSTANCE);
+			assertThat(constructedLineUp.extract().starterGoalkeepers())
+					.containsExactly(new Goalkeeper("goalkeeper", "1"));
+			assertThat(constructedLineUp.extract().starterDefenders()).containsExactlyInAnyOrder(
+					new Defender("defender", "1"), 
+					new Defender("defender", "2"),
+					new Defender("defender", "3"),
+					new Defender("defender", "4"));
+			assertThat(constructedLineUp.extract().starterMidfielders()).containsExactlyInAnyOrder(
+					new Midfielder("midfielder", "1"), 
+					new Midfielder("midfielder", "2"),
+					new Midfielder("midfielder", "3"));
+			assertThat(constructedLineUp.extract().starterForwards()).containsExactlyInAnyOrder(
+					new Forward("forward", "1"), 
+					new Forward("forward", "2"),
+					new Forward("forward", "3"));
+			assertThat(constructedLineUp.extract().substituteGoalkeepers())
+					.containsExactly(
+							new Goalkeeper("goalkeeper", "1"), 
+							new Goalkeeper("goalkeeper", "2"),
+							new Goalkeeper("goalkeeper", "3"));
+			assertThat(constructedLineUp.extract().substituteDefenders()).containsExactly(
+					new Defender("defender", "1"), 
+					new Defender("defender", "2"),
+					new Defender("defender", "3"));
+			assertThat(constructedLineUp.extract().substituteMidfielders()).containsExactly(
+					new Midfielder("midfielder", "1"), 
+					new Midfielder("midfielder", "2"),
+					new Midfielder("midfielder", "3"));
+			assertThat(constructedLineUp.extract().substituteForwards()).containsExactly(
+					new Forward("forward", "1"), 
+					new Forward("forward", "2"),
+					new Forward("forward", "3"));		
+		}
+		
+		@Test
+		@DisplayName("when a choice does not exist")
+		public void WhenChoiceDoesNotExist() {
+			
+			// GIVEN the SUT's internal bookkeeping registers no choice
+			affirmAllChoiceFlagsIn(chooser);
+			chooser.hasStarterGoalieChoice.flag = false;
+			
+			// WHEN the Widget sends a "save LineUp" request
+			ThrowingCallable shouldThrow = () -> chooser.saveLineUp();			
+			
+			// THEN an exception is thrown
+			assertThatThrownBy(shouldThrow)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("no choice of LineUp is present on this Controller");
+
+			// AND Delegates are not even contacted
+			verifyNoMoreInteractions(starterChooser, goalieTriplet, defTriplet, midTriplet, forwTriplet);			
+			
+			// AND no request is sent to the Service
+			verifyNoInteractions(mockService);
+		}		
+	}
+
 	@Nested
 	@DisplayName("supervises scheme changes")
 	class ConsumersTaclkingSchemeChanges {
@@ -1058,19 +1264,5 @@ public class LineUpChooserTest {
 			}
 		}
 	}
-
-	@Nested
-	@DisplayName("as instantiated")
-	class JustInstantiated {		
-				
-	}
-
-	@Nested
-	@DisplayName("upon notifications from its LineUpChooserWidget")
-	class AsStarterLineUpChooserController {
-		
-	}
-
-
 }
 

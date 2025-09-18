@@ -11,24 +11,43 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import businessLogic.UserService;
+import domainModel.FantaTeam;
+import domainModel.LineUp;
+import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
+import domainModel.Match;
 import domainModel.Player;
 import domainModel.Player.*;
+import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
+import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.LineUpScheme.Scheme433;
 import swingViews.Selector.SelectorListener;
 
-public class LineUpChooser {
+public class LineUpChooser implements LineUpChooserController {
+	
+	// a type for a Selector Delegate that can compete
+	public interface StarterSelectorDelegate<T> extends Selector<T>, 
+										CompetitiveOrderedDealer<StarterSelectorDelegate<T>, T> {
+		
+	}
+	
+	// a type for a Selector Delegate that can compete AND be in a sequence
+	public interface SubstituteSelectorDelegate<T>
+			extends StarterSelectorDelegate<T>, FillableSwappable<SubstituteSelectorDelegate<T>> {
+
+	}
 
 	// a type for the Starter Chooser delegate
 	public interface StarterLineUpChooserDelegate {
 
-		Selector<Goalkeeper> getGoalieSelector();
-		List<Selector<Defender>> getAllDefSelectors();
-		List<Selector<Midfielder>> getAllMidSelectors();
-		List<Selector<Forward>> getAllForwSelectors();
+		StarterSelectorDelegate<Goalkeeper> getGoalieSelector();
+		List<StarterSelectorDelegate<Defender>> getAllDefSelectors();
+		List<StarterSelectorDelegate<Midfielder>> getAllMidSelectors();
+		List<StarterSelectorDelegate<Forward>> getAllForwSelectors();
 
-		List<Selector<Defender>> getCurrentDefSelectors();
-		List<Selector<Midfielder>> getCurrentMidSelectors();
-		List<Selector<Forward>> getCurrentForwSelectors();
+		List<StarterSelectorDelegate<Defender>> getCurrentDefSelectors();
+		List<StarterSelectorDelegate<Midfielder>> getCurrentMidSelectors();
+		List<StarterSelectorDelegate<Forward>> getCurrentForwSelectors();
 
 		void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender);
 		void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder);
@@ -36,21 +55,22 @@ public class LineUpChooser {
 		void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender);
 		void setExitMidConsumer(Consumer<Selector<Midfielder>> capture);
 		void setExitForwConsumer(Consumer<Selector<Forward>> capture);
+		StarterLineUp getCurrentStarterLineUp();
 	}
 
 	private StarterLineUpChooserDelegate starterChooser;
 
 	// a type for the Substitute Triplet Chooser delegate
 	public interface SubstituteTripletChooserDelegate<T extends Player> {
-		List<Selector<T>> getSelectors();
+		List<SubstituteSelectorDelegate<T>> getSelectors();
 
 		Optional<Selector<T>> getNextFillableSelector();
 	}
 
-	private SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
-	private SubstituteTripletChooserDelegate<Defender> defTriplet;
-	private SubstituteTripletChooserDelegate<Midfielder> midTriplet;
-	private SubstituteTripletChooserDelegate<Forward> forwTriplet;
+	private final SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
+	private final SubstituteTripletChooserDelegate<Defender> defTriplet;
+	private final SubstituteTripletChooserDelegate<Midfielder> midTriplet;
+	private final SubstituteTripletChooserDelegate<Forward> forwTriplet;
 
 	// a type for the Widget collaborator
 	public interface LineUpChooserWidget {
@@ -82,7 +102,6 @@ public class LineUpChooser {
 	BooleanWrapper hasSubsDefsChoice = new BooleanWrapper();
 	BooleanWrapper hasSubsMidsChoice = new BooleanWrapper();
 	BooleanWrapper hasSubsForwsChoice = new BooleanWrapper();
-	
 	private boolean hasChoice() {
 		return Stream
 				.of(hasStarterGoalieChoice, hasStarterDefChoice, hasStarterMidChoice, hasStarterForwChoice,
@@ -90,13 +109,20 @@ public class LineUpChooser {
 				.map(BooleanWrapper::flag).allMatch(t -> t.equals(Boolean.TRUE));
 	}
 
+	private final UserService service;
+	FantaTeam team;
+	Match match;
+
 	// public instantiation point
-	public LineUpChooser(StarterLineUpChooserDelegate starterChooser,
+	public LineUpChooser(
+			UserService service,
+			StarterLineUpChooserDelegate starterChooser,
 			SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet,
 			SubstituteTripletChooserDelegate<Defender> defTriplet,
 			SubstituteTripletChooserDelegate<Midfielder> midTriplet,
 			SubstituteTripletChooserDelegate<Forward> forwTriplet) {
 
+		this.service = service;
 		this.starterChooser = starterChooser;
 		this.goalieTriplet = goalieTriplet;
 		this.defTriplet = defTriplet;
@@ -137,6 +163,31 @@ public class LineUpChooser {
 		this.forwTriplet.getSelectors().forEach(sel -> sel.attachListener(substituteForwListener));
 	}
 
+	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
+			Supplier<List<? extends Selector<T>>> listSupplier) {
+		return new SelectorListener<T>() {
+	
+			@Override
+			public void selectionMadeOn(Selector<T> selector) {
+				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
+						.allMatch(Optional::isPresent))
+					if (hasChoice())
+						widget.enableSavingLineUp();
+			}
+	
+			@Override
+			public void selectionClearedOn(Selector<T> selector) {
+				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
+						.allMatch(Optional::isPresent)) {
+					if (hasChoice())   // why???
+						widget.enableSavingLineUp();
+				} else {
+						widget.disableSavingLineUp();
+				}
+			}
+		};
+	}
+
 	private <T extends Player> Consumer<Selector<T>> entryConsumer(SelectorListener<T> starterDefListener,
 			BooleanWrapper hasGroupChoice) {
 		return selector -> {
@@ -147,7 +198,7 @@ public class LineUpChooser {
 
 	private <T extends Player> Consumer<Selector<T>> exitConsumer(SelectorListener<T> listener,
 			SubstituteTripletChooserDelegate<T> triplet, BooleanWrapper hasGroupChoice,
-			Supplier<List<Selector<T>>> currentSchemeSelectors) {
+			Supplier<List<? extends Selector<T>>> currentSchemeSelectors) {
 		return exitingSelector -> {
 			exitingSelector.removeListener(listener);
 			if (exitingSelector.getSelection().isPresent()) {
@@ -160,29 +211,33 @@ public class LineUpChooser {
 		};
 	}
 
-	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
-			Supplier<List<Selector<T>>> listSupplier) {
-		return new SelectorListener<T>() {
+	@Override
+	public void saveLineUp() {
+		if (hasChoice()) {
+			service.saveLineUp(LineUp.build().forTeam(team).inMatch(match)
+					.withStarterLineUp(starterChooser.getCurrentStarterLineUp())
+					.withSubstituteGoalkeepers(goalieTriplet.getSelectors().get(0).getSelection().get(),
+							goalieTriplet.getSelectors().get(1).getSelection().get(),
+							goalieTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteDefenders(defTriplet.getSelectors().get(0).getSelection().get(),
+							defTriplet.getSelectors().get(1).getSelection().get(),
+							defTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteMidfielders(midTriplet.getSelectors().get(0).getSelection().get(),
+							midTriplet.getSelectors().get(1).getSelection().get(),
+							midTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteForwards(forwTriplet.getSelectors().get(0).getSelection().get(),
+							forwTriplet.getSelectors().get(1).getSelection().get(),
+							forwTriplet.getSelectors().get(2).getSelection().get()));
+		}
+		else
+			throw new IllegalStateException(String.format(
+					"LineUpChooserController.saveLineUp: Untimely Request\n" +
+					"no choice of LineUp is present on this Controller"));
+	}
 
-			@Override
-			public void selectionMadeOn(Selector<T> selector) {
-				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
-						.allMatch(Optional::isPresent))
-					if (hasChoice())
-						widget.enableSavingLineUp();
-			}
-
-			@Override
-			public void selectionClearedOn(Selector<T> selector) {
-				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
-						.allMatch(Optional::isPresent)) {
-					if (hasChoice())   // why???
-						widget.enableSavingLineUp();
-				} else {
-						widget.disableSavingLineUp();
-				}
-			}
-		};
+	public void initTo(FantaTeam team, Match match) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public static void main(String[] args) {
