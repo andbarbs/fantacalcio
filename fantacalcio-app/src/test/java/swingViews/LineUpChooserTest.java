@@ -4,7 +4,6 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -12,12 +11,14 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -35,9 +36,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import businessLogic.UserService;
 import domainModel.FantaTeam;
+import domainModel.FantaTeamViewer;
 import domainModel.LineUp;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
+import domainModel.Player;
 import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
@@ -153,37 +156,77 @@ public class LineUpChooserTest {
 		verify(forwTriplet).getSelectors();
 	}
 	
-//	@Test
-//	@DisplayName("can be initialized to a Team and Match")
-//	void whenConfigured() {
-//		
-//		// WHEN the SUT is inialized to a Team and Match
-//		FantaTeam team = new FantaTeam("Dream Team", null, 30, null, null);			
-//		Match match = new Match(null, team, null);
-//		chooser.initTo(team, match);
-//		
-//		// THEN its internal state records that
-//		assertThat(chooser.team).isSameAs(team);
-//		assertThat(chooser.match).isSameAs(match);
-//		
-//		class DefenderGroup extends CompetitiveOptionDealingGroup<OrderedDealerPresenter<Defender>, Defender> {}
-//		
-//		// AND Substitute Selectors are wired into a Sequence
-//        try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedStatic = 
-//                mockStatic(CompetitiveOptionDealingGroup.class)) {
-//            // Act
-//        	chooser.initTo(team, match);
-//
-//            // Assert
-//            mockedStatic.verify(
-//            		CompetitiveOptionDealingGroup.initializeDealing(Set.copyOf(starterDefs), team.extract().defenders()));
-//        }
-//		
-//		// AND all Selectors are made to compete
-//		
-//		// AND Starter Delegate is asked to arrange the default scheme
-//		
-//	}
+	@Test
+	@DisplayName("can be initialized to a Team and Match")
+	void whenConfigured(@Mock FantaTeam team, @Mock FantaTeamViewer mockViewer, @Mock Match match) {
+		
+		// GIVEN the Team reports these extractions
+		when(team.extract()).thenReturn(mockViewer);
+		when(mockViewer.goalkeepers()).thenReturn(Set.of(
+				new Goalkeeper("goalkeeper", "C"),
+				new Goalkeeper("goalkeeper", "B"),
+				new Goalkeeper("goalkeeper", "A")));
+		when(mockViewer.defenders()).thenReturn(Set.of(
+				new Defender("defender", "C"),
+				new Defender("defender", "B"),
+				new Defender("defender", "A")));
+		when(mockViewer.midfielders()).thenReturn(Set.of(
+				new Midfielder("midfielder", "C"),
+				new Midfielder("midfielder", "B"),
+				new Midfielder("midfielder", "A")));
+		when(mockViewer.forwards()).thenReturn(Set.of(
+				new Forward("forward", "C"),
+				new Forward("forward", "B"),
+				new Forward("forward", "A")));
+		
+		// AND the Starter Delegate returns all Selectors
+		when(starterChooser.getAllDefSelectors()).thenReturn(starterDefs);
+		when(starterChooser.getAllMidSelectors()).thenReturn(starterMids);
+		when(starterChooser.getAllForwSelectors()).thenReturn(starterForws);
+		
+        try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedStatic = 
+                mockStatic(CompetitiveOptionDealingGroup.class)) {
+        	
+        	// WHEN the SUT is initialized to a Team and Match
+        	chooser.initTo(team, match);
+
+        	// THEN its internal state records that
+        	assertThat(chooser.team).isSameAs(team);
+        	assertThat(chooser.match).isSameAs(match);
+        	
+        	// AND all Selectors are made to compete on players sorted by surname
+        	class DealingInitializationVerifier<P extends Player> implements 
+        			BiConsumer<Stream<StarterSelectorDelegate<P>>, Set<P>> {
+
+				@Override
+				public void accept(Stream<StarterSelectorDelegate<P>> selectors, Set<P> options) {
+					mockedStatic.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
+							selectors.collect(Collectors.toSet()),
+							options.stream()
+									.sorted(Comparator.comparing(Player::getSurname))
+									.collect(Collectors.toList())));
+				}        		
+        	}
+        	
+        	new DealingInitializationVerifier<Goalkeeper>().accept(
+        			Stream.of(List.of(starterGoalie), tripletGoalies).flatMap(List::stream), 
+        			team.extract().goalkeepers());
+        	new DealingInitializationVerifier<Defender>().accept(
+        			Stream.of(starterDefs, tripletDefs).flatMap(List::stream), 
+        			team.extract().defenders());
+        	new DealingInitializationVerifier<Midfielder>().accept(
+        			Stream.of(starterMids, tripletMids).flatMap(List::stream), 
+        			team.extract().midfielders());
+        	new DealingInitializationVerifier<Forward>().accept(
+        			Stream.of(starterForws, tripletForws).flatMap(List::stream), 
+        			team.extract().forwards());
+            
+            // AND Substitute Selectors are wired into a Sequence
+        }
+        
+		// AND Starter Delegate is asked to arrange the default scheme
+		
+	}
 	
 	@Nested
 	@DisplayName("commands its Widget to")

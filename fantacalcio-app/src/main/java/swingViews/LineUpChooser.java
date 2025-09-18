@@ -1,10 +1,13 @@
 package swingViews;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.io.IOException;
 import java.awt.Dimension;
@@ -236,8 +239,36 @@ public class LineUpChooser implements LineUpChooserController {
 	}
 
 	public void initTo(FantaTeam team, Match match) {
-		// TODO Auto-generated method stub
+		this.team = Objects.requireNonNull(team);
+		this.match = Objects.requireNonNull(match);
 		
+		CompetitiveOptionDealingGroup.initializeDealing(
+				Stream.of(List.of(starterChooser.getGoalieSelector()), goalieTriplet.getSelectors())
+					.flatMap(List::stream).collect(Collectors.toSet()),
+				team.extract().goalkeepers().stream()
+						.sorted(Comparator.comparing(Player::getSurname))
+						.collect(Collectors.toList()));
+		
+		CompetitiveOptionDealingGroup.initializeDealing(
+				Stream.of(starterChooser.getAllDefSelectors(), defTriplet.getSelectors())
+					.flatMap(List::stream).collect(Collectors.toSet()),
+				team.extract().defenders().stream()
+						.sorted(Comparator.comparing(Player::getSurname))
+						.collect(Collectors.toList()));
+		
+		CompetitiveOptionDealingGroup.initializeDealing(
+				Stream.of(starterChooser.getAllMidSelectors(), midTriplet.getSelectors())
+					.flatMap(List::stream).collect(Collectors.toSet()),
+				team.extract().midfielders().stream()
+						.sorted(Comparator.comparing(Player::getSurname))
+						.collect(Collectors.toList()));
+		
+		CompetitiveOptionDealingGroup.initializeDealing(
+				Stream.of(starterChooser.getAllForwSelectors(), forwTriplet.getSelectors())
+					.flatMap(List::stream).collect(Collectors.toSet()),
+				team.extract().forwards().stream()
+						.sorted(Comparator.comparing(Player::getSurname))
+						.collect(Collectors.toList()));
 	}
 
 	public static void main(String[] args) {
