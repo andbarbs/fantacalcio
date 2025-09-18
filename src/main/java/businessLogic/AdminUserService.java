@@ -230,15 +230,17 @@ public class AdminUserService extends UserService {
 						.collect(Collectors.toMap(Grade::getPlayer, g -> g));
 				double resultTeam1 = 0;
 				double resultTeam2 = 0;
+				System.out.println("Check if lineups exist");
 				if (lineUp1.isPresent()) {
+					System.out.println("lineUp1 OK");
 					resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
 				}
 				if (lineUp2.isPresent()) {
+					System.out.println("lineUp2 OK");
 					resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
 				}
 				int goalTeam1 = goals(resultTeam1);
 				int goalTeam2 = goals(resultTeam2);
-				Result result = new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match);
 				if (goalTeam1 > goalTeam2) {
 					match.getTeam1().setPoints(match.getTeam1().getPoints() + 3);
 				} else if (goalTeam1 < goalTeam2) {
@@ -247,7 +249,8 @@ public class AdminUserService extends UserService {
 					match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
 					match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
 				}
-				context.getResultsRepository().saveResult(result);
+				System.out.println("Result saved with: " + resultTeam1 + ", " + resultTeam2);
+				context.getResultsRepository().saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
 			}
 		});
 	}
@@ -272,9 +275,12 @@ public class AdminUserService extends UserService {
 		double result = 0;
 		int benchPositionToLook = 0;
 
+		System.out.println("Inizio calcolo risultati formazione");
 		for (Player starter : starters) {
+			System.out.println("Primo giocatore considerato");
 			Grade grade = gradesByPlayer.get(starter);
 			if (grade != null) {
+				System.out.println("Sommo " + grade.getMark());
 				result += grade.getMark();
 			} else {
 				boolean found = false;

@@ -7,7 +7,6 @@ import domainModel.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 
 public class JpaGradeRepository extends BaseJpaRepository implements GradeRepository {
@@ -23,17 +22,10 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 		CriteriaQuery<Grade> cq = cb.createQuery(Grade.class);
 		Root<Grade> gradeRoot = cq.from(Grade.class);
 
-		// Join Grade -> Player
-		Join<Grade, Player> playerJoin = gradeRoot.join(Grade_.player);
-
-		// Join Contract to filter players by FantaTeam
-		Root<Contract> contractRoot = cq.from(Contract.class);
 		cq.where(
 				cb.and(
 						cb.equal(gradeRoot.get(Grade_.matchDay), match.getMatchDaySerieA()),
-						cb.equal(gradeRoot.get(Grade_.newsPaper), newsPaper),
-						cb.equal(contractRoot.get(Contract_.player), playerJoin),
-						contractRoot.get(Contract_.team).in(match.getTeam1(), match.getTeam2())
+						cb.equal(gradeRoot.get(Grade_.newsPaper), newsPaper)
 				)
 		);
 

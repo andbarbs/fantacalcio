@@ -52,5 +52,6 @@ public class Match {
     public int hashCode() {
         return Objects.hash(matchDaySerieA, team1, team2);
     }
+    
 }
 
