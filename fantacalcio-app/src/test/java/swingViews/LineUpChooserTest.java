@@ -196,12 +196,12 @@ public class LineUpChooserTest {
         	
         	// AND all Selectors are made to compete on players sorted by surname
         	class DealingInitializationVerifier<P extends Player> implements 
-        			BiConsumer<Stream<StarterSelectorDelegate<P>>, Set<P>> {
+        			BiConsumer<List<List<? extends StarterSelectorDelegate<P>>>, Set<P>> {
 
 				@Override
-				public void accept(Stream<StarterSelectorDelegate<P>> selectors, Set<P> options) {
+				public void accept(List<List<? extends StarterSelectorDelegate<P>>> selectors, Set<P> options) {
 					mockedStatic.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
-							selectors.collect(Collectors.toSet()),
+							selectors.stream().flatMap(List::stream).collect(Collectors.toSet()),
 							options.stream()
 									.sorted(Comparator.comparing(Player::getSurname))
 									.collect(Collectors.toList())));
@@ -209,16 +209,16 @@ public class LineUpChooserTest {
         	}
         	
         	new DealingInitializationVerifier<Goalkeeper>().accept(
-        			Stream.of(List.of(starterGoalie), tripletGoalies).flatMap(List::stream), 
+        			List.of(List.of(starterGoalie), tripletGoalies), 
         			team.extract().goalkeepers());
         	new DealingInitializationVerifier<Defender>().accept(
-        			Stream.of(starterDefs, tripletDefs).flatMap(List::stream), 
+        			List.of(starterDefs, tripletDefs), 
         			team.extract().defenders());
         	new DealingInitializationVerifier<Midfielder>().accept(
-        			Stream.of(starterMids, tripletMids).flatMap(List::stream), 
+        			List.of(starterMids, tripletMids), 
         			team.extract().midfielders());
         	new DealingInitializationVerifier<Forward>().accept(
-        			Stream.of(starterForws, tripletForws).flatMap(List::stream), 
+        			List.of(starterForws, tripletForws), 
         			team.extract().forwards());
             
             // AND Substitute Selectors are wired into a Sequence
