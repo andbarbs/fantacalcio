@@ -28,13 +28,29 @@ import swingViews.Selector.SelectorListener;
 
 public class LineUpChooser implements LineUpChooserController {
 	
-	// a type for a Selector Delegate that can compete
+	/**
+	 * a type for a {@linkplain Selector} that can be made to participate in a
+	 * {@linkplain CompetitiveOptionDealingGroup} made up of other
+	 * {@linkplain StarterSelectorDelegate}s.
+	 * 
+	 * @param <T> the type for options on this {@code Selector}
+	 * @see {@link CompetitiveOptionDealingGroup} for the semantics of
+	 *      <i>competitive dealing</i> and how to initialize it
+	 */
 	public interface StarterSelectorDelegate<T> extends Selector<T>, 
 										CompetitiveOrderedDealer<StarterSelectorDelegate<T>, T> {
 		
 	}
 	
-	// a type for a Selector Delegate that can compete AND be in a sequence
+	/**
+	 * a type for a {@linkplain StarterSelectorDelegate} that can be made to
+	 * participate in a {@linkplain FillableSwappableSequence} made up of other
+	 * {@linkplain SubstituteSelectorDelegate}s.
+	 * 
+	 * @param <T> the type for options on this {@code Selector}
+	 * @see {@link FillableSwappableSequence} for the semantics of a
+	 *      <i>fillable-swappable sequence</i> and how to initialize one
+	 */
 	public interface SubstituteSelectorDelegate<T>
 			extends StarterSelectorDelegate<T>, FillableSwappable<SubstituteSelectorDelegate<T>> {
 
@@ -48,16 +64,16 @@ public class LineUpChooser implements LineUpChooserController {
 		List<StarterSelectorDelegate<Midfielder>> getAllMidSelectors();
 		List<StarterSelectorDelegate<Forward>> getAllForwSelectors();
 
-		List<StarterSelectorDelegate<Defender>> getCurrentDefSelectors();
-		List<StarterSelectorDelegate<Midfielder>> getCurrentMidSelectors();
-		List<StarterSelectorDelegate<Forward>> getCurrentForwSelectors();
+		List<Selector<Defender>> getCurrentDefSelectors();
+		List<Selector<Midfielder>> getCurrentMidSelectors();
+		List<Selector<Forward>> getCurrentForwSelectors();
 
 		void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender);
 		void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder);
 		void setEntryForwConsumer(Consumer<Selector<Forward>> enterForward);
 		void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender);
-		void setExitMidConsumer(Consumer<Selector<Midfielder>> capture);
-		void setExitForwConsumer(Consumer<Selector<Forward>> capture);
+		void setExitMidConsumer(Consumer<Selector<Midfielder>> exitMidfielder);
+		void setExitForwConsumer(Consumer<Selector<Forward>> exitForward);
 		StarterLineUp getCurrentStarterLineUp();
 		void switchToDefaultScheme();
 	}
@@ -304,7 +320,7 @@ public class LineUpChooser implements LineUpChooserController {
 				// I) initializes dependencies
 				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
 				StarterPlayerSelector<Goalkeeper> goaliePresenter = new StarterPlayerSelector<>(goalieView);
-				goalieView.setPresenter(goaliePresenter);
+				goalieView.setController(goaliePresenter);
 
 				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
 						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
@@ -316,11 +332,11 @@ public class LineUpChooser implements LineUpChooserController {
 						defPres3 = new StarterPlayerSelector<Defender>(defView3),
 						defPres4 = new StarterPlayerSelector<Defender>(defView4),
 						defPres5 = new StarterPlayerSelector<Defender>(defView5);
-				defView1.setPresenter(defPres1);
-				defView2.setPresenter(defPres2);
-				defView3.setPresenter(defPres3);
-				defView4.setPresenter(defPres4);
-				defView5.setPresenter(defPres5);
+				defView1.setController(defPres1);
+				defView2.setController(defPres2);
+				defView3.setController(defPres3);
+				defView4.setController(defPres4);
+				defView5.setController(defPres5);
 
 				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
 						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
@@ -330,10 +346,10 @@ public class LineUpChooser implements LineUpChooserController {
 						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
 						midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
 						midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
-				midView1.setPresenter(midPres1);
-				midView2.setPresenter(midPres2);
-				midView3.setPresenter(midPres3);
-				midView4.setPresenter(midPres4);
+				midView1.setController(midPres1);
+				midView2.setController(midPres2);
+				midView3.setController(midPres3);
+				midView4.setController(midPres4);
 
 				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
 						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
@@ -343,10 +359,10 @@ public class LineUpChooser implements LineUpChooserController {
 						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
 						forwPres3 = new StarterPlayerSelector<Forward>(forwView3),
 						forwPres4 = new StarterPlayerSelector<Forward>(forwView4);
-				forwView1.setPresenter(forwPres1);
-				forwView2.setPresenter(forwPres2);
-				forwView3.setPresenter(forwPres3);
-				forwView4.setPresenter(forwPres4);
+				forwView1.setController(forwPres1);
+				forwView2.setController(forwPres2);
+				forwView3.setController(forwPres3);
+				forwView4.setController(forwPres4);
 
 				// II) initializes competition
 				CompetitiveOptionDealingGroup.initializeDealing(Set.of(goaliePresenter),

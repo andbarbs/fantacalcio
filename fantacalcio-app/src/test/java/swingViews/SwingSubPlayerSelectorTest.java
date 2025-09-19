@@ -37,7 +37,7 @@ public class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Constructs a SwingSubPlayerSelector instance with a mocked Presenter
 			SwingSubPlayerSelector<Defender> selectorView = new SwingSubPlayerSelector<Defender>();
-			selectorView.setPresenter(selectorPresenter);
+			selectorView.setController(selectorPresenter);
 			
 			selectorView.initOptions(List.of(
 					new Player.Defender("Gigi", "Buffon"), 

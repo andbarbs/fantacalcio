@@ -174,14 +174,10 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 		addListeners();
 	}
 	
-	private OrderedDealerPresenter<P> presenter;
+	private SelectorController controller;
 
-	public void setPresenter(OrderedDealerPresenter<P> presenter) {
-		this.presenter = presenter;
-	}
-	
-	public OrderedDealerPresenter<P> getPresenter() {
-		return presenter;
+	public void setController(SelectorController presenter) {
+		this.controller = presenter;
 	}
 	
 	private void addListeners() {
@@ -229,7 +225,7 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 			// presenter notification
 			if (comboBox.isPopupVisible() && 
 					selectedIndex > -1) {
-				presenter.selectedOption(selectedIndex);
+				controller.selectedOption(selectedIndex);
 			}
 		});
 		
@@ -239,7 +235,7 @@ public class SwingSubPlayerSelector<P extends Player> extends JPanel implements 
 			comboBox.setSelectedIndex(-1);
 			
 			// presenter notification
-			presenter.selectionCleared();
+			controller.selectionCleared();
 		});
 	}
 

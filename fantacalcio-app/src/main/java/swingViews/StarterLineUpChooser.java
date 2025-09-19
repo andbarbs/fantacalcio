@@ -124,19 +124,19 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 	}
 	
 	@Override
-	public List<StarterSelectorDelegate<Defender>> getCurrentDefSelectors() {
+	public List<Selector<Defender>> getCurrentDefSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<StarterSelectorDelegate<Midfielder>> getCurrentMidSelectors() {
+	public List<Selector<Midfielder>> getCurrentMidSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<StarterSelectorDelegate<Forward>> getCurrentForwSelectors() {
+	public List<Selector<Forward>> getCurrentForwSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}	
@@ -191,7 +191,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 				// I) initializes dependencies
 				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
 				StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<>(goalieView);
-				goalieView.setPresenter(goalieSelector);
+				goalieView.setController(goalieSelector);
 				
 				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
 						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
@@ -203,11 +203,11 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 								defPres3 = new StarterPlayerSelector<Defender>(defView3),
 										defPres4 = new StarterPlayerSelector<Defender>(defView4),
 												defPres5 = new StarterPlayerSelector<Defender>(defView5);
-				defView1.setPresenter(defPres1);
-				defView2.setPresenter(defPres2);
-				defView3.setPresenter(defPres3);
-				defView4.setPresenter(defPres4);
-				defView5.setPresenter(defPres5);
+				defView1.setController(defPres1);
+				defView2.setController(defPres2);
+				defView3.setController(defPres3);
+				defView4.setController(defPres4);
+				defView5.setController(defPres5);
 				
 				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
 						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
@@ -217,10 +217,10 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
 								midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
 										midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
-				midView1.setPresenter(midPres1);
-				midView2.setPresenter(midPres2);
-				midView3.setPresenter(midPres3);
-				midView4.setPresenter(midPres4);
+				midView1.setController(midPres1);
+				midView2.setController(midPres2);
+				midView3.setController(midPres3);
+				midView4.setController(midPres4);
 				
 				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
 						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
@@ -228,9 +228,9 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 				StarterPlayerSelector<Forward> forwPres1 = new StarterPlayerSelector<Forward>(forwView1),
 						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
 								forwPres3 = new StarterPlayerSelector<Forward>(forwView3);
-				forwView1.setPresenter(forwPres1);
-				forwView2.setPresenter(forwPres2);
-				forwView3.setPresenter(forwPres3);
+				forwView1.setController(forwPres1);
+				forwView2.setController(forwPres2);
+				forwView3.setController(forwPres3);
 				
 				// II) initializes competition
 				CompetitiveOptionDealingGroup.initializeDealing(

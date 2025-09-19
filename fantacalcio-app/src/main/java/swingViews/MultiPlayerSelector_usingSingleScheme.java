@@ -63,7 +63,7 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         		new SwingSubPlayerSelector<Goalkeeper>(reducedAvailableWindow);
 		StarterPlayerSelector<Goalkeeper> goalieSelectorPres = 
 				new StarterPlayerSelector<>(goalieSelectorView);
-		goalieSelectorView.setPresenter(goalieSelectorPres);
+		goalieSelectorView.setController(goalieSelectorPres);
         selectorsPanel.getGoalie().add(goalieSelectorView);
         
         CompetitiveOptionDealingGroup.initializeDealing(
@@ -78,28 +78,28 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		StarterPlayerSelector<Defender> defSelector1Pres = 
 				new StarterPlayerSelector<>(defSelector1View);
-		defSelector1View.setPresenter(defSelector1Pres);
+		defSelector1View.setController(defSelector1Pres);
         selectorsPanel.getDef1().add(defSelector1View);
         
         SwingSubPlayerSelector<Defender> defSelector2View = 
         		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		StarterPlayerSelector<Defender> defSelector2Pres = 
 				new StarterPlayerSelector<>(defSelector2View);
-		defSelector2View.setPresenter(defSelector2Pres);
+		defSelector2View.setController(defSelector2Pres);
         selectorsPanel.getDef2().add(defSelector2View);
         
         SwingSubPlayerSelector<Defender> defSelector3View = 
         		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		StarterPlayerSelector<Defender> defSelector3Pres = 
 				new StarterPlayerSelector<>(defSelector3View);
-		defSelector3View.setPresenter(defSelector3Pres);
+		defSelector3View.setController(defSelector3Pres);
         selectorsPanel.getDef3().add(defSelector3View);
         
         SwingSubPlayerSelector<Defender> defSelector4View = 
         		new SwingSubPlayerSelector<Defender>(reducedAvailableWindow);
 		StarterPlayerSelector<Defender> defSelector4Pres = 
 				new StarterPlayerSelector<>(defSelector4View);
-		defSelector4View.setPresenter(defSelector4Pres);
+		defSelector4View.setController(defSelector4Pres);
         selectorsPanel.getDef4().add(defSelector4View);
         
         CompetitiveOptionDealingGroup.initializeDealing(
@@ -118,21 +118,21 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
         		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		StarterPlayerSelector<Midfielder> midSelector1Pres = 
 				new StarterPlayerSelector<>(midSelector1View);
-		midSelector1View.setPresenter(midSelector1Pres);
+		midSelector1View.setController(midSelector1Pres);
         selectorsPanel.getMid1().add(midSelector1View);
         
         SwingSubPlayerSelector<Midfielder> midSelector2View = 
         		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		StarterPlayerSelector<Midfielder> midSelector2Pres = 
 				new StarterPlayerSelector<>(midSelector2View);
-		midSelector2View.setPresenter(midSelector2Pres);
+		midSelector2View.setController(midSelector2Pres);
         selectorsPanel.getMid2().add(midSelector2View);
         
         SwingSubPlayerSelector<Midfielder> midSelector3View = 
         		new SwingSubPlayerSelector<Midfielder>(reducedAvailableWindow);
 		StarterPlayerSelector<Midfielder> midSelector3Pres = 
 				new StarterPlayerSelector<>(midSelector3View);
-		midSelector3View.setPresenter(midSelector3Pres);
+		midSelector3View.setController(midSelector3Pres);
         selectorsPanel.getMid3().add(midSelector3View);
         
         CompetitiveOptionDealingGroup.initializeDealing(
@@ -148,21 +148,21 @@ public class MultiPlayerSelector_usingSingleScheme extends JFrame {
 				new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		StarterPlayerSelector<Forward> forwSelector1Pres = 
 				new StarterPlayerSelector<>(forwSelector1View);
-		forwSelector1View.setPresenter(forwSelector1Pres);
+		forwSelector1View.setController(forwSelector1Pres);
         selectorsPanel.getForw1().add(forwSelector1View);
         
         SwingSubPlayerSelector<Forward> forwSelector2View = 
         		new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		StarterPlayerSelector<Forward> forwSelector2Pres = 
 				new StarterPlayerSelector<>(forwSelector2View);
-		forwSelector2View.setPresenter(forwSelector2Pres);
+		forwSelector2View.setController(forwSelector2Pres);
         selectorsPanel.getForw2().add(forwSelector2View);
 
         SwingSubPlayerSelector<Forward> forwSelector3View = 
         		new SwingSubPlayerSelector<Forward>(reducedAvailableWindow);
 		StarterPlayerSelector<Forward> forwSelector3Pres = 
 				new StarterPlayerSelector<>(forwSelector3View);
-		forwSelector3View.setPresenter(forwSelector3Pres);
+		forwSelector3View.setController(forwSelector3Pres);
         selectorsPanel.getForw3().add(forwSelector3View);
         
         CompetitiveOptionDealingGroup.initializeDealing(

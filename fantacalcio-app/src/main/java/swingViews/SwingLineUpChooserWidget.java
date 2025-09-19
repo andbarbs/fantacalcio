@@ -106,7 +106,7 @@ public class SwingLineUpChooserWidget extends JPanel {
 				// I) initializes dependencies
 				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
 				StarterPlayerSelector<Goalkeeper> goaliePresenter = new StarterPlayerSelector<>(goalieView);
-				goalieView.setPresenter(goaliePresenter);
+				goalieView.setController(goaliePresenter);
 				
 				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
 						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
@@ -118,11 +118,11 @@ public class SwingLineUpChooserWidget extends JPanel {
 								defPres3 = new StarterPlayerSelector<Defender>(defView3),
 										defPres4 = new StarterPlayerSelector<Defender>(defView4),
 												defPres5 = new StarterPlayerSelector<Defender>(defView5);
-				defView1.setPresenter(defPres1);
-				defView2.setPresenter(defPres2);
-				defView3.setPresenter(defPres3);
-				defView4.setPresenter(defPres4);
-				defView5.setPresenter(defPres5);
+				defView1.setController(defPres1);
+				defView2.setController(defPres2);
+				defView3.setController(defPres3);
+				defView4.setController(defPres4);
+				defView5.setController(defPres5);
 				
 				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
 						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
@@ -132,10 +132,10 @@ public class SwingLineUpChooserWidget extends JPanel {
 						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
 								midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
 										midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
-				midView1.setPresenter(midPres1);
-				midView2.setPresenter(midPres2);
-				midView3.setPresenter(midPres3);
-				midView4.setPresenter(midPres4);
+				midView1.setController(midPres1);
+				midView2.setController(midPres2);
+				midView3.setController(midPres3);
+				midView4.setController(midPres4);
 				
 				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
 						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
@@ -145,10 +145,10 @@ public class SwingLineUpChooserWidget extends JPanel {
 						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
 								forwPres3 = new StarterPlayerSelector<Forward>(forwView3),
 										forwPres4 = new StarterPlayerSelector<Forward>(forwView4);
-				forwView1.setPresenter(forwPres1);
-				forwView2.setPresenter(forwPres2);
-				forwView3.setPresenter(forwPres3);
-				forwView4.setPresenter(forwPres4);
+				forwView1.setController(forwPres1);
+				forwView2.setController(forwPres2);
+				forwView3.setController(forwPres3);
+				forwView4.setController(forwPres4);
 				
 				// II) initializes competition
 				CompetitiveOptionDealingGroup.initializeDealing(

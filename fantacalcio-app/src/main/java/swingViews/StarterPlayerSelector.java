@@ -2,32 +2,26 @@ package swingViews;
 
 import java.util.Optional;
 
-import domainModel.Player;
-
 /**
- * implements an MVP Presenter for a gadget capable of being part of a
- * {@linkplain CompetitiveOptionDealingGroup <i>competitive dealing group</i>}
- * having as options instances of {@linkplain Player}, or one if its sub-types.
+ * implements {@linkplain StarterSelectorDelegate} as a {@code Controller} in a
+ * bidirectional collaboration scheme inspired by the <b>MVP pattern</b>.
  * 
- * <h1>Listener notification policy</h1> 
- * Once a {@code StarterPlayerSelector}
+ * <h1>Listener notification policy</h1> Once a {@code StarterPlayerSelector}
  * instance is made to participate in a
  * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}, a
  * {@link SelectorListener} attached to it will be notified of
  * <ul>
- * 	<li>a <i>selection-made</i> event whenever an option on the <i>previously
- * 	empty</i> {@code Selector} is selected
- * 	<li>a <i>selection-cleared</i> event whenever the selection on the
- * 	{@code Selector} is cleared
+ * <li>a <i>selection-made</i> event whenever an option on the <i>previously
+ * empty</i> {@code Selector} is selected
+ * <li>a <i>selection-cleared</i> event whenever the selection on the
+ * {@code Selector} is cleared
  * </ul>
  * 
- * @param <P> the type for options in the {@code StarterPlayerSelector}
- * @see {@linkplain CompetitiveOptionDealingGroup} for the semantics of
- *      competitive dealing and how to initialize it
+ * @param <T> the type for options in this {@code Selector}
  */
-public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresenter<P> {
+public final class StarterPlayerSelector<T> extends OrderedDealerPresenter<T> {
 
-	public StarterPlayerSelector(OrderedDealerView<P> view) {
+	public StarterPlayerSelector(OrderedDealerView<T> view) {
 		super(view);
 	}
 	
@@ -40,7 +34,7 @@ public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresen
 	 */
 	@Override
 	public void selectedOption(int position) {
-		Optional<P> selection = getSelection();
+		Optional<T> selection = getSelection();
 		super.selectedOption(position);
 		if (selection.isEmpty())
 			listeners().forEach(l -> l.selectionMadeOn(this));
@@ -73,15 +67,5 @@ public class StarterPlayerSelector<P extends Player> extends OrderedDealerPresen
 	@Override
 	protected void selectionClearedFor(int absoluteIndex) {
 		groupDriver.selectionClearedOn(this, absoluteIndex);
-	}	
-	
-//	// NEW OBSERVABLE INFRASTRUCTURE
-//	
-//	private List<SelectorListener> newListeners = new ArrayList<>();
-//
-//	@Override
-//	public void add(SelectorListener listener) {
-//		newListeners.add(listener);
-//	}
-
+	}
 }

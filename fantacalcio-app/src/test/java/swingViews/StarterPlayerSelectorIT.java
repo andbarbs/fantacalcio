@@ -62,7 +62,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
     			SwingSubPlayerSelector<Defender> selView= new SwingSubPlayerSelector<Defender>();
     			compPlayerSelector = new StarterPlayerSelector<Defender>(selView);
-    			selView.setPresenter(compPlayerSelector);
+    			selView.setController(compPlayerSelector);
 
     			// manually wires mock driver and options
     			compPlayerSelector.attachDriver(driver);

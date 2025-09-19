@@ -11,41 +11,37 @@ import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
 import swingViews.LineUpChooser.StarterSelectorDelegate;
 
 /**
- * implements
- * <ol>
- * <li>all members of {@linkplain CompetitiveOrderedDealer}
- * <li>all members of {@linkplain Selector}
- * </ol>
- * as a Controller in a bidirectional collaboration scheme inspired by the
- * <b>MVP pattern</b>.
+ * partially implements members of {@linkplain StarterSelectorDelegate} as a
+ * Controller in a bidirectional collaboration scheme inspired by the <b>MVP
+ * pattern</b>.
  * 
  * <p>
- * Subclasses are free to implement the behavioral responsibilities of those
- * types, namely
+ * Subclasses are free to implement the behavioral responsibilities of
+ * {@linkplain CompetitiveOrderedDealer} and {@linkplain Selector}, namely:
  * <ol>
- * 	<li>their policy for notifying the {@linkplain CompetitiveOptionDealingGroup
- * 	group driver}, through the {@link #groupDriver} field and hooks
- * 	{@link #selectionSetFor(int)} and {@link #selectionClearedFor(int)}
- * 	<li>their policy for notifying {@linkplain SelectorListener listener}s,
- * 	through the {@link #listeners()} getter
+ * <li>their policy for notifying the {@linkplain CompetitiveOptionDealingGroup
+ * group driver}, through the {@link #groupDriver} field and hooks
+ * {@link #selectionSetFor(int)} and {@link #selectionClearedFor(int)}
+ * <li>their policy for notifying {@linkplain SelectorListener listener}s,
+ * through the {@link #listeners()} getter
  * </ol>
  * 
- * @implNote {@linkplain CompetitiveOrderedDealer} members do not leak back into
- *           the driver, as long as the {@linkplain OrderedDealerView}
- *           collaborator does <i>not</i> notify back the
- *           {@code OrderedDealerPresenter} for mutations induced by the
- *           {@code OrderedDealerPresenter} itself
- * @param <T> the type for options in this Selector/Dealer
+ * @implNote implementations for {@linkplain CompetitiveOrderedDealer} members
+ *           do not leak back into the driver, as long as the
+ *           {@linkplain OrderedDealerView} collaborator does <i>not</i> notify
+ *           back its {@code OrderedDealerPresenter} for mutations induced by
+ *           the {@code OrderedDealerPresenter} itself
+ * @param <T> the type for options in this {@code Selector} / {@code Dealer}
  */
 public abstract class OrderedDealerPresenter<T> 
-				implements StarterSelectorDelegate<T> {	
+				implements StarterSelectorDelegate<T>, SelectorController {	
 
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 	
 	protected CompetitiveOptionDealingGroup<StarterSelectorDelegate<T>, T> groupDriver;
 	
 	@Override
-	public void attachDriver(CompetitiveOptionDealingGroup<StarterSelectorDelegate<T>, T> driver) {
+	public final void attachDriver(CompetitiveOptionDealingGroup<StarterSelectorDelegate<T>, T> driver) {
 		this.groupDriver = driver;
 	}
 	
@@ -59,7 +55,7 @@ public abstract class OrderedDealerPresenter<T>
 	static final int NO_SELECTION = -1;
 
 	@Override
-	public void attachOptions(List<T> options) {
+	public final void attachOptions(List<T> options) {
 		this.options = options;
 		this.mask = new ArrayList<Integer>(
 				IntStream.range(0, options.size()).boxed().collect(Collectors.toList()));
@@ -76,7 +72,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * @see OrderedDealerView#removeOptionAt(int)
 	 */
 	@Override
-	public void retireOption(int absoluteIndex) {
+	public final void retireOption(int absoluteIndex) {
 		int pos = mask.indexOf(absoluteIndex);
 		mask.remove(pos);
 		view.removeOptionAt(pos);
@@ -91,7 +87,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * @see OrderedDealerView#insertOptionAt(Object, int)
 	 */
 	@Override
-	public void restoreOption(int absoluteIndex) {
+	public final void restoreOption(int absoluteIndex) {
 		int insertionIndex = IntStream
 				.range(0, mask.size())
 				.filter(k -> mask.get(k) >= absoluteIndex)
@@ -179,26 +175,12 @@ public abstract class OrderedDealerPresenter<T>
 	}
 	
 	/**
-	 * implements {@code OrderedDealerPresenter}'s response to a 
-	 * <i>selection-set</i> event.
-	 * 
-	 * <p>As a notification point for the View, allows the {@code OrderedDealerView} 
-	 * collaborator to notify its {@code OrderedDealerPresenter} that an option 
-	 * has been selected from the View's current option list.
-	 * 
-	 * <p><h1>Event-feedback avoidance</h1>
-	 * This notifications should <i>not</i> take place for mutations 
-	 * induced on the View by the {@code OrderedDealerPresenter} itself: 
-	 * see notes to {@link OrderedDealerView}
-	 * 
 	 * <p><h1>Notification Redundancy</h1>
 	 * {@code OrderedDealerView} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
-	 * redundant {@code selectedOption(int)} notification.<p>		
-	 * 
-	 * @param position the position of the option having been selected 
-	 * 		relative to the {@code OrderedDealerView}'s current option list
+	 * redundant {@code selectedOption(int)} notification.
 	 */
+	@Override
 	public void selectedOption(int position) {
 
 		// handles a previously existing selection
@@ -221,24 +203,13 @@ public abstract class OrderedDealerPresenter<T>
 	 */	
 	protected abstract void selectionSetFor(int absoluteIndex);
 
-	/**
-	 * implements {@code OrderedDealerPresenter}'s response to a 
-	 * <i>selection-cleared</i> event.
-	 * 
-	 * <p>As a notification point for the View, allows the {@code OrderedDealerView}
-	 * to notify its {@code OrderedDealerPresenter} that the View's previously existing
-	 * selection has been cleared.
-	 * 
-	 * <p><h1>Event-feedback avoidance</h1>
-	 * This notifications should <i>not</i> take place for mutations 
-	 * induced on the View by the {@code OrderedDealerPresenter} itself: 
-	 * see notes to {@link OrderedDealerView}
-	 * 
+	/** 
 	 * <p><h1>Notification Redundancy</h1>
 	 * {@code OrderedDealerView} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
 	 * redundant {@code selectionCleared()} notification.
 	 */
+	@Override
 	public void selectionCleared() {
 		if (currentSelection != null && // false before option attachment
 				currentSelection != NO_SELECTION) {
@@ -268,7 +239,7 @@ public abstract class OrderedDealerPresenter<T>
 	// 3. a public Selector
 
 	@Override
-	public Optional<T> getSelection() {
+	public final Optional<T> getSelection() {
 		return Optional.ofNullable(
 				currentSelection != NO_SELECTION ? options.get(currentSelection) : null);
 	}
@@ -283,7 +254,7 @@ public abstract class OrderedDealerPresenter<T>
 	 *                                  </ul>
 	 */
 	@Override
-	public void setSelection(Optional<T> option) {
+	public final void setSelection(Optional<T> option) {
 		option.ifPresentOrElse(o -> {
 			if (!options.contains(o))
 				throw new IllegalArgumentException(String.format(
@@ -306,12 +277,12 @@ public abstract class OrderedDealerPresenter<T>
 	private Collection<SelectorListener<T>> listeners = new ArrayList<>();
 
 	@Override
-	public void attachListener(SelectorListener<T> listener) {
+	public final void attachListener(SelectorListener<T> listener) {
 		this.listeners.add(listener);		
 	}
 	
 	@Override
-	public void removeListener(SelectorListener<T> listener) {
+	public final void removeListener(SelectorListener<T> listener) {
 		this.listeners.remove(listener);
 	}
 	
@@ -332,7 +303,7 @@ public abstract class OrderedDealerPresenter<T>
 	 * @throws IllegalArgumentException if absoluteIndex is not {@link #NO_SELECTION}
 	 *		nor corresponds to one of the options available on this selector
 	 */
-	protected void selectOption(int absoluteIndex) {
+	protected final void selectOption(int absoluteIndex) {
 		if (!(absoluteIndex == NO_SELECTION || mask.contains(absoluteIndex))) 
 			throw new IllegalArgumentException(String.format(
 					"OrderedDealerPresenter.selectOption: Illegal Argument\n" +

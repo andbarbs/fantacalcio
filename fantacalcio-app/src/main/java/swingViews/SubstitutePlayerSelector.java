@@ -1,47 +1,36 @@
 package swingViews;
 
 import java.util.Optional;
-import domainModel.Player;
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 import swingViews.LineUpChooser.SubstituteSelectorDelegate;
 import swingViews.OrderedDealerPresenter.OrderedDealerView;
 
 /**
- * <h1></h1>implements an MVP Presenter for a gadget capable of being part of
- * <ol>
- * <li>a {@linkplain CompetitiveOptionDealingGroup <i>competitive dealing
- * group</i>} having as options instances of {@linkplain Player}, or one if its
- * sub-types
- * <li>an <i>ordered group</i> of gadgets which
- * {@linkplain FillableSwappableSequence only permits selections to be entered
- * <i>sequentially</i>}
- * </ol>
+ * implements {@linkplain SubstituteSelectorDelegate} as a {@code Controller} in
+ * a bidirectional collaboration scheme inspired by the <b>MVP pattern</b>.
  * 
- * <h1>Listener notification policy</h1> 
- * Once a {@code SubstitutePlayerSelector}
+ * <h1>Listener notification policy</h1> Once a {@code SubstitutePlayerSelector}
  * instance is made to participate in a
  * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}
  * <b>and</b> in a {@linkplain FillableSwappableSequence fillable-swappable
  * sequence}, a {@link SelectorListener} attached to it will be notified of
  * <ul>
- * 	<li>a <i>selection-made</i> event whenever an option on the <i>previously
- * 	empty</i> {@code Selector} is selected
- * 	<li>a <i>selection-cleared</i> event whenever the selection on the
- * 	{@code Selector} is cleared, after <i>{@linkplain FillableSwappableSequence
- * 	sequence} operations</i> have taken place
+ * <li>a <i>selection-made</i> event whenever an option on the <i>previously
+ * empty</i> {@code Selector} is selected
+ * <li>a <i>selection-cleared</i> event whenever the selection on the
+ * {@code Selector} is cleared, after <i>{@linkplain FillableSwappableSequence
+ * sequence} operations</i> have taken place
  * </ul>
  * 
- * @param <P> the type for options in the {@code SubstitutePlayerSelector}
- * @see
- *      <ul>
- *      <li>{@linkplain CompetitiveOptionDealingGroup} for the semantics of
- *      <i>competitive dealing</i> and how to initialize it
- *      <li>{@linkplain FillableSwappableSequence} for the semantics of a
- *      <i>fillable-swappable sequence</i> and how to initialize it
+ * @param <T> the type for options in the {@code SubstitutePlayerSelector}
+ * @implNote this class implements its own {@linkplain SelectorListener}
+ *           notification mechanism by means of a
+ *           {@link FillableSwappableSequenceListener} attached to the very
+ *           {@code Sequence} it is part of
  */
-public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPresenter<P>
-		implements SubstituteSelectorDelegate<P> {
+public final class SubstitutePlayerSelector<T> extends OrderedDealerPresenter<T>
+		implements SubstituteSelectorDelegate<T> {
 
 	// 1. MVP Presenter: additional View interface
 
@@ -88,31 +77,31 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 * implement additional interaction with the View, as per its
 	 * {@linkplain FillableSwappable} duties
 	 */
-	private final SubstitutePlayerSelectorView<P> view;
+	private final SubstitutePlayerSelectorView<T> view;
 
-	public SubstitutePlayerSelector(SubstitutePlayerSelectorView<P> view) {
+	public SubstitutePlayerSelector(SubstitutePlayerSelectorView<T> view) {
 		super(view);
 		this.view = view;
 	}
 
 	// 2. FillableSwappable: mandated functions
 
-	private FillableSwappableSequence<SubstituteSelectorDelegate<P>> sequenceDriver;
+	private FillableSwappableSequence<SubstituteSelectorDelegate<T>> sequenceDriver;
 
 	@Override
-	public void attachDriver(FillableSwappableSequence<SubstituteSelectorDelegate<P>> driver) {
+	public void attachDriver(FillableSwappableSequence<SubstituteSelectorDelegate<T>> driver) {
 		this.sequenceDriver = driver;
 		this.sequenceDriver.attachListener(
-				new FillableSwappableSequenceListener<SubstituteSelectorDelegate<P>>() {
+				new FillableSwappableSequenceListener<SubstituteSelectorDelegate<T>>() {
 
 			@Override
-			public void becameEmpty(SubstituteSelectorDelegate<P> emptiedMember) {
+			public void becameEmpty(SubstituteSelectorDelegate<T> emptiedMember) {
 				if (emptiedMember == SubstitutePlayerSelector.this)
 					listeners().forEach(listener -> listener.selectionClearedOn(SubstitutePlayerSelector.this));
 			}
 
 			@Override
-			public void becameFilled(SubstituteSelectorDelegate<P> filledMember) {
+			public void becameFilled(SubstituteSelectorDelegate<T> filledMember) {
 				if (filledMember == SubstitutePlayerSelector.this)
 					listeners().forEach(listener -> listener.selectionMadeOn(SubstitutePlayerSelector.this));
 			}
@@ -158,12 +147,12 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 *           </ol>
 	 */
 	@Override
-	public void acquireContentFrom(SubstituteSelectorDelegate<P> other) {
+	public void acquireContentFrom(SubstituteSelectorDelegate<T> other) {
 		// saves the current selection on this
-		Optional<P> thisOldSelection = this.getSelection();
+		Optional<T> thisOldSelection = this.getSelection();
 
 		// makes this acquire other's selection
-		P otherSelection = other.getSelection().get();
+		T otherSelection = other.getSelection().get();
 		this.restoreOption(options.indexOf(otherSelection));
 		this.selectOption(options.indexOf(otherSelection));
 
@@ -198,11 +187,11 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 *           </ol>
 	 */
 	@Override
-	public void swapContentWith(SubstituteSelectorDelegate<P> other) {
-		P otherOldSelection = other.getSelection().get();
+	public void swapContentWith(SubstituteSelectorDelegate<T> other) {
+		T otherOldSelection = other.getSelection().get();
 		other.acquireContentFrom(this);
 
-		P thisOldSelection = this.getSelection().get();
+		T thisOldSelection = this.getSelection().get();
 		this.restoreOption(options.indexOf(otherOldSelection));
 		this.selectOption(options.indexOf(otherOldSelection));
 		this.retireOption(options.indexOf(thisOldSelection));
@@ -230,7 +219,7 @@ public class SubstitutePlayerSelector<P extends Player> extends OrderedDealerPre
 	 */
 	@Override
 	public void selectedOption(int position) {
-		Optional<P> selection = getSelection();
+		Optional<T> selection = getSelection();
 		super.selectedOption(position);
 		if (selection.isEmpty())
 			sequenceDriver.contentAdded(this);

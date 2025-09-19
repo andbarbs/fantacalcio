@@ -48,7 +48,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Goalkeeper> goalieSelView = new SwingSubPlayerSelector<Goalkeeper>();
 		StarterPlayerSelector<Goalkeeper> goalieSelPres = 
 				new StarterPlayerSelector<>(goalieSelView);
-		goalieSelView.setPresenter(goalieSelPres);
+		goalieSelView.setController(goalieSelPres);
 		
         // Create and add selectors with updated GridBagConstraints:
         GridBagConstraints gbc_goalieSelector = new GridBagConstraints();
@@ -88,7 +88,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Defender> defSelector1View = new SwingSubPlayerSelector<Defender>();
 		StarterPlayerSelector<Defender> defSelector1Pres = 
 				new StarterPlayerSelector<>(defSelector1View);
-		defSelector1View.setPresenter(defSelector1Pres);
+		defSelector1View.setController(defSelector1Pres);
         GridBagConstraints gbc_defSelector1 = new GridBagConstraints();
         gbc_defSelector1.gridwidth = 2;
         gbc_defSelector1.insets = new Insets(0, 0, 5, 5);
@@ -99,7 +99,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Defender> defSelector2View = new SwingSubPlayerSelector<Defender>();
 		StarterPlayerSelector<Defender> defSelector2Pres = 
 				new StarterPlayerSelector<>(defSelector2View);
-		defSelector2View.setPresenter(defSelector2Pres);
+		defSelector2View.setController(defSelector2Pres);
         GridBagConstraints gbc_defSelector2 = new GridBagConstraints();
         gbc_defSelector2.gridwidth = 2;
         gbc_defSelector2.insets = new Insets(0, 0, 5, 5);
@@ -110,7 +110,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Defender> defSelector3View = new SwingSubPlayerSelector<Defender>();
 		StarterPlayerSelector<Defender> defSelector3Pres = 
 				new StarterPlayerSelector<>(defSelector3View);
-		defSelector3View.setPresenter(defSelector3Pres);
+		defSelector3View.setController(defSelector3Pres);
         GridBagConstraints gbc_defSelector3 = new GridBagConstraints();
         gbc_defSelector3.gridwidth = 2;
         gbc_defSelector3.insets = new Insets(0, 0, 0, 5);
@@ -121,7 +121,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Defender> defSelector4View = new SwingSubPlayerSelector<Defender>();
 		StarterPlayerSelector<Defender> defSelector4Pres = 
 				new StarterPlayerSelector<>(defSelector4View);
-		defSelector4View.setPresenter(defSelector4Pres);
+		defSelector4View.setController(defSelector4Pres);
         GridBagConstraints gbc_defSelector4 = new GridBagConstraints();
         gbc_defSelector4.gridwidth = 2;
         gbc_defSelector4.gridx = 4;
@@ -158,7 +158,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Midfielder> midSelector1View = new SwingSubPlayerSelector<Midfielder>();
 		StarterPlayerSelector<Midfielder> midSelector1Pres = 
 				new StarterPlayerSelector<>(midSelector1View);
-		midSelector1View.setPresenter(midSelector1Pres);
+		midSelector1View.setController(midSelector1Pres);
         GridBagConstraints gbc_midSelector1 = new GridBagConstraints();
         gbc_midSelector1.insets = new Insets(0, 0, 0, 5);
         gbc_midSelector1.gridx = 0;
@@ -168,7 +168,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Midfielder> midSelector2View = new SwingSubPlayerSelector<Midfielder>();
 		StarterPlayerSelector<Midfielder> midSelector2Pres = 
 				new StarterPlayerSelector<>(midSelector2View);
-		midSelector2View.setPresenter(midSelector2Pres);
+		midSelector2View.setController(midSelector2Pres);
         GridBagConstraints gbc_midSelector2 = new GridBagConstraints();
         gbc_midSelector2.insets = new Insets(0, 0, 0, 5);
         gbc_midSelector2.gridx = 1;
@@ -178,7 +178,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Midfielder> midSelector3View = new SwingSubPlayerSelector<Midfielder>();
 		StarterPlayerSelector<Midfielder> midSelector3Pres = 
 				new StarterPlayerSelector<>(midSelector3View);
-		midSelector3View.setPresenter(midSelector3Pres);
+		midSelector3View.setController(midSelector3Pres);
         GridBagConstraints gbc_midSelector3 = new GridBagConstraints();
         gbc_midSelector3.gridx = 2;
         gbc_midSelector3.gridy = 0;
@@ -210,7 +210,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Forward> forwSelector1View = new SwingSubPlayerSelector<Forward>();
 		StarterPlayerSelector<Forward> forwSelector1Pres = 
 				new StarterPlayerSelector<>(forwSelector1View);
-		forwSelector1View.setPresenter(forwSelector1Pres);
+		forwSelector1View.setController(forwSelector1Pres);
         GridBagConstraints gbc_forwSelector1 = new GridBagConstraints();
         gbc_forwSelector1.gridheight = 2;
         gbc_forwSelector1.insets = new Insets(0, 0, 5, 5);
@@ -221,7 +221,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Forward> forwSelector2View = new SwingSubPlayerSelector<Forward>();
 		StarterPlayerSelector<Forward> forwSelector2Pres = 
 				new StarterPlayerSelector<>(forwSelector2View);
-		forwSelector2View.setPresenter(forwSelector2Pres);
+		forwSelector2View.setController(forwSelector2Pres);
         GridBagConstraints gbc_forwSelector2 = new GridBagConstraints();
         gbc_forwSelector2.gridheight = 2;
         gbc_forwSelector2.insets = new Insets(0, 0, 0, 5);
@@ -233,7 +233,7 @@ public class MultiPlayerSelector extends JFrame {
         SwingSubPlayerSelector<Forward> forwSelector3View = new SwingSubPlayerSelector<Forward>();
 		StarterPlayerSelector<Forward> forwSelector3Pres = 
 				new StarterPlayerSelector<>(forwSelector3View);
-		forwSelector3View.setPresenter(forwSelector3Pres);
+		forwSelector3View.setController(forwSelector3Pres);
         GridBagConstraints gbc_forwSelector3 = new GridBagConstraints();
         gbc_forwSelector3.gridheight = 2;
         gbc_forwSelector3.insets = new Insets(0, 0, 5, 0);
