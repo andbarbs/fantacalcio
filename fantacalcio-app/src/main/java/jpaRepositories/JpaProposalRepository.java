@@ -1,7 +1,9 @@
 package jpaRepositories;
 
+import domainModel.Contract;
 import domainModel.FantaTeam;
 import domainModel.League;
+import domainModel.MatchDaySerieA;
 import domainModel.Proposal;
 import domainModel.Proposal_;
 import jakarta.persistence.EntityManager;
@@ -10,6 +12,7 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
+import java.util.Optional;
 
 import businessLogic.repositories.ProposalRepository;
 
@@ -49,4 +52,10 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
     public boolean saveProposal(Proposal proposal) {
         return false;
     }
+
+	@Override
+	public Optional<MatchDaySerieA> getProposal(Contract contract, Contract contract2) {
+		// TODO Auto-generated method stub
+		return Optional.empty();
+	}
 }

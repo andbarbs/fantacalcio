@@ -16,13 +16,14 @@ import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JComboBoxFixture;
-import org.assertj.swing.junit.runner.GUITestRunner;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@RunWith(GUITestRunner.class)
-public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
+import swingViews.utilities.AssertJSwingJUnit5TestCase;
+
+@Tag("non-JPMS-compliant")
+public class CompetingComboBoxTest extends AssertJSwingJUnit5TestCase {
 
     private FrameFixture window;
 
@@ -45,7 +46,8 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
     		return items;
     	});
     }
-    @Override
+    
+    @BeforeEach
     protected void onSetUp() {
         // Use GuiActionRunner.execute to ensure that the creation and
         // manipulation of Swing components happen on the Event Dispatch Thread.
@@ -79,7 +81,7 @@ public class CompetingComboBoxTest extends AssertJSwingJUnitTestCase {
         });
 
         // Instantiate the AssertJSwing fixture for the frame.
-        window = new FrameFixture(robot(), frame);
+        window = new FrameFixture(robot, frame);
         window.show(); // Makes the frame visible for testing.
     }
 

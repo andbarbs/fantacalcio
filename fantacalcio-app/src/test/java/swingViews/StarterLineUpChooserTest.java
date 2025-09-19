@@ -22,6 +22,7 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 import swingViews.StarterLineUpChooser.StarterLineUpChooserWidget;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
 import swingViews.LineUpScheme.*;
 
 @DisplayName("A SwingStarterLineUpChooser")
@@ -33,17 +34,17 @@ public class StarterLineUpChooserTest {
 	private static final Defender FAKE_DEFENDER = new Defender(null, null);
 	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null);
 	
-	private @Mock Selector<Goalkeeper> goalieSelector;
-	private @Mock Selector<Defender> defSel1, defSel2, defSel3, defSel4, defSel5;
-	private @Mock Selector<Midfielder> midSel1, midSel2, midSel3, midSel4;
-	private @Mock Selector<Forward> forwSel1, forwSel2, forwSel3;
+	private @Mock StarterSelectorDelegate<Goalkeeper> goalieSelector;
+	private @Mock StarterSelectorDelegate<Defender> defSel1, defSel2, defSel3, defSel4, defSel5;
+	private @Mock StarterSelectorDelegate<Midfielder> midSel1, midSel2, midSel3, midSel4;
+	private @Mock StarterSelectorDelegate<Forward> forwSel1, forwSel2, forwSel3;
 	
-	private List<Selector<?>> selsIn433, selsIn343, selsIn532;
-	private List<Selector<Defender>> defSels;
-	private List<Selector<Midfielder>> midSels;
-	private List<Selector<Forward>> forwSels;
+	private List<StarterSelectorDelegate<?>> selsIn433, selsIn343, selsIn532;
+	private List<StarterSelectorDelegate<Defender>> defSels;
+	private List<StarterSelectorDelegate<Midfielder>> midSels;
+	private List<StarterSelectorDelegate<Forward>> forwSels;
 	
-	private @Mock Consumer<Selector<? extends Player>> mockConsumer;
+	private @Mock Consumer<StarterSelectorDelegate<? extends Player>> mockConsumer;
 
 	// the SUT reference
 	private StarterLineUpChooser chooser;

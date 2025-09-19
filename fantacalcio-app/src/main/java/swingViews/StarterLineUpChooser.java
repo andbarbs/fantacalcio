@@ -9,46 +9,49 @@ import java.io.IOException;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Player;
 import domainModel.Player.*;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
 import swingViews.LineUpScheme.*;
 
 public class StarterLineUpChooser implements StarterLineUpChooserController, LineUpChooser.StarterLineUpChooserDelegate {	
 
 	// injected dependencies
-	private Selector<Goalkeeper> goalieSelector;
-	private List<Selector<Defender>> defPairs;
-	private List<Selector<Midfielder>> midPairs;
-	private List<Selector<Forward>> forwPairs;
+	private StarterSelectorDelegate<Goalkeeper> goalieSelector;
+	private List<StarterSelectorDelegate<Defender>> defPairs;
+	private List<StarterSelectorDelegate<Midfielder>> midPairs;
+	private List<StarterSelectorDelegate<Forward>> forwPairs;
 	
-	private Collection<Selector<? extends Player>> selectorsIn532;
-	private Collection<Selector<? extends Player>> selectorsIn433;
-	private Collection<Selector<? extends Player>> selectorsIn343;
+	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn532;
+	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn433;
+	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn343;
 	
-	private Consumer<Selector<? extends Player>> onSelectorExlcluded;	
+	private Consumer<StarterSelectorDelegate<? extends Player>> onSelectorExlcluded;	
 
 	LineUpScheme currentScheme;
 	
 	// public instantiation point
 	public StarterLineUpChooser(
-			Selector<Goalkeeper> goalieSelector,
+			StarterSelectorDelegate<Goalkeeper> goalieSelector,
 			
-			Selector<Defender> defSelector1,
-			Selector<Defender> defSelector2,
-			Selector<Defender> defSelector3,
-			Selector<Defender> defSelector4,
-			Selector<Defender> defSelector5,
+			StarterSelectorDelegate<Defender> defSelector1,
+			StarterSelectorDelegate<Defender> defSelector2,
+			StarterSelectorDelegate<Defender> defSelector3,
+			StarterSelectorDelegate<Defender> defSelector4,
+			StarterSelectorDelegate<Defender> defSelector5,
 			
-			Selector<Midfielder> midSelector1,
-			Selector<Midfielder> midSelector2,
-			Selector<Midfielder> midSelector3,
-			Selector<Midfielder> midSelector4,
+			StarterSelectorDelegate<Midfielder> midSelector1,
+			StarterSelectorDelegate<Midfielder> midSelector2,
+			StarterSelectorDelegate<Midfielder> midSelector3,
+			StarterSelectorDelegate<Midfielder> midSelector4,
 			
-			Selector<Forward> forwSelector1,
-			Selector<Forward> forwSelector2,
-			Selector<Forward> forwSelector3,			
+			StarterSelectorDelegate<Forward> forwSelector1,
+			StarterSelectorDelegate<Forward> forwSelector2,
+			StarterSelectorDelegate<Forward> forwSelector3,			
 			
-			Consumer<Selector<? extends Player>> onSelectorExlcluded) {
+			Consumer<StarterSelectorDelegate<? extends Player>> onSelectorExlcluded) {
 
 		this.goalieSelector = goalieSelector;
 		this.defPairs = List.of(defSelector1, defSelector2, defSelector3, defSelector4, defSelector5);
@@ -101,39 +104,39 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 		return visitor.selectionExists;
 	}
 	@Override
-	public Selector<Goalkeeper> getGoalieSelector() {
+	public StarterSelectorDelegate<Goalkeeper> getGoalieSelector() {
 		return goalieSelector;
 	}
 
 	@Override
-	public List<Selector<Defender>> getAllDefSelectors() {
+	public List<StarterSelectorDelegate<Defender>> getAllDefSelectors() {
 		return List.copyOf(defPairs);
 	}
 
 	@Override
-	public List<Selector<Midfielder>> getAllMidSelectors() {
+	public List<StarterSelectorDelegate<Midfielder>> getAllMidSelectors() {
 		return List.copyOf(midPairs);
 	}
 	
 	@Override
-	public List<Selector<Forward>> getAllForwSelectors() {
+	public List<StarterSelectorDelegate<Forward>> getAllForwSelectors() {
 		return List.copyOf(forwPairs);
 	}
 	
 	@Override
-	public List<Selector<Defender>> getCurrentDefSelectors() {
+	public List<StarterSelectorDelegate<Defender>> getCurrentDefSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<Selector<Midfielder>> getCurrentMidSelectors() {
+	public List<StarterSelectorDelegate<Midfielder>> getCurrentMidSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<Selector<Forward>> getCurrentForwSelectors() {
+	public List<StarterSelectorDelegate<Forward>> getCurrentForwSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}	
@@ -169,7 +172,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 		currentScheme = newScheme;	
 	}
 
-	private Collection<Selector<? extends Player>> selectorsIn(LineUpScheme scheme) {
+	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn(LineUpScheme scheme) {
 		return scheme.equals(new Scheme433()) ? selectorsIn433 :
 				scheme.equals(new Scheme343()) ? selectorsIn343 : selectorsIn532;
 	}
@@ -318,6 +321,18 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Lin
 
 	@Override
 	public void setExitForwConsumer(Consumer<Selector<Forward>> capture) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public StarterLineUp getCurrentStarterLineUp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void switchToDefaultScheme() {
 		// TODO Auto-generated method stub
 		
 	}

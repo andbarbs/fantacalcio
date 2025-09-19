@@ -16,6 +16,7 @@ import org.assertj.swing.fixture.FrameFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -27,6 +28,7 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
 @DisplayName("A SwingStarterLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
+@Tag("non-JPMS-compliant")
 public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 	
 	private Spring433Scheme panel433;

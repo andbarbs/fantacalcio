@@ -5,6 +5,7 @@ import java.util.List;
 import businessLogic.repositories.GradeRepository;
 import domainModel.League;
 import domainModel.Match;
+import domainModel.NewsPaper;
 import domainModel.Grade;
 import domainModel.Grade_;
 import jakarta.persistence.EntityManager;
@@ -45,6 +46,12 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 //			
 //			return session.createSelectionQuery(query).setReadOnly(true).getResultList();
 //		});
+	}
+
+	@Override
+	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
