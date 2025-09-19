@@ -63,19 +63,16 @@ public abstract class LineUp {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(match);
+	    return Objects.hash(match, team);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		LineUp other = (LineUp) obj;
-		return Objects.equals(match, other.match);
+	    if (this == obj) return true;
+	    if (obj == null || getClass() != obj.getClass()) return false;
+	    LineUp other = (LineUp) obj;
+	    return Objects.equals(match, other.match) &&
+	           Objects.equals(team, other.team);
 	}
 
 }

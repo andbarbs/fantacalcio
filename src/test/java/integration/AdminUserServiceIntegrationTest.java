@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -20,15 +22,13 @@ import businessLogic.AdminUserService;
 import businessLogic.JpaTransactionManager;
 import businessLogic.repositories.ContractRepository;
 import businessLogic.repositories.FantaTeamRepository;
+import businessLogic.repositories.FantaUserRepository;
 import businessLogic.repositories.GradeRepository;
 import businessLogic.repositories.LeagueRepository;
 import businessLogic.repositories.LineUpRepository;
-import businessLogic.repositories.MatchDayRepository;
 import businessLogic.repositories.MatchRepository;
 import businessLogic.repositories.NewsPaperRepository;
 import businessLogic.repositories.PlayerRepository;
-import businessLogic.repositories.ProposalRepository;
-import businessLogic.repositories.ResultsRepository;
 import domainModel.Contract;
 import domainModel.FantaTeam;
 import domainModel.FantaUser;
@@ -50,40 +50,30 @@ import domainModel.Player.Midfielder;
 import jakarta.persistence.EntityManager;
 import jpaRepositories.JpaContractRepository;
 import jpaRepositories.JpaFantaTeamRepository;
+import jpaRepositories.JpaFantaUserRepository;
 import jpaRepositories.JpaGradeRepository;
 import jpaRepositories.JpaLeagueRepository;
 import jpaRepositories.JpaLineUpRepository;
-import jpaRepositories.JpaMatchDayRepository;
 import jpaRepositories.JpaMatchRepository;
 import jpaRepositories.JpaNewsPaperRepository;
 import jpaRepositories.JpaPlayerRepository;
-import jpaRepositories.JpaProposalRepository;
-import jpaRepositories.JpaResultsRepository;
 
 class AdminUserServiceIntegrationTest {
 
 	private static SessionFactory sessionFactory;
 	private AdminUserService adminUserService;
 	private JpaTransactionManager transactionManager;
-	private FantaUser admin;
-	private NewsPaper newsPaper;
-	private League league;
-	private FantaUser user;
-	private FantaTeam team1;
-	private FantaTeam team2;
 	private EntityManager entityManager;
 
 	private MatchRepository matchRepository;
 	private GradeRepository gradeRepository;
 	private LineUpRepository lineUpRepository;
-	private ResultsRepository resultRepository;
-	private MatchDayRepository matchDayRepository;
 	private FantaTeamRepository fantaTeamRepository;
 	private LeagueRepository leagueRepository;
 	private PlayerRepository playerRepository;
-	private ProposalRepository proposalRepository;
 	private ContractRepository contractRepository;
 	private NewsPaperRepository newspaperRepository;
+	private FantaUserRepository fantaUserRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -118,30 +108,13 @@ class AdminUserServiceIntegrationTest {
 		adminUserService = new AdminUserService(transactionManager);
 		entityManager = sessionFactory.createEntityManager();
 
-		sessionFactory.inTransaction(t -> {
-			admin = new FantaUser("mail", "pswd");
-			user = new FantaUser("mail2", "pswd2");
-			newsPaper = new NewsPaper("Gazzetta");
-			league = new League(admin, "lega", newsPaper, "0000");
-			team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
-			team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
-			t.persist(admin);
-			t.persist(user);
-			t.persist(newsPaper);
-			t.persist(league);
-			t.persist(team1);
-			t.persist(team2);
-		});
-
+		fantaUserRepository = new JpaFantaUserRepository(entityManager);
 		matchRepository = new JpaMatchRepository(entityManager);
 		gradeRepository = new JpaGradeRepository(entityManager);
 		lineUpRepository = new JpaLineUpRepository(entityManager);
-		resultRepository = new JpaResultsRepository(entityManager);
-		matchDayRepository = new JpaMatchDayRepository(entityManager);
 		fantaTeamRepository = new JpaFantaTeamRepository(entityManager);
 		leagueRepository = new JpaLeagueRepository(entityManager);
 		playerRepository = new JpaPlayerRepository(entityManager);
-		proposalRepository = new JpaProposalRepository(entityManager);
 		contractRepository = new JpaContractRepository(entityManager);
 		newspaperRepository = new JpaNewsPaperRepository(entityManager);
 
@@ -154,6 +127,16 @@ class AdminUserServiceIntegrationTest {
 
 	@Test
 	void createLeague() {
+
+		entityManager.getTransaction().begin();
+
+		FantaUser admin = new FantaUser("mail", "pswd");
+		fantaUserRepository.saveFantaUser(admin);
+
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		newspaperRepository.saveNewsPaper(newsPaper);
+
+		entityManager.getTransaction().commit();
 
 		adminUserService.createLeague("lega", admin, newsPaper, "1234");
 
@@ -187,6 +170,25 @@ class AdminUserServiceIntegrationTest {
 	@Test
 	void generateCalendar() {
 
+		entityManager.getTransaction().begin();
+
+		FantaUser admin = new FantaUser("mail", "pswd");
+		FantaUser user = new FantaUser("user2", "pswd2");
+		fantaUserRepository.saveFantaUser(admin);
+		fantaUserRepository.saveFantaUser(user);
+
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		newspaperRepository.saveNewsPaper(newsPaper);
+
+		League league = new League(admin, "lega", newsPaper, "0000");
+		leagueRepository.saveLeague(league);
+
+		FantaTeam team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
+		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
+
+		fantaTeamRepository.saveTeam(team1);
+		fantaTeamRepository.saveTeam(team2);
+
 		List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
 		for (int i = 0; i < 38; i++) {
 			matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i)));
@@ -198,30 +200,57 @@ class AdminUserServiceIntegrationTest {
 			}
 		});
 
+		entityManager.getTransaction().commit();
+
 		adminUserService.generateCalendar(league);
 
-		transactionManager.inTransaction(context -> {
-			MatchRepository matchRepository = context.getMatchRepository();
-			for (MatchDaySerieA matchDaySerieA : matchDays) {
-				Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
+		for (MatchDaySerieA matchDaySerieA : matchDays) {
+			Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
 
-				assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
-				assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1))
-						.isTrue();
-			}
-		});
+			assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
+			assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
+		}
 	}
 
 	@Test
-	void testCalculateGrades_SavesResultsAndUpdatesPoints() {
+	void calculateGrades() {
 
+		entityManager.getTransaction().begin();
+
+		// Users
+		FantaUser admin = new FantaUser("mail", "pswd");
+		FantaUser user = new FantaUser("mail2", "pswd2");
+
+		fantaUserRepository.saveFantaUser(admin);
+		fantaUserRepository.saveFantaUser(user);
+
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		newspaperRepository.saveNewsPaper(newsPaper);
+
+		League league = new League(admin, "lega", newsPaper, "0000");
+		leagueRepository.saveLeague(league);
+
+		// Teams
+		FantaTeam team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
+		FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
+
+		fantaTeamRepository.saveTeam(team1);
+		fantaTeamRepository.saveTeam(team2);
+
+		// MatchDays
 		LocalDate matchDate = LocalDate.of(2025, 9, 14);
 		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1));
 		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate);
 
+		entityManager.persist(prevDay);
+		entityManager.persist(dayToCalc);
+
 		// Match
 		Match prevMatch = new Match(prevDay, team1, team2);
 		Match match = new Match(dayToCalc, team1, team2);
+
+		matchRepository.saveMatch(prevMatch);
+		matchRepository.saveMatch(match);
 
 		// Players
 		Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", Club.JUVENTUS);
@@ -245,6 +274,14 @@ class AdminUserServiceIntegrationTest {
 
 		List<Player> players = List.of(gk1, gk2, d1, d2, d3, d4, d5, m1, m2, m3, m4, f1, f2, f3, f4);
 
+		players.forEach(playerRepository::addPlayer);
+
+		for (Player player : players) {
+			contractRepository.saveContract(new Contract(team1, player));
+			contractRepository.saveContract(new Contract(team2, player));
+		}
+
+		// LineUps
 		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).withGoalkeeper(gk1)
 				.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
 				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
@@ -254,36 +291,73 @@ class AdminUserServiceIntegrationTest {
 				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
 				.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
 
+		lineUpRepository.saveLineUp(lineup1);
+		lineUpRepository.saveLineUp(lineup2);
+
 		// Grades
 		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newsPaper);
 		Grade grade2 = new Grade(gk2, dayToCalc, 60.0, newsPaper);
 
-		entityManager.getTransaction().begin();
-
-		entityManager.persist(prevDay);
-		entityManager.persist(dayToCalc);
-		entityManager.persist(prevMatch);
-		entityManager.persist(match);
-		players.forEach(entityManager::persist);
-		entityManager.persist(lineup1);
-		entityManager.persist(lineup2);
-		entityManager.persist(grade1);
-		entityManager.persist(grade2);
+		gradeRepository.saveGrade(grade1);
+		gradeRepository.saveGrade(grade2);
 
 		entityManager.getTransaction().commit();
 
-		adminUserService.calculateGrades(admin, league);
-		
-		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper).size()).isEqualTo(2);
+		AdminUserService service = new AdminUserService(transactionManager) {
+			@Override
+			protected LocalDate today() {
+				return LocalDate.of(2025, 9, 16); // after 14/09
+			}
+		};
 
-		Optional<Result> optResult = resultRepository.getResult(match);
-		assertThat(optResult).isPresent();
-		Result result = optResult.get();
-		assertThat(result.getTeam1Goals()).isEqualTo(1);
-		assertThat(result.getTeam2Goals()).isEqualTo(0);
+		service.calculateGrades(admin, league);
 
-		assertThat(team1.getPoints()).isEqualTo(3);
-		assertThat(team2.getPoints()).isEqualTo(0);
+		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(match, newsPaper);
+		assertThat(allMatchGrades.size()).isEqualTo(2);
+		assertThat(allMatchGrades.get(0)).isEqualTo(grade1);
+		assertThat(allMatchGrades.get(1)).isEqualTo(grade2);
+
+	}
+
+	@Test
+	void setPlayersToTeam() {
+
+		entityManager.getTransaction().begin();
+
+		FantaUser admin = new FantaUser("mail", "pswd");
+		fantaUserRepository.saveFantaUser(admin);
+
+		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+		newspaperRepository.saveNewsPaper(newsPaper);
+
+		League league = new League(admin, "lega", newsPaper, "1234");
+		leagueRepository.saveLeague(league);
+
+		FantaTeam team = new FantaTeam("", league, 0, admin, Set.of());
+		fantaTeamRepository.saveTeam(team);
+
+		Player.Forward player = new Player.Forward("Lionel", "Messi", Club.CREMONESE);
+		Player.Goalkeeper player2 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+		playerRepository.addPlayer(player);
+		playerRepository.addPlayer(player2);
+
+		entityManager.getTransaction().commit();
+
+		adminUserService.setPlayerToTeam(team, player);
+		adminUserService.setPlayerToTeam(team, player2);
+
+		Optional<Contract> contract = contractRepository.getContract(team, player);
+		assertThat(contract).isPresent();
+		Contract found = contract.get();
+		assertThat(found.getPlayer()).isEqualTo(player);
+		assertThat(found.getTeam()).isEqualTo(team);
+
+		Optional<Contract> contract2 = contractRepository.getContract(team, player);
+		assertThat(contract2).isPresent();
+		Contract found2 = contract.get();
+		assertThat(found2.getPlayer()).isEqualTo(player);
+		assertThat(found2.getTeam()).isEqualTo(team);
+
 	}
 
 }

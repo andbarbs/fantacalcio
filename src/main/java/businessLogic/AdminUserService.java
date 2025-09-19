@@ -18,7 +18,7 @@ public class AdminUserService extends UserService {
 	public AdminUserService(TransactionManager transactionManager) {
 		super(transactionManager);
 	}
-	
+
 	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
 			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
@@ -216,10 +216,12 @@ public class AdminUserService extends UserService {
 			if (!isLegalToCalculateResults(matchDaySerieA.getDate())) {
 				throw new RuntimeException("The matches are not finished yet");
 			}
-			
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDaySerieA,
-					league);
+
+			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDaySerieA, league);
 			for (Match match : allMatches) {
+				
+				System.out.println("Considering match: " + match.getMatchDaySerieA().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
+				
 				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match,
 						league.getNewsPaper());
 				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
@@ -230,14 +232,19 @@ public class AdminUserService extends UserService {
 						.collect(Collectors.toMap(Grade::getPlayer, g -> g));
 				double resultTeam1 = 0;
 				double resultTeam2 = 0;
+				
 				System.out.println("Check if lineups exist");
 				if (lineUp1.isPresent()) {
+					
 					System.out.println("lineUp1 OK");
 					resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
+					
 				}
 				if (lineUp2.isPresent()) {
+					
 					System.out.println("lineUp2 OK");
 					resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
+					
 				}
 				int goalTeam1 = goals(resultTeam1);
 				int goalTeam2 = goals(resultTeam2);
@@ -249,8 +256,10 @@ public class AdminUserService extends UserService {
 					match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
 					match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
 				}
+				
 				System.out.println("Result saved with: " + resultTeam1 + ", " + resultTeam2);
-				context.getResultsRepository().saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
+				context.getResultsRepository()
+						.saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
 			}
 		});
 	}
@@ -318,13 +327,13 @@ public class AdminUserService extends UserService {
 		}
 		return !now.isBefore(legalDate);
 	}
-	
+
 	protected LocalDate today() {
 		return LocalDate.now();
 	}
 
-	Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context,
-			League league, FantaUser user) {
+	Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league,
+			FantaUser user) {
 		Optional<MatchDaySerieA> matchDayToCalculate;
 		boolean found = false;
 		while (!found) {
