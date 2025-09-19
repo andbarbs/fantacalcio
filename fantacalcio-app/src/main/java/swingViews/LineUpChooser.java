@@ -59,6 +59,7 @@ public class LineUpChooser implements LineUpChooserController {
 		void setExitMidConsumer(Consumer<Selector<Midfielder>> capture);
 		void setExitForwConsumer(Consumer<Selector<Forward>> capture);
 		StarterLineUp getCurrentStarterLineUp();
+		void switchToDefaultScheme();
 	}
 
 	private StarterLineUpChooserDelegate starterChooser;
@@ -219,16 +220,20 @@ public class LineUpChooser implements LineUpChooserController {
 		if (hasChoice()) {
 			service.saveLineUp(LineUp.build().forTeam(team).inMatch(match)
 					.withStarterLineUp(starterChooser.getCurrentStarterLineUp())
-					.withSubstituteGoalkeepers(goalieTriplet.getSelectors().get(0).getSelection().get(),
+					.withSubstituteGoalkeepers(
+							goalieTriplet.getSelectors().get(0).getSelection().get(),
 							goalieTriplet.getSelectors().get(1).getSelection().get(),
 							goalieTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteDefenders(defTriplet.getSelectors().get(0).getSelection().get(),
+					.withSubstituteDefenders(
+							defTriplet.getSelectors().get(0).getSelection().get(),
 							defTriplet.getSelectors().get(1).getSelection().get(),
 							defTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteMidfielders(midTriplet.getSelectors().get(0).getSelection().get(),
+					.withSubstituteMidfielders(
+							midTriplet.getSelectors().get(0).getSelection().get(),
 							midTriplet.getSelectors().get(1).getSelection().get(),
 							midTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteForwards(forwTriplet.getSelectors().get(0).getSelection().get(),
+					.withSubstituteForwards(
+							forwTriplet.getSelectors().get(0).getSelection().get(),
 							forwTriplet.getSelectors().get(1).getSelection().get(),
 							forwTriplet.getSelectors().get(2).getSelection().get()));
 		}
@@ -239,9 +244,12 @@ public class LineUpChooser implements LineUpChooserController {
 	}
 
 	public void initTo(FantaTeam team, Match match) {
+		
+		// captures inside internal bookkeeping
 		this.team = Objects.requireNonNull(team);
 		this.match = Objects.requireNonNull(match);
 		
+		// initializes dealing
 		CompetitiveOptionDealingGroup.initializeDealing(
 				Stream.of(List.of(starterChooser.getGoalieSelector()), goalieTriplet.getSelectors())
 					.flatMap(List::stream).collect(Collectors.toSet()),
@@ -269,6 +277,15 @@ public class LineUpChooser implements LineUpChooserController {
 				team.extract().forwards().stream()
 						.sorted(Comparator.comparing(Player::getSurname))
 						.collect(Collectors.toList()));
+		
+		// initializes sequences
+		FillableSwappableSequence.createSequence(goalieTriplet.getSelectors());
+		FillableSwappableSequence.createSequence(defTriplet.getSelectors());
+		FillableSwappableSequence.createSequence(midTriplet.getSelectors());
+		FillableSwappableSequence.createSequence(forwTriplet.getSelectors());
+		
+		// orders Starter Delegate
+		starterChooser.switchToDefaultScheme();
 	}
 
 	public static void main(String[] args) {

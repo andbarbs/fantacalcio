@@ -139,7 +139,10 @@ public class LineUpChooserTest {
 		when(forwTriplet.getSelectors()).thenReturn(tripletForws);
 
 		// instantiates SUT
-		chooser = new LineUpChooser(mockService, starterChooser, goalieTriplet, defTriplet, midTriplet, forwTriplet);
+		chooser = new LineUpChooser(
+				mockService, 
+				starterChooser, 
+				goalieTriplet, defTriplet, midTriplet, forwTriplet);
 		chooser.setWidget(mockWidget);
 		
 		// verifies constructor interactions (de facto, resetting mocks)
@@ -160,7 +163,7 @@ public class LineUpChooserTest {
 	@DisplayName("can be initialized to a Team and Match")
 	void whenConfigured(@Mock FantaTeam team, @Mock FantaTeamViewer mockViewer, @Mock Match match) {
 		
-		// GIVEN the Team reports these extractions
+		// GIVEN the Team reports these extractions (alphabetically unsorted)
 		when(team.extract()).thenReturn(mockViewer);
 		when(mockViewer.goalkeepers()).thenReturn(Set.of(
 				new Goalkeeper("goalkeeper", "C"),
@@ -179,53 +182,60 @@ public class LineUpChooserTest {
 				new Forward("forward", "B"),
 				new Forward("forward", "A")));
 		
-		// AND the Starter Delegate returns all Selectors
+		// AND the Starter Delegate returns mock Selectors
 		when(starterChooser.getAllDefSelectors()).thenReturn(starterDefs);
 		when(starterChooser.getAllMidSelectors()).thenReturn(starterMids);
 		when(starterChooser.getAllForwSelectors()).thenReturn(starterForws);
 		
-        try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedStatic = 
-                mockStatic(CompetitiveOptionDealingGroup.class)) {
-        	
-        	// WHEN the SUT is initialized to a Team and Match
-        	chooser.initTo(team, match);
+        try(@SuppressWarnings("rawtypes") MockedStatic<FillableSwappableSequence> mockSequence = 
+		        mockStatic(FillableSwappableSequence.class)) {
+			try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedGroup = 
+			        mockStatic(CompetitiveOptionDealingGroup.class)) {
+				
+				// WHEN the SUT is initialized to a Team and Match
+				chooser.initTo(team, match);
 
-        	// THEN its internal state records that
-        	assertThat(chooser.team).isSameAs(team);
-        	assertThat(chooser.match).isSameAs(match);
-        	
-        	// AND all Selectors are made to compete on players sorted by surname
-        	class DealingInitializationVerifier<P extends Player> implements 
-        			BiConsumer<List<List<? extends StarterSelectorDelegate<P>>>, Set<P>> {
+				// THEN its internal state records that
+				assertThat(chooser.team).isSameAs(team);
+				assertThat(chooser.match).isSameAs(match);
+				
+				// AND all Selectors are made to compete on players sorted by surname
+				class DealingInitializationVerifier<P extends Player> implements 
+						BiConsumer<List<List<? extends StarterSelectorDelegate<P>>>, Set<P>> {
 
-				@Override
-				public void accept(List<List<? extends StarterSelectorDelegate<P>>> selectors, Set<P> options) {
-					mockedStatic.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
-							selectors.stream().flatMap(List::stream).collect(Collectors.toSet()),
-							options.stream()
-									.sorted(Comparator.comparing(Player::getSurname))
-									.collect(Collectors.toList())));
-				}        		
-        	}
-        	
-        	new DealingInitializationVerifier<Goalkeeper>().accept(
-        			List.of(List.of(starterGoalie), tripletGoalies), 
-        			team.extract().goalkeepers());
-        	new DealingInitializationVerifier<Defender>().accept(
-        			List.of(starterDefs, tripletDefs), 
-        			team.extract().defenders());
-        	new DealingInitializationVerifier<Midfielder>().accept(
-        			List.of(starterMids, tripletMids), 
-        			team.extract().midfielders());
-        	new DealingInitializationVerifier<Forward>().accept(
-        			List.of(starterForws, tripletForws), 
-        			team.extract().forwards());
-            
-            // AND Substitute Selectors are wired into a Sequence
-        }
-        
-		// AND Starter Delegate is asked to arrange the default scheme
-		
+					@Override
+					public void accept(List<List<? extends StarterSelectorDelegate<P>>> selectors, Set<P> options) {
+						mockedGroup.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
+								selectors.stream().flatMap(List::stream).collect(Collectors.toSet()),
+								options.stream()
+										.sorted(Comparator.comparing(Player::getSurname))
+										.collect(Collectors.toList())));
+					}        		
+				}
+				
+				new DealingInitializationVerifier<Goalkeeper>().accept(
+						List.of(List.of(starterGoalie), tripletGoalies), 
+						team.extract().goalkeepers());
+				new DealingInitializationVerifier<Defender>().accept(
+						List.of(starterDefs, tripletDefs), 
+						team.extract().defenders());
+				new DealingInitializationVerifier<Midfielder>().accept(
+						List.of(starterMids, tripletMids), 
+						team.extract().midfielders());
+				new DealingInitializationVerifier<Forward>().accept(
+						List.of(starterForws, tripletForws), 
+						team.extract().forwards());
+			    
+			    // AND Substitute Selectors are wired into a Sequence
+				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletGoalies));
+				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletDefs));
+				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletMids));
+				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletForws));
+				
+				// AND Starter Delegate is asked to swutch to the default scheme
+				verify(starterChooser).switchToDefaultScheme();
+			}
+		}		
 	}
 	
 	@Nested
@@ -911,7 +921,7 @@ public class LineUpChooserTest {
 		}
 
 		@Nested
-		@DisplayName("keeping group choices correct when group")
+		@DisplayName("keeping group choice bookkeeping correct")
 		class KeepingGroupChoicesCorrect {
 
 			/**
@@ -924,7 +934,7 @@ public class LineUpChooserTest {
 			 * 		ii. entering the current scheme
 			 */
 			@Nested
-			@DisplayName("shrinks")
+			@DisplayName("when group shrinks")
 			class WhenGroupShrinks {
 
 				@Nested
@@ -1101,7 +1111,7 @@ public class LineUpChooserTest {
 			 * 	   the current scheme is always empty
 			 */
 			@Nested
-			@DisplayName("expands")
+			@DisplayName("when group expands")
 			class WhenGroupExpands {
 
 				@Nested
