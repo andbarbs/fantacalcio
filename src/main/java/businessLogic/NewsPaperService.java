@@ -43,7 +43,7 @@ public class NewsPaperService {
 
 	public Optional<MatchDaySerieA> getMatchDay() {
 	    return transactionManager.fromTransaction((context) -> {
-	        LocalDate now = today(); // use protected today() instead of LocalDate.now()
+	        LocalDate now = today();
 	        DayOfWeek dayOfWeek = now.getDayOfWeek();
 	        Optional<MatchDaySerieA> matchDaySerieA = Optional.empty();
 	        if (dayOfWeek == DayOfWeek.SATURDAY) {
