@@ -17,6 +17,7 @@ import java.util.Set;
 
 import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.LineUpChooser.SubstituteSelectorDelegate;
 import swingViews.LineUpChooser.SubstituteTripletChooserDelegate;
 
 // TODO: javadoc is pre-splitting!!
@@ -33,12 +34,12 @@ import swingViews.LineUpChooser.SubstituteTripletChooserDelegate;
  *           (boolean, FillableSwappable, JPanel, FillableSwappable, JPanel, FillableSwappable, JPanel)
  *           public constructor}
  */
-public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappable<T> & Selector<Q>> 
+public class FillableSwappableTriplet<Q extends Player> 
 		implements FillableSwappableTripletController, SubstituteTripletChooserDelegate<Q> {
 	
 	// sequence creation & listening
-	private T member1, member2, member3;	
-	private FillableSwappableSequence<T> sequenceDriver;
+	private SubstituteSelectorDelegate<Q> member1, member2, member3;	
+	private FillableSwappableSequence<SubstituteSelectorDelegate<Q>> sequenceDriver;
 	
 	// Widget ref
 	public interface FillableSwappableTripletWidget {
@@ -79,7 +80,10 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 	 * @param fillable3    the third sequence member
 	 * @param widget3      the third member's widget
 	 */
-	public FillableSwappableTriplet(FillableSwappableSequence<T> sequence, T fillable1, T fillable2, T fillable3) {
+	public FillableSwappableTriplet(FillableSwappableSequence<SubstituteSelectorDelegate<Q>> sequence, 
+			SubstituteSelectorDelegate<Q> fillable1, 
+			SubstituteSelectorDelegate<Q> fillable2, 
+			SubstituteSelectorDelegate<Q> fillable3) {
 
 		this.member1 = Objects.requireNonNull(fillable1);
 		this.member2 = Objects.requireNonNull(fillable2);
@@ -87,11 +91,11 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 
 		// creates fillable-swappable sequence and attaches listener
 		this.sequenceDriver = sequence;
-		sequenceDriver.attachListener(new FillableSwappableSequenceListener<T>() {
+		sequenceDriver.attachListener(new FillableSwappableSequenceListener<SubstituteSelectorDelegate<Q>>() {
 			
 			// disables swap buttons according to notifications from the sequence driver
 			@Override
-			public void becameEmpty(T emptiedGadget) {
+			public void becameEmpty(SubstituteSelectorDelegate<Q> emptiedGadget) {
 				// System.out.println("content removed from a gadget!");
 				if (emptiedGadget == member3)
 					widget.setSwappingSecondPair(false);
@@ -101,7 +105,7 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 			
 			// enables swap buttons according to notifications from the sequence driver
 			@Override
-			public void becameFilled(T filledGadget) {
+			public void becameFilled(SubstituteSelectorDelegate<Q> filledGadget) {
 				// System.out.println("content added to a gadget!");
 				if (filledGadget == member2)
 					widget.setSwappingFirstPair(true);
@@ -127,7 +131,7 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			
 			Dimension selectorDims = new Dimension(120, 225);
-			FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>> triplet;
+			FillableSwappableTriplet<Defender> triplet;
 			try {
 				SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
 				SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
@@ -141,7 +145,7 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 				view2.setPresenter(selPres2);
 				view3.setPresenter(selPres3);
 						
-				triplet = new FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>>(
+				triplet = new FillableSwappableTriplet<Defender>(
 						FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 						selPres1, selPres2, selPres3);
 				
@@ -167,7 +171,7 @@ public class FillableSwappableTriplet<Q extends Player, T extends FillableSwappa
 	}
 
 	@Override
-	public List<Selector<Q>> getSelectors() {
+	public List<SubstituteSelectorDelegate<Q>> getSelectors() {
 		return List.of(member1, member2, member3);
 	}
 

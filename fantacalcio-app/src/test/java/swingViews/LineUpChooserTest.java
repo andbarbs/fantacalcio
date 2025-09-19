@@ -33,7 +33,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import businessLogic.UserService;
 import domainModel.FantaTeam;
 import domainModel.FantaTeamViewer;

@@ -16,12 +16,14 @@ import org.assertj.swing.fixture.JComboBoxFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
 import swingViews.Selector.SelectorListener;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
@@ -29,6 +31,7 @@ import swingViews.utilities.AssertJSwingJUnit5TestCase;
 
 @DisplayName("Starter Player Selector: MVP Presenter + View integration test")
 @ExtendWith(MockitoExtension.class)
+@Tag("non-JPMS-compliant")
 public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
     private static final Defender chiellini = new Defender("Giorgio", "Chiellini");
@@ -51,7 +54,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 	class DriverAndListenerInteraction {
 
     	private StarterPlayerSelector<Defender> compPlayerSelector;    	
-    	@Mock private CompetitiveOptionDealingGroup<OrderedDealerPresenter<Defender>, Defender> driver;    	
+    	@Mock private CompetitiveOptionDealingGroup<StarterSelectorDelegate<Defender>, Defender> driver;    	
     	@Mock private SelectorListener<Defender> listener;
 
     	@BeforeEach

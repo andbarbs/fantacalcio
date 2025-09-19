@@ -14,6 +14,7 @@ import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import domainModel.Player.Defender;
 import swingViews.utilities.AssertJSwingJUnit5TestCase;
@@ -26,6 +27,7 @@ import swingViews.utilities.TypedJComboBoxFixture;
  * it could be replaced by integration at a higher level
  */
 @DisplayName("SubstituteSelectorTriplet: MVP View + Presenter IT")
+@Tag("non-JPMS-compliant")
 public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
     
 	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
@@ -56,8 +58,8 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			view3.setPresenter(selPres3);
 			
 			// sets up the SUT
-			FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>> triplet = 
-					new FillableSwappableTriplet<Defender, SubstitutePlayerSelector<Defender>>(
+			FillableSwappableTriplet<Defender> triplet = 
+					new FillableSwappableTriplet<Defender>(
 							FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 							selPres1, selPres2, selPres3);
 			SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(

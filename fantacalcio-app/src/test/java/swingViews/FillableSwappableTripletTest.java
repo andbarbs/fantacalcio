@@ -15,26 +15,26 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Defender;
-import swingViews.FillableSwappableSequence.FillableSwappable;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
 import swingViews.FillableSwappableTriplet.FillableSwappableTripletWidget;
+import swingViews.LineUpChooser.SubstituteSelectorDelegate;
 
 @DisplayName("A FillableSwappableTriplet")
 @ExtendWith(MockitoExtension.class)
 public class FillableSwappableTripletTest {
 	
-	// a test-private abstract implementor of FillableSwappable intended for mocking
-	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable>, Selector<Defender> {}
+//	// a test-private abstract implementor of FillableSwappable intended for mocking
+//	private abstract class TestFillableSwappable implements FillableSwappable<TestFillableSwappable>, Selector<Defender> {}
 	
-	private @Mock TestFillableSwappable mockFillable1, mockFillable2, mockFillable3;
-	private @Mock FillableSwappableSequence<TestFillableSwappable> mockSequence;	
+	private @Mock SubstituteSelectorDelegate<Defender> mockFillable1, mockFillable2, mockFillable3;
+	private @Mock FillableSwappableSequence<SubstituteSelectorDelegate<Defender>> mockSequence;	
 
 	// the SUT reference
-	private FillableSwappableTriplet<Defender, TestFillableSwappable> triplet;
+	private FillableSwappableTriplet<Defender> triplet;
 
 	@BeforeEach
 	public void testCaseSpecificSetup() {
-		triplet = new FillableSwappableTriplet<Defender, TestFillableSwappable>(
+		triplet = new FillableSwappableTriplet<Defender>(
 				mockSequence,
 				mockFillable1, mockFillable2, mockFillable3);
 	}
@@ -46,7 +46,7 @@ public class FillableSwappableTripletTest {
 		private @Mock FillableSwappableTripletWidget mockWidget;
 		
 		// allows tests to exercise the actual Listener instance that the SUT attaches to the sequence
-		private @Captor ArgumentCaptor<FillableSwappableSequenceListener<TestFillableSwappable>> listenerCaptor;
+		private @Captor ArgumentCaptor<FillableSwappableSequenceListener<SubstituteSelectorDelegate<Defender>>> listenerCaptor;
 
 		@BeforeEach
 		void testCaseSpecificSetup() {

@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.Player.Midfielder;
 import swingViews.FillableSwappableSequence.FillableSwappableSequenceListener;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
+import swingViews.LineUpChooser.SubstituteSelectorDelegate;
 import swingViews.Selector.SelectorListener;
 import swingViews.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
 
@@ -30,8 +32,8 @@ import static swingViews.OrderedDealerPresenter.NO_SELECTION;
 class SubstitutePlayerSelectorTest {
 	
 	private @Mock SubstitutePlayerSelectorView<Midfielder> view;	
-	private @Mock CompetitiveOptionDealingGroup<OrderedDealerPresenter<Midfielder>, Midfielder> groupDriver;	
-	private @Mock FillableSwappableSequence<SubstitutePlayerSelector<Midfielder>> sequenceDriver;	
+	private @Mock CompetitiveOptionDealingGroup<StarterSelectorDelegate<Midfielder>, Midfielder> groupDriver;	
+	private @Mock FillableSwappableSequence<SubstituteSelectorDelegate<Midfielder>> sequenceDriver;	
 	
 	// the SUT instance
 	private @InjectMocks SubstitutePlayerSelector<Midfielder> presenter;
@@ -534,7 +536,7 @@ class SubstitutePlayerSelectorTest {
 		class NotifiesSelectorListeners {
 			
 			private @Captor ArgumentCaptor<FillableSwappableSequenceListener
-						<SubstitutePlayerSelector<Midfielder>>> sequenceListenerCaptor;
+						<SubstituteSelectorDelegate<Midfielder>>> sequenceListenerCaptor;
 			
 			private @Mock SelectorListener<Midfielder> mockListener;
 			

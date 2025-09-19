@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
+import swingViews.LineUpChooser.StarterSelectorDelegate;
 
 /**
  * implements
@@ -37,15 +38,14 @@ import swingViews.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
  * @param <T> the type for options in this Selector/Dealer
  */
 public abstract class OrderedDealerPresenter<T> 
-				implements CompetitiveOrderedDealer<OrderedDealerPresenter<T>, T>,
-							Selector<T> {	
+				implements StarterSelectorDelegate<T> {	
 
 	// 1. OrderedOptionDealer: bookkeeping & mandated functions
 	
-	protected CompetitiveOptionDealingGroup<OrderedDealerPresenter<T>, T> groupDriver;
+	protected CompetitiveOptionDealingGroup<StarterSelectorDelegate<T>, T> groupDriver;
 	
 	@Override
-	public void attachDriver(CompetitiveOptionDealingGroup<OrderedDealerPresenter<T>, T> driver) {
+	public void attachDriver(CompetitiveOptionDealingGroup<StarterSelectorDelegate<T>, T> driver) {
 		this.groupDriver = driver;
 	}
 	

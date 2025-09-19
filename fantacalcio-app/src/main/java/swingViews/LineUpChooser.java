@@ -106,6 +106,7 @@ public class LineUpChooser implements LineUpChooserController {
 	BooleanWrapper hasSubsDefsChoice = new BooleanWrapper();
 	BooleanWrapper hasSubsMidsChoice = new BooleanWrapper();
 	BooleanWrapper hasSubsForwsChoice = new BooleanWrapper();
+	
 	private boolean hasChoice() {
 		return Stream
 				.of(hasStarterGoalieChoice, hasStarterDefChoice, hasStarterMidChoice, hasStarterForwChoice,
@@ -114,9 +115,7 @@ public class LineUpChooser implements LineUpChooserController {
 	}
 
 	private final UserService service;
-	FantaTeam team;
-	Match match;
-
+	
 	// public instantiation point
 	public LineUpChooser(
 			UserService service,
@@ -215,33 +214,8 @@ public class LineUpChooser implements LineUpChooserController {
 		};
 	}
 
-	@Override
-	public void saveLineUp() {
-		if (hasChoice()) {
-			service.saveLineUp(LineUp.build().forTeam(team).inMatch(match)
-					.withStarterLineUp(starterChooser.getCurrentStarterLineUp())
-					.withSubstituteGoalkeepers(
-							goalieTriplet.getSelectors().get(0).getSelection().get(),
-							goalieTriplet.getSelectors().get(1).getSelection().get(),
-							goalieTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteDefenders(
-							defTriplet.getSelectors().get(0).getSelection().get(),
-							defTriplet.getSelectors().get(1).getSelection().get(),
-							defTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteMidfielders(
-							midTriplet.getSelectors().get(0).getSelection().get(),
-							midTriplet.getSelectors().get(1).getSelection().get(),
-							midTriplet.getSelectors().get(2).getSelection().get())
-					.withSubstituteForwards(
-							forwTriplet.getSelectors().get(0).getSelection().get(),
-							forwTriplet.getSelectors().get(1).getSelection().get(),
-							forwTriplet.getSelectors().get(2).getSelection().get()));
-		}
-		else
-			throw new IllegalStateException(String.format(
-					"LineUpChooserController.saveLineUp: Untimely Request\n" +
-					"no choice of LineUp is present on this Controller"));
-	}
+	FantaTeam team;
+	Match match;
 
 	public void initTo(FantaTeam team, Match match) {
 		
@@ -286,6 +260,34 @@ public class LineUpChooser implements LineUpChooserController {
 		
 		// orders Starter Delegate
 		starterChooser.switchToDefaultScheme();
+	}
+
+	@Override
+	public void saveLineUp() {
+		if (hasChoice()) {
+			service.saveLineUp(LineUp.build().forTeam(team).inMatch(match)
+					.withStarterLineUp(starterChooser.getCurrentStarterLineUp())
+					.withSubstituteGoalkeepers(
+							goalieTriplet.getSelectors().get(0).getSelection().get(),
+							goalieTriplet.getSelectors().get(1).getSelection().get(),
+							goalieTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteDefenders(
+							defTriplet.getSelectors().get(0).getSelection().get(),
+							defTriplet.getSelectors().get(1).getSelection().get(),
+							defTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteMidfielders(
+							midTriplet.getSelectors().get(0).getSelection().get(),
+							midTriplet.getSelectors().get(1).getSelection().get(),
+							midTriplet.getSelectors().get(2).getSelection().get())
+					.withSubstituteForwards(
+							forwTriplet.getSelectors().get(0).getSelection().get(),
+							forwTriplet.getSelectors().get(1).getSelection().get(),
+							forwTriplet.getSelectors().get(2).getSelection().get()));
+		}
+		else
+			throw new IllegalStateException(String.format(
+					"LineUpChooserController.saveLineUp: Untimely Request\n" +
+					"no choice of LineUp is present on this Controller"));
 	}
 
 	public static void main(String[] args) {
