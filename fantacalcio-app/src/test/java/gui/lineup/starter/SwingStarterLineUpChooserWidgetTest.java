@@ -22,7 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import gui.LineUpScheme.*;
+import domainModel.scheme.Scheme343;
+import domainModel.scheme.Scheme433;
+import domainModel.scheme.Scheme532;
 import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 import gui.utils.AssertJSwingJUnit5TestCase;
 import gui.utils.schemes.Spring343Scheme;
@@ -193,7 +195,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				robot.waitForIdle();
 				
 				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(new Scheme343());
+				verify(controller).switchToScheme(Scheme343.INSTANCE);
 			}
 			
 			@Test
@@ -206,7 +208,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				robot.waitForIdle();				
 
 				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(new Scheme532());
+				verify(controller).switchToScheme(Scheme532.INSTANCE);
 			}
 			
 			@Test
@@ -219,7 +221,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 				robot.waitForIdle();				
 
 				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(new Scheme433());
+				verify(controller).switchToScheme(Scheme433.INSTANCE);
 			}
 		}
 
@@ -252,7 +254,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			public void changesTo343() {
 				
 				// WHEN the Controller requests changing to the '3-4-3' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme343()));
+				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme343.INSTANCE));
 				
 				// THEN the '3-4-3' radio button becomes selected
 				window.radioButton(withText("3-4-3")).requireSelected();
@@ -271,7 +273,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			public void changesTo532() {
 				
 				// WHEN the Controller requests changing to the '5-3-2' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme532()));
+				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme532.INSTANCE));
 				
 				// THEN the '5-3-2' radio button becomes selected
 				window.radioButton(withText("5-3-2")).requireSelected();
@@ -290,7 +292,7 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			public void changesTo433() {
 				
 				// WHEN the Controller requests changing to the '4-3-3' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(new Scheme433()));
+				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme433.INSTANCE));
 				
 				// THEN the '4-3-3' radio button becomes selected
 				window.radioButton(withText("4-3-3")).requireSelected();

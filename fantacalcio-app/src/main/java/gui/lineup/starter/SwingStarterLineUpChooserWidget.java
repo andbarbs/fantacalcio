@@ -25,8 +25,11 @@ import javax.swing.border.TitledBorder;
 
 import domainModel.Player;
 import domainModel.Player.*;
-import gui.LineUpScheme;
-import gui.LineUpScheme.*;
+import domainModel.Scheme;
+import domainModel.Scheme.SchemeVisitor;
+import domainModel.scheme.Scheme343;
+import domainModel.scheme.Scheme433;
+import domainModel.scheme.Scheme532;
 import gui.lineup.selectors.SwingSubPlayerSelector;
 import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 import gui.utils.schemes.Spring343Scheme;
@@ -112,9 +115,9 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 
 		// 7) wires scheme switch-up logic to the radios
 		if (!isDesignTime) {
-			b433.addActionListener(e -> controller.switchToScheme(new Scheme433()));
-			b343.addActionListener(e -> controller.switchToScheme(new Scheme343()));
-			b532.addActionListener(e -> controller.switchToScheme(new Scheme532()));
+			b433.addActionListener(e -> controller.switchToScheme(Scheme433.INSTANCE));
+			b343.addActionListener(e -> controller.switchToScheme(Scheme343.INSTANCE));
+			b532.addActionListener(e -> controller.switchToScheme(Scheme532.INSTANCE));
 		}
 	}
 
@@ -264,25 +267,25 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 	}
 
 	@Override
-	public void switchTo(LineUpScheme scheme) {
-		scheme.accept(new LineUpSchemeVisitor() {
-			
+	public void switchTo(Scheme scheme) {
+		scheme.accept(new SchemeVisitor() {
+
 			@Override
-			public void visit532(Scheme532 scheme532) {
-				b532.setSelected(true);
-				switchToScheme("532");
-			}
-			
-			@Override
-			public void visit433(Scheme433 scheme433) {
+			public void visitScheme433(Scheme433 scheme433) {
 				b433.setSelected(true);
 				switchToScheme("433");
 			}
-			
+
 			@Override
-			public void visit343(Scheme343 scheme343) {
+			public void visitScheme343(Scheme343 scheme343) {
 				b343.setSelected(true);
 				switchToScheme("343");
+			}
+
+			@Override
+			public void visitScheme532(Scheme532 scheme532) {
+				b532.setSelected(true);
+				switchToScheme("532");
 			}
 		});
 	}

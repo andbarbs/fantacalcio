@@ -21,7 +21,9 @@ import domainModel.Player.Defender;
 import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
-import gui.LineUpScheme.*;
+import domainModel.scheme.Scheme343;
+import domainModel.scheme.Scheme433;
+import domainModel.scheme.Scheme532;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 
@@ -120,13 +122,13 @@ public class StarterLineUpChooserTest {
 			public void widgetsAddedTo433() {
 				
 				// WHEN the Widget reports a user request to change to '4-3-3'
-				chooser.switchToScheme(new Scheme433());
+				chooser.switchToScheme(Scheme433.INSTANCE);
 				
 				// THEN the '4-3-3' scheme is registered as the current one
-				assertThat(chooser.currentScheme).isEqualTo(new Scheme433());
+				assertThat(chooser.currentScheme).isEqualTo(Scheme433.INSTANCE);
 				
 				// AND the Widget is instructed to switch to '4-3-3'
-				verify(mockWidget).switchTo(new Scheme433());
+				verify(mockWidget).switchTo(Scheme433.INSTANCE);
 			}
 			
 			@Test
@@ -135,13 +137,13 @@ public class StarterLineUpChooserTest {
 			public void widgetsAddedTo343() {
 				
 				// WHEN the Widget reports a user request to change to '3-4-3'
-				chooser.switchToScheme(new Scheme343());
+				chooser.switchToScheme(Scheme343.INSTANCE);
 				
 				// THEN the '3-4-3' scheme is registered as the current one
-				assertThat(chooser.currentScheme).isEqualTo(new Scheme343());
+				assertThat(chooser.currentScheme).isEqualTo(Scheme343.INSTANCE);
 				
 				// AND the Widget is instructed to switch to '3-4-3'
-				verify(mockWidget).switchTo(new Scheme343());
+				verify(mockWidget).switchTo(Scheme343.INSTANCE);
 			}
 			
 			@Test
@@ -150,13 +152,13 @@ public class StarterLineUpChooserTest {
 			public void widgetsAddedTo532() {
 
 				// WHEN the Widget reports a user request to change to '5-3-2'
-				chooser.switchToScheme(new Scheme532());
+				chooser.switchToScheme(Scheme532.INSTANCE);
 				
 				// THEN the '5-3-2' scheme is registered as the current one
-				assertThat(chooser.currentScheme).isEqualTo(new Scheme532());
+				assertThat(chooser.currentScheme).isEqualTo(Scheme532.INSTANCE);
 				
 				// AND the Widget is instructed to switch to '5-3-2'
-				verify(mockWidget).switchTo(new Scheme532());
+				verify(mockWidget).switchTo(Scheme532.INSTANCE);
 			}
 		}
 	}
@@ -192,7 +194,7 @@ public class StarterLineUpChooserTest {
 				public void selectionSet343() {
 
 					// GIVEN the current scheme is '3-4-3'
-					chooser.currentScheme = new Scheme343();
+					chooser.currentScheme = Scheme343.INSTANCE;
 
 					// AND only some selectors in '3-4-3' report being non-empty
 					when(goalieSelector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));
@@ -218,7 +220,7 @@ public class StarterLineUpChooserTest {
 				public void selectionSet433() {
 
 					// GIVEN the current scheme is '4-3-3'
-					chooser.currentScheme = new Scheme433();
+					chooser.currentScheme = Scheme433.INSTANCE;
 
 					// AND only some selectors in '3-4-3' report being non-empty
 					when(goalieSelector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));
@@ -244,7 +246,7 @@ public class StarterLineUpChooserTest {
 				public void selectionSet532() {					
 
 					// GIVEN the current scheme is '5-3-2'
-					chooser.currentScheme = new Scheme532();
+					chooser.currentScheme = Scheme532.INSTANCE;
 
 					// AND only some selectors in '3-4-3' report being non-empty
 					when(goalieSelector.getSelection()).thenReturn(Optional.of(FAKE_GOALIE));

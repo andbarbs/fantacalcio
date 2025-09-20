@@ -13,8 +13,10 @@ import javax.swing.SwingUtilities;
 import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Player;
 import domainModel.Player.*;
-import gui.LineUpScheme;
-import gui.LineUpScheme.*;
+import domainModel.Scheme;
+import domainModel.scheme.Scheme343;
+import domainModel.scheme.Scheme433;
+import domainModel.scheme.Scheme532;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
@@ -40,7 +42,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	
 	private Consumer<StarterSelectorDelegate<? extends Player>> onSelectorExlcluded;	
 
-	LineUpScheme currentScheme;
+	Scheme currentScheme;
 	
 	// public instantiation point
 	public StarterLineUpChooser(
@@ -89,26 +91,27 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	
 	
 	public boolean hasChoice() {
-		var visitor = new LineUpScheme.LineUpSchemeVisitor() {
+		var visitor = new Scheme.SchemeVisitor() {
 			boolean selectionExists;
 
 			@Override
-			public void visit532(Scheme532 scheme532) {
-				selectionExists = selectorsIn532.stream().allMatch(
-						selector -> selector.getSelection().isPresent());
-			}
-
-			@Override
-			public void visit433(Scheme433 scheme433) {
+			public void visitScheme433(Scheme433 scheme433) {
 				selectionExists = selectorsIn433.stream().allMatch(
 						selector -> selector.getSelection().isPresent());
 			}
 
 			@Override
-			public void visit343(Scheme343 scheme343) {
+			public void visitScheme343(Scheme343 scheme343) {
 				selectionExists = selectorsIn343.stream().allMatch(
 						selector -> selector.getSelection().isPresent());
 			}
+
+			@Override
+			public void visitScheme532(Scheme532 scheme532) {
+				selectionExists = selectorsIn532.stream().allMatch(
+						selector -> selector.getSelection().isPresent());
+			}
+
 		};
 		currentScheme.accept(visitor);
 		return visitor.selectionExists;
@@ -156,7 +159,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 
 	// interface for vertical collaborator
 	public interface StarterLineUpChooserWidget {
-		void switchTo(LineUpScheme scheme);
+		void switchTo(Scheme scheme);
 	}
 
 	private StarterLineUpChooserWidget widget;
@@ -166,7 +169,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	}
 	
 	@Override
-	public void switchToScheme(LineUpScheme newScheme) {
+	public void switchToScheme(Scheme newScheme) {
 		
 		// 1) processes excluded Selectors
 		Optional.ofNullable(currentScheme).ifPresent(scheme -> {
@@ -182,9 +185,9 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 		currentScheme = newScheme;	
 	}
 
-	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn(LineUpScheme scheme) {
-		return scheme.equals(new Scheme433()) ? selectorsIn433 :
-				scheme.equals(new Scheme343()) ? selectorsIn343 : selectorsIn532;
+	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn(Scheme scheme) {
+		return scheme.equals(Scheme433.INSTANCE) ? selectorsIn433 :
+				scheme.equals(Scheme343.INSTANCE) ? selectorsIn343 : selectorsIn532;
 	}
 
 	public static void main(String[] args) {
@@ -286,7 +289,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				controller.setWidget(widget);
 				widget.setController(controller);
 				
-				controller.switchToScheme(new Scheme433());
+				controller.switchToScheme(Scheme433.INSTANCE);
 				
 				frame.setContentPane(widget);		
 				frame.pack();

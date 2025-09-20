@@ -1,8 +1,8 @@
 package gui.lineup.starter;
 
-import gui.LineUpScheme;
+import domainModel.Scheme;
 
 public interface StarterLineUpChooserController {
 
-	void switchToScheme(LineUpScheme newScheme);
+	void switchToScheme(Scheme newScheme);
 }

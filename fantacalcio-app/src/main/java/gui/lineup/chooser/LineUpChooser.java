@@ -21,6 +21,7 @@ import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Match;
 import domainModel.Player;
 import domainModel.Player.*;
+import domainModel.scheme.Scheme433;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer;
@@ -34,7 +35,6 @@ import gui.utils.schemes.Spring343Scheme;
 import gui.utils.schemes.Spring433Scheme;
 import gui.utils.schemes.Spring532Scheme;
 import gui.utils.schemes.SpringSchemePanel;
-import gui.LineUpScheme.Scheme433;
 
 public class LineUpChooser implements LineUpChooserController {
 	
@@ -402,7 +402,7 @@ public class LineUpChooser implements LineUpChooserController {
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);
 
-				starterChooser.switchToScheme(new Scheme433());
+				starterChooser.switchToScheme(Scheme433.INSTANCE);
 
 				// IV) instantiates LineUpChooserWidget
 				SwingLineUpChooserWidget chooserWidget = new SwingLineUpChooserWidget(false, starterWidget, null, null,

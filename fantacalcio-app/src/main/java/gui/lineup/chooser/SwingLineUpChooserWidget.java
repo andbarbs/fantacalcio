@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import domainModel.Player.*;
-import gui.LineUpScheme.*;
+import domainModel.scheme.Scheme433;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.StarterPlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
@@ -203,7 +203,7 @@ public class SwingLineUpChooserWidget extends JPanel {
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);
 				
-				starterChooser.switchToScheme(new Scheme433());
+				starterChooser.switchToScheme(Scheme433.INSTANCE);
 				
 				// IV) instantiates LineUpChooserWidget
 				SwingLineUpChooserWidget chooserWidget = new SwingLineUpChooserWidget(
