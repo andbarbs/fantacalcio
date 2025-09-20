@@ -1,6 +1,6 @@
 package gui.lineup.chooser;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -184,9 +184,9 @@ public class LineUpChooserTest {
 				new Forward("forward", "A")));
 		
 		// AND the Starter Delegate returns mock Selectors
-		when(starterChooser.getAllDefSelectors()).thenReturn(starterDefs);
-		when(starterChooser.getAllMidSelectors()).thenReturn(starterMids);
-		when(starterChooser.getAllForwSelectors()).thenReturn(starterForws);
+		when(starterChooser.getAllDefSelectors()).thenReturn(Set.copyOf(starterDefs));
+		when(starterChooser.getAllMidSelectors()).thenReturn(Set.copyOf(starterMids));
+		when(starterChooser.getAllForwSelectors()).thenReturn(Set.copyOf(starterForws));
 		
         try(@SuppressWarnings("rawtypes") MockedStatic<FillableSwappableSequence> mockSequence = 
 		        mockStatic(FillableSwappableSequence.class)) {
@@ -311,7 +311,7 @@ public class LineUpChooserTest {
 								
 								// AND Starter Delegate reports those in the scheme as current starter selectors
 								when(starterChooser.getCurrentDefSelectors()).thenReturn(
-										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toSet()));
 								// AND selectors in the scheme report being non-empty
 								starterDefs.stream().filter(selsInCurrentScheme::contains).forEach(
 										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
@@ -333,21 +333,23 @@ public class LineUpChooserTest {
 								verify(starterChooser).setEntryMidConsumer(midConsumer.capture());
 								midConsumer.getValue().accept(dummySelector);
 								verify(dummySelector).attachListener(starterMidListener.capture());
-								
+
 								// GIVEN all other Listeners have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterMidChoice.flag = false;
-								
+
 								// AND Starter Delegate reports those in the scheme as current starter selectors
-								when(starterChooser.getCurrentMidSelectors()).thenReturn(
-										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								Set<Selector<Midfielder>> currentMids = starterMids.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(currentMids);
 								// AND selectors in the scheme report being non-empty
-								starterMids.stream().filter(selsInCurrentScheme::contains).forEach(
-										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
-								
+								starterMids.stream().filter(selsInCurrentScheme::contains)
+										.forEach(selector -> when(selector.getSelection())
+												.thenReturn(Optional.of(FAKE_MIDFIELDER)));
+
 								// WHEN the Listener is triggered
 								starterMidListener.getValue().selectionMadeOn(dummySelector);
-								
+
 								// THEN the Widget is commanded to enable line-up saving
 								verify(mockWidget).enableSavingLineUp();
 							}
@@ -361,21 +363,22 @@ public class LineUpChooserTest {
 								verify(starterChooser).setEntryForwConsumer(forwConsumer.capture());
 								forwConsumer.getValue().accept(dummySelector);
 								verify(dummySelector).attachListener(starterForwListener.capture());
-								
+
 								// GIVEN all other Listeners have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
 								chooser.hasStarterForwChoice.flag = false;
-								
+
 								// AND Starter Delegate reports those in the scheme as current starter selectors
-								when(starterChooser.getCurrentForwSelectors()).thenReturn(
-										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								Set<Selector<Forward>> currentForws = starterForws.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(currentForws);
 								// AND selectors in the scheme report being non-empty
-								starterForws.stream().filter(selsInCurrentScheme::contains).forEach(
-										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
-								
+								currentForws.stream().forEach(selector -> when(selector.getSelection())
+										.thenReturn(Optional.of(FAKE_FORWARD)));
+
 								// WHEN the Listener is triggered
 								starterForwListener.getValue().selectionMadeOn(dummySelector);
-								
+
 								// THEN the Widget is commanded to enable line-up saving
 								verify(mockWidget).enableSavingLineUp();
 							}
@@ -539,10 +542,11 @@ public class LineUpChooserTest {
 								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
-								when(starterChooser.getCurrentDefSelectors()).thenReturn(
-										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								Set<Selector<Defender>> currentDefs = starterDefs.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentDefSelectors()).thenReturn(currentDefs);
 								// AND one selector in the scheme reports being empty
-								when(starterDefs.get(0).getSelection()).thenReturn(Optional.empty());
+								when(currentDefs.stream().findFirst().get().getSelection()).thenReturn(Optional.empty());
 
 								// WHEN the Listener is triggered
 								starterDefListener.getValue().selectionClearedOn(dummySelector);
@@ -565,10 +569,12 @@ public class LineUpChooserTest {
 								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
-								when(starterChooser.getCurrentMidSelectors()).thenReturn(
-										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								Set<Selector<Midfielder>> currentMids = starterMids.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(currentMids);
 								// AND one selector in the scheme reports being empty
-								when(starterMids.get(0).getSelection()).thenReturn(Optional.empty());
+								when(currentMids.stream().findFirst().get().getSelection())
+										.thenReturn(Optional.empty());
 
 								// WHEN the Listener is triggered
 								starterMidListener.getValue().selectionClearedOn(dummySelector);
@@ -591,10 +597,12 @@ public class LineUpChooserTest {
 								affirmAllChoiceFlagsIn(chooser);
 
 								// AND Starter Delegate reports those in the scheme as current starter selectors
-								when(starterChooser.getCurrentForwSelectors()).thenReturn(
-										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+								Set<Selector<Forward>> currentForws = starterForws.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(currentForws);
 								// AND one selector in the scheme reports being empty
-								when(starterForws.get(0).getSelection()).thenReturn(Optional.empty());
+								when(currentForws.stream().findFirst().get().getSelection())
+										.thenReturn(Optional.empty());
 
 								// WHEN the Listener is triggered
 								starterForwListener.getValue().selectionClearedOn(dummySelector);
@@ -956,18 +964,20 @@ public class LineUpChooserTest {
 							@DisplayName("defenders")
 							public void AffirmsDefenderChoice(@Mock Selector<Defender> dummySelector) {
 								verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentDefSelectors()).thenReturn(
-										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Defender>> currentDefs = starterDefs.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentDefSelectors()).thenReturn(currentDefs);
 								// AND those Selectors report being non-empty
-								starterDefs.stream().filter(selsInCurrentScheme::contains).forEach(
-										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER)));
-								
+								currentDefs.forEach(selector -> when(selector.getSelection())
+										.thenReturn(Optional.of(FAKE_DEFENDER)));
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitDefConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is affirmed
 								assertThat(chooser.hasStarterDefChoice.flag).isTrue();
 							}
@@ -978,18 +988,20 @@ public class LineUpChooserTest {
 							@DisplayName("midfielders")
 							public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> dummySelector) {
 								verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentMidSelectors()).thenReturn(
-										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Midfielder>> currentMids = starterMids.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(currentMids);
 								// AND those Selectors report being non-empty
-								starterMids.stream().filter(selsInCurrentScheme::contains).forEach(
-										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER)));
-								
+								currentMids.stream().forEach(selector -> when(selector.getSelection())
+										.thenReturn(Optional.of(FAKE_MIDFIELDER)));
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitMidConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is affirmed
 								assertThat(chooser.hasStarterMidChoice.flag).isTrue();
 							}
@@ -1000,18 +1012,20 @@ public class LineUpChooserTest {
 							@DisplayName("forwards")
 							public void AffirmsForwardChoice(@Mock Selector<Forward> dummySelector) {
 								verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentForwSelectors()).thenReturn(
-										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Forward>> currentForws = starterForws.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(currentForws);
 								// AND those Selectors report being non-empty
-								starterForws.stream().filter(selsInCurrentScheme::contains).forEach(
-										selector -> when(selector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD)));
-								
+								currentForws.stream().forEach(selector -> when(selector.getSelection())
+										.thenReturn(Optional.of(FAKE_FORWARD)));
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitForwConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is affirmed
 								assertThat(chooser.hasStarterForwChoice.flag).isTrue();
 							}
@@ -1033,18 +1047,19 @@ public class LineUpChooserTest {
 							public void LeavesDefenderChoiceAbsent(@Mock Selector<Defender> dummySelector) {
 								verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
 								chooser.hasStarterDefChoice.flag = true;
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentDefSelectors()).thenReturn(
-										starterDefs.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Defender>> currentDefs = starterDefs.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentDefSelectors()).thenReturn(currentDefs);
 								// AND one of those Selectors reports being empty
-								starterDefs.stream().filter(selsInCurrentScheme::contains).findFirst()
-										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
-								
+								when(currentDefs.stream().findFirst().get().getSelection()).thenReturn(Optional.empty());
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitDefConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is negated
 								assertThat(chooser.hasStarterDefChoice.flag).isFalse();
 							}
@@ -1056,18 +1071,20 @@ public class LineUpChooserTest {
 							public void LeavesMidfielderChoiceAbsent(@Mock Selector<Midfielder> dummySelector) {
 								verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
 								chooser.hasStarterMidChoice.flag = true;
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentMidSelectors()).thenReturn(
-										starterMids.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Midfielder>> currentMids = starterMids.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentMidSelectors()).thenReturn(currentMids);
 								// AND one of those Selectors reports being empty
-								starterMids.stream().filter(selsInCurrentScheme::contains).findFirst()
-										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
-								
+								when(currentMids.stream().findFirst().get().getSelection())
+										.thenReturn(Optional.empty());
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitMidConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is negated
 								assertThat(chooser.hasStarterMidChoice.flag).isFalse();
 							}
@@ -1079,18 +1096,20 @@ public class LineUpChooserTest {
 							public void LeavesForwardChoiceAbsent(@Mock Selector<Forward> dummySelector) {
 								verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
 								chooser.hasStarterForwChoice.flag = true;
-								
-								// GIVEN Starter Delegate reports the new scheme as current at Consumer execution
-								when(starterChooser.getCurrentForwSelectors()).thenReturn(
-										starterForws.stream().filter(selsInCurrentScheme::contains).collect(toList()));
+
+								// GIVEN Starter Delegate reports the new scheme as current at Consumer
+								// execution
+								Set<Selector<Forward>> currentForws = starterForws.stream()
+										.filter(selsInCurrentScheme::contains).collect(toSet());
+								when(starterChooser.getCurrentForwSelectors()).thenReturn(currentForws);
 								// AND one of those Selectors reports being empty
-								starterForws.stream().filter(selsInCurrentScheme::contains).findFirst()
-										.ifPresent(sel -> when(sel.getSelection()).thenReturn(Optional.empty()));
-								
+								when(currentForws.stream().findFirst().get().getSelection())
+										.thenReturn(Optional.empty());
+
 								// WHEN the exit Consumer is made to process a Selector
-								// (regardless of the Selector's state) 
+								// (regardless of the Selector's state)
 								exitForwConsumer.getValue().accept(dummySelector);
-								
+
 								// THEN the corresponding choice flag is negated
 								assertThat(chooser.hasStarterForwChoice.flag).isFalse();
 							}

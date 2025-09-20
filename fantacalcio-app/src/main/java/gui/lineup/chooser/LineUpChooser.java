@@ -1,5 +1,6 @@
 package gui.lineup.chooser;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -44,8 +45,6 @@ public class LineUpChooser implements LineUpChooserController {
 	 * {@linkplain StarterSelectorDelegate}s.
 	 * 
 	 * @param <T> the type for options on this {@code Selector}
-	 * @see {@link CompetitiveOptionDealingGroup} for the semantics of
-	 *      <i>competitive dealing</i> and how to initialize it
 	 */
 	public interface StarterSelectorDelegate<T> extends Selector<T>, 
 										CompetitiveOrderedDealer<StarterSelectorDelegate<T>, T> {
@@ -58,37 +57,173 @@ public class LineUpChooser implements LineUpChooserController {
 	 * {@linkplain SubstituteSelectorDelegate}s.
 	 * 
 	 * @param <T> the type for options on this {@code Selector}
-	 * @see {@link FillableSwappableSequence} for the semantics of a
-	 *      <i>fillable-swappable sequence</i> and how to initialize one
 	 */
 	public interface SubstituteSelectorDelegate<T>
 			extends StarterSelectorDelegate<T>, FillableSwappable<SubstituteSelectorDelegate<T>> {
 
 	}
 
-	// a type for the Starter Chooser delegate
+	/**
+	 * specifies the code-facing side of a component allowing users to pick a choice
+	 * of a <i>starter line-up</i> - both scheme and players, the latter through the
+	 * use of {@link StarterSelectorDelegate}s.
+	 * 
+	 * <p>
+	 * Specifically, it enables clients to
+	 * <ol>
+	 * <li>access only {@link Selector}s corresponding to the currently chosen
+	 * scheme - effectively encapsulating scheme changes - through
+	 * <i>current-scheme</i> getters
+	 * <li>configure the processing of {@link Selector}s as they join and leave the
+	 * current scheme, through the setting of {@code Consumer}s
+	 * <li>retrieve the user's choice of a starter line-up as a
+	 * {@link StarterLineUp} instance
+	 * <li>access all composed {@link StarterSelectorDelegate}s, through
+	 * <i>all-selectors</i> getters
+	 * </ol>
+	 * 
+	 * <h1>Getter-Consumer consistency</h1> At {@code Consumer} execution,
+	 * <i>current-scheme</i> getters reflect the composition of the scheme <i>being
+	 * transitioned to</i>, and <b>not</b> the old one
+	 */
 	public interface StarterLineUpChooserDelegate {
 
+		/**
+		 * @return the {@linkplain StarterSelectorDelegate} that is responsible for
+		 *         the selection of a {@code Goalkeeper} inside the
+		 *         {@linkplain StarterSelectorDelegate}
+		 */
 		StarterSelectorDelegate<Goalkeeper> getGoalieSelector();
-		List<StarterSelectorDelegate<Defender>> getAllDefSelectors();
-		List<StarterSelectorDelegate<Midfielder>> getAllMidSelectors();
-		List<StarterSelectorDelegate<Forward>> getAllForwSelectors();
+		
+		/**
+		 * @return a {@code Set} containing all {@linkplain StarterSelectorDelegate}s
+		 *         that are responsible for the selection of a {@code Defender} inside
+		 *         the {@linkplain StarterSelectorDelegate}
+		 */
+		Set<StarterSelectorDelegate<Defender>> getAllDefSelectors();
+		
+		/**
+		 * @return a {@code Set} containing all {@linkplain StarterSelectorDelegate}s
+		 *         that are responsible for the selection of a {@code Midfielder} inside
+		 *         the {@linkplain StarterSelectorDelegate}
+		 */
+		Set<StarterSelectorDelegate<Midfielder>> getAllMidSelectors();
+		
+		/**
+		 * @return a {@code Set} containing all {@linkplain StarterSelectorDelegate}s
+		 *         that are responsible for the selection of a {@code Forward} inside
+		 *         the {@linkplain StarterSelectorDelegate}
+		 */
+		Set<StarterSelectorDelegate<Forward>> getAllForwSelectors();
 
-		List<Selector<Defender>> getCurrentDefSelectors();
-		List<Selector<Midfielder>> getCurrentMidSelectors();
-		List<Selector<Forward>> getCurrentForwSelectors();
+		/**
+		 * @return a {@code Set} containing all {@linkplain Selector}s that are
+		 *         responsible for the selection of a {@code Defender} in the scheme
+		 *         that is current on the {@linkplain StarterSelectorDelegate}
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		Set<Selector<Defender>> getCurrentDefSelectors();
+		
+		/**
+		 * @return a {@code Set} containing all {@linkplain Selector}s that are
+		 *         responsible for the selection of a {@code Midfielder} in the scheme
+		 *         that is current on the {@linkplain StarterSelectorDelegate}
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		Set<Selector<Midfielder>> getCurrentMidSelectors();
+		
+		/**
+		 * @return a {@code Set} containing all {@linkplain Selector}s that are
+		 *         responsible for the selection of a {@code Forward} in the scheme that
+		 *         is current on the {@linkplain StarterSelectorDelegate}
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		Set<Selector<Forward>> getCurrentForwSelectors();
 
-		void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender);
-		void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder);
-		void setEntryForwConsumer(Consumer<Selector<Forward>> enterForward);
-		void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender);
-		void setExitMidConsumer(Consumer<Selector<Midfielder>> exitMidfielder);
-		void setExitForwConsumer(Consumer<Selector<Forward>> exitForward);
+		/**
+		 * @param entryDefConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Defender} when they <b>enter</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setEntryDefConsumer(Consumer<Selector<Defender>> entryDefConsumer);
+		
+		/**
+		 * @param entryMidConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Midfielder} when they <b>enter</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setEntryMidConsumer(Consumer<Selector<Midfielder>> entryMidConsumer);
+		
+		/**
+		 * @param entryForwConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Forward} when they <b>enter</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setEntryForwConsumer(Consumer<Selector<Forward>> entryForwConsumer);
+		
+		/**
+		 * @param exitDefConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Defender} when they <b>leave</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setExitDefConsumer(Consumer<Selector<Defender>> exitDefConsumer);
+		
+		/**
+		 * @param exitMidConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Midfielder} when they <b>leave</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setExitMidConsumer(Consumer<Selector<Midfielder>> exitMidConsumer);
+		
+		/**
+		 * @param exitForwConsumer the {@code Consumer} that
+		 *                         {@linkplain StarterSelectorDelegate} should apply to
+		 *                         {@linkplain Selector}s responsible for the selection
+		 *                         of a {@code Forward} when they <b>leave</b> the
+		 *                         current scheme
+		 * @see {@linkplain StarterSelectorDelegate} for requirements on current-scheme
+		 *      getters at {@code Consumer} execution
+		 */
+		void setExitForwConsumer(Consumer<Selector<Forward>> exitForwConsumer);
+		
+		/**
+		 * @return the {@linkplain StarterLineUp} instance that can be constructed from
+		 *         {@code Selectors} in the current scheme, assuming they all bear a
+		 *         selection
+		 */
 		StarterLineUp getCurrentStarterLineUp();
+		
+		/**
+		 * instructs the {@linkplain StarterSelectorDelegate} to set its default scheme
+		 * as the current one
+		 */
 		void switchToDefaultScheme();
 	}
 
-	private StarterLineUpChooserDelegate starterChooser;
+	private final StarterLineUpChooserDelegate starterChooser;
 
 	// a type for the Substitute Triplet Chooser delegate
 	public interface SubstituteTripletChooserDelegate<T extends Player> {
@@ -193,7 +328,7 @@ public class LineUpChooser implements LineUpChooserController {
 	}
 
 	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
-			Supplier<List<? extends Selector<T>>> listSupplier) {
+			Supplier<Collection<? extends Selector<T>>> listSupplier) {
 		return new SelectorListener<T>() {
 	
 			@Override
@@ -227,7 +362,7 @@ public class LineUpChooser implements LineUpChooserController {
 
 	private <T extends Player> Consumer<Selector<T>> exitConsumer(SelectorListener<T> listener,
 			SubstituteTripletChooserDelegate<T> triplet, BooleanWrapper hasGroupChoice,
-			Supplier<List<? extends Selector<T>>> currentSchemeSelectors) {
+			Supplier<Collection<? extends Selector<T>>> currentSchemeSelectors) {
 		return exitingSelector -> {
 			exitingSelector.removeListener(listener);
 			if (exitingSelector.getSelection().isPresent()) {
@@ -259,21 +394,21 @@ public class LineUpChooser implements LineUpChooserController {
 		
 		CompetitiveOptionDealingGroup.initializeDealing(
 				Stream.of(starterChooser.getAllDefSelectors(), defTriplet.getSelectors())
-					.flatMap(List::stream).collect(Collectors.toSet()),
+					.flatMap(Collection::stream).collect(Collectors.toSet()),
 				team.extract().defenders().stream()
 						.sorted(Comparator.comparing(Player::getSurname))
 						.collect(Collectors.toList()));
 		
 		CompetitiveOptionDealingGroup.initializeDealing(
 				Stream.of(starterChooser.getAllMidSelectors(), midTriplet.getSelectors())
-					.flatMap(List::stream).collect(Collectors.toSet()),
+					.flatMap(Collection::stream).collect(Collectors.toSet()),
 				team.extract().midfielders().stream()
 						.sorted(Comparator.comparing(Player::getSurname))
 						.collect(Collectors.toList()));
 		
 		CompetitiveOptionDealingGroup.initializeDealing(
 				Stream.of(starterChooser.getAllForwSelectors(), forwTriplet.getSelectors())
-					.flatMap(List::stream).collect(Collectors.toSet()),
+					.flatMap(Collection::stream).collect(Collectors.toSet()),
 				team.extract().forwards().stream()
 						.sorted(Comparator.comparing(Player::getSurname))
 						.collect(Collectors.toList()));

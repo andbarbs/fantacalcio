@@ -122,34 +122,34 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	}
 
 	@Override
-	public List<StarterSelectorDelegate<Defender>> getAllDefSelectors() {
-		return List.copyOf(defPairs);
+	public Set<StarterSelectorDelegate<Defender>> getAllDefSelectors() {
+		return Set.copyOf(defPairs);
 	}
 
 	@Override
-	public List<StarterSelectorDelegate<Midfielder>> getAllMidSelectors() {
-		return List.copyOf(midPairs);
+	public Set<StarterSelectorDelegate<Midfielder>> getAllMidSelectors() {
+		return Set.copyOf(midPairs);
 	}
 	
 	@Override
-	public List<StarterSelectorDelegate<Forward>> getAllForwSelectors() {
-		return List.copyOf(forwPairs);
+	public Set<StarterSelectorDelegate<Forward>> getAllForwSelectors() {
+		return Set.copyOf(forwPairs);
 	}
 	
 	@Override
-	public List<Selector<Defender>> getCurrentDefSelectors() {
+	public Set<Selector<Defender>> getCurrentDefSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<Selector<Midfielder>> getCurrentMidSelectors() {
+	public Set<Selector<Midfielder>> getCurrentMidSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public List<Selector<Forward>> getCurrentForwSelectors() {
+	public Set<Selector<Forward>> getCurrentForwSelectors() {
 		// TODO Auto-generated method stub
 		return null;
 	}	
