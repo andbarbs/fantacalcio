@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 public final class StarterPlayerSelector<T> extends OrderedDealerPresenter<T> {
 
-	public StarterPlayerSelector(OrderedDealerView<T> view) {
+	public StarterPlayerSelector(SelectorWidget<T> view) {
 		super(view);
 	}
 	

@@ -40,8 +40,8 @@ public final class SubstitutePlayerSelector<T> extends OrderedDealerPresenter<T>
 	 * {@linkplain SubstitutePlayerSelector}.
 	 * 
 	 * <p>
-	 * Functionally, a {@code SubstitutePlayerSelectorView} is supposed to implement
-	 * all capabilities in {@linkplain OrderedDealerView} and also be able to
+	 * Functionally, a {@code SubstituteSelectorWidget} is supposed to implement
+	 * all capabilities in {@linkplain SelectorWidget} and also be able to
 	 * <ul>
 	 * <li>toggle its ability to receive user input
 	 * <li>toggle visual decoration of its status as the <i>next-fillable</i> gadget
@@ -50,23 +50,23 @@ public final class SubstitutePlayerSelector<T> extends OrderedDealerPresenter<T>
 	 * 
 	 * @param <T> the type for options in the View's option list
 	 */
-	public interface SubstitutePlayerSelectorView<T> extends OrderedDealerView<T> {
+	public interface SubstituteSelectorWidget<T> extends SelectorWidget<T> {
 
 		// TODO rimpiazzare con un setNextFillable(boolean)
 		/**
-		 * requests the {@linkplain SubstitutePlayerSelectorView} to take on
+		 * requests the {@linkplain SubstituteSelectorWidget} to take on
 		 * <i>next-fillable</i> status.
 		 */
 		void highlight();
 
 		/**
-		 * requests the {@linkplain SubstitutePlayerSelectorView} to relinquish
+		 * requests the {@linkplain SubstituteSelectorWidget} to relinquish
 		 * <i>next-fillable</i> status.
 		 */
 		void dehighlight();
 
 		/**
-		 * requests the {@link OrderedDealerView} to toggle the visual availability of
+		 * requests the {@link SelectorWidget} to toggle the visual availability of
 		 * its controls to the user.
 		 */
 		void setControlsEnabled(boolean b);
@@ -74,13 +74,13 @@ public final class SubstitutePlayerSelector<T> extends OrderedDealerPresenter<T>
 
 	/**
 	 * a separate reference to the view in the more specific type
-	 * {@linkplain SubstitutePlayerSelectorView} is necessary for this Presenter to
+	 * {@linkplain SubstituteSelectorWidget} is necessary for this Presenter to
 	 * implement additional interaction with the View, as per its
 	 * {@linkplain FillableSwappable} duties
 	 */
-	private final SubstitutePlayerSelectorView<T> view;
+	private final SubstituteSelectorWidget<T> view;
 
-	public SubstitutePlayerSelector(SubstitutePlayerSelectorView<T> view) {
+	public SubstitutePlayerSelector(SubstituteSelectorWidget<T> view) {
 		super(view);
 		this.view = view;
 	}

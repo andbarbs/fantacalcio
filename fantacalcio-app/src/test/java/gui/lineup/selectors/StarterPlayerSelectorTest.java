@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class StarterPlayerSelectorTest {
 
 	// collaborator Mocks	
-	private @Mock OrderedDealerPresenter.OrderedDealerView<Midfielder> mockView;	
+	private @Mock OrderedDealerPresenter.SelectorWidget<Midfielder> mockView;	
 	private @Mock CompetitiveOptionDealingGroup<StarterSelectorDelegate<Midfielder>, Midfielder> mockGroupDriver;	
 	private @Mock SelectorListener<Midfielder> mockListener;
 	

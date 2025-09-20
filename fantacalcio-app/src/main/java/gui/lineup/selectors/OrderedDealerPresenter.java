@@ -13,8 +13,8 @@ import gui.lineup.dealing.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer
 
 /**
  * partially implements members of {@linkplain StarterSelectorDelegate} as a
- * Controller in a bidirectional collaboration scheme inspired by the <b>MVP
- * pattern</b>.
+ * {@code Controller} in a bidirectional collaboration scheme inspired by the
+ * <b>MVP pattern</b>.
  * 
  * <p>
  * Subclasses are free to implement the behavioral responsibilities of
@@ -29,9 +29,9 @@ import gui.lineup.dealing.CompetitiveOptionDealingGroup.CompetitiveOrderedDealer
  * 
  * @implNote implementations for {@linkplain CompetitiveOrderedDealer} members
  *           do not leak back into the driver, as long as the
- *           {@linkplain OrderedDealerView} collaborator does <i>not</i> notify
- *           back its {@code OrderedDealerPresenter} for mutations induced by
- *           the {@code OrderedDealerPresenter} itself
+ *           {@linkplain SelectorWidget} collaborator does <i>not</i> notify
+ *           back its {@code SelectorController} for mutations induced by
+ *           the {@code Controller} itself
  * @param <T> the type for options in this {@code Selector} / {@code Dealer}
  */
 public abstract class OrderedDealerPresenter<T> 
@@ -68,9 +68,9 @@ public abstract class OrderedDealerPresenter<T>
 	 * @param absoluteIndex 
 	 * the index in {@code this.options} of the option to be retired
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
-	 * as long as the {@code OrderedDealerView} collaborator 
+	 * as long as the {@code SelectorWidget} collaborator 
 	 * honors requirements on event-feedback avoidance
-	 * @see OrderedDealerView#removeOptionAt(int)
+	 * @see SelectorWidget#removeOptionAt(int)
 	 */
 	@Override
 	public final void retireOption(int absoluteIndex) {
@@ -83,9 +83,9 @@ public abstract class OrderedDealerPresenter<T>
 	 * @param absoluteIndex 
 	 * the index in {@code this.options} of the option to be restored
 	 * @implNote does not feed back into {@code OptionDealerGroupDriver}
-	 * as long as the {@code OrderedDealerView} collaborator 
+	 * as long as the {@code SelectorWidget} collaborator 
 	 * honors requirements on event-feedback avoidance
-	 * @see OrderedDealerView#insertOptionAt(Object, int)
+	 * @see SelectorWidget#insertOptionAt(Object, int)
 	 */
 	@Override
 	public final void restoreOption(int absoluteIndex) {
@@ -101,10 +101,10 @@ public abstract class OrderedDealerPresenter<T>
 	// 2. MVP Presenter: View interface & notification points
 	
 	/**
-	 * an interface for Views wishing to collaborate with 
-	 * {@link OrderedDealerPresenter} according to the <b>MVP pattern</b>.
+	 * an interface for Views wishing to collaborate with a
+	 * {@link SelectorController} according to the <b>MVP pattern</b>.
 	 * 
-	 * <p> Functionally, a {@code OrderedDealerView} is supposed to 
+	 * <p> Functionally, a {@code SelectorWidget} is supposed to 
 	 * <ul> 
 	 * 		<li>display an ordered list of options
 	 * 		<li>allow at most one option to be selected at any given time 
@@ -122,62 +122,62 @@ public abstract class OrderedDealerPresenter<T>
 	 * 			</ol>
 	 * 
 	 * 			<h1>Event-feedback avoidance</h1>
-	 * 			Notifications to the {@code OrderedDealerPresenter} should
+	 * 			Notifications to the {@code SelectorController} should
 	 * 			<i>not</i> take place for mutations induced by the 
-	 * 			{@code OrderedDealerPresenter} itself: 
+	 * 			{@code SelectorController} itself: 
 	 * 			see notes to individual members of this interface
 	 * </ul>
 	 * @param <T> the type for options in the View's option list
 	 */	
-	public interface OrderedDealerView<T> {
+	public interface SelectorWidget<T> {
 		
 		/**
-		 * requests the {@link OrderedDealerView} to initialize its option list.
+		 * requests the {@link SelectorWidget} to initialize its option list.
 		 * @param options the initial option list
 		 */
 		void initOptions(List<T> options);
 		
 		/**
-		 * requests the {@code OrderedDealerView} to remove an option 
+		 * requests the {@code SelectorWidget} to remove an option 
 		 * from its current option list.
 		 * @param removalIndex the position of the option to be removed 
-		 * 		relative to the {@code OrderedDealerView}'s current option list 
+		 * 		relative to the {@code SelectorWidget}'s current option list 
 		 * @implSpec option removal <i>should not be notified back</i> to 
-		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
+		 * 		the {@code SelectorWidget}'s {@code OrderedDealerPresenter}
 		 */
 		void removeOptionAt(int removalIndex);
 		
 		/**
-		 * requests the {@code OrderedDealerView} to add an option
+		 * requests the {@code SelectorWidget} to add an option
 		 * to its current option list.
 		 * @param option the option to be inserted
-		 * @param insertionIndex the position in the {@code OrderedDealerView}'s 
+		 * @param insertionIndex the position in the {@code SelectorWidget}'s 
 		 * 		current option list where the specified option should be inserted
 		 * @implSpec option insertion <i>should not be notified back</i> to 
-		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
+		 * 		the {@code SelectorWidget}'s {@code OrderedDealerPresenter}
 		 */
 		void insertOptionAt(T option, int insertionIndex);
 		
 		/**
-		 * requests the {@code OrderedDealerView} to select an option
+		 * requests the {@code SelectorWidget} to select an option
 		 * from its current option list.
 		 * @param selectionIndex the position of the option to be selected 
-		 * 		relative to the {@code OrderedDealerView}'s current option list 
+		 * 		relative to the {@code SelectorWidget}'s current option list 
 		 * @implSpec option selection <i>should not be notified back</i> to 
-		 * 		the {@code OrderedDealerView}'s {@code OrderedDealerPresenter}
+		 * 		the {@code SelectorWidget}'s {@code OrderedDealerPresenter}
 		 */
 		void selectOptionAt(int selectionIndex);		
 	}
 
-	private final OrderedDealerPresenter.OrderedDealerView<T> view;
+	private final OrderedDealerPresenter.SelectorWidget<T> view;
 	
-	public OrderedDealerPresenter(OrderedDealerView<T> view) {
+	public OrderedDealerPresenter(SelectorWidget<T> view) {
 		this.view = view;
 	}
 	
 	/**
 	 * <p><h1>Notification Redundancy</h1>
-	 * {@code OrderedDealerView} implementors should be aware that
+	 * {@code SelectorWidget} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
 	 * redundant {@code selectedOption(int)} notification.
 	 */
@@ -206,7 +206,7 @@ public abstract class OrderedDealerPresenter<T>
 
 	/** 
 	 * <p><h1>Notification Redundancy</h1>
-	 * {@code OrderedDealerView} implementors should be aware that
+	 * {@code SelectorWidget} implementors should be aware that
 	 * {@code OrderedDealerPresenter} has no mechanism for detecting a
 	 * redundant {@code selectionCleared()} notification.
 	 */

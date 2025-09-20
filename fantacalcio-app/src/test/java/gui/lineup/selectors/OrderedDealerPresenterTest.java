@@ -29,7 +29,7 @@ public class OrderedDealerPresenterTest {
 	 */
 	private static class TestOrderedDealerPresenter<T> extends OrderedDealerPresenter<T> {
 		
-		TestOrderedDealerPresenter(OrderedDealerView<T> view) {
+		TestOrderedDealerPresenter(SelectorWidget<T> view) {
 			super(view);
 		}		
 		
@@ -46,7 +46,7 @@ public class OrderedDealerPresenterTest {
 	}
 	
 	@Mock
-	private OrderedDealerPresenter.OrderedDealerView<String> mockView;
+	private OrderedDealerPresenter.SelectorWidget<String> mockView;
 	
 	@InjectMocks
 	private TestOrderedDealerPresenter<String> presenter;

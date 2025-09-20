@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import domainModel.Player;
-import gui.lineup.selectors.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
+import gui.lineup.selectors.SubstitutePlayerSelector.SubstituteSelectorWidget;
 
 /*
  * TODO consider introducing distinct private and public design-time logic
@@ -40,7 +40,7 @@ import gui.lineup.selectors.SubstitutePlayerSelector.SubstitutePlayerSelectorVie
  *          requires a <b>sizing hint</b>: see the
  */
 @SuppressWarnings("serial")
-public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstitutePlayerSelectorView<P> {
+public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstituteSelectorWidget<P> {
 
 	// path to the pngs for the Icons
 	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";

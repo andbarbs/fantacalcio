@@ -17,7 +17,7 @@ import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
-import gui.lineup.selectors.SubstitutePlayerSelector.SubstitutePlayerSelectorView;
+import gui.lineup.selectors.SubstitutePlayerSelector.SubstituteSelectorWidget;
 import gui.lineup.sequence.FillableSwappableSequence;
 import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceListener;
 
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("A SubstitutePlayerSelector")
 class SubstitutePlayerSelectorTest {
 	
-	private @Mock SubstitutePlayerSelectorView<Midfielder> view;	
+	private @Mock SubstituteSelectorWidget<Midfielder> view;	
 	private @Mock CompetitiveOptionDealingGroup<StarterSelectorDelegate<Midfielder>, Midfielder> groupDriver;	
 	private @Mock FillableSwappableSequence<SubstituteSelectorDelegate<Midfielder>> sequenceDriver;	
 	
@@ -221,7 +221,7 @@ class SubstitutePlayerSelectorTest {
 		
 		@Test
 		@DisplayName("when having to swap contents")
-		void onSwap(@Mock SubstitutePlayerSelectorView<Midfielder> otherView) {
+		void onSwap(@Mock SubstituteSelectorWidget<Midfielder> otherView) {
 			SubstitutePlayerSelector<Midfielder> other = spy(
 					new SubstitutePlayerSelector<Midfielder>(otherView));
 			
