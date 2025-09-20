@@ -18,7 +18,7 @@ import javax.swing.JTextField;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class TestComboEvents extends JPanel {
+public class TryComboEvents extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JTextField textField;
@@ -26,7 +26,7 @@ public class TestComboEvents extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public TestComboEvents() {
+	public TryComboEvents() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0};
@@ -132,7 +132,7 @@ public class TestComboEvents extends JPanel {
 	
 	public static void main(String[] args) {
 		JFrame f = new JFrame("Test Frame");
-		f.setContentPane(new TestComboEvents());
+		f.setContentPane(new TryComboEvents());
 		f.pack();
 		f.setLocationRelativeTo(null);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
