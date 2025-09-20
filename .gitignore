@@ -41,3 +41,18 @@ build/
 /bin/
 /.apt_generated_tests/
 /failed-gui-tests/
+Relazione/main.aux
+Relazione/main.fdb_latexmk
+Relazione/main.fls
+Relazione/main.lof
+Relazione/main.log
+Relazione/main.synctex.gz
+Relazione/main.toc
+Relazione/Part/Bibl.aux
+Relazione/Part/Confronto implementazione dizionari.aux
+Relazione/Part/Introduzione Generale.aux
+Relazione/Title/Title.aux
+Relazione/Title/title.aux
+Relazione/Title/Title.fdb_latexmk
+Relazione/Title/Title.fls
+Relazione/Title/Title.log
