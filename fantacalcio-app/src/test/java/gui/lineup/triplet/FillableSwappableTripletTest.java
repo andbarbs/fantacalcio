@@ -36,7 +36,6 @@ public class FillableSwappableTripletTest {
 	@BeforeEach
 	public void testCaseSpecificSetup() {
 		triplet = new FillableSwappableTriplet<Defender>(
-				mockSequence,
 				mockFillable1, mockFillable2, mockFillable3);
 	}
 	

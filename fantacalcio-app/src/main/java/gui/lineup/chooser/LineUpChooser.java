@@ -225,11 +225,47 @@ public class LineUpChooser implements LineUpChooserController {
 
 	private final StarterLineUpChooserDelegate starterChooser;
 
-	// a type for the Substitute Triplet Chooser delegate
+	/**
+	 * specifies the code-facing side of a component allowing users to pick a choice
+	 * of a <i>substitute line-up</i> for a given role, through the use of
+	 * <b>three</b> {@link SubstituteSelectorDelegate}s arranged into a
+	 * {@link FillableSwappableSequence}.
+	 * 
+	 * <p>
+	 * Specifically, it enables clients to
+	 * <ol>
+	 * <li>access all composed {@link SubstituteSelectorDelegate}s, in the same
+	 * order as they appear to the user
+	 * <li>access the last non-filled {@link Selector} in the
+	 * {@link FillableSwappableSequence Sequence}, if existing
+	 * <li>request that the {@link FillableSwappableSequence Sequence} be
+	 * initialized
+	 * </ol>
+	 * 
+	 * @param <T> the role of {@link Player} that this triplet is responsible for
+	 */
 	public interface SubstituteTripletChooserDelegate<T extends Player> {
+		
+		/**
+		 * @return a {@code List} containing the three composed
+		 *         {@link SubstituteSelectorDelegate}s, in the same order as they appear
+		 *         to the user
+		 */
 		List<SubstituteSelectorDelegate<T>> getSelectors();
 
+		/**
+		 * @return an {@code Optional} containing the last non-filled {@link Selector}
+		 *         in the {@link FillableSwappableSequence Sequence}, or an empty one if
+		 *         such a {@link Selector} does not exist
+		 */
 		Optional<Selector<T>> getNextFillableSelector();
+
+		/**
+		 * requests a {@link SubstituteTripletChooserDelegate} to initialize itself on a
+		 * new {@link FillableSwappableSequence} containing its tree composed
+		 * {@link SubstituteSelectorDelegate}s
+		 */
+		void initSequence();
 	}
 
 	private final SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
@@ -414,10 +450,10 @@ public class LineUpChooser implements LineUpChooserController {
 						.collect(Collectors.toList()));
 		
 		// initializes sequences
-		FillableSwappableSequence.createSequence(goalieTriplet.getSelectors());
-		FillableSwappableSequence.createSequence(defTriplet.getSelectors());
-		FillableSwappableSequence.createSequence(midTriplet.getSelectors());
-		FillableSwappableSequence.createSequence(forwTriplet.getSelectors());
+		goalieTriplet.initSequence();
+		defTriplet.initSequence();
+		midTriplet.initSequence();
+		forwTriplet.initSequence();
 		
 		// orders Starter Delegate
 		starterChooser.switchToDefaultScheme();

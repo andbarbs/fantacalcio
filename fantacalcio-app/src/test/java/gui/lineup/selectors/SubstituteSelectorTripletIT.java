@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import domainModel.Player.Defender;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
-import gui.lineup.sequence.FillableSwappableSequence;
 import gui.lineup.triplet.FillableSwappableTriplet;
 import gui.lineup.triplet.SwingFillableSwappableTripletWidget;
 import gui.utils.AssertJSwingJUnit5TestCase;
@@ -64,12 +63,12 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			// sets up the SUT
 			FillableSwappableTriplet<Defender> triplet = 
 					new FillableSwappableTriplet<Defender>(
-							FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 							selPres1, selPres2, selPres3);
 			SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(
 					false, view1, view2, view3);
 			triplet.setWidget(widget);
 			widget.setController(triplet);
+			triplet.initSequence();
 			
 			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(selPres1, selPres2, selPres3), 

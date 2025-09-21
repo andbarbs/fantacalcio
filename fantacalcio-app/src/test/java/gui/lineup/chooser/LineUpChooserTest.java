@@ -52,7 +52,6 @@ import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteTripletChooserDelegate;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
-import gui.lineup.sequence.FillableSwappableSequence;
 
 @DisplayName("A LineUpChooser")
 @ExtendWith(MockitoExtension.class)
@@ -188,56 +187,53 @@ public class LineUpChooserTest {
 		when(starterChooser.getAllMidSelectors()).thenReturn(Set.copyOf(starterMids));
 		when(starterChooser.getAllForwSelectors()).thenReturn(Set.copyOf(starterForws));
 		
-        try(@SuppressWarnings("rawtypes") MockedStatic<FillableSwappableSequence> mockSequence = 
-		        mockStatic(FillableSwappableSequence.class)) {
-			try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedGroup = 
-			        mockStatic(CompetitiveOptionDealingGroup.class)) {
+		try (@SuppressWarnings("rawtypes") MockedStatic<CompetitiveOptionDealingGroup> mockedGroup = 
+				mockStatic(CompetitiveOptionDealingGroup.class)) {
+			
+			// WHEN the SUT is initialized to a Team and Match
+			chooser.initTo(team, match);
+			
+			// THEN its internal state records that
+			assertThat(chooser.team).isSameAs(team);
+			assertThat(chooser.match).isSameAs(match);
+			
+			// AND all Selectors are made to compete on players sorted by surname
+			class DealingInitializationVerifier<P extends Player> implements 
+			BiConsumer<List<List<? extends StarterSelectorDelegate<P>>>, Set<P>> {
 				
-				// WHEN the SUT is initialized to a Team and Match
-				chooser.initTo(team, match);
-
-				// THEN its internal state records that
-				assertThat(chooser.team).isSameAs(team);
-				assertThat(chooser.match).isSameAs(match);
-				
-				// AND all Selectors are made to compete on players sorted by surname
-				class DealingInitializationVerifier<P extends Player> implements 
-						BiConsumer<List<List<? extends StarterSelectorDelegate<P>>>, Set<P>> {
-
-					@Override
-					public void accept(List<List<? extends StarterSelectorDelegate<P>>> selectors, Set<P> options) {
-						mockedGroup.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
-								selectors.stream().flatMap(List::stream).collect(Collectors.toSet()),
-								options.stream()
-										.sorted(Comparator.comparing(Player::getSurname))
-										.collect(Collectors.toList())));
-					}        		
-				}
-				
-				new DealingInitializationVerifier<Goalkeeper>().accept(
-						List.of(List.of(starterGoalie), tripletGoalies), 
-						team.extract().goalkeepers());
-				new DealingInitializationVerifier<Defender>().accept(
-						List.of(starterDefs, tripletDefs), 
-						team.extract().defenders());
-				new DealingInitializationVerifier<Midfielder>().accept(
-						List.of(starterMids, tripletMids), 
-						team.extract().midfielders());
-				new DealingInitializationVerifier<Forward>().accept(
-						List.of(starterForws, tripletForws), 
-						team.extract().forwards());
-			    
-			    // AND Substitute Selectors are wired into a Sequence
-				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletGoalies));
-				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletDefs));
-				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletMids));
-				mockSequence.verify(() -> FillableSwappableSequence.createSequence(tripletForws));
-				
-				// AND Starter Delegate is asked to swutch to the default scheme
-				verify(starterChooser).switchToDefaultScheme();
+				@Override
+				public void accept(List<List<? extends StarterSelectorDelegate<P>>> selectors, Set<P> options) {
+					mockedGroup.verify(() -> CompetitiveOptionDealingGroup.initializeDealing(
+							selectors.stream().flatMap(List::stream).collect(Collectors.toSet()),
+							options.stream()
+							.sorted(Comparator.comparing(Player::getSurname))
+							.collect(Collectors.toList())));
+				}        		
 			}
-		}		
-	}
+			
+			new DealingInitializationVerifier<Goalkeeper>().accept(
+					List.of(List.of(starterGoalie), tripletGoalies), 
+					team.extract().goalkeepers());
+			new DealingInitializationVerifier<Defender>().accept(
+					List.of(starterDefs, tripletDefs), 
+					team.extract().defenders());
+			new DealingInitializationVerifier<Midfielder>().accept(
+					List.of(starterMids, tripletMids), 
+					team.extract().midfielders());
+			new DealingInitializationVerifier<Forward>().accept(
+					List.of(starterForws, tripletForws), 
+					team.extract().forwards());
+			
+			// AND triplets are told to initialize a sequence
+			verify(goalieTriplet).initSequence();
+			verify(defTriplet).initSequence();
+			verify(midTriplet).initSequence();
+			verify(forwTriplet).initSequence();
+			
+			// AND Starter Delegate is asked to swutch to the default scheme
+			verify(starterChooser).switchToDefaultScheme();
+		}
+	}		
 	
 	@Nested
 	@DisplayName("commands its Widget to")

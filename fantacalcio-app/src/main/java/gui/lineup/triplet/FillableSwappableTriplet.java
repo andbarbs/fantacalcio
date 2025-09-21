@@ -83,7 +83,7 @@ public class FillableSwappableTriplet<Q extends Player>
 	 * @param fillable3    the third sequence member
 	 * @param widget3      the third member's widget
 	 */
-	public FillableSwappableTriplet(FillableSwappableSequence<SubstituteSelectorDelegate<Q>> sequence, 
+	public FillableSwappableTriplet( 
 			SubstituteSelectorDelegate<Q> fillable1, 
 			SubstituteSelectorDelegate<Q> fillable2, 
 			SubstituteSelectorDelegate<Q> fillable3) {
@@ -93,7 +93,6 @@ public class FillableSwappableTriplet<Q extends Player>
 		this.member3 = Objects.requireNonNull(fillable3);
 
 		// creates fillable-swappable sequence and attaches listener
-		this.sequenceDriver = sequence;
 		sequenceDriver.attachListener(new FillableSwappableSequenceListener<SubstituteSelectorDelegate<Q>>() {
 			
 			// disables swap buttons according to notifications from the sequence driver
@@ -128,6 +127,24 @@ public class FillableSwappableTriplet<Q extends Player>
 		sequenceDriver.swapRight(member2);
 	}
 
+	@Override
+	public List<SubstituteSelectorDelegate<Q>> getSelectors() {
+		return List.of(member1, member2, member3);
+	}
+
+	@Override
+	public Optional<Selector<Q>> getNextFillableSelector() {
+		// TODO Auto-generated method stub
+		return Optional.empty();
+	}
+
+	@Override
+	public void initSequence() {
+		this.sequenceDriver = FillableSwappableSequence.createSequence(List.of(member1, member2, member3));
+		
+		// TODO interact with Widget and reset bookkeeping??
+	}
+
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			JFrame frame = new JFrame("substitute chooser demo");
@@ -149,7 +166,6 @@ public class FillableSwappableTriplet<Q extends Player>
 				view3.setController(selPres3);
 						
 				triplet = new FillableSwappableTriplet<Defender>(
-						FillableSwappableSequence.createSequence(List.of(selPres1, selPres2, selPres3)),
 						selPres1, selPres2, selPres3);
 				
 				SwingFillableSwappableTripletWidget widget = new SwingFillableSwappableTripletWidget(
@@ -171,17 +187,6 @@ public class FillableSwappableTriplet<Q extends Player>
 				e.printStackTrace();
 			}
 		});
-	}
-
-	@Override
-	public List<SubstituteSelectorDelegate<Q>> getSelectors() {
-		return List.of(member1, member2, member3);
-	}
-
-	@Override
-	public Optional<Selector<Q>> getNextFillableSelector() {
-		// TODO Auto-generated method stub
-		return Optional.empty();
 	}
 
 }
