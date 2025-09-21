@@ -248,6 +248,9 @@ public class LineUpChooser implements LineUpChooserController {
 	 */
 	public interface SubstituteTripletChooserDelegate<T extends Player> {
 		
+		// TODO if sequence wiring is up to the triplet, 
+		// this getter could return StarterSelectorDelegates!! <-- obviously, rename this type
+		
 		/**
 		 * @return a {@code List} containing the three composed
 		 *         {@link SubstituteSelectorDelegate}s, in the same order as they appear
@@ -373,15 +376,15 @@ public class LineUpChooser implements LineUpChooserController {
 
 	/**
 	 * assembles a {@link SelectorListener} that is responsible for keeping a choice
-	 * flag consistent with the selection state of a {@code Collection} of
+	 * flag consistent with the selection state of a variable {@code Collection} of
 	 * {@link Selector}s
 	 * 
 	 * @param <T>              the role of {@link Player} in {@link Selector}s being
 	 *                         listened to
 	 * @param flagWrapper      the {@link BooleanWrapper} containing the flag that
 	 *                         this listener is responsible for
-	 * @param selectorSupplier a {@code Supplier} that provides the
-	 *                         {@link Selector}s that this listener should monitor
+	 * @param selectorSupplier a {@code Supplier} providing the {@link Selector}s
+	 *                         that this listener should monitor
 	 * @return a {@link SelectorListener} so construed
 	 */
 	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
@@ -398,13 +401,9 @@ public class LineUpChooser implements LineUpChooserController {
 	
 			@Override
 			public void selectionClearedOn(Selector<T> selector) {
-				if (flagWrapper.flag = selectorSupplier.get().stream().map(Selector::getSelection)
-						.allMatch(Optional::isPresent)) {
-					if (hasChoice())   // why???
-						widget.enableSavingLineUp();
-				} else {
-						widget.disableSavingLineUp();
-				}
+				if (hasChoice())
+					widget.disableSavingLineUp();
+				flagWrapper.flag = false;
 			}
 		};
 	}

@@ -478,7 +478,7 @@ public class LineUpChooserTest {
 			
 			@Nested
 			@DisplayName("when a line-up choice is lost")
-			class WhenChoiceIsLost {
+			class OnEdgeWhenChoiceIsLost {
 
 				/**
 				 * TEST ISOLATION
@@ -510,16 +510,27 @@ public class LineUpChooserTest {
 							public void StarterGoalkeeper(@Mock Selector<Goalkeeper> dummySelector) {
 								verify(starterGoalie).attachListener(starterGoalieListener.capture());
 								
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
+								chooser.hasStarterDefChoice.flag = false;								
+
+								// WHEN the Listener is triggered
+								starterGoalieListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterGoalieChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
 								
-								// AND starter Goalie selector reports being empty
-								when(starterGoalie.getSelection()).thenReturn(Optional.empty());
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// WHEN the Listener is triggered
 								starterGoalieListener.getValue().selectionClearedOn(dummySelector);
-								
-								// THEN the Widget is commanded to disable line-up saving
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterGoalieChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
@@ -533,20 +544,27 @@ public class LineUpChooserTest {
 								defConsumer.getValue().accept(dummySelector);
 								verify(dummySelector).attachListener(starterDefListener.capture());
 
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
-
-								// AND Starter Delegate reports those in the scheme as current starter selectors
-								Set<Selector<Defender>> currentDefs = starterDefs.stream()
-										.filter(selsInCurrentScheme::contains).collect(toSet());
-								when(starterChooser.getCurrentDefSelectors()).thenReturn(currentDefs);
-								// AND one selector in the scheme reports being empty
-								when(currentDefs.stream().findFirst().get().getSelection()).thenReturn(Optional.empty());
+								chooser.hasStarterGoalieChoice.flag = false;								
 
 								// WHEN the Listener is triggered
 								starterDefListener.getValue().selectionClearedOn(dummySelector);
 
-								// THEN the Widget is commanded to disable line-up saving
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterDefChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
+								
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
+								
+								// WHEN the Listener is triggered
+								starterDefListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterDefChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
@@ -554,27 +572,33 @@ public class LineUpChooserTest {
 							@Captor ArgumentCaptor<SelectorListener<Midfielder>> starterMidListener;
 
 							@Test
-							@DisplayName("midfielders")
+							@DisplayName("Midfielders")
 							public void StarterMidfielders(@Mock Selector<Midfielder> dummySelector) {
 								verify(starterChooser).setEntryMidConsumer(midConsumer.capture());
 								midConsumer.getValue().accept(dummySelector);
 								verify(dummySelector).attachListener(starterMidListener.capture());
 
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
-
-								// AND Starter Delegate reports those in the scheme as current starter selectors
-								Set<Selector<Midfielder>> currentMids = starterMids.stream()
-										.filter(selsInCurrentScheme::contains).collect(toSet());
-								when(starterChooser.getCurrentMidSelectors()).thenReturn(currentMids);
-								// AND one selector in the scheme reports being empty
-								when(currentMids.stream().findFirst().get().getSelection())
-										.thenReturn(Optional.empty());
+								chooser.hasStarterGoalieChoice.flag = false;								
 
 								// WHEN the Listener is triggered
 								starterMidListener.getValue().selectionClearedOn(dummySelector);
 
-								// THEN the Widget is commanded to disable line-up saving
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterMidChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
+								
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
+								
+								// WHEN the Listener is triggered
+								starterMidListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterMidChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
@@ -588,21 +612,27 @@ public class LineUpChooserTest {
 								forwConsumer.getValue().accept(dummySelector);
 								verify(dummySelector).attachListener(starterForwListener.capture());
 
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
-
-								// AND Starter Delegate reports those in the scheme as current starter selectors
-								Set<Selector<Forward>> currentForws = starterForws.stream()
-										.filter(selsInCurrentScheme::contains).collect(toSet());
-								when(starterChooser.getCurrentForwSelectors()).thenReturn(currentForws);
-								// AND one selector in the scheme reports being empty
-								when(currentForws.stream().findFirst().get().getSelection())
-										.thenReturn(Optional.empty());
+								chooser.hasStarterGoalieChoice.flag = false;								
 
 								// WHEN the Listener is triggered
 								starterForwListener.getValue().selectionClearedOn(dummySelector);
 
-								// THEN the Widget is commanded to disable line-up saving
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterForwChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
+								
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
+								
+								// WHEN the Listener is triggered
+								starterForwListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasStarterForwChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 						}
@@ -618,16 +648,27 @@ public class LineUpChooserTest {
 							public void SubstituteGoalkeepers(@Mock Selector<Goalkeeper> dummySelector) {
 								tripletGoalies.forEach(sel -> verify(sel).attachListener(tripletGoalieListener.capture()));
 								
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
+								chooser.hasStarterGoalieChoice.flag = false;								
+
+								// WHEN the Listener is triggered
+								tripletGoalieListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsGoaliesChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
 								
-								// AND one triplet selector reports being empty
-								when(tripletGoalies.get(0).getSelection()).thenReturn(Optional.empty());
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// WHEN the Listener is triggered
 								tripletGoalieListener.getValue().selectionClearedOn(dummySelector);
-								
-								// THEN the Widget is commanded to enable line-up saving
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsGoaliesChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
@@ -638,56 +679,89 @@ public class LineUpChooserTest {
 							public void SubstituteDefenders(@Mock Selector<Defender> dummySelector) {
 								tripletDefs.forEach(sel -> verify(sel).attachListener(tripletDefListener.capture()));
 								
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
+								chooser.hasStarterGoalieChoice.flag = false;								
+
+								// WHEN the Listener is triggered
+								tripletDefListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsDefsChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
 								
-								// AND one triplet selector reports being empty
-								when(tripletDefs.get(0).getSelection()).thenReturn(Optional.empty());
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// WHEN the Listener is triggered
 								tripletDefListener.getValue().selectionClearedOn(dummySelector);
-								
-								// THEN the Widget is commanded to enable line-up saving
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsDefsChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
 							@Captor ArgumentCaptor<SelectorListener<Midfielder>> tripletMidListener;
 							
 							@Test
-							@DisplayName("goalkeepers")
+							@DisplayName("midfielders")
 							public void SubstituteMidfielders(@Mock Selector<Midfielder> dummySelector) {
 								tripletMids.forEach(sel -> verify(sel).attachListener(tripletMidListener.capture()));
 								
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
+								chooser.hasStarterGoalieChoice.flag = false;								
+
+								// WHEN the Listener is triggered
+								tripletMidListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsMidsChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
 								
-								// AND one triplet selector reports being empty
-								when(tripletMids.get(0).getSelection()).thenReturn(Optional.empty());
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// WHEN the Listener is triggered
 								tripletMidListener.getValue().selectionClearedOn(dummySelector);
-								
-								// THEN the Widget is commanded to enable line-up saving
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsMidsChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 							
 							@Captor ArgumentCaptor<SelectorListener<Forward>> tripletForwListener;
 							
 							@Test
-							@DisplayName("goalkeepers")
+							@DisplayName("forwards")
 							public void SubstituteForwards(@Mock Selector<Forward> dummySelector) {
 								tripletForws.forEach(sel -> verify(sel).attachListener(tripletForwListener.capture()));
 								
-								// GIVEN all Listeners have registered a choice
+								// GIVEN all but one role groups have registered a choice
 								affirmAllChoiceFlagsIn(chooser);
+								chooser.hasStarterGoalieChoice.flag = false;								
+
+								// WHEN the Listener is triggered
+								tripletForwListener.getValue().selectionClearedOn(dummySelector);
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsForwsChoice.flag).isFalse();
+								// AND the Widget is not engaged
+								verifyNoInteractions(mockWidget);
 								
-								// AND one triplet selector reports being empty
-								when(tripletForws.get(0).getSelection()).thenReturn(Optional.empty());
+								// BUT GIVEN all role groups have registered a choice
+								affirmAllChoiceFlagsIn(chooser);
 								
 								// WHEN the Listener is triggered
 								tripletForwListener.getValue().selectionClearedOn(dummySelector);
-								
-								// THEN the Widget is commanded to enable line-up saving
+
+								// THEN the relevant group choice flag is negated
+								assertThat(chooser.hasSubsForwsChoice.flag).isFalse();
+								// AND the Widget is commanded to disable line-up saving
 								verify(mockWidget).disableSavingLineUp();
 							}
 						}
