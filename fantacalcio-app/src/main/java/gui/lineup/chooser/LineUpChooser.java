@@ -39,6 +39,8 @@ import gui.utils.schemes.SpringSchemePanel;
 
 public class LineUpChooser implements LineUpChooserController {
 	
+	// 1. Interfaces and fields for collaborators
+	
 	/**
 	 * a type for a {@linkplain Selector} that can be made to participate in a
 	 * {@linkplain CompetitiveOptionDealingGroup} made up of other
@@ -273,19 +275,26 @@ public class LineUpChooser implements LineUpChooserController {
 	private final SubstituteTripletChooserDelegate<Midfielder> midTriplet;
 	private final SubstituteTripletChooserDelegate<Forward> forwTriplet;
 
-	// a type for the Widget collaborator
-	public interface LineUpChooserWidget {
-		void enableSavingLineUp();
-
-		void disableSavingLineUp();
-	}
-
 	private LineUpChooserWidget widget;
 
-	public void setWidget(LineUpChooserWidget mockWidget) {
-		this.widget = mockWidget;
+	@Override
+	public void setWidget(LineUpChooserWidget widget) {
+		this.widget = widget;
 	}
 	
+	private final UserService service;
+	
+	
+	// 2. internal bookkeeping
+	
+	/**
+	 * a type for a wrapper of {@code boolean} that enables
+	 * <ul>
+	 * <li><i>per-role</i> choice flags, reducing the cost of choice lookups
+	 * <li>mutating these flags inside {@code Listener}s and {@code Consumer}s
+	 * </ul>
+	 * and is non-private for ease of set-up in unit tests
+	 */
 	static class BooleanWrapper {
 		boolean flag;
 		
@@ -294,7 +303,6 @@ public class LineUpChooser implements LineUpChooserController {
 		}
 	}
 
-	// visible to unit tests for set-up
 	BooleanWrapper hasStarterGoalieChoice = new BooleanWrapper();
 	BooleanWrapper hasStarterDefChoice = new BooleanWrapper();
 	BooleanWrapper hasStarterMidChoice = new BooleanWrapper();
@@ -311,9 +319,9 @@ public class LineUpChooser implements LineUpChooserController {
 				.map(BooleanWrapper::flag).allMatch(t -> t.equals(Boolean.TRUE));
 	}
 
-	private final UserService service;
 	
-	// public instantiation point
+	// 3. public instantiation point
+	
 	public LineUpChooser(
 			UserService service,
 			StarterLineUpChooserDelegate starterChooser,
@@ -363,13 +371,26 @@ public class LineUpChooser implements LineUpChooserController {
 		this.forwTriplet.getSelectors().forEach(sel -> sel.attachListener(substituteForwListener));
 	}
 
+	/**
+	 * assembles a {@link SelectorListener} that is responsible for keeping a choice
+	 * flag consistent with the selection state of a {@code Collection} of
+	 * {@link Selector}s
+	 * 
+	 * @param <T>              the role of {@link Player} in {@link Selector}s being
+	 *                         listened to
+	 * @param flagWrapper      the {@link BooleanWrapper} containing the flag that
+	 *                         this listener is responsible for
+	 * @param selectorSupplier a {@code Supplier} that provides the
+	 *                         {@link Selector}s that this listener should monitor
+	 * @return a {@link SelectorListener} so construed
+	 */
 	private <T extends Player> SelectorListener<T> listener(BooleanWrapper flagWrapper,
-			Supplier<Collection<? extends Selector<T>>> listSupplier) {
+			Supplier<Collection<? extends Selector<T>>> selectorSupplier) {
 		return new SelectorListener<T>() {
 	
 			@Override
 			public void selectionMadeOn(Selector<T> selector) {
-				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
+				if (flagWrapper.flag = selectorSupplier.get().stream().map(Selector::getSelection)
 						.allMatch(Optional::isPresent))
 					if (hasChoice())
 						widget.enableSavingLineUp();
@@ -377,7 +398,7 @@ public class LineUpChooser implements LineUpChooserController {
 	
 			@Override
 			public void selectionClearedOn(Selector<T> selector) {
-				if (flagWrapper.flag = listSupplier.get().stream().map(Selector::getSelection)
+				if (flagWrapper.flag = selectorSupplier.get().stream().map(Selector::getSelection)
 						.allMatch(Optional::isPresent)) {
 					if (hasChoice())   // why???
 						widget.enableSavingLineUp();
@@ -388,6 +409,22 @@ public class LineUpChooser implements LineUpChooserController {
 		};
 	}
 
+	/**
+	 * assembles a {@code Consumer} that is responsible for processing
+	 * {@link Selector}s as they <b>enter</b> the current scheme on
+	 * {@link StarterSelectorDelegate}, by
+	 * <ul>
+	 * <li>attaching the appropriate {@link SelectorListener} to them
+	 * <li>setting the relevant group choice flag to {@code false}, as
+	 * {@link Selector}s will always join the current scheme while empty
+	 * </ul>
+	 * 
+	 * @param <T>                the role of {@link Player} in {@link Selector}s
+	 *                           being processed
+	 * @param starterDefListener the {@link SelectorListener} to be attached
+	 * @param hasGroupChoice     the group choice flag that should be negated
+	 * @return a {@code Consumer<Selector>} so construed
+	 */
 	private <T extends Player> Consumer<Selector<T>> entryConsumer(SelectorListener<T> starterDefListener,
 			BooleanWrapper hasGroupChoice) {
 		return selector -> {
@@ -396,6 +433,30 @@ public class LineUpChooser implements LineUpChooserController {
 		};
 	}
 
+	/**
+	 * assembles a {@code Consumer} that is responsible for processing
+	 * {@link Selector}s as they <b>exit</b> the current scheme on
+	 * {@link StarterSelectorDelegate}, by
+	 * <ul>
+	 * <li>removing the appropriate {@link SelectorListener} from them
+	 * <li>if they bear a selection, transferring it to the last non-filled
+	 * {@link Selector} in the relevant {@link SubstituteTripletChooserDelegate}
+	 * <li>updating the relevant group choice flag to whatever emerges on the
+	 * current scheme following this {@code Selector}'s departure
+	 * </ul>
+	 * 
+	 * @param <T>                    the role of {@link Player} in {@link Selector}s
+	 *                               being processed
+	 * @param listener               the {@link SelectorListener} to be removed
+	 * @param triplet                the {@link SubstituteTripletChooserDelegate}
+	 *                               that selections should be transferred to
+	 * @param hasGroupChoice         the group choice flag that should be updated
+	 * @param currentSchemeSelectors a {@code Supplier} that provides the
+	 *                               {@link Selector}s in the scheme that
+	 *                               {@link StarterSelectorDelegate} is
+	 *                               <b>transitioning to</b>
+	 * @return a {@code Consumer<Selector>} so construed
+	 */
 	private <T extends Player> Consumer<Selector<T>> exitConsumer(SelectorListener<T> listener,
 			SubstituteTripletChooserDelegate<T> triplet, BooleanWrapper hasGroupChoice,
 			Supplier<Collection<? extends Selector<T>>> currentSchemeSelectors) {
@@ -410,6 +471,9 @@ public class LineUpChooser implements LineUpChooserController {
 					.allMatch(Optional::isPresent);
 		};
 	}
+	
+	
+	// 4. public configuration point & bookkeeping
 
 	FantaTeam team;
 	Match match;
@@ -457,7 +521,12 @@ public class LineUpChooser implements LineUpChooserController {
 		
 		// orders Starter Delegate
 		starterChooser.switchToDefaultScheme();
+		
+		// TODO should reset to false all choice flags?
 	}
+	
+	
+	// 5. MVP Widget notification point
 
 	@Override
 	public void saveLineUp() {

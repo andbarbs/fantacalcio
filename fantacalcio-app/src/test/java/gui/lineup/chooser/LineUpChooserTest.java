@@ -45,7 +45,6 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 import domainModel.scheme.Scheme433;
-import gui.lineup.chooser.LineUpChooser.LineUpChooserWidget;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
