@@ -3,18 +3,18 @@
 \todo{Se volete yappare per allungarla fate pure}
 \subsection{Statement}
 Il sistema progettato vuole ricreare una applicazione desktop per il gioco del
-Fantacalcio. I partecipanti al gioco sono in grado di entrare, creare e gestire le leghe ed i 
-relativi fanta team, in particolare sono in grado di schierare una formazione per la prossima partita
-da giocare. Il sistema inoltre permette a varie testate giornalistiche di registrarsi e di dare i voti ai 
-calciatori.
+Fantacalcio. I partecipanti al gioco sono in grado di creare, entrare e gestire le leghe e i 
+propri fanta team: in particolare, sono in grado di schierare una formazione per la successiva partita
+da giocare. Il sistema inoltre permette a varie testate giornalistiche di registrarsi e, 
+una volta selezionate dall'admin della lega, di dare i voti ai calciatori.
 \subsubsection{Actors}
-Il sistema prevede tre tipi di utenti distinti ognuno con capacità diverse:
+Il sistema prevede tre tipi di utenti distinti, ciascuno con capacità diverse:
 \begin{itemize}
-    \item \textbf{FantaUser}: l'utente base dell'applicazione è in grado di entrare in leghe già esistenti o di crearne nuove
-    compete con gli altri giocatori schierando la formazione migliore ogni giornata
-    \item \textbf{Admin}: è un utente base che però è l'admin di una lega. Si occupat di generare il calendario,  
-    assegnare o rimuovere i vari calciatori ad i team e di calcolare i risultati delle partite alla fine della giornata
-    \item \textbf{Newspaper}: è la testata giornalistica, si occupa di assegnare i voti ad i calciatori ogni giornata del campionato
+    \item \textbf{FantaUser}: l'utente base dell'applicazione è in grado di entrare in leghe già esistenti per
+    competere con gli altri giocatori schierando la formazione migliore in ogni giornata
+    \item \textbf{Admin}: è un utente base che è anche admin di una lega. Si occupa di generare il calendario,  
+    assegnare o rimuovere i calciatori dai team e di calcolare i risultati delle partite alla fine della giornata
+    \item \textbf{Newspaper}: è la testata giornalistica che si occupa di assegnare i voti ai calciatori ad ogni giornata del campionato
 \end{itemize}
 
 \subsection{Architettura}
