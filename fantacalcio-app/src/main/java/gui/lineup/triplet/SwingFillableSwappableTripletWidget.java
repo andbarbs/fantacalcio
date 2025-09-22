@@ -21,7 +21,6 @@ import domainModel.Player.Forward;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.SubstitutePlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
-import gui.lineup.triplet.FillableSwappableTriplet.FillableSwappableTripletWidget;
 
 import javax.swing.ImageIcon;
 import java.awt.Insets;
@@ -257,6 +256,12 @@ public class SwingFillableSwappableTripletWidget extends JPanel implements Filla
 	@Override
 	public void setSwappingSecondPair(boolean enabled) {
 		swapMembers2and3.setEnabled(enabled);
+	}
+
+	@Override
+	public void resetSwapping() {
+		swapMembers1and2.setEnabled(false);
+		swapMembers2and3.setEnabled(false);
 	}
 
 	public static void main(String[] args) {

@@ -434,4 +434,9 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 					+ "that is not a member of this sequence\n", swappee));
 		});
 	}
+
+	public Optional<F> nextFillable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -1278,11 +1278,11 @@ public class LineUpChooserTest {
 				@Test
 				@DisplayName("defenders")
 				public void AffirmsDefenderChoice(@Mock Selector<Defender> exitingSelector,
-						@Mock Selector<Defender> substituteSelector) {
+						@Mock SubstituteSelectorDelegate<Defender> substituteSelector) {
 					verify(starterChooser).setExitDefConsumer(exitDefConsumer.capture());
 
 					// GIVEN the triplet reports a Selector as the next fillable
-					when(defTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+					when(defTriplet.getNextFillable()).thenReturn(Optional.of(substituteSelector));
 
 					// AND the exiting Selector reports being non-empty
 					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_DEFENDER));
@@ -1299,11 +1299,11 @@ public class LineUpChooserTest {
 				@Test
 				@DisplayName("midfielders")
 				public void AffirmsMidfielderChoice(@Mock Selector<Midfielder> exitingSelector,
-						@Mock Selector<Midfielder> substituteSelector) {
+						@Mock SubstituteSelectorDelegate<Midfielder> substituteSelector) {
 					verify(starterChooser).setExitMidConsumer(exitMidConsumer.capture());
 
 					// GIVEN the triplet reports a Selector as the next fillable
-					when(midTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+					when(midTriplet.getNextFillable()).thenReturn(Optional.of(substituteSelector));
 
 					// AND the exiting Selector reports being non-empty
 					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_MIDFIELDER));
@@ -1320,11 +1320,11 @@ public class LineUpChooserTest {
 				@Test
 				@DisplayName("forwards")
 				public void AffirmsForwardChoice(@Mock Selector<Forward> exitingSelector,
-						@Mock Selector<Forward> substituteSelector) {
+						@Mock SubstituteSelectorDelegate<Forward> substituteSelector) {
 					verify(starterChooser).setExitForwConsumer(exitForwConsumer.capture());
 
 					// GIVEN the triplet reports a Selector as the next fillable
-					when(forwTriplet.getNextFillableSelector()).thenReturn(Optional.of(substituteSelector));
+					when(forwTriplet.getNextFillable()).thenReturn(Optional.of(substituteSelector));
 
 					// AND the exiting Selector reports being non-empty
 					when(exitingSelector.getSelection()).thenReturn(Optional.of(FAKE_FORWARD));

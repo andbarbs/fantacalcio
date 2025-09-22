@@ -1,14 +1,12 @@
 package gui.lineup.triplet;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import domainModel.Player;
 import domainModel.Player.Defender;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteTripletChooserDelegate;
-import gui.lineup.chooser.Selector;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.SubstitutePlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
@@ -16,39 +14,25 @@ import gui.lineup.sequence.FillableSwappableSequence;
 import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceListener;
 
 import java.awt.Dimension;
-import java.beans.Beans;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-// TODO: javadoc is pre-splitting!!
-
 /**
- * a {@code JPanel} responsible for wiring up and providing graphical access to
- * a <b>three-member</b>, left-to-right {@linkplain FillableSwappableSequence
- * <i>fillable-swappable sequence</i>} through members' {@code JPanel} widgets.
+ * implements {@link SubstituteTripletChooserDelegate} as a
+ * {@link FillableSwappableTripletController Controller} in a bidirectional
+ * collaboration scheme inspired by the <b>MVP pattern</b>.
  * 
- * @param <T> the type for sequence members
- * @implNote sizing of this {@code JPanel} is computed as a function of member
- *           widget's {@linkplain JPanel#getPreferredSize()} dimensions. See the
- *           {@linkplain FillableSwappableTriplet#SwingFillableSwappableTriplet
- *           (boolean, FillableSwappable, JPanel, FillableSwappable, JPanel, FillableSwappable, JPanel)
- *           public constructor}
+ * @param <Q> the type of {@link Player}s up for selection on this chooser
  */
 public class FillableSwappableTriplet<Q extends Player> 
-		implements FillableSwappableTripletController, SubstituteTripletChooserDelegate<Q> {
+		implements  SubstituteTripletChooserDelegate<Q>, FillableSwappableTripletController {
 	
 	// sequence creation & listening
-	private SubstituteSelectorDelegate<Q> member1, member2, member3;	
+	private final SubstituteSelectorDelegate<Q> member1, member2, member3;	
 	private FillableSwappableSequence<SubstituteSelectorDelegate<Q>> sequenceDriver;
-	
-	// Widget ref
-	public interface FillableSwappableTripletWidget {
-		void setSwappingFirstPair(boolean enabled);
-		void setSwappingSecondPair(boolean enabled);
-	}
 	
 	private FillableSwappableTripletWidget widget;
 	
@@ -57,31 +41,13 @@ public class FillableSwappableTriplet<Q extends Player>
 	}
 	
 	/**
-	 * provides {@linkplain FillableSwappableTriplet}'s <b>public</b>
-	 * instantiation point.
 	 * 
-	 * <p><h1>Relative sizing</h1>
-	 * Widgets can have varying dimensions. Sizing for the
-	 * {@code SwingFillableSwappableTriplet} is computed as a function of widgets'
-	 * {@linkplain JPanel#getPreferredSize()} dimensions so as to accommodate all of
-	 * them.</p>
-	 * 
-	 * @param isDesignTime selects
-	 *                     <ul>
-	 *                     <li><b><i>design-time</i></b> instantiation when
-	 *                     {@code true}
-	 *                     <li><b><i>runtime</i></b> instantiation when
-	 *                     {@code false}
-	 *                     </ul>
-	 *                     <p>
-	 *                     Graphical clients should consider passing
-	 *                     {@linkplain Beans#isDesignTime()}
-	 * @param fillable1    the first sequence member
-	 * @param widget1      the first member's widget
-	 * @param fillable2    the second sequence member
-	 * @param widget2      the second member's widget
-	 * @param fillable3    the third sequence member
-	 * @param widget3      the third member's widget
+	 * @param fillable1 the first {@link SubstituteSelectorDelegate} in the
+	 *                  {@code triplet}
+	 * @param fillable2 the second {@link SubstituteSelectorDelegate} in the
+	 *                  {@code triplet}
+	 * @param fillable3 the third {@link SubstituteSelectorDelegate} in the
+	 *                  {@code triplet}
 	 */
 	public FillableSwappableTriplet( 
 			SubstituteSelectorDelegate<Q> fillable1, 
@@ -91,30 +57,6 @@ public class FillableSwappableTriplet<Q extends Player>
 		this.member1 = Objects.requireNonNull(fillable1);
 		this.member2 = Objects.requireNonNull(fillable2);
 		this.member3 = Objects.requireNonNull(fillable3);
-
-		// creates fillable-swappable sequence and attaches listener
-		sequenceDriver.attachListener(new FillableSwappableSequenceListener<SubstituteSelectorDelegate<Q>>() {
-			
-			// disables swap buttons according to notifications from the sequence driver
-			@Override
-			public void becameEmpty(SubstituteSelectorDelegate<Q> emptiedGadget) {
-				// System.out.println("content removed from a gadget!");
-				if (emptiedGadget == member3)
-					widget.setSwappingSecondPair(false);
-				else if (emptiedGadget == member2)
-					widget.setSwappingFirstPair(false);
-			}
-			
-			// enables swap buttons according to notifications from the sequence driver
-			@Override
-			public void becameFilled(SubstituteSelectorDelegate<Q> filledGadget) {
-				// System.out.println("content added to a gadget!");
-				if (filledGadget == member2)
-					widget.setSwappingFirstPair(true);
-				else if (filledGadget == member3)
-					widget.setSwappingSecondPair(true);
-			}
-		});
 	}
 
 	@Override
@@ -133,16 +75,45 @@ public class FillableSwappableTriplet<Q extends Player>
 	}
 
 	@Override
-	public Optional<Selector<Q>> getNextFillableSelector() {
-		// TODO Auto-generated method stub
-		return Optional.empty();
+	public Optional<SubstituteSelectorDelegate<Q>> getNextFillable() throws IllegalStateException {
+		if (this.sequenceDriver == null)
+			throw new IllegalStateException(
+					"FillableSwappableTriplet.setSelection: Illegal State\n" +
+					"this Triplet has not yet been asked to initialize " + 
+					"its internal FillableSwappableSequence\n");
+		return sequenceDriver.nextFillable();
 	}
 
 	@Override
 	public void initSequence() {
+		
+		// creates fillable-swappable sequence and attaches listener
 		this.sequenceDriver = FillableSwappableSequence.createSequence(List.of(member1, member2, member3));
+		this.sequenceDriver.attachListener(new FillableSwappableSequenceListener<SubstituteSelectorDelegate<Q>>() {
+					
+					// disables swap buttons according to notifications from the sequence driver
+					@Override
+					public void becameEmpty(SubstituteSelectorDelegate<Q> emptiedGadget) {
+						// System.out.println("content removed from a gadget!");
+						if (emptiedGadget == member3)
+							widget.setSwappingSecondPair(false);
+						else if (emptiedGadget == member2)
+							widget.setSwappingFirstPair(false);
+					}
+					
+					// enables swap buttons according to notifications from the sequence driver
+					@Override
+					public void becameFilled(SubstituteSelectorDelegate<Q> filledGadget) {
+						// System.out.println("content added to a gadget!");
+						if (filledGadget == member2)
+							widget.setSwappingFirstPair(true);
+						else if (filledGadget == member3)
+							widget.setSwappingSecondPair(true);
+					}
+				});
 		
 		// TODO interact with Widget and reset bookkeeping??
+		widget.resetSwapping();
 	}
 
 	public static void main(String[] args) {

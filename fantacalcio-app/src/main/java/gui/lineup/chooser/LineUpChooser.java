@@ -257,20 +257,22 @@ public class LineUpChooser implements LineUpChooserController {
 		 *         to the user
 		 */
 		List<SubstituteSelectorDelegate<T>> getSelectors();
-
-		/**
-		 * @return an {@code Optional} containing the last non-filled {@link Selector}
-		 *         in the {@link FillableSwappableSequence Sequence}, or an empty one if
-		 *         such a {@link Selector} does not exist
-		 */
-		Optional<Selector<T>> getNextFillableSelector();
-
+		
 		/**
 		 * requests a {@link SubstituteTripletChooserDelegate} to initialize itself on a
 		 * new {@link FillableSwappableSequence} containing its tree composed
 		 * {@link SubstituteSelectorDelegate}s
 		 */
 		void initSequence();
+
+		/**
+		 * @return an {@code Optional} containing the last non-filled
+		 *         {@link SubstituteSelectorDelegate} in the
+		 *         {@link SubstituteTripletChooserDelegate triplet}'s internal
+		 *         {@link FillableSwappableSequence Sequence}, or an empty one if such a
+		 *         {@link SubstituteSelectorDelegate Selector} does not exist
+		 */
+		Optional<SubstituteSelectorDelegate<T>> getNextFillable();
 	}
 
 	private final SubstituteTripletChooserDelegate<Goalkeeper> goalieTriplet;
@@ -462,7 +464,7 @@ public class LineUpChooser implements LineUpChooserController {
 		return exitingSelector -> {
 			exitingSelector.removeListener(listener);
 			if (exitingSelector.getSelection().isPresent()) {
-				triplet.getNextFillableSelector()
+				triplet.getNextFillable()
 						.ifPresent(subSel -> subSel.setSelection(exitingSelector.getSelection()));
 				exitingSelector.setSelection(Optional.empty());
 			}
