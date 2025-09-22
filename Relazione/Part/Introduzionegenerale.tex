@@ -30,20 +30,34 @@ da manutenere e da estendere.
     \item \textbf{Domain Model}: contiene le entità annotate dell'applicazione
     \item \textbf{Repositories}: contiene le implementazione concreta dei repositories che si interfacciano con il database
 \end{itemize}
+
 \subsubsection{Dipendenze}
-L'applicazione utilizza delle dipendenze esterne per la persistenza dei dati e per
-l'implentazione dei test.
-\todo{Aggiungi descrizioni e cose se mancano}
+L'applicazione utilizza delle dipendenze esterne per la persistenza dei dati, 
+per l'implementazione dei test e per la realizzazione dell'interfaccia grafica.
+
 \begin{itemize}
-    \item \textbf{JPA}
-    \item \textbf{Junit}
-    \item \textbf{Mockito}
-    \item \textbf{h2Database}
-    \item \textbf{Java Swing}
+    \item \textbf{JPA}: Java Persistence API, specifica standard che consente di gestire in maniera astratta la 
+    persistenza dei dati su database relazionali, semplificando l'interazione con le entità tramite annotazioni 
+    e query ad alto livello.
+    
+    \item \textbf{JUnit}: framework di testing unitario per Java che permette di automatizzare i test delle singole
+     componenti, verificandone il corretto funzionamento e supportando l'integrazione nei processi di build.
+    
+    \item \textbf{Mockito}: libreria di supporto ai test che consente di creare oggetti fittizi (mock) per simulare 
+    le dipendenze esterne e isolare le unità da testare, favorendo un approccio di testing modulare e controllato.
+    
+    \item \textbf{H2 Database}: database relazionale in-memory leggero e veloce, utilizzato durante lo sviluppo e il 
+    testing per evitare la dipendenza da un database esterno, garantendo facilità di configurazione e rapidità di esecuzione.
+    
+    \item \textbf{Java Swing}: libreria grafica inclusa nel JDK per la realizzazione dell'interfaccia utente, 
+    che fornisce componenti GUI (bottoni, menu, finestre, etc\dots) per costruire applicazioni desktop interattive.
+
+    \todo{aggiungere dipendenze se mancano}
 \end{itemize}
+
 \section{Strumenti utilizzati}
 Il codice è stato scritto in Java utilizzando \textbf{IntelliJ Idea} ed \textbf{Eclipse}.
 La \textbf{GUI} è stata scritta utilizzando \textbf{Java Swing} e \textbf{Window Builder} \todo{Andre aggiungi la descrizione di cosa può fare}
 Per la costruzione degli \textbf{UML} è stato utilizzato \textbf{StarUML} mentre per il versionamento
 del codice è stato utilizzato \textbf{Github}. Inoltre sono stati usati vari \textbf{LLMS} come 
-aiuto nella scrittura del codice, tra questi \textbf{Copilot}, \textbf{ChatGpt} e \textbf{Gemini}.
+aiuto nella scrittura del codice, in particolare \textbf{Copilot}, \textbf{ChatGpt} e \textbf{Gemini}.
