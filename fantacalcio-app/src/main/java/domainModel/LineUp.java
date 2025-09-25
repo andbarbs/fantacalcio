@@ -3,7 +3,6 @@ package domainModel;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -118,22 +117,52 @@ public class LineUp {
 
 			private Scheme scheme;
 			private Goalkeeper starterGoalie;
-			private List<Defender> starterDefenders;
-			private List<Midfielder> starterMidfielder;
-			private List<Forward> starterForwards;
+			private Set<Defender> starterDefenders;
+			private Set<Midfielder> starterMidfielders;
+			private Set<Forward> starterForwards;
 
 			public StarterLineUp(Scheme scheme, 
-					Goalkeeper starterGoalie,
-					List<Defender> starterDefenders,
-					List<Midfielder> starterMidfielder,
-					List<Forward> starterForwards) {
-						this.scheme = scheme;
-						this.starterGoalie = starterGoalie;
-						this.starterDefenders = starterDefenders;
-						this.starterMidfielder = starterMidfielder;
-						this.starterForwards = starterForwards;
-						
-						// TODO insert checks on list size == Scheme counts
+					Goalkeeper starterGoalie, 
+					Set<Defender> starterDefenders,
+					Set<Midfielder> starterMidfielders, 
+					Set<Forward> starterForwards) {
+				this.scheme = scheme;
+				this.starterGoalie = starterGoalie;
+
+				if (scheme.getNumDefenders() != 
+						starterDefenders.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterDefenders = starterDefenders;
+				
+				if (scheme.getNumMidfielders() != 
+						starterMidfielders.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterMidfielders = starterMidfielders;
+				
+				if (scheme.getNumForwards() != 
+						starterForwards.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterForwards = starterForwards;
+			}
+
+			@Override
+			public int hashCode() {
+				return Objects.hash(scheme, starterDefenders, starterForwards, starterGoalie, starterMidfielders);
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj)
+					return true;
+				if (obj == null)
+					return false;
+				if (getClass() != obj.getClass())
+					return false;
+				StarterLineUp other = (StarterLineUp) obj;
+				return Objects.equals(scheme, other.scheme) && Objects.equals(starterDefenders, other.starterDefenders)
+						&& Objects.equals(starterForwards, other.starterForwards)
+						&& Objects.equals(starterGoalie, other.starterGoalie)
+						&& Objects.equals(starterMidfielders, other.starterMidfielders);
 			}			
 		}
 		
@@ -187,11 +216,11 @@ public class LineUp {
 		public ReadyForSubstituteGoalkeepers withStarterLineUp(StarterLineUp starterLineUp) {
 			this.lineUp.scheme = starterLineUp.scheme;
 			this.lineUp.fieldings = new HashSet<Fielding>();
-			Stream.of(List.of(starterLineUp.starterGoalie), 
+			Stream.of(Set.of(starterLineUp.starterGoalie), 
 					starterLineUp.starterDefenders, 
-					starterLineUp.starterMidfielder, 
+					starterLineUp.starterMidfielders, 
 					starterLineUp.starterForwards)
-				.flatMap(List::stream)
+				.flatMap(Set::stream)
 				.map(player -> new Fielding.StarterFielding(player, lineUp))
 				.forEach(lineUp.fieldings::add);
 			return this;

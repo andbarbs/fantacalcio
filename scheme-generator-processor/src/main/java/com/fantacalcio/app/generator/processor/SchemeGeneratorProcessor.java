@@ -170,9 +170,9 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 					            starterLineUpClass, 
 					            generatedClassName,
 					            goalieParams.get(0).name,
-					            List.class, defendersList,
-					            List.class, midfieldersList,
-					            List.class, forwardsList)
+					            Set.class, defendersList,
+					            Set.class, midfieldersList,
+					            Set.class, forwardsList)
 						.build())
 				.returns(starterLineUpClass).build();
 

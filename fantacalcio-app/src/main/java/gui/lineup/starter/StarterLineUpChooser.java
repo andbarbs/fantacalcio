@@ -3,6 +3,7 @@ package gui.lineup.starter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -13,25 +14,19 @@ import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Player;
 import domainModel.Player.*;
 import domainModel.Scheme;
-import domainModel.scheme.Scheme343;
-import domainModel.scheme.Scheme433;
-import domainModel.scheme.Scheme532;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
 
-public class StarterLineUpChooser implements StarterLineUpChooserController, StarterLineUpChooserDelegate {	
+public class StarterLineUpChooser implements StarterLineUpChooserController, StarterLineUpChooserDelegate {
 
 	// injected dependencies
 	private StarterSelectorDelegate<Goalkeeper> goalieSelector;
 	private List<StarterSelectorDelegate<Defender>> defSelectors;
 	private List<StarterSelectorDelegate<Midfielder>> midSelectors;
 	private List<StarterSelectorDelegate<Forward>> forwSelectors;
-	
-	private Collection<Selector<? extends Player>> selectorsIn532;
-	private Collection<Selector<? extends Player>> selectorsIn433;
-	private Collection<Selector<? extends Player>> selectorsIn343;
 
+	// bookkeeping
 	Scheme currentScheme;
 	
 	// public instantiation point
@@ -69,48 +64,6 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				Objects.requireNonNull(forwSelector1), 
 				Objects.requireNonNull(forwSelector2),
 				Objects.requireNonNull(forwSelector3));
-		
-		// by-role Selector collections
-		this.selectorsIn532 = List.of(goalieSelector, 
-				defSelector1, defSelector2, defSelector3, defSelector4, defSelector5,
-				midSelector1, midSelector2, midSelector3,
-				forwSelector1, forwSelector2);
-		this.selectorsIn433 = List.of(goalieSelector, 
-				defSelector1, defSelector2, defSelector3, defSelector4,
-				midSelector1, midSelector2, midSelector3,
-				forwSelector1, forwSelector2, forwSelector3);
-		this.selectorsIn343 = List.of(goalieSelector, 
-				defSelector1, defSelector2, defSelector3,
-				midSelector1, midSelector2, midSelector3, midSelector4,
-				forwSelector1, forwSelector2, forwSelector3);
-	}
-	
-	// TODO remove this member and its tests
-	public boolean hasChoice() {
-		var visitor = new Scheme.SchemeVisitor() {
-			boolean selectionExists;
-
-			@Override
-			public void visitScheme433(Scheme433 scheme433) {
-				selectionExists = selectorsIn433.stream().allMatch(
-						selector -> selector.getSelection().isPresent());
-			}
-
-			@Override
-			public void visitScheme343(Scheme343 scheme343) {
-				selectionExists = selectorsIn343.stream().allMatch(
-						selector -> selector.getSelection().isPresent());
-			}
-
-			@Override
-			public void visitScheme532(Scheme532 scheme532) {
-				selectionExists = selectorsIn532.stream().allMatch(
-						selector -> selector.getSelection().isPresent());
-			}
-
-		};
-		currentScheme.accept(visitor);
-		return visitor.selectionExists;
 	}
 	
 	@Override
@@ -267,11 +220,23 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				.flatMap(s -> s)
 				.collect(Collectors.toList());
 	}
+	
+
 
 	@Override
 	public StarterLineUp getCurrentStarterLineUp() {
-		// TODO Auto-generated method stub
-		return null;
+		return new StarterLineUp(
+				currentScheme, 
+				goalieSelector.getSelection().get(), 
+				defSelectors.stream()
+						.limit(currentScheme.getNumDefenders())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()),
+				midSelectors.stream()
+						.limit(currentScheme.getNumMidfielders())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()), 
+				forwSelectors.stream()
+						.limit(currentScheme.getNumForwards())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()));
 	}
 
 	@Override
