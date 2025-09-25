@@ -22,6 +22,7 @@ import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Match;
 import domainModel.Player;
 import domainModel.Player.*;
+import domainModel.Scheme;
 import domainModel.scheme.Scheme433;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
@@ -219,10 +220,12 @@ public class LineUpChooser implements LineUpChooserController {
 		StarterLineUp getCurrentStarterLineUp();
 		
 		/**
-		 * instructs the {@linkplain StarterSelectorDelegate} to set its default scheme
-		 * as the current one
+		 * instructs the {@linkplain StarterSelectorDelegate} to set the provided scheme
+		 * as the current one, whether a previous current scheme exists or not
+		 * 
+		 * @param scheme the {@link Scheme} to be set as current
 		 */
-		void switchToDefaultScheme();
+		void setCurrentScheme(Scheme scheme);
 	}
 
 	private final StarterLineUpChooserDelegate starterChooser;
@@ -521,7 +524,7 @@ public class LineUpChooser implements LineUpChooserController {
 		forwTriplet.initSequence();
 		
 		// orders Starter Delegate
-		starterChooser.switchToDefaultScheme();
+		starterChooser.setCurrentScheme(Scheme433.INSTANCE);
 		
 		// TODO should reset to false all choice flags?
 	}

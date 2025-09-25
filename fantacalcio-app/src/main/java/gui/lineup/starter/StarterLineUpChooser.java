@@ -228,8 +228,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	}
 
 	@Override
-	public void switchToDefaultScheme() {
-		// TODO Auto-generated method stub
-		
+	public void setCurrentScheme(Scheme scheme) {
+		switchToScheme(scheme);
 	}
 }

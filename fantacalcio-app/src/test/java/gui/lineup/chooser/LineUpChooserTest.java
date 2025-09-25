@@ -229,8 +229,8 @@ public class LineUpChooserTest {
 			verify(midTriplet).initSequence();
 			verify(forwTriplet).initSequence();
 			
-			// AND Starter Delegate is asked to swutch to the default scheme
-			verify(starterChooser).switchToDefaultScheme();
+			// AND Starter Delegate is asked to switch to the default scheme
+			verify(starterChooser).setCurrentScheme(Scheme433.INSTANCE);
 		}
 	}		
 	

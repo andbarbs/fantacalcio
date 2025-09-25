@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -13,8 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
@@ -140,8 +139,7 @@ public class StarterLineUpChooserTest {
 					verify(mockWidget, never()).switchTo(fakeScheme);
 					
 					// AND Consumers are never executed
-					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
-					.forEach(Mockito::verifyNoInteractions);
+					verifyNoInteractions(mockDefConsumer, mockMidConsumer, mockForwConsumer);
 				}
 				
 				@Test
@@ -171,8 +169,7 @@ public class StarterLineUpChooserTest {
 					verify(mockWidget, never()).switchTo(fakeScheme);
 					
 					// AND Consumers are never executed
-					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
-					.forEach(Mockito::verifyNoInteractions);
+					verifyNoInteractions(mockDefConsumer, mockMidConsumer, mockForwConsumer);
 				}
 				
 				@Test
@@ -202,8 +199,7 @@ public class StarterLineUpChooserTest {
 					verify(mockWidget, never()).switchTo(fakeScheme);
 					
 					// AND Consumers are never executed
-					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
-					.forEach(Mockito::verifyNoInteractions);
+					verifyNoInteractions(mockDefConsumer, mockMidConsumer, mockForwConsumer);
 				}
 			}			
 		}
@@ -268,6 +264,95 @@ public class StarterLineUpChooserTest {
 						Set.of(fakeMidfielder2, fakeMidfielder1), 
 						Set.of(fakeForward2, fakeForward1, fakeForward3)));
 			}
+			
+			@Nested
+			@DisplayName("set a scheme as current")
+			class ConfigurableOnCurrentScheme {
+
+				private @Mock Consumer<Selector<Defender>> mockEntryDefConsumer;
+				private @Mock Consumer<Selector<Midfielder>> mockEntryMidConsumer;
+				private @Mock Consumer<Selector<Forward>> mockEntryForwConsumer;
+				private @Mock Consumer<Selector<Defender>> mockExitDefConsumer;
+				private @Mock Consumer<Selector<Midfielder>> mockExitMidConsumer;
+				private @Mock Consumer<Selector<Forward>> mockExitForwConsumer;
+				
+				@BeforeEach
+				void setMockConsumers() {
+					chooser.setEntryDefConsumer(mockEntryDefConsumer);
+					chooser.setExitDefConsumer(mockExitDefConsumer);
+					chooser.setEntryMidConsumer(mockEntryMidConsumer);
+					chooser.setExitMidConsumer(mockExitMidConsumer);
+					chooser.setEntryForwConsumer(mockEntryForwConsumer);
+					chooser.setExitForwConsumer(mockExitForwConsumer);
+				}
+				
+				@Test
+				@DisplayName("when no previous current scheme existed")
+				void noPreviousCurrentScheme() {
+					
+					// GIVEN the SUT is not set up on any Scheme
+					chooser.currentScheme = null;
+					
+					// WHEN the SUT is requested to shift to a new fake Scheme
+					Scheme newScheme = new Scheme(1, 2, 3) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {}
+					};
+					chooser.setCurrentScheme(newScheme);
+					
+					// THEN the SUT records the new Scheme as current
+					assertThat(chooser.currentScheme).isSameAs(newScheme);
+					
+					// AND entering Selectors are processed appropriately
+					verify(mockEntryDefConsumer).accept(defSel1);
+					
+					verify(mockEntryMidConsumer).accept(midSel1);
+					verify(mockEntryMidConsumer).accept(midSel2);
+					
+					verify(mockEntryForwConsumer).accept(forwSel1);
+					verify(mockEntryForwConsumer).accept(forwSel2);
+					verify(mockEntryForwConsumer).accept(forwSel3);
+					
+					// AND no other interactions with Consumers are recorded
+					verifyNoMoreInteractions(mockEntryDefConsumer, mockEntryMidConsumer, mockEntryForwConsumer,
+							mockExitDefConsumer, mockExitMidConsumer, mockExitForwConsumer);
+				}
+				
+				@Test
+				@DisplayName("when a previous current scheme existed")
+				void previousCurrentScheme() {
+					
+					// GIVEN the SUT is set up on a fake Scheme
+					chooser.currentScheme = new Scheme(1, 2, 3) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {}
+					};
+					
+					// WHEN the SUT is requested to shift to a new fake Scheme
+					Scheme newScheme = new Scheme(3, 2, 1) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {}
+					};
+					chooser.setCurrentScheme(newScheme);
+					
+					// THEN the SUT records the new Scheme as current
+					assertThat(chooser.currentScheme).isSameAs(newScheme);
+					
+					// AND entering & exiting Selectors are processed appropriately
+					verify(mockEntryDefConsumer).accept(defSel2);
+					verify(mockEntryDefConsumer).accept(defSel3);
+					
+					verify(mockExitForwConsumer).accept(forwSel2);
+					verify(mockExitForwConsumer).accept(forwSel3);
+					
+					// AND no other interactions with Consumers are recorded
+					verifyNoMoreInteractions(mockEntryDefConsumer, mockEntryMidConsumer, mockEntryForwConsumer,
+							mockExitDefConsumer, mockExitMidConsumer, mockExitForwConsumer);
+				}
+			}			
 		}		
 
 		@Nested
