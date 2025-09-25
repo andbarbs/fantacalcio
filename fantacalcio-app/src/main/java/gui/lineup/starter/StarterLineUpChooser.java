@@ -2,13 +2,12 @@ package gui.lineup.starter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.io.IOException;
-import java.awt.Dimension;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
 import domainModel.Player;
@@ -20,27 +19,18 @@ import domainModel.scheme.Scheme532;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
-import gui.lineup.dealing.CompetitiveOptionDealingGroup;
-import gui.lineup.selectors.StarterPlayerSelector;
-import gui.lineup.selectors.SwingSubPlayerSelector;
-import gui.utils.schemes.Spring343Scheme;
-import gui.utils.schemes.Spring433Scheme;
-import gui.utils.schemes.Spring532Scheme;
-import gui.utils.schemes.SpringSchemePanel;
 
 public class StarterLineUpChooser implements StarterLineUpChooserController, StarterLineUpChooserDelegate {	
 
 	// injected dependencies
 	private StarterSelectorDelegate<Goalkeeper> goalieSelector;
-	private List<StarterSelectorDelegate<Defender>> defPairs;
-	private List<StarterSelectorDelegate<Midfielder>> midPairs;
-	private List<StarterSelectorDelegate<Forward>> forwPairs;
+	private List<StarterSelectorDelegate<Defender>> defSelectors;
+	private List<StarterSelectorDelegate<Midfielder>> midSelectors;
+	private List<StarterSelectorDelegate<Forward>> forwSelectors;
 	
-	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn532;
-	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn433;
-	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn343;
-	
-	private Consumer<StarterSelectorDelegate<? extends Player>> onSelectorExlcluded;	
+	private Collection<Selector<? extends Player>> selectorsIn532;
+	private Collection<Selector<? extends Player>> selectorsIn433;
+	private Collection<Selector<? extends Player>> selectorsIn343;
 
 	Scheme currentScheme;
 	
@@ -61,16 +51,24 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 			
 			StarterSelectorDelegate<Forward> forwSelector1,
 			StarterSelectorDelegate<Forward> forwSelector2,
-			StarterSelectorDelegate<Forward> forwSelector3,			
-			
-			Consumer<StarterSelectorDelegate<? extends Player>> onSelectorExlcluded) {
+			StarterSelectorDelegate<Forward> forwSelector3) {
 
-		this.goalieSelector = goalieSelector;
-		this.defPairs = List.of(defSelector1, defSelector2, defSelector3, defSelector4, defSelector5);
-		this.midPairs = List.of(midSelector1, midSelector2, midSelector3, midSelector4);
-		this.forwPairs = List.of(forwSelector1, forwSelector2, forwSelector3);
-		
-		this.onSelectorExlcluded = onSelectorExlcluded;
+		this.goalieSelector = Objects.requireNonNull(goalieSelector);
+		this.defSelectors = List.of(
+				Objects.requireNonNull(defSelector1), 
+				Objects.requireNonNull(defSelector2),
+				Objects.requireNonNull(defSelector3), 
+				Objects.requireNonNull(defSelector4),
+				Objects.requireNonNull(defSelector5));
+		this.midSelectors = List.of(
+				Objects.requireNonNull(midSelector1), 
+				Objects.requireNonNull(midSelector2),
+				Objects.requireNonNull(midSelector3), 
+				Objects.requireNonNull(midSelector4));
+		this.forwSelectors = List.of(
+				Objects.requireNonNull(forwSelector1), 
+				Objects.requireNonNull(forwSelector2),
+				Objects.requireNonNull(forwSelector3));
 		
 		// by-role Selector collections
 		this.selectorsIn532 = List.of(goalieSelector, 
@@ -87,9 +85,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				forwSelector1, forwSelector2, forwSelector3);
 	}
 	
-	// As a StarterLineUpChooser
-	
-	
+	// TODO remove this member and its tests
 	public boolean hasChoice() {
 		var visitor = new Scheme.SchemeVisitor() {
 			boolean selectionExists;
@@ -116,6 +112,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 		currentScheme.accept(visitor);
 		return visitor.selectionExists;
 	}
+	
 	@Override
 	public StarterSelectorDelegate<Goalkeeper> getGoalieSelector() {
 		return goalieSelector;
@@ -123,35 +120,33 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 
 	@Override
 	public Set<StarterSelectorDelegate<Defender>> getAllDefSelectors() {
-		return Set.copyOf(defPairs);
+		return Set.copyOf(defSelectors);
 	}
 
 	@Override
 	public Set<StarterSelectorDelegate<Midfielder>> getAllMidSelectors() {
-		return Set.copyOf(midPairs);
+		return Set.copyOf(midSelectors);
 	}
 	
 	@Override
 	public Set<StarterSelectorDelegate<Forward>> getAllForwSelectors() {
-		return Set.copyOf(forwPairs);
+		return Set.copyOf(forwSelectors);
 	}
 	
+	// TODO implement and test these getters!
 	@Override
 	public Set<Selector<Defender>> getCurrentDefSelectors() {
-		// TODO Auto-generated method stub
-		return null;
+		return defSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
 	}
 	
 	@Override
 	public Set<Selector<Midfielder>> getCurrentMidSelectors() {
-		// TODO Auto-generated method stub
-		return null;
+		return midSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
 	}
 	
 	@Override
 	public Set<Selector<Forward>> getCurrentForwSelectors() {
-		// TODO Auto-generated method stub
-		return null;
+		return forwSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
 	}	
 	
 	// As a Controller
@@ -163,179 +158,114 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	}
 
 	private StarterLineUpChooserWidget widget;
-
+	
 	public void setWidget(StarterLineUpChooserWidget widget) {
 		this.widget = widget;
 	}
+
+	private Consumer<Selector<Defender>> entryDefConsumer;
 	
+	@Override
+	public void setEntryDefConsumer(Consumer<Selector<Defender>> entryDefConsumer) {
+		this.entryDefConsumer = entryDefConsumer;
+	}
+
+	private Consumer<Selector<Midfielder>> entryMidConsumer;
+	
+	@Override
+	public void setEntryMidConsumer(Consumer<Selector<Midfielder>> entryMidConsumer) {
+		this.entryMidConsumer = entryMidConsumer;
+	}
+
+	private Consumer<Selector<Forward>> entryForwConsumer;
+	
+	@Override
+	public void setEntryForwConsumer(Consumer<Selector<Forward>> entryForwConsumer) {
+		this.entryForwConsumer = entryForwConsumer;
+	}
+
+	private Consumer<Selector<Defender>> exitDefConsumer;
+	
+	@Override
+	public void setExitDefConsumer(Consumer<Selector<Defender>> exitDefConsumer) {
+		this.exitDefConsumer = exitDefConsumer;
+	}
+
+	private Consumer<Selector<Midfielder>> exitMidConsumer;
+	
+	@Override
+	public void setExitMidConsumer(Consumer<Selector<Midfielder>> exitMidConsumer) {
+		this.exitMidConsumer = exitMidConsumer;
+	}
+
+	private Consumer<Selector<Forward>> exitForwConsumer;
+
+	@Override
+	public void setExitForwConsumer(Consumer<Selector<Forward>> exitForwConsumer) {
+		this.exitForwConsumer = exitForwConsumer;
+	}
+
 	@Override
 	public void switchToScheme(Scheme newScheme) {
 		
-		// 1) processes excluded Selectors
-		Optional.ofNullable(currentScheme).ifPresent(scheme -> {
-			selectorsIn(scheme).stream()
-				.filter(selector -> !selectorsIn(newScheme).contains(selector))
-				.forEach(onSelectorExlcluded);
-		});
+		// 1) saves old scheme
+		Scheme previousScheme = currentScheme;		
+		
+		// 2) updates current scheme to ensure Consumer-getter consistency
+		currentScheme = newScheme;
+		
+		// 3) processes exiting Selectors
+		class ProcessExitingSelectors<T extends Player>
+				implements BiConsumer<List<? extends Selector<T>>, Consumer<Selector<T>>> {
+
+			@Override
+			public void accept(List<? extends Selector<T>> selectors, Consumer<Selector<T>> consumer) {
+				selectors.stream()
+						.filter(selectorsIn(previousScheme)::contains)
+						.filter(selector -> !selectorsIn(newScheme).contains(selector))
+						.forEach(consumer);
+			}
+		};
+		
+		new ProcessExitingSelectors<Defender>().accept(defSelectors, exitDefConsumer);
+		new ProcessExitingSelectors<Midfielder>().accept(midSelectors, exitMidConsumer);
+		new ProcessExitingSelectors<Forward>().accept(forwSelectors, exitForwConsumer);
+		
+		// 4) processes entering Selectors
+		class ProcessEnteringSelectors<T extends Player>
+				implements BiConsumer<List<? extends Selector<T>>, Consumer<Selector<T>>> {
+
+			@Override
+			public void accept(List<? extends Selector<T>> selectors, Consumer<Selector<T>> consumer) {
+				selectors.stream()
+						.filter(selectorsIn(newScheme)::contains)
+						.filter(selector -> !selectorsIn(previousScheme).contains(selector))
+						.forEach(consumer);
+			}
+		};
+		
+		new ProcessEnteringSelectors<Defender>().accept(defSelectors, entryDefConsumer);
+		new ProcessEnteringSelectors<Midfielder>().accept(midSelectors, entryMidConsumer);
+		new ProcessEnteringSelectors<Forward>().accept(forwSelectors, entryForwConsumer);
 		
 		// 2) asks Widget to rearrange Selector widgets
 		widget.switchTo(newScheme);
-
-		// 3) updates bookkeeping
-		currentScheme = newScheme;	
 	}
 
-	private Collection<StarterSelectorDelegate<? extends Player>> selectorsIn(Scheme scheme) {
-		return scheme.equals(Scheme433.INSTANCE) ? selectorsIn433 :
-				scheme.equals(Scheme343.INSTANCE) ? selectorsIn343 : selectorsIn532;
-	}
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			JFrame frame = new JFrame("starter chooser demo");
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			
-			try {
-				Dimension screenSize = frame.getToolkit().getScreenSize();
-				Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
-				Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
-						SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
-				
-				// I) initializes dependencies
-				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
-				StarterPlayerSelector<Goalkeeper> goalieSelector = new StarterPlayerSelector<>(goalieView);
-				goalieView.setController(goalieSelector);
-				
-				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
-						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
-								defView3 = new SwingSubPlayerSelector<Defender>(selectorDims),
-										defView4 = new SwingSubPlayerSelector<Defender>(selectorDims),
-												defView5 = new SwingSubPlayerSelector<Defender>(selectorDims);
-				StarterPlayerSelector<Defender> defPres1 = new StarterPlayerSelector<Defender>(defView1),
-						defPres2 = new StarterPlayerSelector<Defender>(defView2),
-								defPres3 = new StarterPlayerSelector<Defender>(defView3),
-										defPres4 = new StarterPlayerSelector<Defender>(defView4),
-												defPres5 = new StarterPlayerSelector<Defender>(defView5);
-				defView1.setController(defPres1);
-				defView2.setController(defPres2);
-				defView3.setController(defPres3);
-				defView4.setController(defPres4);
-				defView5.setController(defPres5);
-				
-				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-								midView3 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-										midView4 = new SwingSubPlayerSelector<Midfielder>(selectorDims);
-				StarterPlayerSelector<Midfielder> midPres1 = new StarterPlayerSelector<Midfielder>(midView1),
-						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
-								midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
-										midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
-				midView1.setController(midPres1);
-				midView2.setController(midPres2);
-				midView3.setController(midPres3);
-				midView4.setController(midPres4);
-				
-				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
-						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
-								forwView3 = new SwingSubPlayerSelector<Forward>(selectorDims);
-				StarterPlayerSelector<Forward> forwPres1 = new StarterPlayerSelector<Forward>(forwView1),
-						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
-								forwPres3 = new StarterPlayerSelector<Forward>(forwView3);
-				forwView1.setController(forwPres1);
-				forwView2.setController(forwPres2);
-				forwView3.setController(forwPres3);
-				
-				// II) initializes competition
-				CompetitiveOptionDealingGroup.initializeDealing(
-						Set.of(goalieSelector), 
-						List.of(new Goalkeeper("Gianluigi", "Buffon")));
-				CompetitiveOptionDealingGroup.initializeDealing(
-						Set.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
-						List.of(new Defender("Paolo", "Maldini"), 
-								new Defender("Franco", "Baresi"), 
-								new Defender("Alessandro", "Nesta"), 
-								new Defender("Giorgio", "Chiellini"), 
-								new Defender("Leonardo", "Bonucci")));
-				CompetitiveOptionDealingGroup.initializeDealing(
-						Set.of(midPres1, midPres2, midPres3, midPres4), 
-						List.of(new Midfielder("Andrea", "Pirlo"), 
-								new Midfielder("Daniele", "De Rossi"), 
-								new Midfielder("Marco", "Verratti"), 
-								new Midfielder("Claudio", "Marchisio")));
-				CompetitiveOptionDealingGroup.initializeDealing(
-						Set.of(forwPres1, forwPres2, forwPres3), 
-						List.of(new Forward("Roberto", "Baggio"), 
-								new Forward("Francesco", "Totti"), 
-								new Forward("Alessandro", "Del Piero"), 
-								new Forward("Lorenzo", "Insigne")));
-				
-				// III) instantiates Chooser
-				StarterLineUpChooser controller = new StarterLineUpChooser(
-						goalieSelector,						
-						defPres1, defPres2, defPres3, defPres4, defPres5,
-						midPres1, midPres2, midPres3, midPres4,
-						forwPres1, forwPres2, forwPres3,
-						presenter -> presenter.setSelection(Optional.empty()));
-				
-				SwingStarterLineUpChooserWidget widget = new SwingStarterLineUpChooserWidget(
-						false, 
-						availableWindow, 						
-						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false), 
-						goalieView, 
-						defView1, defView2, defView3, defView4, defView5, 
-						midView1, midView2, midView3, midView4, 						
-						forwView1, forwView2, forwView3);
-				
-				controller.setWidget(widget);
-				widget.setController(controller);
-				
-				controller.switchToScheme(Scheme433.INSTANCE);
-				
-				frame.setContentPane(widget);		
-				frame.pack();
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
-	}
-
-	@Override
-	public void setEntryDefConsumer(Consumer<Selector<Defender>> enterDefender) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setEntryMidConsumer(Consumer<Selector<Midfielder>> enterMidfielder) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setEntryForwConsumer(Consumer<Selector<Forward>> enterForward) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setExitDefConsumer(Consumer<Selector<Defender>> exitDefender) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setExitMidConsumer(Consumer<Selector<Midfielder>> capture) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setExitForwConsumer(Consumer<Selector<Forward>> capture) {
-		// TODO Auto-generated method stub
-		
+	/**
+	 * @param scheme the {@link Scheme} singleton for which {@link Selector}s are
+	 *               queried, or {@code null}
+	 * @return a {@code Collection} containing {@link Selector}s that make up the
+	 *         given scheme on this {@link StarterLineUpChooserDelegate}, or an
+	 *         empty one if {@code scheme} is {@code null}
+	 */
+	private Collection<Selector<? extends Player>> selectorsIn(Scheme scheme) {		
+		return scheme == null ? List.of() : 
+			Stream.of(defSelectors.stream().limit(scheme.getNumDefenders()),
+				    midSelectors.stream().limit(scheme.getNumMidfielders()),
+				    forwSelectors.stream().limit(scheme.getNumForwards()))
+				.flatMap(s -> s)
+				.collect(Collectors.toList());
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package gui.lineup.chooser;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.io.IOException;
 import java.awt.Dimension;
@@ -197,8 +196,7 @@ public class SwingLineUpChooserWidget extends JPanel {
 						goaliePresenter,						
 						defPres1, defPres2, defPres3, defPres4, defPres5,						
 						midPres1, midPres2, midPres3, midPres4,						
-						forwPres1, forwPres2, forwPres3,						
-						presenter -> presenter.setSelection(Optional.empty()));
+						forwPres1, forwPres2, forwPres3);
 				
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);

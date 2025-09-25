@@ -71,7 +71,7 @@ public class LineUpChooser implements LineUpChooserController {
 	 * use of {@link StarterSelectorDelegate}s.
 	 * 
 	 * <p>
-	 * Specifically, it enables clients to
+	 * Specifically, it enables programmatic clients to
 	 * <ol>
 	 * <li>access only {@link Selector}s corresponding to the currently chosen
 	 * scheme - effectively encapsulating scheme changes - through
@@ -638,7 +638,7 @@ public class LineUpChooser implements LineUpChooserController {
 
 				StarterLineUpChooser starterChooser = new StarterLineUpChooser(goaliePresenter, defPres1, defPres2,
 						defPres3, defPres4, defPres5, midPres1, midPres2, midPres3, midPres4, forwPres1, forwPres2,
-						forwPres3, presenter -> presenter.setSelection(Optional.empty()));
+						forwPres3);
 
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);
