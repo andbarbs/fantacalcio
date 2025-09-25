@@ -1,6 +1,8 @@
 package gui.lineup.starter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,13 +13,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
@@ -43,73 +48,164 @@ public class StarterLineUpChooserTest {
 	private List<StarterSelectorDelegate<Defender>> defSels;
 	private List<StarterSelectorDelegate<Midfielder>> midSels;
 	private List<StarterSelectorDelegate<Forward>> forwSels;
+	
+	private @Mock StarterLineUpChooserWidget mockWidget;
 
 	// the SUT reference
 	private StarterLineUpChooser chooser;
-	
-	private @Mock StarterLineUpChooserWidget mockWidget;
 
 	@BeforeEach
 	void testCaseSpecificSetup() {
 		
-		populateSelsLists();
-		
-		// instantiates SUT
-		chooser = new StarterLineUpChooser(
-				goalieSelector,				
-				defSel1, defSel2, defSel3, defSel4, defSel5,				
-				midSel1, midSel2, midSel3, midSel4,				
-				forwSel1, forwSel2, forwSel3);
-		chooser.setWidget(mockWidget);
-	}
-
-	private void populateSelsLists() {
-		// by role
 		defSels = List.of(defSel1, defSel2, defSel3, defSel4, defSel5);
 		midSels = List.of(midSel1, midSel2, midSel3, midSel4);
 		forwSels = List.of(forwSel1, forwSel2, forwSel3);
-	}
-
-	@Nested
-	@DisplayName("as instantiated")
-	class JustInstantiated {
 		
-				
+		// instantiates SUT
+		chooser = new StarterLineUpChooser(
+				goalieSelector,	defSels, midSels, forwSels);
+		chooser.setWidget(mockWidget);
 	}
 	
 	@Nested
 	@DisplayName("as a StarterLineUpChooserController")
 	class AsStarterLineUpChooserController {
 		
-		@Test
+		@Nested
 		@DisplayName("handles requests to effect a scheme change")
-		public void whenRequestedToChangeScheme(
-				@Mock Consumer<Selector<Defender>> mockDefConsumer,
-				@Mock Consumer<Selector<Midfielder>> mockMidConsumer,
-				@Mock Consumer<Selector<Forward>> mockForwConsumer) {
+		class HandlesRequetstToChangeScheme {
 			
-			// GIVEN Consumers are set to avoid NPEs
-			chooser.setExitDefConsumer(mockDefConsumer);
-			chooser.setEntryDefConsumer(mockDefConsumer);
-			chooser.setExitMidConsumer(mockMidConsumer);
-			chooser.setEntryMidConsumer(mockMidConsumer);
-			chooser.setExitForwConsumer(mockForwConsumer);
-			chooser.setEntryForwConsumer(mockForwConsumer);
+			private @Mock Consumer<Selector<Defender>> mockDefConsumer;
+			private @Mock Consumer<Selector<Midfielder>> mockMidConsumer;
+			private @Mock Consumer<Selector<Forward>> mockForwConsumer;
 			
-			// WHEN the Widget requests switching to a Scheme
-			Scheme fakeScheme = new Scheme(1, 2, 3) {
+			@BeforeEach
+			void setMockConsumers() {
+				chooser.setExitDefConsumer(mockDefConsumer);
+				chooser.setEntryDefConsumer(mockDefConsumer);
+				chooser.setExitMidConsumer(mockMidConsumer);
+				chooser.setEntryMidConsumer(mockMidConsumer);
+				chooser.setExitForwConsumer(mockForwConsumer);
+				chooser.setEntryForwConsumer(mockForwConsumer);
+			}
+		
+			@Test
+			@DisplayName("when the Scheme is compatible with Selector numbers")
+			void whenSchemeIsDoable() {
 				
-				@Override
-				public void accept(SchemeVisitor visitor) {
+				// WHEN the Widget requests switching to a Scheme
+				Scheme fakeScheme = new Scheme(1, 2, 3) {
+					
+					@Override
+					public void accept(SchemeVisitor visitor) {
+					}
+				};			
+				chooser.switchToScheme(fakeScheme);
+				
+				// THEN the '4-3-3' scheme is registered as the current one
+				assertThat(chooser.currentScheme).isSameAs(fakeScheme);
+				
+				// AND the Widget is instructed to switch to '4-3-3'
+				verify(mockWidget).switchTo(fakeScheme);
+			}
+			
+			@Nested
+			@DisplayName("when the Scheme has too many")
+			class SchemeNotDoable {
+				
+				@Test
+				@DisplayName("defenders")
+				void tooManyDefenders() {
+					
+					// WHEN the Widget requests switching to a Scheme
+					// that CANNOT be realized with existing Selector numbers
+					// (too many Defenders needed)
+					Scheme fakeScheme = new Scheme(6, 4, 3) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {
+						}
+					};			
+					ThrowingCallable shouldThrow = () -> chooser.switchToScheme(fakeScheme);
+					
+					// THEN a suitable exception is thrown
+					assertThatThrownBy(shouldThrow)
+						.isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("requested Scheme has 6 Defenders, this composes only 5");
+					
+					// AND the '4-3-3' scheme is NOT registered as the current one
+					assertThat(chooser.currentScheme).isNotSameAs(fakeScheme);
+					
+					// AND the Widget is never instructed to switch
+					verify(mockWidget, never()).switchTo(fakeScheme);
+					
+					// AND Consumers are never executed
+					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
+					.forEach(Mockito::verifyNoInteractions);
 				}
-			};			
-			chooser.switchToScheme(fakeScheme);
-			
-			// THEN the '4-3-3' scheme is registered as the current one
-			assertThat(chooser.currentScheme).isSameAs(fakeScheme);
-			
-			// AND the Widget is instructed to switch to '4-3-3'
-			verify(mockWidget).switchTo(fakeScheme);
+				
+				@Test
+				@DisplayName("midfielders")
+				void tooManyMidfielders() {
+					
+					// WHEN the Widget requests switching to a Scheme
+					// that CANNOT be realized with existing Selector numbers
+					// (too many Midfielders needed)
+					Scheme fakeScheme = new Scheme(5, 6, 2) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {
+						}
+					};			
+					ThrowingCallable shouldThrow = () -> chooser.switchToScheme(fakeScheme);
+					
+					// THEN a suitable exception is thrown
+					assertThatThrownBy(shouldThrow)
+						.isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("requested Scheme has 6 Midfielders, this composes only 4");
+					
+					// AND the '4-3-3' scheme is NOT registered as the current one
+					assertThat(chooser.currentScheme).isNotSameAs(fakeScheme);
+					
+					// AND the Widget is never instructed to switch
+					verify(mockWidget, never()).switchTo(fakeScheme);
+					
+					// AND Consumers are never executed
+					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
+					.forEach(Mockito::verifyNoInteractions);
+				}
+				
+				@Test
+				@DisplayName("forwards")
+				void tooManyForwards() {
+					
+					// WHEN the Widget requests switching to a Scheme
+					// that CANNOT be realized with existing Selector numbers
+					// (too many Midfielders needed)
+					Scheme fakeScheme = new Scheme(5, 4, 4) {
+						
+						@Override
+						public void accept(SchemeVisitor visitor) {
+						}
+					};			
+					ThrowingCallable shouldThrow = () -> chooser.switchToScheme(fakeScheme);
+					
+					// THEN a suitable exception is thrown
+					assertThatThrownBy(shouldThrow)
+						.isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("requested Scheme has 4 Forwards, this composes only 3");
+					
+					// AND the '4-3-3' scheme is NOT registered as the current one
+					assertThat(chooser.currentScheme).isNotSameAs(fakeScheme);
+					
+					// AND the Widget is never instructed to switch
+					verify(mockWidget, never()).switchTo(fakeScheme);
+					
+					// AND Consumers are never executed
+					Stream.of(mockDefConsumer, mockMidConsumer, mockForwConsumer)
+					.forEach(Mockito::verifyNoInteractions);
+				}
+			}			
 		}
 	}
 	
@@ -123,7 +219,7 @@ public class StarterLineUpChooserTest {
 			
 			@Test
 			@DisplayName("retrieve all composed StarterSelectorDelegates")
-			public void retrieveSelectors() {
+			void retrieveSelectors() {
 				
 				assertThat(chooser.getGoalieSelector()).isEqualTo(goalieSelector);
 				assertThat(chooser.getAllDefSelectors()).containsExactlyInAnyOrderElementsOf(defSels);
@@ -133,7 +229,7 @@ public class StarterLineUpChooserTest {
 			
 			@Test
 			@DisplayName("retrieve the current choice for StarterLineUp")
-			public void widgetsAddedTo532() {
+			void retrieveStarterLineUp() {
 				
 				// GIVEN the SUT is set up on a fake Scheme
 				Scheme fakeScheme = new Scheme(1, 2, 3) {
@@ -194,7 +290,7 @@ public class StarterLineUpChooserTest {
 
 				@Test
 				@DisplayName("when groups expands")
-				public void executesEntryConsumers(
+				void executesEntryConsumers(
 						@Mock Consumer<Selector<Defender>> mockDefConsumer,
 						@Mock Consumer<Selector<Midfielder>> mockMidConsumer,
 						@Mock Consumer<Selector<Forward>> mockForwConsumer) {
@@ -247,7 +343,7 @@ public class StarterLineUpChooserTest {
 
 				@Test
 				@DisplayName("when groups shrinks")
-				public void executesExitConsumers(
+				void executesExitConsumers(
 						@Mock Consumer<Selector<Defender>> mockDefConsumer,
 						@Mock Consumer<Selector<Midfielder>> mockMidConsumer,
 						@Mock Consumer<Selector<Forward>> mockForwConsumer) {

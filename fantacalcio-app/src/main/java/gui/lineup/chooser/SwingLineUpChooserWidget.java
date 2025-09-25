@@ -193,10 +193,10 @@ public class SwingLineUpChooserWidget extends JPanel {
 						forwView1, forwView2, forwView3);
 				
 				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
-						goaliePresenter,						
-						defPres1, defPres2, defPres3, defPres4, defPres5,						
-						midPres1, midPres2, midPres3, midPres4,						
-						forwPres1, forwPres2, forwPres3);
+						goaliePresenter, 
+						List.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
+						List.of(midPres1, midPres2, midPres3, midPres4), 
+						List.of(forwPres1, forwPres2, forwPres3));
 				
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);

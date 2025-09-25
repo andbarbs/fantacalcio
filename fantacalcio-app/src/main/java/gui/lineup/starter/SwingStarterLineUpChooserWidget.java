@@ -377,10 +377,10 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 				
 				// III) instantiates Chooser
 				StarterLineUpChooser controller = new StarterLineUpChooser(
-						goalieSelector,						
-						defPres1, defPres2, defPres3, defPres4, defPres5,
-						midPres1, midPres2, midPres3, midPres4,
-						forwPres1, forwPres2, forwPres3);
+						goalieSelector, 
+						List.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
+						List.of(midPres1, midPres2, midPres3, midPres4), 
+						List.of(forwPres1, forwPres2, forwPres3));
 				
 				SwingStarterLineUpChooserWidget widget = new SwingStarterLineUpChooserWidget(
 						false, 

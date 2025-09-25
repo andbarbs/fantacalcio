@@ -636,9 +636,11 @@ public class LineUpChooser implements LineUpChooserController {
 						new Spring532Scheme(false), goalieView, defView1, defView2, defView3, defView4, defView5,
 						midView1, midView2, midView3, midView4, forwView1, forwView2, forwView3);
 
-				StarterLineUpChooser starterChooser = new StarterLineUpChooser(goaliePresenter, defPres1, defPres2,
-						defPres3, defPres4, defPres5, midPres1, midPres2, midPres3, midPres4, forwPres1, forwPres2,
-						forwPres3);
+				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
+						goaliePresenter, 
+						List.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
+						List.of(midPres1, midPres2, midPres3, midPres4), 
+						List.of(forwPres1, forwPres2, forwPres3));
 
 				starterWidget.setController(starterChooser);
 				starterChooser.setWidget(starterWidget);

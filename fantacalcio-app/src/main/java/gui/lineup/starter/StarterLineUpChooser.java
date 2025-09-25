@@ -29,41 +29,15 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	// bookkeeping
 	Scheme currentScheme;
 	
-	// public instantiation point
-	public StarterLineUpChooser(
-			StarterSelectorDelegate<Goalkeeper> goalieSelector,
-			
-			StarterSelectorDelegate<Defender> defSelector1,
-			StarterSelectorDelegate<Defender> defSelector2,
-			StarterSelectorDelegate<Defender> defSelector3,
-			StarterSelectorDelegate<Defender> defSelector4,
-			StarterSelectorDelegate<Defender> defSelector5,
-			
-			StarterSelectorDelegate<Midfielder> midSelector1,
-			StarterSelectorDelegate<Midfielder> midSelector2,
-			StarterSelectorDelegate<Midfielder> midSelector3,
-			StarterSelectorDelegate<Midfielder> midSelector4,
-			
-			StarterSelectorDelegate<Forward> forwSelector1,
-			StarterSelectorDelegate<Forward> forwSelector2,
-			StarterSelectorDelegate<Forward> forwSelector3) {
+	public StarterLineUpChooser(StarterSelectorDelegate<Goalkeeper> goalieSelector,
+			List<StarterSelectorDelegate<Defender>> defenderSelectors,
+			List<StarterSelectorDelegate<Midfielder>> midfielderSelectors,
+			List<StarterSelectorDelegate<Forward>> forwardSelectors) {
 
 		this.goalieSelector = Objects.requireNonNull(goalieSelector);
-		this.defSelectors = List.of(
-				Objects.requireNonNull(defSelector1), 
-				Objects.requireNonNull(defSelector2),
-				Objects.requireNonNull(defSelector3), 
-				Objects.requireNonNull(defSelector4),
-				Objects.requireNonNull(defSelector5));
-		this.midSelectors = List.of(
-				Objects.requireNonNull(midSelector1), 
-				Objects.requireNonNull(midSelector2),
-				Objects.requireNonNull(midSelector3), 
-				Objects.requireNonNull(midSelector4));
-		this.forwSelectors = List.of(
-				Objects.requireNonNull(forwSelector1), 
-				Objects.requireNonNull(forwSelector2),
-				Objects.requireNonNull(forwSelector3));
+		this.defSelectors = defenderSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
+		this.midSelectors = midfielderSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
+		this.forwSelectors = forwardSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
 	}
 	
 	@Override
@@ -161,6 +135,22 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 	@Override
 	public void switchToScheme(Scheme newScheme) {
 		
+		// checks new Scheme is compatible with existing Selector numbers
+		String format = "StarterLineUpChooser.switchToScheme: Unsatisfiable Request\n" +
+				"requested Scheme has %d %ss, this composes only %d instances of Selector<%s>";
+		if (newScheme.getNumDefenders() > defSelectors.size())
+			throw new IllegalArgumentException(String.format(format, 
+					newScheme.getNumDefenders(), Defender.class.getSimpleName(), 
+					defSelectors.size(), Defender.class.getSimpleName()));
+		if (newScheme.getNumMidfielders() > midSelectors.size())
+			throw new IllegalArgumentException(String.format(format, 
+					newScheme.getNumMidfielders(), Midfielder.class.getSimpleName(), 
+					midSelectors.size(), Midfielder.class.getSimpleName()));
+		if (newScheme.getNumForwards() > forwSelectors.size())
+			throw new IllegalArgumentException(String.format(format, 
+					newScheme.getNumForwards(), Forward.class.getSimpleName(), 
+					forwSelectors.size(), Forward.class.getSimpleName()));
+		
 		// 1) saves old scheme
 		Scheme previousScheme = currentScheme;		
 		
@@ -220,8 +210,6 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				.flatMap(s -> s)
 				.collect(Collectors.toList());
 	}
-	
-
 
 	@Override
 	public StarterLineUp getCurrentStarterLineUp() {
