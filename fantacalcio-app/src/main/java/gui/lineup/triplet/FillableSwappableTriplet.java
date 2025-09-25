@@ -42,21 +42,21 @@ public class FillableSwappableTriplet<Q extends Player>
 	
 	/**
 	 * 
-	 * @param fillable1 the first {@link SubstituteSelectorDelegate} in the
+	 * @param selector1 the first {@link SubstituteSelectorDelegate} in the
 	 *                  {@code triplet}
-	 * @param fillable2 the second {@link SubstituteSelectorDelegate} in the
+	 * @param selector2 the second {@link SubstituteSelectorDelegate} in the
 	 *                  {@code triplet}
-	 * @param fillable3 the third {@link SubstituteSelectorDelegate} in the
+	 * @param selector3 the third {@link SubstituteSelectorDelegate} in the
 	 *                  {@code triplet}
 	 */
 	public FillableSwappableTriplet( 
-			SubstituteSelectorDelegate<Q> fillable1, 
-			SubstituteSelectorDelegate<Q> fillable2, 
-			SubstituteSelectorDelegate<Q> fillable3) {
+			SubstituteSelectorDelegate<Q> selector1, 
+			SubstituteSelectorDelegate<Q> selector2, 
+			SubstituteSelectorDelegate<Q> selector3) {
 
-		this.member1 = Objects.requireNonNull(fillable1);
-		this.member2 = Objects.requireNonNull(fillable2);
-		this.member3 = Objects.requireNonNull(fillable3);
+		this.member1 = Objects.requireNonNull(selector1);
+		this.member2 = Objects.requireNonNull(selector2);
+		this.member3 = Objects.requireNonNull(selector3);
 	}
 
 	@Override

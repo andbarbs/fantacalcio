@@ -33,7 +33,6 @@ import domainModel.Player.Midfielder;
 import domainModel.Scheme;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
-import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 
 @DisplayName("A SwingStarterLineUpChooser")
 @ExtendWith(MockitoExtension.class)

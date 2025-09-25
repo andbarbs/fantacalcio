@@ -36,7 +36,6 @@ import domainModel.scheme.Scheme532;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.StarterPlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
-import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 import gui.utils.schemes.Spring343Scheme;
 import gui.utils.schemes.Spring433Scheme;
 import gui.utils.schemes.Spring532Scheme;

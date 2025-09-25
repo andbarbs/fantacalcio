@@ -25,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import domainModel.scheme.Scheme343;
 import domainModel.scheme.Scheme433;
 import domainModel.scheme.Scheme532;
-import gui.lineup.starter.StarterLineUpChooser.StarterLineUpChooserWidget;
 import gui.utils.AssertJSwingJUnit5TestCase;
 import gui.utils.schemes.Spring343Scheme;
 import gui.utils.schemes.Spring433Scheme;

@@ -16,29 +16,76 @@ import domainModel.Player.*;
 import domainModel.Scheme;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
+import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.Selector;
 
-public class StarterLineUpChooser implements StarterLineUpChooserController, StarterLineUpChooserDelegate {
+/**
+ * implements {@link StarterLineUpChooserDelegate} as a
+ * {@link StarterLineUpChooserController Controller} in a bidirectional
+ * collaboration scheme inspired by the <b>MVP pattern</b>.
+ * 
+ * <p>
+ * <h1>Dynamic {@link Scheme} support</h1> This type does not lock down the
+ * number of {@link StarterSelectorDelegate}s it composes in order to define a
+ * compile-time notion of the {@link Scheme}s it can support. Instead, it
+ * <ol>
+ * <li>is instantiated on a {@code List<StarterSelectorDelegate<>>} of
+ * <i>arbitrary size</i> for each role
+ * <li>seeks to realize whatever {@link Scheme} is <i>dynamically requested</i>
+ * by tapping into those {@code List}s, lower-indices first, throwing an error
+ * if not enough {@link Selector}s are available
+ * </ol>
+ */
+public class StarterLineUpChooser implements StarterLineUpChooserDelegate, StarterLineUpChooserController {
 
-	// injected dependencies
+	// composed StarterSelectorDelegate instances
 	private StarterSelectorDelegate<Goalkeeper> goalieSelector;
 	private List<StarterSelectorDelegate<Defender>> defSelectors;
 	private List<StarterSelectorDelegate<Midfielder>> midSelectors;
 	private List<StarterSelectorDelegate<Forward>> forwSelectors;
+	
+	// Widget ref
+	private StarterLineUpChooserWidget widget;
 
-	// bookkeeping
+	public void setWidget(StarterLineUpChooserWidget widget) {
+		this.widget = widget;
+	}
+
+	// bookkeeping, non-private for setup in unit tests
 	Scheme currentScheme;
 	
+	/**
+	 * @see {@link StarterLineUpChooser} for an explanation of this type's policy
+	 *      for dynamically supporting {@link Scheme}s with only a fixed number of
+	 *      composed {@link SubstituteSelectorDelegate} instances.
+	 * 
+	 * @param goalieSelector      a {@link SubstituteSelectorDelegate} for a
+	 *                            {@link Goalkeeper}
+	 * @param defenderSelectors   a {@code List} containing
+	 *                            {@link SubstituteSelectorDelegate}s for a
+	 *                            {@link Defender}
+	 * @param midfielderSelectors a {@code List} containing
+	 *                            {@link SubstituteSelectorDelegate}s for a
+	 *                            {@link Midfielder}
+	 * @param forwardSelectors    a {@code List} containing
+	 *                            {@link SubstituteSelectorDelegate}s for a
+	 *                            {@link Defender}
+	 */
 	public StarterLineUpChooser(StarterSelectorDelegate<Goalkeeper> goalieSelector,
 			List<StarterSelectorDelegate<Defender>> defenderSelectors,
 			List<StarterSelectorDelegate<Midfielder>> midfielderSelectors,
 			List<StarterSelectorDelegate<Forward>> forwardSelectors) {
 
 		this.goalieSelector = Objects.requireNonNull(goalieSelector);
-		this.defSelectors = defenderSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
-		this.midSelectors = midfielderSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
-		this.forwSelectors = forwardSelectors.stream().map(Objects::requireNonNull).collect(Collectors.toList());
+		this.defSelectors = Objects.requireNonNull(defenderSelectors).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		this.midSelectors = Objects.requireNonNull(midfielderSelectors).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		this.forwSelectors = Objects.requireNonNull(forwardSelectors).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
 	}
+	
+	// 1. StarterLineUpChooserDelegate: all-selectors getters
 	
 	@Override
 	public StarterSelectorDelegate<Goalkeeper> getGoalieSelector() {
@@ -60,80 +107,111 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 		return Set.copyOf(forwSelectors);
 	}
 	
-	// TODO implement and test these getters!
+	// 2. StarterLineUpChooserDelegate: current-scheme getters
+	
 	@Override
 	public Set<Selector<Defender>> getCurrentDefSelectors() {
-		return defSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
+		return defSelectors.stream()
+				.limit(this.currentScheme == null ? 0 : this.currentScheme.getNumDefenders())
+				.collect(Collectors.toSet());
 	}
 	
 	@Override
 	public Set<Selector<Midfielder>> getCurrentMidSelectors() {
-		return midSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
+		return midSelectors.stream()
+				.limit(this.currentScheme == null ? 0 : this.currentScheme.getNumMidfielders())
+				.collect(Collectors.toSet());
 	}
 	
 	@Override
 	public Set<Selector<Forward>> getCurrentForwSelectors() {
-		return forwSelectors.stream().filter(selectorsIn(this.currentScheme)::contains).collect(Collectors.toSet());
+		return forwSelectors.stream()
+				.limit(this.currentScheme == null ? 0 : this.currentScheme.getNumForwards())
+				.collect(Collectors.toSet());
 	}	
 	
-	// As a Controller
+	// 3. StarterLineUpChooserDelegate: Consumer setters
 
+	private Consumer<Selector<Defender>> entryDefConsumer, exitDefConsumer;
+	private Consumer<Selector<Midfielder>> entryMidConsumer, exitMidConsumer;
+	private Consumer<Selector<Forward>> entryForwConsumer, exitForwConsumer;
 
-	// interface for vertical collaborator
-	public interface StarterLineUpChooserWidget {
-		void switchTo(Scheme scheme);
-	}
-
-	private StarterLineUpChooserWidget widget;
-	
-	public void setWidget(StarterLineUpChooserWidget widget) {
-		this.widget = widget;
-	}
-
-	private Consumer<Selector<Defender>> entryDefConsumer;
-	
 	@Override
 	public void setEntryDefConsumer(Consumer<Selector<Defender>> entryDefConsumer) {
 		this.entryDefConsumer = entryDefConsumer;
 	}
-
-	private Consumer<Selector<Midfielder>> entryMidConsumer;
 	
 	@Override
 	public void setEntryMidConsumer(Consumer<Selector<Midfielder>> entryMidConsumer) {
 		this.entryMidConsumer = entryMidConsumer;
 	}
-
-	private Consumer<Selector<Forward>> entryForwConsumer;
 	
 	@Override
 	public void setEntryForwConsumer(Consumer<Selector<Forward>> entryForwConsumer) {
 		this.entryForwConsumer = entryForwConsumer;
 	}
 
-	private Consumer<Selector<Defender>> exitDefConsumer;
-	
 	@Override
 	public void setExitDefConsumer(Consumer<Selector<Defender>> exitDefConsumer) {
 		this.exitDefConsumer = exitDefConsumer;
 	}
 
-	private Consumer<Selector<Midfielder>> exitMidConsumer;
-	
 	@Override
 	public void setExitMidConsumer(Consumer<Selector<Midfielder>> exitMidConsumer) {
 		this.exitMidConsumer = exitMidConsumer;
 	}
 
-	private Consumer<Selector<Forward>> exitForwConsumer;
-
 	@Override
 	public void setExitForwConsumer(Consumer<Selector<Forward>> exitForwConsumer) {
 		this.exitForwConsumer = exitForwConsumer;
 	}
+	
+	// 4. StarterLineUpChooserDelegate: StarterLineUp choice retrieval
+	
+	@Override
+	public StarterLineUp getCurrentStarterLineUp() {
+		return new StarterLineUp(
+				currentScheme, 
+				goalieSelector.getSelection().get(), 
+				defSelectors.stream()
+						.limit(currentScheme.getNumDefenders())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()),
+				midSelectors.stream()
+						.limit(currentScheme.getNumMidfielders())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()), 
+				forwSelectors.stream()
+						.limit(currentScheme.getNumForwards())
+						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()));
+	}
+	
+	// 5. StarterLineUpChooserDelegate: current scheme setting
 
+	/**
+	 * @implNote {@link StarterLineUpChooser} enforces consistency at runtime
+	 *           between the requested {@link Scheme} and the number of
+	 *           {@link StarterSelectorDelegate} instances it composes. If a
+	 *           {@link Scheme} is requested which is infeasible, an {@code Error}
+	 *           is thrown and no modifications or interactions ensue
+	 */
+	@Override
+	public void setCurrentScheme(Scheme scheme) {
+		switchToScheme(scheme);
+	}
+	
+	// 6. StarterLineUpChooserController: scheme switching Widget notification point
+
+
+	/**
+	 * @implNote {@link StarterLineUpChooser} enforces consistency at runtime
+	 *           between the requested {@link Scheme} and the number of
+	 *           {@link StarterSelectorDelegate} instances it composes. If a
+	 *           {@link Scheme} is requested which is infeasible, an {@code Error}
+	 *           is thrown and no modifications or interactions ensue
+	 */
 	@Override
 	public void switchToScheme(Scheme newScheme) {
+		
+		// TODO insert a NonNull check on Consumers
 		
 		// checks new Scheme is compatible with existing Selector numbers
 		String format = "StarterLineUpChooser.switchToScheme: Unsatisfiable Request\n" +
@@ -209,26 +287,5 @@ public class StarterLineUpChooser implements StarterLineUpChooserController, Sta
 				    forwSelectors.stream().limit(scheme.getNumForwards()))
 				.flatMap(s -> s)
 				.collect(Collectors.toList());
-	}
-
-	@Override
-	public StarterLineUp getCurrentStarterLineUp() {
-		return new StarterLineUp(
-				currentScheme, 
-				goalieSelector.getSelection().get(), 
-				defSelectors.stream()
-						.limit(currentScheme.getNumDefenders())
-						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()),
-				midSelectors.stream()
-						.limit(currentScheme.getNumMidfielders())
-						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()), 
-				forwSelectors.stream()
-						.limit(currentScheme.getNumForwards())
-						.map(Selector::getSelection).map(Optional::get).collect(Collectors.toSet()));
-	}
-
-	@Override
-	public void setCurrentScheme(Scheme scheme) {
-		switchToScheme(scheme);
 	}
 }
