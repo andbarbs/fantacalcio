@@ -4,6 +4,8 @@ import javax.swing.JPanel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 
+import domainModel.scheme.Scheme433;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.List;
@@ -44,6 +46,8 @@ public class Spring433Scheme extends SpringSchemePanel {
 	 */
 	public Spring433Scheme(boolean isDesignTime) {
 		
+		super(Scheme433.INSTANCE);
+		
 		// creates springs for the Panel dimensions
 		Spring panelWidth = Spring.constant(100);
 		Spring panelHeight = Spring.constant(100);
@@ -66,6 +70,8 @@ public class Spring433Scheme extends SpringSchemePanel {
 	 * type in WindowBuilder
 	 */
 	Spring433Scheme() {
+		
+		super(Scheme433.INSTANCE);
 		
 		/*
 		 * designing with SpringLayout using WB has several limitations:

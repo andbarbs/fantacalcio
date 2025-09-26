@@ -70,29 +70,23 @@ public class SwingLineUpChooserWidget extends JPanel {
 				SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
 		
 		this.starterChooserWidget = new SwingStarterLineUpChooserWidget(
-				true, 
+				true,				
+				availableWindow,				
+				List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)),
 				
-				availableWindow, 
-				
-				new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false), 
-				
-				new SwingSubPlayerSelector<Goalkeeper>(selectorDims),
-				
-				new SwingSubPlayerSelector<Defender>(selectorDims), 
-				new SwingSubPlayerSelector<Defender>(selectorDims), 
-				new SwingSubPlayerSelector<Defender>(selectorDims), 
-				new SwingSubPlayerSelector<Defender>(selectorDims), 
-				new SwingSubPlayerSelector<Defender>(selectorDims), 
-				
-				new SwingSubPlayerSelector<Midfielder>(selectorDims),  
-				new SwingSubPlayerSelector<Midfielder>(selectorDims),
-				new SwingSubPlayerSelector<Midfielder>(selectorDims),
-				new SwingSubPlayerSelector<Midfielder>(selectorDims), 
-				
-				new SwingSubPlayerSelector<Forward>(selectorDims),
-				new SwingSubPlayerSelector<Forward>(selectorDims), 
-				new SwingSubPlayerSelector<Forward>(selectorDims));
-		
+				new SwingSubPlayerSelector<Goalkeeper>(selectorDims),				
+				List.of(new SwingSubPlayerSelector<Defender>(selectorDims), 
+						new SwingSubPlayerSelector<Defender>(selectorDims), 
+						new SwingSubPlayerSelector<Defender>(selectorDims), 
+						new SwingSubPlayerSelector<Defender>(selectorDims), 
+						new SwingSubPlayerSelector<Defender>(selectorDims)), 				
+				List.of(new SwingSubPlayerSelector<Midfielder>(selectorDims),  
+						new SwingSubPlayerSelector<Midfielder>(selectorDims),
+						new SwingSubPlayerSelector<Midfielder>(selectorDims),
+						new SwingSubPlayerSelector<Midfielder>(selectorDims)), 				
+				List.of(new SwingSubPlayerSelector<Forward>(selectorDims),
+						new SwingSubPlayerSelector<Forward>(selectorDims), 
+						new SwingSubPlayerSelector<Forward>(selectorDims)));		
 		add(starterChooserWidget);		
 
 		// 9) sets private design-time dimensions
@@ -184,13 +178,13 @@ public class SwingLineUpChooserWidget extends JPanel {
 				
 				// III) instantiates StarterChooser
 				SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
-						false,						
-						availableWindow,						
-						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false),						
-						goalieView,						
-						defView1, defView2, defView3, defView4, defView5,						
-						midView1, midView2, midView3, midView4,
-						forwView1, forwView2, forwView3);
+						false, 
+						availableWindow, 						
+						List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)), 
+						goalieView, 
+						List.of(defView1, defView2, defView3, defView4, defView5), 
+						List.of(midView1, midView2, midView3, midView4), 						
+						List.of(forwView1, forwView2, forwView3));
 				
 				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
 						goaliePresenter, 

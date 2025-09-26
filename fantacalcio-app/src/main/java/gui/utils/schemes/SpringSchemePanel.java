@@ -8,8 +8,12 @@ import java.util.stream.Stream;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
+import domainModel.Scheme;
+
 @SuppressWarnings("serial")
 public abstract class SpringSchemePanel extends JPanel {
+	
+	private final Scheme scheme;
 	
 	private static final float slotWidthRatio = 0.217f;
 	private static final float slotHeightRatio = 0.193f;
@@ -37,7 +41,9 @@ public abstract class SpringSchemePanel extends JPanel {
 	protected JPanel slot10;
 	protected JPanel slot11;
 
-	public SpringSchemePanel() {
+	protected SpringSchemePanel(Scheme scheme) {
+		this.scheme = scheme;
+		
 		setOpaque(false);
 		setLayout(new SpringLayout());
 		
@@ -58,6 +64,10 @@ public abstract class SpringSchemePanel extends JPanel {
 				slot6, slot7, slot8,
 				slot9, slot10, slot11
 				).forEach(this::add);
+	}
+	
+	public final Scheme scheme() {
+		return this.scheme;
 	}
 	
 	@Override

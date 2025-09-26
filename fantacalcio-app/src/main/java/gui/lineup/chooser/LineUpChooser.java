@@ -634,10 +634,14 @@ public class LineUpChooser implements LineUpChooserController {
 								new Forward("Alessandro", "Del Piero"), new Forward("Lorenzo", "Insigne")));
 
 				// III) instantiates StarterChooser
-				SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(false,
-						availableWindow, new Spring433Scheme(false), new Spring343Scheme(false),
-						new Spring532Scheme(false), goalieView, defView1, defView2, defView3, defView4, defView5,
-						midView1, midView2, midView3, midView4, forwView1, forwView2, forwView3);
+				SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
+						false, 
+						availableWindow, 						
+						List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)), 
+						goalieView, 
+						List.of(defView1, defView2, defView3, defView4, defView5), 
+						List.of(midView1, midView2, midView3, midView4), 						
+						List.of(forwView1, forwView2, forwView3));
 
 				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
 						goaliePresenter, 

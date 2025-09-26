@@ -95,11 +95,11 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			widget = new SwingStarterLineUpChooserWidget(
 					false,					
 					availableWindow,					
-					panel433, panel343, panel532,					
+					List.of(panel433, panel343, panel532),					
 					goalieWidget,					
-					defWidget1, defWidget2, defWidget3, defWidget4, defWidget5,					
-					midWidget1, midWidget2, midWidget3, midWidget4,					
-					forwWidget1, forwWidget2, forwWidget3);
+					List.of(defWidget1, defWidget2, defWidget3, defWidget4, defWidget5),					
+					List.of(midWidget1, midWidget2, midWidget3, midWidget4),					
+					List.of(forwWidget1, forwWidget2, forwWidget3));
 
 			// sets up the test Frame			
 			f.add(widget);
@@ -305,6 +305,5 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			}
 		}
 	}
-
 }
 

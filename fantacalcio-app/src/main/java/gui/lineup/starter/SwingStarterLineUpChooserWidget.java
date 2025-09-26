@@ -1,8 +1,11 @@
 package gui.lineup.starter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -29,10 +32,7 @@ import javax.swing.border.TitledBorder;
 import domainModel.Player;
 import domainModel.Player.*;
 import domainModel.Scheme;
-import domainModel.Scheme.SchemeVisitor;
-import domainModel.scheme.Scheme343;
 import domainModel.scheme.Scheme433;
-import domainModel.scheme.Scheme532;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.StarterPlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
@@ -44,18 +44,6 @@ import gui.utils.schemes.SpringSchemePanel;
 @SuppressWarnings("serial")
 public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLineUpChooserWidget {
 	
-	// injected dependencies
-	private StarterLineUpChooserController controller;
-	
-	private Spring433Scheme panel433;
-	private Spring343Scheme panel343;
-	private Spring532Scheme panel532;
-
-	private List<JPanel> goalieWidgets;
-	private List<JPanel> defWidgets;
-	private List<JPanel> midWidgets;
-	private List<JPanel> forwWidgets;
-
 	// static PNG dependency
 	private static final String FIELD_PNG_PATH = "/gui_images/raster_field.png";
 	
@@ -70,58 +58,47 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 	// children refs
 	private JPanel switcher, schemesHolder;
 	private JLayeredPane layeredPane;
-	private JRadioButton b433, b343, b532;
+	private List<JRadioButton> radios = new ArrayList<>();
+
+	// injected dependencies
+	private List<SpringSchemePanel> schemePanels;
+	private List<JPanel> goalieSelectorWidget;
+	private List<JPanel> defSelectorWidgets;
+	private List<JPanel> midSelectorWidgets;
+	private List<JPanel> forwSelectorWidgets;
+	
+	// Controller ref
+	private StarterLineUpChooserController controller;
 	
 	// public instantiation point
 	public SwingStarterLineUpChooserWidget(
-			boolean isDesignTime,
-			
-			Dimension availableWindow,
-			
-			Spring433Scheme panel433, 
-			Spring343Scheme panel343, 
-			Spring532Scheme panel532,
+			boolean isDesignTime,			
+			Dimension availableWindow,			
+			List<SpringSchemePanel> schemePanels,
+			JPanel goalieSelectorWidget,			
+			List<JPanel> defSelectorWidgets,			
+			List<JPanel> midSelectorWidgets,			
+			List<JPanel> forwSelectorWidgets) throws IOException {
 
-			JPanel goalieSelectorWidget,
-			
-			JPanel defSelectorWidget1, 
-			JPanel defSelectorWidget2, 
-			JPanel defSelectorWidget3,
-			JPanel defSelectorWidget4, 
-			JPanel defSelectorWidget5,
-			
-			JPanel midSelectorWidget1, 
-			JPanel midSelectorWidget2,
-			JPanel midSelectorWidget3, 
-			JPanel midSelectorWidget4,
-			
-			JPanel forwSelectorWidget1, 
-			JPanel forwSelectorWidget2, 
-			JPanel forwSelectorWidget3) throws IOException {
-
-		this.panel433 = panel433;
-		this.panel343 = panel343;
-		this.panel532 = panel532;
-
-		this.goalieWidgets = List.of(goalieSelectorWidget);
-		this.defWidgets = List.of(defSelectorWidget1, defSelectorWidget2, defSelectorWidget3, 
-				defSelectorWidget4, defSelectorWidget5);
-		this.midWidgets = List.of(midSelectorWidget1, midSelectorWidget2, 
-				midSelectorWidget3, midSelectorWidget4);
-		this.forwWidgets = List.of(forwSelectorWidget1, forwSelectorWidget2, forwSelectorWidget3);
-
+		this.schemePanels = Objects.requireNonNull(schemePanels).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		this.goalieSelectorWidget = List.of(Objects.requireNonNull(goalieSelectorWidget));
+		this.defSelectorWidgets = Objects.requireNonNull(defSelectorWidgets).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		this.midSelectorWidgets = Objects.requireNonNull(midSelectorWidgets).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		this.forwSelectorWidgets = Objects.requireNonNull(forwSelectorWidgets).stream().map(Objects::requireNonNull)
+				.collect(Collectors.toList());
+		
 		initGraphics(availableWindow);
 
 		// 6) adds all supported scheme panels to CardLayout
-		schemesHolder.add(panel433, "433");
-		schemesHolder.add(panel343, "343");
-		schemesHolder.add(panel532, "532");
+		this.schemePanels.forEach(schemePanel -> this.schemesHolder.add(schemePanel, schemePanel.scheme().toString()));
 
 		// 7) wires scheme switch-up logic to the radios
 		if (!isDesignTime) {
-			b433.addActionListener(e -> controller.switchToScheme(Scheme433.INSTANCE));
-			b343.addActionListener(e -> controller.switchToScheme(Scheme343.INSTANCE));
-			b532.addActionListener(e -> controller.switchToScheme(Scheme532.INSTANCE));
+			IntStream.range(0, schemePanels.size()).forEach(
+					i -> radios.get(i).addActionListener(e -> controller.switchToScheme(schemePanels.get(i).scheme())));
 		}
 	}
 
@@ -161,18 +138,15 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 
 		// 4) builds the radio-button strip for scheme selection
 		switcher = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-		b433 = new JRadioButton("4-3-3");
-		b343 = new JRadioButton("3-4-3");
-		b532 = new JRadioButton("5-3-2");
-		ButtonGroup group = new ButtonGroup();
-		group.add(b433);
-		group.add(b343);
-		group.add(b532);
 		switcher.add(new JLabel("Scheme:"));
-		switcher.add(b433);
-		switcher.add(b343);
-		switcher.add(b532);		
-
+		ButtonGroup group = new ButtonGroup();
+		for (SpringSchemePanel schemePanel : schemePanels) {
+			JRadioButton radioButton = new JRadioButton(schemePanel.scheme().toString());
+			radios.add(radioButton);
+			group.add(radioButton);
+			switcher.add(radioButton);
+		}
+		
 		// 5) composes everything at the root level
 		setLayout(new BorderLayout());
 		add(switcher, BorderLayout.NORTH);
@@ -195,30 +169,43 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 		// calls initGraphics on a size acceptable for WB	
 		Dimension screenSize = getToolkit().getScreenSize();
 		Dimension availableWindow = new Dimension((int) (screenSize.width * widthRatio), screenSize.height);
-		initGraphics(availableWindow);
 
 		// 6) instantiates only one token scheme panel and adds it to CardLayout
-		this.panel433 = new Spring433Scheme(true);
-		schemesHolder.add(panel433, "433");
+		Spring433Scheme panel433 = new Spring433Scheme(true);
+		this.schemePanels.add(panel433);
+		this.schemesHolder.add(panel433, panel433.scheme().toString());
+		initGraphics(availableWindow);
 
 		// 7) instatiates and adds as many selectors as will fit the token scheme panel
 		Dimension slotDims = SpringSchemePanel.recommendedSlotDimensions(
 				eventualFieldDimension(availableWindow));
 
-		panel433.getGoalieSlot().add(new SwingSubPlayerSelector<Goalkeeper>(slotDims));
+//		SpringSchemePanel tokenPanel = panel433;
+//		tokenPanel.getGoalieSlot().add(new SwingSubPlayerSelector<Goalkeeper>(slotDims));
+//		
+//		for (JPanel defSlot : tokenPanel.getDefenderSlots())
+//			defSlot.add(c);
+//		for (JPanel defSlot : tokenPanel.getMidfielderSlots())
+//			defSlot.add(new SwingSubPlayerSelector<Midfielder>(slotDims));
+//		for (JPanel defSlot : tokenPanel.getForwardSlots())
+//			defSlot.add(new SwingSubPlayerSelector<Forward>(slotDims));		
 		
-		panel433.getDef1().add(new SwingSubPlayerSelector<Defender>(slotDims));
-		panel433.getDef2().add(new SwingSubPlayerSelector<Defender>(slotDims));
-		panel433.getDef3().add(new SwingSubPlayerSelector<Defender>(slotDims));
-		panel433.getDef4().add(new SwingSubPlayerSelector<Defender>(slotDims));
+		this.goalieSelectorWidget = List.of(new SwingSubPlayerSelector<Goalkeeper>(slotDims));
+		this.defSelectorWidgets = List.of(
+				new SwingSubPlayerSelector<Goalkeeper>(slotDims),
+				new SwingSubPlayerSelector<Goalkeeper>(slotDims),
+				new SwingSubPlayerSelector<Goalkeeper>(slotDims),
+				new SwingSubPlayerSelector<Goalkeeper>(slotDims));
+		this.midSelectorWidgets = List.of(
+				new SwingSubPlayerSelector<Midfielder>(slotDims),
+				new SwingSubPlayerSelector<Midfielder>(slotDims),
+				new SwingSubPlayerSelector<Midfielder>(slotDims));
+		this.forwSelectorWidgets = List.of(
+				new SwingSubPlayerSelector<Forward>(slotDims),
+				new SwingSubPlayerSelector<Forward>(slotDims),
+				new SwingSubPlayerSelector<Forward>(slotDims));
 		
-		panel433.getMid1().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
-		panel433.getMid2().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
-		panel433.getMid3().add(new SwingSubPlayerSelector<Midfielder>(slotDims));
-		
-		panel433.getForw1().add(new SwingSubPlayerSelector<Forward>(slotDims));
-		panel433.getForw2().add(new SwingSubPlayerSelector<Forward>(slotDims));
-		panel433.getForw3().add(new SwingSubPlayerSelector<Forward>(slotDims));		
+		switchToScheme("4-3-3");
 
 		// 8) sets explanatory borders
 		setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229), 2), "BorderLayout", TitledBorder.LEADING,
@@ -243,13 +230,13 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 		
 		// i) establish user choice of next scheme given CardLayout's String key
 		SpringSchemePanel targetSchemePanel = 
-				targetSchemeKey.equals("343") ? panel343 : targetSchemeKey.equals("532") ? panel532 : panel433;
+				schemePanels.stream().filter(schemePanel -> schemePanel.scheme().toString().equals(targetSchemeKey)).findFirst().get();
 
 		// ii) re-attach as many selectors as we have slots for each role
-		moveWidgets(targetSchemePanel.getGoalieSlots(), goalieWidgets);
-		moveWidgets(targetSchemePanel.getDefenderSlots(), defWidgets);
-		moveWidgets(targetSchemePanel.getMidfielderSlots(), midWidgets);
-		moveWidgets(targetSchemePanel.getForwardSlots(), forwWidgets);
+		moveWidgets(targetSchemePanel.getGoalieSlots(), goalieSelectorWidget);
+		moveWidgets(targetSchemePanel.getDefenderSlots(), defSelectorWidgets);
+		moveWidgets(targetSchemePanel.getMidfielderSlots(), midSelectorWidgets);
+		moveWidgets(targetSchemePanel.getForwardSlots(), forwSelectorWidgets);
 
 		// iii) show the right card
 		((CardLayout) schemesHolder.getLayout()).show(schemesHolder, targetSchemeKey);
@@ -272,26 +259,12 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 
 	@Override
 	public void switchTo(Scheme scheme) {
-		scheme.accept(new SchemeVisitor() {
-
-			@Override
-			public void visitScheme433(Scheme433 scheme433) {
-				b433.setSelected(true);
-				switchToScheme("433");
-			}
-
-			@Override
-			public void visitScheme343(Scheme343 scheme343) {
-				b343.setSelected(true);
-				switchToScheme("343");
-			}
-
-			@Override
-			public void visitScheme532(Scheme532 scheme532) {
-				b532.setSelected(true);
-				switchToScheme("532");
-			}
-		});
+		
+		JRadioButton radioButton = radios.stream().filter(radio -> radio.getText().equals(scheme.toString()))
+				.findFirst().get();
+		
+		radioButton.setSelected(true);
+		switchToScheme(radioButton.getText());
 	}
 	
 
@@ -384,11 +357,11 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 				SwingStarterLineUpChooserWidget widget = new SwingStarterLineUpChooserWidget(
 						false, 
 						availableWindow, 						
-						new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false), 
+						List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)), 
 						goalieView, 
-						defView1, defView2, defView3, defView4, defView5, 
-						midView1, midView2, midView3, midView4, 						
-						forwView1, forwView2, forwView3);
+						List.of(defView1, defView2, defView3, defView4, defView5), 
+						List.of(midView1, midView2, midView3, midView4), 						
+						List.of(forwView1, forwView2, forwView3));
 				
 				controller.setWidget(widget);
 				widget.setController(controller);

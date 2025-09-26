@@ -38,6 +38,12 @@ public abstract class Scheme {
 		return numForwards;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%d-%d-%d", 
+        		getNumDefenders(), getNumMidfielders(), getNumForwards());
+	}
+	
 	public static interface SchemeVisitor {
 
 		public void visitScheme433(Scheme433 scheme433);
@@ -58,8 +64,7 @@ public abstract class Scheme {
 	        if (scheme == null) {
 	            return null;
 	        }
-	        return String.format("%d-%d-%d", 
-	        		scheme.getNumDefenders(), scheme.getNumMidfielders(), scheme.getNumForwards());
+	        return scheme.toString();
 	    }
 
 	    @Override
