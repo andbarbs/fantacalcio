@@ -1,6 +1,8 @@
 package gui.lineup.starter;
 
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 
 import java.awt.Color;
@@ -10,6 +12,8 @@ import java.util.Optional;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
@@ -22,61 +26,76 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.scheme.Scheme343;
-import domainModel.scheme.Scheme433;
-import domainModel.scheme.Scheme532;
+import domainModel.Scheme;
 import gui.utils.AssertJSwingJUnit5TestCase;
-import gui.utils.schemes.Spring343Scheme;
-import gui.utils.schemes.Spring433Scheme;
-import gui.utils.schemes.Spring532Scheme;
 import gui.utils.schemes.SpringSchemePanel;
 
+/**
+ * <h1>Unit test isolation</h1> two test-specific <b>fake</b> {@link Scheme}
+ * instances and corresponding {@link SpringSchemePanel}s are used to maximize
+ * isolation. Correctness is assumed, however, for the {@link SpringSchemePanel}
+ * superclass
+ * 
+ * <p>
+ * <h1>Compositional cardinality</h1> as specified in
+ * {@link SwingStarterLineUpChooserWidget}, the number of {@link JPanel}
+ * instances that this type composes substantially determines its runtime
+ * behavior. Test instantiation happens at
+ * {@link SwingStarterLineUpChooserWidgetTest#instantiator()}
+ */
 @DisplayName("A SwingStarterLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
 public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 	
-	private Spring433Scheme panel433;
-	private Spring343Scheme panel343;
-	private Spring532Scheme panel532;
+	// private constants simulate Singletons
+	private static final Scheme scheme123 = new Scheme(1, 2, 3) {
+
+		@Override
+		public void accept(SchemeVisitor visitor) {} 
+	};
+	
+	private static final Scheme scheme321 = new Scheme(3, 2, 1) {
+		
+		@Override
+		public void accept(SchemeVisitor visitor) {} 
+	};
+	
+	private SpringSchemePanel panel123, panel321;
 	
 	private JPanel goalieWidget;
-	private JPanel defWidget1, defWidget2, defWidget3, defWidget4, defWidget5;
-	private JPanel midWidget1, midWidget2, midWidget3, midWidget4;
+	private JPanel defWidget1, defWidget2, defWidget3;
+	private JPanel midWidget1, midWidget2, midWidget3;
 	private JPanel forwWidget1, forwWidget2, forwWidget3;
 	
-	private List<JPanel> widgets, widgetsIn433, widgetsIn343, widgetsIn532;
+	private List<JPanel> selectorWidgets;
 
 	// the SUT reference
 	private SwingStarterLineUpChooserWidget widget;
 
+	@SuppressWarnings("serial")
 	@BeforeEach
-	void testCaseSpecificSetup() {
+	void instantiator() {
 		JFrame frame = GuiActionRunner.execute(() -> {
 			
-			JFrame f = new JFrame("Test Frame");
-
-			// instantiates scheme panels
-			panel433 = new Spring433Scheme(false);
-			panel343 = new Spring343Scheme(false);
-			panel532 = new Spring532Scheme(false);			
+			JFrame f = new JFrame("Test Frame");		
 			
-			// instantiates & preps fake widgets
+			// instantiates & preps fake selectorWidgets
 			goalieWidget = new JPanel(); 
 			defWidget1 = new JPanel(); 
 			defWidget2 = new JPanel(); 
-			defWidget3 = new JPanel(); 
-			defWidget4 = new JPanel(); 
-			defWidget5 = new JPanel(); 
+			defWidget3 = new JPanel();
 			midWidget1 = new JPanel(); 
 			midWidget2 = new JPanel(); 
-			midWidget3 = new JPanel(); 
-			midWidget4 = new JPanel(); 
-			forwWidget1 = new JPanel(); 
+			midWidget3 = new JPanel();
+			forwWidget1 = new JPanel();
 			forwWidget2 = new JPanel(); 
-			forwWidget3 = new JPanel(); 
+			forwWidget3 = new JPanel();
 			
-			populateWidgetsLists();
+			selectorWidgets = List.of(goalieWidget, 
+					defWidget1, defWidget2, defWidget3, 
+					midWidget1, midWidget2, midWidget3,
+					forwWidget1, forwWidget2, forwWidget3);
 			
 			Dimension screenSize = f.getToolkit().getScreenSize();
 			Dimension availableWindow = new Dimension(
@@ -85,20 +104,32 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 			Dimension eventualFieldSize = SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow);
 			Dimension widgetSize = SpringSchemePanel.recommendedSlotDimensions(eventualFieldSize);
 			
-			widgets.stream()
+			selectorWidgets.stream()
 				.forEach(widget -> {
 					widget.setPreferredSize(widgetSize);
 					widget.setBackground(Color.ORANGE);
 			});
 			
-			// instantiates SUT
+			panel123 = new SpringSchemePanel(scheme123) {
+				
+				@Override
+				public void accept(SpringSchemeVisitor visitor) {}
+			};
+			
+			panel321 = new SpringSchemePanel(scheme321) {
+				
+				@Override
+				public void accept(SpringSchemeVisitor visitor) {}
+			};
+			
+			// instantiates SUT on a (3, 3, 3) Selector widget cardinality
 			widget = new SwingStarterLineUpChooserWidget(
 					false,					
 					availableWindow,					
-					List.of(panel433, panel343, panel532),					
+					List.of(panel123, panel321),					
 					goalieWidget,					
-					List.of(defWidget1, defWidget2, defWidget3, defWidget4, defWidget5),					
-					List.of(midWidget1, midWidget2, midWidget3, midWidget4),					
+					List.of(defWidget1, defWidget2, defWidget3),					
+					List.of(midWidget1, midWidget2, midWidget3),					
 					List.of(forwWidget1, forwWidget2, forwWidget3));
 
 			// sets up the test Frame			
@@ -113,197 +144,361 @@ public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestC
 		window.show();
 	}
 
-	private void populateWidgetsLists() {
-		widgets = List.of(goalieWidget, 
-				defWidget1, defWidget2, defWidget3, defWidget4, defWidget5, 
-				midWidget1, midWidget2, midWidget3, midWidget4, 
-				forwWidget1, forwWidget2, forwWidget3);
-		
-		// by scheme
-		widgetsIn433 = List.of(
-				goalieWidget, 
-				defWidget1, defWidget2, defWidget3, defWidget4, 
-				midWidget1, midWidget2, midWidget3, 
-				forwWidget1, forwWidget2, forwWidget3);
-		widgetsIn343 = List.of(
-				goalieWidget, 
-				defWidget1, defWidget2, defWidget3,
-				midWidget1, midWidget2, midWidget3, midWidget4,
-				forwWidget1, forwWidget2, forwWidget3);
-		widgetsIn532 = List.of(
-				goalieWidget, 
-				defWidget1, defWidget2, defWidget3, defWidget4, defWidget5,
-				midWidget1, midWidget2, midWidget3,
-				forwWidget1, forwWidget2);
-	}
-
 	@Nested
-	@DisplayName("as instantiated")
+	@DisplayName("once instantiated")
 	class JustInstantiated {
 		
-		@Nested
-		@DisplayName("contains")
-		class Contains {			
+		@Test
+		@GUITest
+		@DisplayName("contains the scheme panels and as many radio buttons")
+		public void graphicalContents() {
 			
-			@Test
-			@GUITest
-			@DisplayName("the scheme panels and three corresponding radio buttons")
-			public void graphicalContents() {
-				
-				// THEN all tree scheme panels are added to the SUT hierarchy
-				window.panel(sameAs(panel433));
-				window.panel(sameAs(panel343));
-				window.panel(sameAs(panel532));
-
-				// AND three corresponding radio buttons are also present
-				window.radioButton(withText("4-3-3"));
-				window.radioButton(withText("3-4-3"));
-				window.radioButton(withText("5-3-2"));
-				
-				// none of which is selected
-				window.radioButton(withText("4-3-3")).requireNotSelected();
-				window.radioButton(withText("3-4-3")).requireNotSelected();
-				window.radioButton(withText("5-3-2")).requireNotSelected();
-			}
-		}		
+			// THEN all scheme panels are added to the SUT hierarchy
+			window.panel(sameAs(panel123));
+			window.panel(sameAs(panel321));
+			
+			// AND three corresponding radio buttons, none of which is selected
+			window.radioButton(withText("1-2-3")).requireNotSelected();
+			window.radioButton(withText("3-2-1")).requireNotSelected();
+		}
 	}
 	
 	@Nested
-	@DisplayName("allows a graphical user to")
-	class ForGraphicalUsers {
+	@DisplayName("as a StarterLineUpChooserWidget")
+	class AsAStarterLineUpChooserWidget {
 		
-		@Mock
-		private StarterLineUpChooserController controller;
-		
-		@BeforeEach
-		void testCaseSpecificSetup() {
-			widget.setController(controller);
-		}		
-
 		@Nested
-		@DisplayName("request a scheme change to")
-		class SwitchesSchemes {
+		@DisplayName("notifies to the Controller a user request to")
+		class ForGraphicalUsers {
+			
+			@Mock
+			private StarterLineUpChooserController controller;
+			
+			@BeforeEach
+			void setController() {
+				widget.setController(controller);
+			}
 			
 			@Test
 			@GUITest
-			@DisplayName("the '3-4-3' scheme")
-			public void forwardsRequestFor343() {
+			@DisplayName("switch to a scheme")
+			public void forwardsRequest() {
 				
-				// WHEN the user selects the '3-4-3' scheme
-				window.radioButton(withText("3-4-3")).click();
+				// WHEN the user selects a scheme on the radios
+				window.radioButton(withText("1-2-3")).click();
 				robot.waitForIdle();
 				
 				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(Scheme343.INSTANCE);
-			}
-			
-			@Test
-			@GUITest
-			@DisplayName("the '5-3-2' scheme")
-			public void forwardsRequestFor532() {
-				
-				// WHEN the user selects the '5-3-2' scheme
-				window.radioButton(withText("5-3-2")).click();
-				robot.waitForIdle();				
-
-				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(Scheme532.INSTANCE);
-			}
-			
-			@Test
-			@GUITest
-			@DisplayName("the '4-3-3' scheme")
-			public void forwardsRequestFor433() {
-				
-				// WHEN the user selects the '5-3-2' scheme
-				window.radioButton(withText("4-3-3")).click();
-				robot.waitForIdle();				
-
-				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(Scheme433.INSTANCE);
+				verify(controller).switchToScheme(scheme123);
 			}
 		}
-
-	}
-	
-	@Nested
-	@DisplayName("satisfies Controller requests")
-	class AsMVPWidget {
 		
-		private StarterLineUpChooserWidget asWidget;
-
-		@BeforeEach
-		void testCaseSpecificSetup() {
-			asWidget = widget;
-			
-			// GIVEN selector widgets are forcibly removed from whatever scheme
-			GuiActionRunner.execute(() -> {
-				widgets.forEach(widget -> Optional.ofNullable(widget.getParent())
-						.ifPresent(parent -> parent.remove(widget)));
-			});
-		}
-
 		@Nested
-		@DisplayName("to change to")
-		class SwitchesSchemes {
+		@DisplayName("satisfies Controller requests to switch to")
+		class AsMVPWidget {
 			
-			@Test
-			@GUITest
-			@DisplayName("the '3-4-3' scheme")
-			public void changesTo343() {
+			@BeforeEach
+			void ensureNoParent() {
 				
-				// WHEN the Controller requests changing to the '3-4-3' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme343.INSTANCE));
-				
-				// THEN the '3-4-3' radio button becomes selected
-				window.radioButton(withText("3-4-3")).requireSelected();
-				
-				// AND widgets within '3-4-3' are added to the 343 panel
-				widgetsIn343.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel343));				
-				// WHILE widgets not within '3-4-3' are without parent
-				widgets.stream().filter(Widget -> !widgetsIn343.contains(Widget))
-				.forEach(Widget -> assertThat(Widget.getParent()).isNull());
+				// GIVEN selector widgets are forcibly removed from whatever scheme
+				GuiActionRunner.execute(() -> selectorWidgets.forEach(
+						widget -> Optional.ofNullable(widget.getParent()).ifPresent(
+								parent -> parent.remove(widget))));
 			}
 			
-			@Test
-			@GUITest
-			@DisplayName("the '5-3-2' scheme")
-			public void changesTo532() {
+			@Nested
+			@DisplayName("a Scheme that is feasible")
+			class AskedToSwitchToFeasibleScheme {
 				
-				// WHEN the Controller requests changing to the '5-3-2' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme532.INSTANCE));
+				@Test
+				@GUITest
+				@DisplayName("when no previous scheme existed")
+				public void noPreviousSchemeExisted() {
+					
+					// WHEN the Controller requests changing to the '1-2-3' scheme
+					GuiActionRunner.execute(() -> widget.switchTo(scheme123));
+					
+					// THEN the '1-2-3' radio button becomes selected
+					window.radioButton(withText("1-2-3")).requireSelected();
+					
+					// AND Selector widgets within '1-2-3' are added to the appropriate panel
+					List<JPanel> selsIn123 = List.of(goalieWidget, 
+							defWidget1, 
+							midWidget1, midWidget2, 
+							forwWidget1, forwWidget2, forwWidget3);
+					selsIn123.stream()
+						.forEach(fakeWidget -> assertThat(fakeWidget.getParent().getParent()).isSameAs(panel123));
+					
+					// AND Selector widgets not within '1-2-3' are without parent
+					selectorWidgets.stream().filter(not(selsIn123::contains))
+						.forEach(widget -> assertThat(widget.getParent()).isNull());
+				}
 				
-				// THEN the '5-3-2' radio button becomes selected
-				window.radioButton(withText("5-3-2")).requireSelected();
 				
-				// AND  widgets within '5-3-2' are added to the 532 panel
-				widgetsIn532.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel532));				
-				// WHILE widgets not within '5-3-2' are without parent
-				widgets.stream().filter(Widget -> !widgetsIn532.contains(Widget))
-				.forEach(Widget -> assertThat(Widget.getParent()).isNull());
+				@Test
+				@GUITest
+				@DisplayName("when a previous scheme existed")
+				public void previousSchemeExisted() {
+					
+					// GIVEN selectors in '1-2-3' are manually wired to the scheme panel
+					GuiActionRunner.execute(() -> {
+						panel123.getGoalieSlot().add(goalieWidget);
+						panel123.getDefenderSlots().get(0).add(defWidget1);
+						panel123.getMidfielderSlots().get(0).add(midWidget1);
+						panel123.getMidfielderSlots().get(1).add(midWidget2);
+						panel123.getForwardSlots().get(0).add(forwWidget1);
+						panel123.getForwardSlots().get(1).add(forwWidget2);
+						panel123.getForwardSlots().get(2).add(forwWidget3);
+					});
+					
+					// WHEN the Controller requests changing to the '3-2-1' scheme
+					GuiActionRunner.execute(() -> widget.switchTo(scheme321));
+					
+					// THEN the corresponding radio button becomes selected
+					window.radioButton(withText("3-2-1")).requireSelected();
+					
+					// AND the other radio button becomes not selected
+					window.radioButton(withText("1-2-3")).requireNotSelected();
+					
+					// AND Selector widgets within '3-2-1' are added to the corresponding panel
+					List<JPanel> widgetsIn321 = List.of(
+							goalieWidget, 
+							defWidget1, defWidget2, defWidget3, 
+							midWidget1, midWidget2, 
+							forwWidget1);
+					widgetsIn321.stream()
+						.forEach(fakeWidget -> assertThat(fakeWidget.getParent().getParent()).isSameAs(panel321));
+					
+					// AND Selector widgets not within '3-2-1' have no parent
+					selectorWidgets.stream().filter(not(widgetsIn321::contains))
+						.forEach(widget -> assertThat(widget.getParent()).isNull());
+				}
 			}
 			
-			@Test
-			@GUITest
-			@DisplayName("the '4-3-3' scheme")
-			public void changesTo433() {
+			@Nested
+			@DisplayName("a scheme that has too many")
+			class AskedToSwitchToInfeasibleScheme {
 				
-				// WHEN the Controller requests changing to the '4-3-3' scheme
-				GuiActionRunner.execute(() -> asWidget.switchTo(Scheme433.INSTANCE));
+				@Nested
+				@DisplayName("Defenders")
+				class TooManyDefenders {
+					
+					private static final Scheme tooManyDefenders = new Scheme(5, 1, 1) {
+
+						@Override
+						public void accept(SchemeVisitor visitor) {} 
+					};
+					
+					@Test
+					@GUITest
+					@DisplayName("when no previous scheme existed")
+					public void noPreviousSchemeExisted() {
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyDefenders));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Defenders, this composes only 3 widgets for Defender");
+						
+						// THEN no radio button becomes selected
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widgets are not given a parent
+						selectorWidgets.stream().forEach(widget -> assertThat(widget.getParent()).isNull());
+					}					
+					
+					@Test
+					@GUITest
+					@DisplayName("when a previous scheme existed")
+					public void previousSchemeExisted() {
+						
+						// GIVEN selectors in '1-2-3' are manually inserted in the scheme panel
+						GuiActionRunner.execute(() -> {
+							panel123.getGoalieSlot().add(goalieWidget);
+							panel123.getDefenderSlots().get(0).add(defWidget1);
+							panel123.getMidfielderSlots().get(0).add(midWidget1);
+							panel123.getMidfielderSlots().get(1).add(midWidget2);
+							panel123.getForwardSlots().get(0).add(forwWidget1);
+							panel123.getForwardSlots().get(1).add(forwWidget2);
+							panel123.getForwardSlots().get(2).add(forwWidget3);
+						});
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyDefenders));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Defenders, this composes only 3 widgets for Defender");
+						
+						// AND radio buttons reflect the state prior to the call
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widget attachment reflects the state prior to the call
+						List<JPanel> selsIn123 = List.of(goalieWidget, 
+								defWidget1, 
+								midWidget1, midWidget2, 
+								forwWidget1, forwWidget2, forwWidget3);
+						selsIn123.stream()
+							.forEach(fakeWidget -> assertThat(fakeWidget.getParent().getParent()).isSameAs(panel123));
+						selectorWidgets.stream().filter(not(selsIn123::contains))
+							.forEach(widget -> assertThat(widget.getParent()).isNull());
+					}
+				}
 				
-				// THEN the '4-3-3' radio button becomes selected
-				window.radioButton(withText("4-3-3")).requireSelected();
+				@Nested
+				@DisplayName("Midfielders")
+				class TooManyMidfielders {
+					
+					private static final Scheme tooManyMidfielders = new Scheme(1, 5, 1) {
+
+						@Override
+						public void accept(SchemeVisitor visitor) {} 
+					};
+					
+					@Test
+					@GUITest
+					@DisplayName("when no previous scheme existed")
+					public void noPreviousSchemeExisted() {
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyMidfielders));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Midfielders, this composes only 3 widgets for Midfielder");
+						
+						// THEN no radio button becomes selected
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widgets are not given a parent
+						selectorWidgets.stream().forEach(widget -> assertThat(widget.getParent()).isNull());
+					}					
+					
+					@Test
+					@GUITest
+					@DisplayName("when a previous scheme existed")
+					public void previousSchemeExisted() {
+						
+						// GIVEN selectors in '1-2-3' are manually inserted in the scheme panel
+						GuiActionRunner.execute(() -> {
+							panel123.getGoalieSlot().add(goalieWidget);
+							panel123.getDefenderSlots().get(0).add(defWidget1);
+							panel123.getMidfielderSlots().get(0).add(midWidget1);
+							panel123.getMidfielderSlots().get(1).add(midWidget2);
+							panel123.getForwardSlots().get(0).add(forwWidget1);
+							panel123.getForwardSlots().get(1).add(forwWidget2);
+							panel123.getForwardSlots().get(2).add(forwWidget3);
+						});
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyMidfielders));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Midfielders, this composes only 3 widgets for Midfielder");
+						
+						// AND radio buttons reflect the state prior to the call
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widget attachment reflects the state prior to the call
+						List<JPanel> selsIn123 = List.of(goalieWidget, 
+								defWidget1, 
+								midWidget1, midWidget2, 
+								forwWidget1, forwWidget2, forwWidget3);
+						selsIn123.stream()
+							.forEach(fakeWidget -> assertThat(fakeWidget.getParent().getParent()).isSameAs(panel123));
+						selectorWidgets.stream().filter(not(selsIn123::contains))
+							.forEach(widget -> assertThat(widget.getParent()).isNull());
+					}
+				}
 				
-				// AND widgets within '4-3-3' are added to the 433 panel
-				widgetsIn433.stream().forEach(fakeWidget ->
-					assertThat(fakeWidget.getParent().getParent()).isSameAs(panel433));				
-				// WHILE widgets not within '4-3-3' are without parent
-				widgets.stream().filter(Widget -> !widgetsIn433.contains(Widget))
-				.forEach(Widget -> assertThat(Widget.getParent()).isNull());
+				@Nested
+				@DisplayName("Forwards")
+				class TooManyForwards {
+					
+					private static final Scheme tooManyForwards = new Scheme(1, 1, 5) {
+
+						@Override
+						public void accept(SchemeVisitor visitor) {} 
+					};
+					
+					@Test
+					@GUITest
+					@DisplayName("when no previous scheme existed")
+					public void noPreviousSchemeExisted() {
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyForwards));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Forwards, this composes only 3 widgets for Forward");
+						
+						// THEN no radio button becomes selected
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widgets are not given a parent
+						selectorWidgets.stream().forEach(widget -> assertThat(widget.getParent()).isNull());
+					}					
+					
+					@Test
+					@GUITest
+					@DisplayName("when a previous scheme existed")
+					public void previousSchemeExisted() {
+						
+						// GIVEN selectors in '1-2-3' are manually inserted in the scheme panel
+						GuiActionRunner.execute(() -> {
+							panel123.getGoalieSlot().add(goalieWidget);
+							panel123.getDefenderSlots().get(0).add(defWidget1);
+							panel123.getMidfielderSlots().get(0).add(midWidget1);
+							panel123.getMidfielderSlots().get(1).add(midWidget2);
+							panel123.getForwardSlots().get(0).add(forwWidget1);
+							panel123.getForwardSlots().get(1).add(forwWidget2);
+							panel123.getForwardSlots().get(2).add(forwWidget3);
+						});
+						
+						// WHEN the Controller requests changing to a Scheme that is not feasible
+						ThrowingCallable shouldThrow = () -> 
+							GuiActionRunner.execute(() -> widget.switchTo(tooManyForwards));
+						
+						// THEN an error is thrown 
+						assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+							.hasMessageContaining(
+									"requested Scheme has 5 Forwards, this composes only 3 widgets for Forward");
+						
+						// AND radio buttons reflect the state prior to the call
+						window.radioButton(withText("1-2-3")).requireNotSelected();
+						window.radioButton(withText("3-2-1")).requireNotSelected();
+						
+						// AND Selector widget attachment reflects the state prior to the call
+						List<JPanel> selsIn123 = List.of(goalieWidget, 
+								defWidget1, 
+								midWidget1, midWidget2, 
+								forwWidget1, forwWidget2, forwWidget3);
+						selsIn123.stream()
+							.forEach(fakeWidget -> assertThat(fakeWidget.getParent().getParent()).isSameAs(panel123));
+						selectorWidgets.stream().filter(not(selsIn123::contains))
+							.forEach(widget -> assertThat(widget.getParent()).isNull());
+					}
+				}
 			}
 		}
-	}
+	}	
 }
 

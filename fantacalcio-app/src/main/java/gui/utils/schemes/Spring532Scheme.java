@@ -7,7 +7,6 @@ import javax.swing.SpringLayout;
 import domainModel.scheme.Scheme532;
 
 import java.awt.Dimension;
-import java.util.List;
 import java.awt.Color;
 
 @SuppressWarnings("serial")
@@ -308,21 +307,6 @@ public class Spring532Scheme extends SpringSchemePanel {
 	public JPanel getForw1() {  return slot10;  }
 
 	public JPanel getForw2() {  return slot11;  }
-	
-	@Override
-	public List<JPanel> getDefenderSlots() {
-		return List.of(slot2, slot3, slot4, slot5, slot6);
-	}
-
-	@Override
-	public List<JPanel> getMidfielderSlots() {
-		return List.of(slot7, slot8, slot9);
-	}
-
-	@Override
-	public List<JPanel> getForwardSlots() {
-		return List.of(slot10, slot11);
-	}
 
 	@Override
 	public void accept(SpringSchemeVisitor visitor) {

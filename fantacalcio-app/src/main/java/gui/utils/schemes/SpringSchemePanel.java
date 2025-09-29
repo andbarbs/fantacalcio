@@ -3,6 +3,7 @@ package gui.utils.schemes;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.JPanel;
@@ -83,9 +84,25 @@ public abstract class SpringSchemePanel extends JPanel {
 		return List.of(slot1);
 	}
 	
-	public abstract List<JPanel> getDefenderSlots();
-	public abstract List<JPanel> getMidfielderSlots();
-	public abstract List<JPanel> getForwardSlots();
+	public final List<JPanel> getDefenderSlots() {
+		return Stream.of(slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9, slot10, slot11)
+				.skip(1)
+				.limit(scheme.getNumDefenders())
+				.collect(Collectors.toList());
+	}
+	
+	public final List<JPanel> getMidfielderSlots() {
+		return Stream.of(slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9, slot10, slot11)
+				.skip(1 + scheme.getNumDefenders())
+				.limit(scheme.getNumMidfielders())
+				.collect(Collectors.toList());
+	}
+	public final List<JPanel> getForwardSlots() {
+		return Stream.of(slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9, slot10, slot11)
+				.skip(1 + scheme.getNumDefenders() + scheme.getNumMidfielders())
+				.limit(scheme.getNumForwards())
+				.collect(Collectors.toList());
+	}
 	
 	public interface SpringSchemeVisitor {
 		void visit433Scheme(Spring433Scheme scheme433);

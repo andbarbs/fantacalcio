@@ -69,11 +69,10 @@ public class SwingLineUpChooserWidget extends JPanel {
 		Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
 				SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
 		
-		this.starterChooserWidget = new SwingStarterLineUpChooserWidget(
+		SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
 				true,				
 				availableWindow,				
-				List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)),
-				
+				List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)),				
 				new SwingSubPlayerSelector<Goalkeeper>(selectorDims),				
 				List.of(new SwingSubPlayerSelector<Defender>(selectorDims), 
 						new SwingSubPlayerSelector<Defender>(selectorDims), 
@@ -86,8 +85,11 @@ public class SwingLineUpChooserWidget extends JPanel {
 						new SwingSubPlayerSelector<Midfielder>(selectorDims)), 				
 				List.of(new SwingSubPlayerSelector<Forward>(selectorDims),
 						new SwingSubPlayerSelector<Forward>(selectorDims), 
-						new SwingSubPlayerSelector<Forward>(selectorDims)));		
-		add(starterChooserWidget);		
+						new SwingSubPlayerSelector<Forward>(selectorDims)));
+		this.starterChooserWidget = starterWidget;		
+		add(starterChooserWidget);
+		
+		starterWidget.switchTo(Scheme433.INSTANCE);
 
 		// 9) sets private design-time dimensions
 		setPreferredSize(starterChooserWidget.getPreferredSize());
