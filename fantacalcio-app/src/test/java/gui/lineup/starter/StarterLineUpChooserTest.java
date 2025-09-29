@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,13 +35,24 @@ import domainModel.Scheme;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
 
+/**
+ * <h1>Unit test isolation</h1> test-specific <b>fake</b> {@link Scheme}
+ * instances are used to maximize isolation and ensure generality
+ * 
+ * <p>
+ * <h1>Compositional cardinality</h1> as documented in
+ * {@link StarterLineUpChooser}, the number of {@link StarterSelectorDelegate}
+ * instances that this type composes substantially determines its runtime
+ * behavior. Test instantiation happens at
+ * {@link StarterLineUpChooserTest#instantiator()}
+ */
 @DisplayName("A SwingStarterLineUpChooser")
 @ExtendWith(MockitoExtension.class)
 public class StarterLineUpChooserTest {
 	
 	private @Mock StarterSelectorDelegate<Goalkeeper> goalieSelector;
-	private @Mock StarterSelectorDelegate<Defender> defSel1, defSel2, defSel3, defSel4, defSel5;
-	private @Mock StarterSelectorDelegate<Midfielder> midSel1, midSel2, midSel3, midSel4;
+	private @Mock StarterSelectorDelegate<Defender> defSel1, defSel2, defSel3;
+	private @Mock StarterSelectorDelegate<Midfielder> midSel1, midSel2, midSel3;
 	private @Mock StarterSelectorDelegate<Forward> forwSel1, forwSel2, forwSel3;
 
 	private List<StarterSelectorDelegate<Defender>> defSels;
@@ -53,13 +65,13 @@ public class StarterLineUpChooserTest {
 	private StarterLineUpChooser chooser;
 
 	@BeforeEach
-	void testCaseSpecificSetup() {
+	void instantiator() {
 		
-		defSels = List.of(defSel1, defSel2, defSel3, defSel4, defSel5);
-		midSels = List.of(midSel1, midSel2, midSel3, midSel4);
+		defSels = List.of(defSel1, defSel2, defSel3);
+		midSels = List.of(midSel1, midSel2, midSel3);
 		forwSels = List.of(forwSel1, forwSel2, forwSel3);
 		
-		// instantiates SUT
+		// instantiates SUT on (3, 3, 3) compositional cardinality
 		chooser = new StarterLineUpChooser(
 				goalieSelector,	defSels, midSels, forwSels);
 		chooser.setWidget(mockWidget);
@@ -118,7 +130,7 @@ public class StarterLineUpChooserTest {
 					// WHEN the Widget requests switching to a Scheme
 					// that CANNOT be realized with existing Selector numbers
 					// (too many Defenders needed)
-					Scheme fakeScheme = new Scheme(6, 4, 3) {
+					Scheme fakeScheme = new Scheme(4, 3, 3) {
 						
 						@Override
 						public void accept(SchemeVisitor visitor) {
@@ -129,7 +141,7 @@ public class StarterLineUpChooserTest {
 					// THEN a suitable exception is thrown
 					assertThatThrownBy(shouldThrow)
 						.isInstanceOf(IllegalArgumentException.class)
-						.hasMessageContaining("requested Scheme has 6 Defenders, this composes only 5");
+						.hasMessageContaining("requested Scheme has 4 Defenders, this composes only 3");
 					
 					// AND the '4-3-3' scheme is NOT registered as the current one
 					assertThat(chooser.currentScheme).isNotSameAs(fakeScheme);
@@ -148,7 +160,7 @@ public class StarterLineUpChooserTest {
 					// WHEN the Widget requests switching to a Scheme
 					// that CANNOT be realized with existing Selector numbers
 					// (too many Midfielders needed)
-					Scheme fakeScheme = new Scheme(5, 6, 2) {
+					Scheme fakeScheme = new Scheme(3, 4, 3) {
 						
 						@Override
 						public void accept(SchemeVisitor visitor) {
@@ -159,7 +171,7 @@ public class StarterLineUpChooserTest {
 					// THEN a suitable exception is thrown
 					assertThatThrownBy(shouldThrow)
 						.isInstanceOf(IllegalArgumentException.class)
-						.hasMessageContaining("requested Scheme has 6 Midfielders, this composes only 4");
+						.hasMessageContaining("requested Scheme has 4 Midfielders, this composes only 3");
 					
 					// AND the '4-3-3' scheme is NOT registered as the current one
 					assertThat(chooser.currentScheme).isNotSameAs(fakeScheme);
@@ -178,7 +190,7 @@ public class StarterLineUpChooserTest {
 					// WHEN the Widget requests switching to a Scheme
 					// that CANNOT be realized with existing Selector numbers
 					// (too many Midfielders needed)
-					Scheme fakeScheme = new Scheme(5, 4, 4) {
+					Scheme fakeScheme = new Scheme(3, 3, 4) {
 						
 						@Override
 						public void accept(SchemeVisitor visitor) {

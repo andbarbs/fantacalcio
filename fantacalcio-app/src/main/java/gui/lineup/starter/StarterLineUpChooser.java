@@ -1,5 +1,7 @@
 package gui.lineup.starter;
 
+import static java.util.function.Predicate.not;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -211,7 +213,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserDelegate, Start
 	@Override
 	public void switchToScheme(Scheme newScheme) {
 		
-		// TODO insert a NonNull check on Consumers
+		// TODO insert a NonNull check on Consumers (ensure full instantiation)
 		
 		// checks new Scheme is compatible with existing Selector numbers
 		String format = "StarterLineUpChooser.switchToScheme: Unsatisfiable Request\n" +
@@ -243,7 +245,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserDelegate, Start
 			public void accept(List<? extends Selector<T>> selectors, Consumer<Selector<T>> consumer) {
 				selectors.stream()
 						.filter(selectorsIn(previousScheme)::contains)
-						.filter(selector -> !selectorsIn(newScheme).contains(selector))
+						.filter(not(selectorsIn(newScheme)::contains))
 						.forEach(consumer);
 			}
 		};
@@ -260,7 +262,7 @@ public class StarterLineUpChooser implements StarterLineUpChooserDelegate, Start
 			public void accept(List<? extends Selector<T>> selectors, Consumer<Selector<T>> consumer) {
 				selectors.stream()
 						.filter(selectorsIn(newScheme)::contains)
-						.filter(selector -> !selectorsIn(previousScheme).contains(selector))
+						.filter(not(selectorsIn(previousScheme)::contains))
 						.forEach(consumer);
 			}
 		};

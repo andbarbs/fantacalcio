@@ -37,7 +37,7 @@ import gui.utils.schemes.SpringSchemePanel;
  * superclass
  * 
  * <p>
- * <h1>Compositional cardinality</h1> as specified in
+ * <h1>Compositional cardinality</h1> as documented in
  * {@link SwingStarterLineUpChooserWidget}, the number of {@link JPanel}
  * instances that this type composes substantially determines its runtime
  * behavior. Test instantiation happens at
