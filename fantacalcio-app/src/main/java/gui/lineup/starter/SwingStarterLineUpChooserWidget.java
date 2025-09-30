@@ -1,10 +1,12 @@
 package gui.lineup.starter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.awt.BorderLayout;
@@ -33,6 +35,7 @@ import domainModel.Player;
 import domainModel.Player.*;
 import domainModel.Scheme;
 import domainModel.scheme.Scheme433;
+import gui.lineup.chooser.Selector;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.StarterPlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
@@ -41,6 +44,28 @@ import gui.utils.schemes.Spring433Scheme;
 import gui.utils.schemes.Spring532Scheme;
 import gui.utils.schemes.SpringSchemePanel;
 
+/**
+ * a {@code JPanel} responsible for implementing
+ * {@link StarterLineUpChooserWidget} through composition of {@code JPanel}
+ * widgets for {@link Selector}s.
+ * 
+ * <p>
+ * <h1>Dynamic {@link Scheme} support</h1> This type does not lock down at
+ * compile-time the {@link Scheme}s it can support. Instead, it
+ * <ol>
+ * <li>is instantiated on
+ * <ul>
+ * <li>a {@code List<JPanel>} of <i>arbitrary size</i> for {@link Selector}
+ * widgets for each role
+ * <li>a {@code List} of {@link SpringSchemePanel} corresponding to the
+ * {@link Scheme}s that this should support
+ * </ul>
+ * <li>subsequently, shifts to whatever {@link Scheme} is dynamically
+ * requested <i>among those in the {@link Scheme} pool</i> by tapping into widget
+ * {@code List}s, lower-indices first. It throws an error if the requested
+ * {@link Scheme} is not in the {@link Scheme} pool
+ * </ol>
+ */
 @SuppressWarnings("serial")
 public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLineUpChooserWidget {
 	
@@ -74,7 +99,28 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 		this.controller = controller;
 	}
 	
-	// public instantiation point
+	/**
+	 * @param isDesignTime         toggles <b>design-time</b> instantiation
+	 * @param availableWindow      the {@link Dimension} this should size itself
+	 *                             within
+	 * @param schemePanels         a {@code List} containing the
+	 *                             {@link SpringSchemePanel}s the user should be
+	 *                             offered a choice between, lower-indices first
+	 * @param goalieSelectorWidget a {@link JPanel} serving as widget for a
+	 *                             {@link Selector<Goalkeeper>}
+	 * @param defSelectorWidgets   a {@code List<JPanel>} containing widgets for
+	 *                             {@link Selector<Defender>}s
+	 * @param midSelectorWidgets   a {@code List<JPanel>} containing widgets for
+	 *                             {@link Selector<Midfielder>}s
+	 * @param forwSelectorWidgets  a {@code List<JPanel>} containing widgets for
+	 *                             {@link Selector<Forward>}s
+	 * @throws IOException if it has trouble retrieving the soccer field PNG image
+	 * 
+	 * @see {@link SwingStarterLineUpChooserWidget} for an explanation of this
+	 *      type's policy for dynamically supporting {@link Scheme}s with only a
+	 *      fixed number of composed {@link JPanel} {@code Selector} widget
+	 *      instances.
+	 */
 	public SwingStarterLineUpChooserWidget(
 			boolean isDesignTime,			
 			Dimension availableWindow,			
@@ -83,6 +129,7 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 			List<JPanel> defSelectorWidgets,			
 			List<JPanel> midSelectorWidgets,			
 			List<JPanel> forwSelectorWidgets) throws IOException {
+		
 
 		this.schemePanels = Objects.requireNonNull(schemePanels).stream().map(Objects::requireNonNull)
 				.collect(Collectors.toList());
@@ -93,7 +140,13 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 				.collect(Collectors.toList());
 		this.forwSelectorWidgets = Objects.requireNonNull(forwSelectorWidgets).stream().map(Objects::requireNonNull)
 				.collect(Collectors.toList());
+
+		// throws if composing too few widgets for the Schemes requested
+		ensureCompositionSupports(Scheme::getNumDefenders, "Defender");
+		ensureCompositionSupports(Scheme::getNumMidfielders, "Midfielder");
+		ensureCompositionSupports(Scheme::getNumForwards,"Forward");			
 		
+		// instantiates graphical composites
 		initGraphics(availableWindow);
 
 		// 6) adds all supported scheme panels to CardLayout
@@ -104,6 +157,17 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 			IntStream.range(0, schemePanels.size()).forEach(
 					i -> radios.get(i).addActionListener(e -> controller.switchToScheme(schemePanels.get(i).scheme())));
 		}
+	}
+
+	private void ensureCompositionSupports(Function<Scheme, Integer> numExtractor, String role) {
+		Scheme maxDefScheme = this.schemePanels.stream().map(SpringSchemePanel::scheme)
+				.max(Comparator.comparing(numExtractor)).get();
+		if (this.defSelectorWidgets.size() < numExtractor.apply(maxDefScheme))
+			throw new IllegalArgumentException(String.format(
+					"SwingStarterLineUpChooserWidget: Unable to instantiate\n"
+							+ "cannot instantiate on Scheme '%s' requresting %d %ss, "
+							+ "where only %d widgets for %s are injected",
+					maxDefScheme, numExtractor.apply(maxDefScheme), role, this.defSelectorWidgets.size(), role));
 	}
 
 	private void initGraphics(Dimension availableWindow) throws IOException {
@@ -263,20 +327,14 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 					radioButton.setSelected(true);
 					switchToScheme(radioButton.getText());
 				}, () -> {
-					String format = "SwingStarterLineUpChooserWidget.switchTo: Unsatisfiable Request\n" +
-							"requested Scheme has %d %ss, this composes only %d widgets for %s";
-					if (newScheme.getNumDefenders() > defSelectorWidgets.size())
-						throw new IllegalArgumentException(String.format(format, 
-								newScheme.getNumDefenders(), Defender.class.getSimpleName(), 
-								defSelectorWidgets.size(), Defender.class.getSimpleName()));
-					if (newScheme.getNumMidfielders() > midSelectorWidgets.size())
-						throw new IllegalArgumentException(String.format(format, 
-								newScheme.getNumMidfielders(), Midfielder.class.getSimpleName(), 
-								midSelectorWidgets.size(), Midfielder.class.getSimpleName()));
-					if (newScheme.getNumForwards() > forwSelectorWidgets.size())
-						throw new IllegalArgumentException(String.format(format, 
-								newScheme.getNumForwards(), Forward.class.getSimpleName(), 
-								forwSelectorWidgets.size(), Forward.class.getSimpleName()));
+					throw new IllegalArgumentException(String.format(
+							"SwingStarterLineUpChooserWidget.switchTo: Unsatisfiable Request\n"
+									+ "requested scheme '%s' is not among known schemes: %s",
+							newScheme, this.schemePanels.stream()
+											.map(SpringSchemePanel::scheme)
+											.map(String::valueOf)
+											.map(s -> "'" + s + "'")
+											.collect(Collectors.joining(", "))));
 				});
 	}
 	

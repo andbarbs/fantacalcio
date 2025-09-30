@@ -28,8 +28,8 @@ import gui.lineup.chooser.Selector;
  * 
  * <p>
  * <h1>Dynamic {@link Scheme} support</h1> This type does not lock down the
- * number of {@link StarterSelectorDelegate}s it composes in order to define a
- * compile-time notion of the {@link Scheme}s it can support. Instead, it
+ * number of {@link StarterSelectorDelegate}s it composes in order to define at
+ * compile-time the {@link Scheme}s it can support. Instead, it
  * <ol>
  * <li>is instantiated on a {@code List<StarterSelectorDelegate<>>} of
  * <i>arbitrary size</i> for each role

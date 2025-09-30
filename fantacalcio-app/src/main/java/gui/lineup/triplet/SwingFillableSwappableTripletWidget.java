@@ -21,6 +21,7 @@ import domainModel.Player.Forward;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.SubstitutePlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
+import gui.lineup.sequence.FillableSwappableSequence;
 
 import javax.swing.ImageIcon;
 import java.awt.Insets;
@@ -33,15 +34,13 @@ import java.awt.Color;
 // TODO: are JButton icons considered raster components? If so, address their scaling!
 
 /**
- * a {@code JPanel} responsible for wiring up and providing graphical access to
- * a <b>three-member</b>, left-to-right {@linkplain FillableSwappableSequence
- * <i>fillable-swappable sequence</i>} through members' {@code JPanel} widgets.
+ * a {@code JPanel} responsible for implementing
+ * {@link FillableSwappableTripletWidget} through composition of {@code JPanel}
+ * widgets for members of the {@link FillableSwappableSequence}.
  * 
- * @param <T> the type for sequence members
  * @implNote sizing of this {@code JPanel} is computed as a function of member
  *           widget's {@linkplain JPanel#getPreferredSize()} dimensions. See the
- *           {@linkplain SwingFillableSwappableTripletWidget#SwingFillableSwappableTriplet
- *           (boolean, FillableSwappable, JPanel, FillableSwappable, JPanel, FillableSwappable, JPanel)
+ *           {@linkplain SwingFillableSwappableTripletWidget#SwingFillableSwappableTripletWidget (boolean, JPanel, JPanel, JPanel)
  *           public constructor}
  */
 @SuppressWarnings("serial")
