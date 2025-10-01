@@ -1,0 +1,305 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.fantacalcio.app</groupId>
+		<artifactId>Fantacalcio</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>fantacalcio-app</artifactId>
+	<name>fantacalcio-app</name>
+	<url>http://maven.apache.org</url>
+	<properties>
+		<mockito.version>5.19.0</mockito.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.hibernate.orm</groupId>
+				<artifactId>hibernate-platform</artifactId>
+				<version>6.6.11.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>5.9.2</version> <!-- or another version compatible with
+				Mockito's requirements -->
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-swing-junit</artifactId>
+			<version>3.17.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>[2.1.212,)</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Depends on the API to use the annotation -->
+		<dependency>
+			<groupId>com.fantacalcio.app</groupId>
+			<artifactId>scheme-generator-api</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- 1. Compile + JPA‐Metamodel generation -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.hibernate.orm</groupId>
+							<artifactId>hibernate-jpamodelgen</artifactId>
+							<version>6.6.11.Final</version>
+						</path>
+						<path>
+							<groupId>com.fantacalcio.app</groupId>
+							<artifactId>scheme-generator-processor</artifactId>
+							<version>0.0.1-SNAPSHOT</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+				<dependencies>
+                <dependency>
+                    <groupId>com.fantacalcio.app</groupId>
+                    <artifactId>scheme-generator-processor</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+			</plugin>
+
+			<!-- build-helper instructions are reflected in Eclipse's .classpath -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+
+					<!-- adds Metamodel classes as a source folder -->
+					<execution>
+						<id>add-generated-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>
+									${project.build.directory}/generated-sources/annotations</source>
+							</sources>
+						</configuration>
+					</execution>
+
+					<!-- adds gui-resources as a source folder to please
+					WindowBuilder -->
+					<execution>
+						<id>add-gui-resources</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/main/gui-resources</source>
+							</sources>
+						</configuration>
+					</execution>
+
+					<!-- adds test-gui-resources as a source folder to please
+					WindowBuilder -->
+					<execution>
+						<id>add-test-gui-resources</id>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/test/test-gui-resources</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-dependency-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <id>set-mockito-agent-path</id>
+			            <goals>
+			                <goal>build-classpath</goal>
+			            </goals>
+			            <configuration>
+			                <includeArtifactIds>mockito-core</includeArtifactIds>
+			                <outputProperty>mockito.agent.path</outputProperty>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-surefire-plugin</artifactId>
+			    <version>3.2.5</version>
+			    <executions>
+			        <!-- explicitly disables the default execution -->
+			        <execution>
+			            <id>default-test</id>
+			            <phase>none</phase>
+			        </execution>
+			
+			        <!-- custom executions -->
+			        <execution>
+			            <id>jpms-compliant-tests</id>
+			            <goals>
+			                <goal>test</goal>
+			            </goals>
+			            <configuration>
+			                <excludedGroups>non-JPMS-compliant</excludedGroups>
+			                <argLine>
+			                    -javaagent:${mockito.agent.path}
+			                </argLine>
+			            </configuration>
+			        </execution>
+			        <execution>
+			            <id>non-jpms-compliant-tests</id>
+			            <goals>
+			                <goal>test</goal>
+			            </goals>
+			            <configuration>
+			                <groups>non-JPMS-compliant</groups>
+			                <argLine>
+			                    --add-opens java.base/java.util=ALL-UNNAMED
+			                    --add-opens java.base/java.lang=ALL-UNNAMED
+			                    --add-opens java.desktop/java.awt=ALL-UNNAMED
+			                    --add-opens java.desktop/javax.swing=ALL-UNNAMED
+			                    -javaagent:${mockito.agent.path}
+			                </argLine>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+			
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-failsafe-plugin</artifactId>
+			    <version>3.2.5</version> <!-- Use the same version as Surefire for consistency -->
+			    <executions>
+			        <!-- This execution handles JPMS-compliant integration tests -->
+			        <execution>
+			            <id>jpms-compliant-it</id>
+			            <goals>
+			                <goal>integration-test</goal>
+			                <goal>verify</goal>
+			            </goals>
+			            <configuration>
+			                <excludedGroups>non-JPMS-compliant</excludedGroups>
+			                <argLine>
+			                    -javaagent:${mockito.agent.path}
+			                </argLine>
+			            </configuration>
+			        </execution>
+			        <!-- This execution handles non-JPMS-compliant integration tests -->
+			        <execution>
+			            <id>non-jpms-compliant-it</id>
+			            <goals>
+			                <goal>integration-test</goal>
+			                <goal>verify</goal>
+			            </goals>
+			            <configuration>
+			                <groups>non-JPMS-compliant</groups>
+			                <argLine>
+			                    --add-opens java.base/java.util=ALL-UNNAMED
+			                    --add-opens java.base/java.lang=ALL-UNNAMED
+			                    --add-opens java.desktop/java.awt=ALL-UNNAMED
+			                    --add-opens java.desktop/javax.swing=ALL-UNNAMED
+			                    -javaagent:${mockito.agent.path}
+			                </argLine>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+		</plugins>
+
+		<!-- sets exclusion rules for some resource folders  -->
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/gui-resources</directory>
+				<filtering>false</filtering>
+			</resource>
+		</resources>
+
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>src/test/test-gui-resources</directory>
+				<targetPath>images</targetPath>
+				<filtering>false</filtering>
+			</testResource>
+		</testResources>
+	</build>
+
+
+</project>
