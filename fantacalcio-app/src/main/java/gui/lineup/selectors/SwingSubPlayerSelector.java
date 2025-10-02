@@ -5,14 +5,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
-import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
@@ -25,6 +21,8 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 import domainModel.Player;
+import gui.ImageManager;
+import gui.ImageManager.ImageKey;
 import gui.lineup.selectors.SubstitutePlayerSelector.SubstituteSelectorWidget;
 
 /*
@@ -42,41 +40,28 @@ import gui.lineup.selectors.SubstitutePlayerSelector.SubstituteSelectorWidget;
 @SuppressWarnings("serial")
 public class SwingSubPlayerSelector<P extends Player> extends JPanel implements SubstituteSelectorWidget<P> {
 
-	// path to the pngs for the Icons
-	private static final String FIGURE_PNG_PATH = "/gui_images/player_figure_120x225.png";
-	private static final String HEAD_PNG_PATH = "/gui_images/ronaldo_head_120x225.png";
-
 	private JComboBox<P> comboBox;
 	private JLabel figureLabel;
 	private JButton resetButton;
 	private JLabel headLabel;
 	
 	// WB-compatible constructor
-	public SwingSubPlayerSelector() {
-			initializeFromIcon(new ImageIcon(getClass().getResource(FIGURE_PNG_PATH)),
-					new ImageIcon(getClass().getResource(HEAD_PNG_PATH)));
-		}
-	
-	public static <Q extends Player> SwingSubPlayerSelector<Q> createWithSizing(Dimension availableWindow) throws IOException {
-		return new SwingSubPlayerSelector<Q>(availableWindow);
+	SwingSubPlayerSelector() {
+		Dimension screenSize = getToolkit().getScreenSize();
+		Dimension availableWindow = new Dimension((int) (screenSize.width * 0.1), screenSize.height);
+		initializeFromIcon(
+				ImageManager.getInstance().getScaledToFit(ImageKey.PLAYER_FIGURE, availableWindow),
+				ImageManager.getInstance().getScaledToFit(ImageKey.RONALDO_HEAD, availableWindow));
+		
+		setPreferredSize(getPreferredSize());
 	}
 
 	// rescaling-augmented constructor available to clients
-	public SwingSubPlayerSelector(Dimension availableWindow) throws IOException {
-			// 1. Load original images
-			BufferedImage origFigure = ImageIO.read(getClass().getResourceAsStream(FIGURE_PNG_PATH));
-			BufferedImage origHead = ImageIO.read(getClass().getResourceAsStream(HEAD_PNG_PATH));
-
-			// 2. Compute target width & height, preserving original aspect ratio
-			int ow = origFigure.getWidth(), oh = origFigure.getHeight();
-			double scale = Math.min(availableWindow.width / (double) ow, availableWindow.height / (double) oh);
-			int tw = (int) (ow * scale), th = (int) (oh * scale);
-
-			// 3. Invoke Icon initializer using scaled instances
-			initializeFromIcon(
-					new ImageIcon(origFigure.getScaledInstance(tw, th, Image.SCALE_SMOOTH)),
-					new ImageIcon(origHead.getScaledInstance(tw, th, Image.SCALE_SMOOTH)));
-		}
+	public SwingSubPlayerSelector(Dimension availableWindow) {
+		initializeFromIcon(
+				ImageManager.getInstance().getScaledToFit(ImageKey.PLAYER_FIGURE, availableWindow),
+				ImageManager.getInstance().getScaledToFit(ImageKey.RONALDO_HEAD, availableWindow));
+	}
 
 	private void initializeFromIcon(ImageIcon figureIcon, ImageIcon headIcon) {
 		setBackground(Color.RED);

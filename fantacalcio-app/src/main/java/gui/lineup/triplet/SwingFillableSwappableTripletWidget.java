@@ -269,33 +269,28 @@ public class SwingFillableSwappableTripletWidget extends JPanel implements Filla
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			
 			Dimension selectorDims = new Dimension(120, 225);
-			try {
-				SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
-				SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
-				SwingSubPlayerSelector<Defender> view3 = new SwingSubPlayerSelector<Defender>(selectorDims);
-				
-				SubstitutePlayerSelector<Defender> selPres1 = new SubstitutePlayerSelector<Defender>(view1);
-				SubstitutePlayerSelector<Defender> selPres2 = new SubstitutePlayerSelector<Defender>(view2);
-				SubstitutePlayerSelector<Defender> selPres3 = new SubstitutePlayerSelector<Defender>(view3);
-				
-				view1.setController(selPres1);
-				view2.setController(selPres2);
-				view3.setController(selPres3);
-				
-				SwingFillableSwappableTripletWidget tripletWidget = 
-						new SwingFillableSwappableTripletWidget(false, view1, view2, view3);
-				CompetitiveOptionDealingGroup.initializeDealing(Set.of(selPres1, selPres2, selPres3),
-						List.of(new Defender("Giorgio", "Chiellini"), new Defender("Gerard", "Piqué"),
-								new Defender("Sergio", "Ramos"), new Defender("Thiago", "Silva"),
-								new Defender("Virgil", "van Dijk")));
-				frame.setContentPane(tripletWidget);
-				frame.pack();
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			SwingSubPlayerSelector<Defender> view1 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			SwingSubPlayerSelector<Defender> view2 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			SwingSubPlayerSelector<Defender> view3 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			
+			SubstitutePlayerSelector<Defender> selPres1 = new SubstitutePlayerSelector<Defender>(view1);
+			SubstitutePlayerSelector<Defender> selPres2 = new SubstitutePlayerSelector<Defender>(view2);
+			SubstitutePlayerSelector<Defender> selPres3 = new SubstitutePlayerSelector<Defender>(view3);
+			
+			view1.setController(selPres1);
+			view2.setController(selPres2);
+			view3.setController(selPres3);
+			
+			SwingFillableSwappableTripletWidget tripletWidget = 
+					new SwingFillableSwappableTripletWidget(false, view1, view2, view3);
+			CompetitiveOptionDealingGroup.initializeDealing(Set.of(selPres1, selPres2, selPres3),
+					List.of(new Defender("Giorgio", "Chiellini"), new Defender("Gerard", "Piqué"),
+							new Defender("Sergio", "Ramos"), new Defender("Thiago", "Silva"),
+							new Defender("Virgil", "van Dijk")));
+			frame.setContentPane(tripletWidget);
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);
 		});
 	}
 

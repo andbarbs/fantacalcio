@@ -1,7 +1,10 @@
 package gui.lineup.chooser;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.io.IOException;
 import java.awt.Dimension;
 import javax.swing.JFrame;
@@ -14,10 +17,18 @@ import gui.lineup.selectors.StarterPlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
 import gui.lineup.starter.StarterLineUpChooser;
 import gui.lineup.starter.SwingStarterLineUpChooserWidget;
+import gui.lineup.triplet.SwingFillableSwappableTripletWidget;
 import gui.utils.schemes.Spring343Scheme;
 import gui.utils.schemes.Spring433Scheme;
 import gui.utils.schemes.Spring532Scheme;
 import gui.utils.schemes.SpringSchemePanel;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.JButton;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class SwingLineUpChooserWidget extends JPanel {
@@ -27,28 +38,22 @@ public class SwingLineUpChooserWidget extends JPanel {
 	private JPanel defTripletWidget;
 	private JPanel midTripletWidget;
 	private JPanel forwTripletWidget;
+	private JButton saveLineUpButton;
 
 
 	// public instantiation point
 	public SwingLineUpChooserWidget(
 			boolean isDesignTime,
 			JPanel starterChooserWidget,
-			JPanel goalieTripletWidget,
-			JPanel defTripletWidget,
-			JPanel midTripletWidget,
-			JPanel forwTripletWidget) {
+			JPanel goalieTripletWidget, JPanel defTripletWidget, JPanel midTripletWidget, JPanel forwTripletWidget) {
 				
-				this.starterChooserWidget = starterChooserWidget;
-				this.goalieTripletWidget = goalieTripletWidget;
-				this.defTripletWidget = defTripletWidget;
-				this.midTripletWidget = midTripletWidget;
-				this.forwTripletWidget = forwTripletWidget;
+				this.starterChooserWidget = Objects.requireNonNull(starterChooserWidget);
+				this.goalieTripletWidget = Objects.requireNonNull(goalieTripletWidget);
+				this.defTripletWidget = Objects.requireNonNull(defTripletWidget);
+				this.midTripletWidget = Objects.requireNonNull(midTripletWidget);
+				this.forwTripletWidget = Objects.requireNonNull(forwTripletWidget);
 				
-				add(this.starterChooserWidget);
-				add(this.goalieTripletWidget);
-				add(this.defTripletWidget);
-				add(this.midTripletWidget);
-				add(this.forwTripletWidget);
+				instantiateOnComposites();
 	}
 
 	
@@ -64,11 +69,14 @@ public class SwingLineUpChooserWidget extends JPanel {
 	 *                     instantiation fails
 	 */
 	SwingLineUpChooserWidget() throws IOException {
+		
 		Dimension screenSize = getToolkit().getScreenSize();
-		Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
+		Dimension availableWindow = new Dimension((int) (screenSize.width * 0.2), screenSize.height);
 		Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
 				SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
 		
+		
+		// instantiates, initializes and adds a Starter Chooser Widget
 		SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
 				true,				
 				availableWindow,				
@@ -86,17 +94,121 @@ public class SwingLineUpChooserWidget extends JPanel {
 				List.of(new SwingSubPlayerSelector<Forward>(selectorDims),
 						new SwingSubPlayerSelector<Forward>(selectorDims), 
 						new SwingSubPlayerSelector<Forward>(selectorDims)));
-		this.starterChooserWidget = starterWidget;		
-		add(starterChooserWidget);
-		
 		starterWidget.switchTo(Scheme433.INSTANCE);
+		this.starterChooserWidget = starterWidget;	
+		
+		// instantiates a Substitute Triplet Widget for Defenders
+		this.goalieTripletWidget = new SwingFillableSwappableTripletWidget(
+				true, 
+				new SwingSubPlayerSelector<Goalkeeper>(selectorDims), 
+				new SwingSubPlayerSelector<Goalkeeper>(selectorDims), 
+				new SwingSubPlayerSelector<Goalkeeper>(selectorDims));
+		
+		// instantiates a Substitute Triplet Widget for Defenders
+		this.defTripletWidget = new SwingFillableSwappableTripletWidget(
+				true, 
+				new SwingSubPlayerSelector<Defender>(selectorDims), 
+				new SwingSubPlayerSelector<Defender>(selectorDims), 
+				new SwingSubPlayerSelector<Defender>(selectorDims));
+		
+		// instantiates a Substitute Triplet Widget for Midfielders
+		this.midTripletWidget = new SwingFillableSwappableTripletWidget(
+				true, 
+				new SwingSubPlayerSelector<Midfielder>(selectorDims), 
+				new SwingSubPlayerSelector<Midfielder>(selectorDims), 
+				new SwingSubPlayerSelector<Midfielder>(selectorDims));
+		
+		// instantiates a Substitute Triplet Widget for Forwards
+		this.forwTripletWidget = new SwingFillableSwappableTripletWidget(
+				true, 
+				new SwingSubPlayerSelector<Forward>(selectorDims), 
+				new SwingSubPlayerSelector<Forward>(selectorDims), 
+				new SwingSubPlayerSelector<Forward>(selectorDims));
+		
+		instantiateOnComposites();
+	
+		// sets private design-time dimensions
+		setPreferredSize(getPreferredSize());
+	}
 
-		// 9) sets private design-time dimensions
-		setPreferredSize(starterChooserWidget.getPreferredSize());
+
+
+	private void instantiateOnComposites() {
+		
+		// initializes own layout
+		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWidths = new int[]{409, 335, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{1.0, 1.0, 1.0, 0.0, Double.MIN_VALUE};
+		setLayout(gridBagLayout);
+		
+		// sets border and adds Starter Chooser widget
+		GridBagConstraints gbc_starterWidget = new GridBagConstraints();
+		gbc_starterWidget.gridheight = 4;
+		gbc_starterWidget.anchor = GridBagConstraints.NORTHWEST;
+		gbc_starterWidget.insets = new Insets(0, 0, 5, 5);
+		gbc_starterWidget.gridx = 0;
+		gbc_starterWidget.gridy = 0;
+		this.starterChooserWidget.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "choose starter players",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		add(starterChooserWidget, gbc_starterWidget);
+		
+		// sets border and adds Substitute Triplet widget for Defenders
+		GridBagConstraints gbc_goalieTripletWidget = new GridBagConstraints();
+		gbc_goalieTripletWidget.anchor = GridBagConstraints.WEST;
+		gbc_goalieTripletWidget.insets = new Insets(0, 0, 5, 0);
+		gbc_goalieTripletWidget.gridx = 1;
+		gbc_goalieTripletWidget.gridy = 0;
+		goalieTripletWidget.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "choose substitute goalkeepers",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		add(goalieTripletWidget, gbc_goalieTripletWidget);
+		
+		// sets border and adds Substitute Triplet widget for Defenders
+		GridBagConstraints gbc_defTripletWidget = new GridBagConstraints();
+		gbc_defTripletWidget.anchor = GridBagConstraints.WEST;
+		gbc_defTripletWidget.insets = new Insets(0, 0, 5, 0);
+		gbc_defTripletWidget.gridx = 1;
+		gbc_defTripletWidget.gridy = 1;
+		defTripletWidget.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "choose substitute defenders",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		add(defTripletWidget, gbc_defTripletWidget);
+		
+		// sets border and adds Substitute Triplet widget for Defenders
+		GridBagConstraints gbc_midTripletWidget = new GridBagConstraints();
+		gbc_midTripletWidget.gridwidth = 1;
+		gbc_midTripletWidget.anchor = GridBagConstraints.WEST;
+		gbc_midTripletWidget.insets = new Insets(0, 0, 5, 0);
+		gbc_midTripletWidget.gridx = 1;
+		gbc_midTripletWidget.gridy = 2;
+		midTripletWidget.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "choose substitute midfielders",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		add(midTripletWidget, gbc_midTripletWidget);
+		
+		// sets border and adds Substitute Triplet widget for Defenders
+		GridBagConstraints gbc_forwTripletWidget = new GridBagConstraints();
+		gbc_forwTripletWidget.insets = new Insets(0, 0, 5, 0);
+		gbc_forwTripletWidget.gridwidth = 1;
+		gbc_forwTripletWidget.anchor = GridBagConstraints.WEST;
+		gbc_forwTripletWidget.gridx = 1;
+		gbc_forwTripletWidget.gridy = 3;
+		forwTripletWidget.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "choose substitute forwards",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		add(forwTripletWidget, gbc_forwTripletWidget);	
+		
+		// instantiates and adds the 'save' button
+		saveLineUpButton = new JButton("save");
+		saveLineUpButton.setEnabled(false);
+		GridBagConstraints gbc_saveLineUpButton = new GridBagConstraints();
+		gbc_saveLineUpButton.gridwidth = 2;
+		gbc_saveLineUpButton.insets = new Insets(5, 5, 5, 5);
+		gbc_saveLineUpButton.gridx = 0;
+		gbc_saveLineUpButton.gridy = 4;
+		add(saveLineUpButton, gbc_saveLineUpButton);
 	}
 	
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		SwingUtilities.invokeLater(() -> {
 			JFrame frame = new JFrame("starter chooser demo");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,6 +220,10 @@ public class SwingLineUpChooserWidget extends JPanel {
 						SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
 				
 				// I) initializes dependencies
+				List<SwingSubPlayerSelector<Goalkeeper>> goalieSelWidgets = IntStream.rangeClosed(1, 4)
+						.mapToObj(i -> new SwingSubPlayerSelector<Goalkeeper>(selectorDims)).collect(Collectors.toList());
+				List<StarterPlayerSelector<Goalkeeper>> goalieSelControllers = IntStream.range(0, 4)
+						.mapToObj(i -> new StarterPlayerSelector<>(goalieSelWidgets.get(i))).collect(Collectors.toList());
 				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
 				StarterPlayerSelector<Goalkeeper> goaliePresenter = new StarterPlayerSelector<>(goalieView);
 				goalieView.setController(goaliePresenter);
