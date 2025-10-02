@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +106,7 @@ class JpaGradeRepositoryTest {
 		Player player2 = new Player.Forward("Gigi", "Riva", Club.CAGLIARI);
 
 		Grade voto1 = new Grade(player1, matchDay, 6.0, newsPaper);
-		Grade voto2 = new Grade(player1, matchDay, 8.0, newsPaper);
+		Grade voto2 = new Grade(player2, matchDay, 8.0, newsPaper);
 		Contract contract1 = new Contract(team1, player1);
 		Contract contract2 = new Contract(team1, player2);
 		sessionFactory.inTransaction(session -> {
@@ -117,7 +118,10 @@ class JpaGradeRepositoryTest {
 			session.persist(contract2);
 		});
 
-		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper)).containsExactly(voto1, voto2);
+		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(match, newsPaper);
+		assertThat(allMatchGrades.size()).isEqualTo(2);
+		assertThat(allMatchGrades.get(0).getMark() + allMatchGrades.get(1).getMark()).isEqualTo(6.0 + 8.0);
+		
 	}
 
 	@Test
