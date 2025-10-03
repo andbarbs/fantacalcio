@@ -92,4 +92,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 		}
 	}
 
+	@Override
+	public void saveMatchDay(MatchDaySerieA matchDay) {
+		getEntityManager().persist(matchDay);
+	}
+
 }
