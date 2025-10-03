@@ -8,7 +8,7 @@ I seguenti test verificano il corretto funzionamento delle singole unità di cod
 \todo{Va tenuto qui?}
 
 Questo unit test verifica il corretto funzionamento del sistema di registrazione di un FantaUser, 
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
 \begin{lstlisting}[language=Java]
 @Test
@@ -29,7 +29,7 @@ Similmente sono stati anche prodotti dei test per la registrazione di un NewsPap
 \todo{Va tenuto qui?}
 
 Questo unit test verifica il corretto funzionamento del sistema di registrazione di un FantaUser, 
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
 \begin{lstlisting}[language=Java]
 @Test
@@ -47,9 +47,9 @@ Similmente sono stati anche prodotti dei test per il login di un NewsPaper.
 \subsubsection{Test UT XXX: Crea fantalega}
 
 Questo unit test verifica il corretto funzionamento del sistema di creazione di una nuova League,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testCreateLeague() {
 	FantaUser admin = new FantaUser("admin@test.com", "pwd");
@@ -71,9 +71,9 @@ void testCreateLeague() {
 \subsubsection{Test UT XXX: Genera calendario}
 
 Questo unit test verifica il corretto funzionamento del sistema di generazione del calendario della League,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGenerateCalendar_SavesMatches() {
 	FantaUser admin = new FantaUser(null, null);
@@ -105,9 +105,9 @@ void testGenerateCalendar_SavesMatches() {
 \subsubsection{Test UT XXX: Assegna giocatori alle rose}
 
 Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei Player ai FantaTeam che li hanno acquistati,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 	FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
@@ -123,9 +123,9 @@ void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 \subsubsection{Test UT XXX: Calcola voti della giornata}
 
 Questo unit test verifica il corretto funzionamento del sistema di calcolo dei voti della giornata una volta terminata,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testCalculateGrades_SavesResultsAndUpdatesPoints() {
 
@@ -193,9 +193,9 @@ void testCalculateGrades_SavesResultsAndUpdatesPoints() {
 \subsubsection{Test UT XXX: Unisciti alla lega}
 
 Questo unit test verifica il corretto funzionamento del sistema di ingresso in una League,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testJoinLeague() {
 	FantaUser user = new FantaUser("user@test.com", "pwd");
@@ -214,10 +214,10 @@ void testJoinLeague() {
 
 \subsubsection{Test UT XXX: Visualizza calendario}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del calendario, cioè della lista dei Match,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del calendario,
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGetAllMatches() {
 	League league = new League(null, null, null, null);
@@ -237,9 +237,9 @@ void testGetAllMatches() {
 \subsubsection{Test UT XXX: Inserisci formazione}
 
 Questo unit test verifica il corretto funzionamento del sistema di salvataggio della LineUp,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testSaveLineUp() {
 	FantaUser user = new FantaUser("user@test.com", "pwd");
@@ -269,9 +269,9 @@ void testSaveLineUp() {
 \subsubsection{Test UT XXX: Visualizza prossimo Match}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del prossimo Match,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGetNextMatch() {
     League league = new League(null, null, null, null);
@@ -301,9 +301,9 @@ void testGetNextMatch() {
 \subsubsection{Test UT XXX: Visualizza classifica}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione della classifica,
-implementando il template XXXXXXXX \todo{collegare al template}.
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGetStandings() {
 	League league = new League(null, null, null, null);
@@ -325,10 +325,10 @@ void testGetStandings() {
 
 \subsubsection{Test UT XXX: Scambia giocatori - Invia proposta}
 
-Questo unit test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testCreateProposal_HappyPath() {
 	League league = new League(null, null, null, null);
@@ -355,10 +355,10 @@ void testCreateProposal_HappyPath() {
 
 \subsubsection{Test UT XXX: Scambia giocatori - Accetta proposta}
 
-Questo unit test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player 
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testAcceptProposal() {
 	// Setup teams and players
@@ -407,10 +407,10 @@ void testAcceptProposal() {
 
 \subsubsection{Test UT XXX: Visualizza squadre}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam 
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGetAllFantaTeams() {
     League league = new League(null, "My League", new NewsPaper("Gazzetta"), "L999");
@@ -430,10 +430,10 @@ void testGetAllFantaTeams() {
 
 \subsubsection{Test UT XXX: Visualizza listone giocatori}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori 
+tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testGetAllPlayers() {
 	Player p1 = new Player.Goalkeeper("", "", null);
@@ -448,10 +448,9 @@ void testGetAllPlayers() {
 
 \subsubsection{Test UT XXX: Assegna voti ai giocatori}
 
-Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player,
-implementando il template XXXXXXXX \todo{collegare al template}.
+Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player tramite mock dei repository.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 void testSetVoteToPlayers_MultipleGrades() {
 	Grade grade2 = mock(Grade.class);
@@ -475,7 +474,7 @@ Per ogni repository implementata tramite JPA è stata realizzata una classe di t
 corretta interazione con il database, sia per salvare nuovi elementi, sia per recuperare dati. 
 Di seguito è proposto un test che verifica il corretto salvataggio nel database di un nuovo FantaTeam.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 @DisplayName("saveTeam() should persist correctly")
 public void testSaveTeam() {
@@ -502,7 +501,7 @@ public void testSaveTeam() {
 Di seguito è invece proposto un test che verifica che il recupero di informazioni dal database sia corretto: 
 in particolare, l'obiettivo è recuperare tutti i voti assegnati in un singolo match.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Test
 @DisplayName("getAllMatchGrades() when two grades have been persisted")
 public void testGetAllMatchGradesWhenTwoGradesExist() {
@@ -542,5 +541,695 @@ Inoltre, sono stati creati degli unit test per verificare il corretto comportame
 
 \subsection{Integration Tests}
 
+I seguenti test verificano che le varie componenti cooperino correttamente per l'implementazione degli use case richiesti.
 
-\subsubsection{Test IT XXX: }
+\subsubsection{Test IT XXX: Crea fantalega}
+
+Questo unit test verifica il corretto funzionamento del sistema di creazione di una nuova League,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void createLeague() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser admin = new FantaUser("mail", "pswd");
+	fantaUserRepository.saveFantaUser(admin);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	entityManager.getTransaction().commit();
+
+	adminUserService.createLeague("lega", admin, newsPaper, "1234");
+
+    Optional<League> result = leagueRepository.getLeagueByCode("1234");
+
+	assertThat(result.isPresent());
+	League league = result.get();
+
+	assertThat(league.getName()).isEqualTo("lega");
+	assertThat(league.getAdmin()).isEqualTo(admin);
+	assertThat(league.getNewsPaper()).isEqualTo(newsPaper);
+	assertThat(league.getLeagueCode()).isEqualTo("1234");
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Genera calendario}
+
+Questo unit test verifica il corretto funzionamento del sistema di generazione del calendario della League,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void generateCalendar() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser admin = new FantaUser("mail", "pswd");
+	FantaUser user = new FantaUser("user2", "pswd2");
+	fantaUserRepository.saveFantaUser(admin);
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(admin, "lega", newsPaper, "0000");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
+	FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
+
+	fantaTeamRepository.saveTeam(team1);
+	fantaTeamRepository.saveTeam(team2);
+
+	List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
+	for (int i = 0; i < 38; i++) {
+		matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i)));
+	}
+
+    sessionFactory.inTransaction(t -> {
+		for (MatchDaySerieA matchDaySerieA : matchDays) {
+			t.persist(matchDaySerieA);
+		}
+	});
+
+	entityManager.getTransaction().commit();
+
+    adminUserService.generateCalendar(league);
+
+	for (MatchDaySerieA matchDaySerieA : matchDays) {
+		Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
+
+		assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
+		assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
+	}
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Assegna giocatori alle rose}
+
+Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei Player ai FantaTeam che li hanno acquistati,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void setPlayersToTeam() {
+
+	entityManager.getTransaction().begin();
+
+    FantaUser admin = new FantaUser("mail", "pswd");
+	fantaUserRepository.saveFantaUser(admin);
+
+    NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+    League league = new League(admin, "lega", newsPaper, "1234");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team = new FantaTeam("", league, 0, admin, Set.of());
+	fantaTeamRepository.saveTeam(team);
+
+	Player.Forward player = new Player.Forward("Lionel", "Messi", Club.CREMONESE);
+	Player.Goalkeeper player2 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+	playerRepository.addPlayer(player);
+	playerRepository.addPlayer(player2);
+
+	entityManager.getTransaction().commit();
+
+	adminUserService.setPlayerToTeam(team, player);
+	adminUserService.setPlayerToTeam(team, player2);
+
+	Optional<Contract> contract = contractRepository.getContract(team, player);
+	assertThat(contract).isPresent();
+	Contract found = contract.get();
+	assertThat(found.getPlayer()).isEqualTo(player);
+	assertThat(found.getTeam()).isEqualTo(team);
+
+    Optional<Contract> contract2 = contractRepository.getContract(team, player);
+	assertThat(contract2).isPresent();
+	Contract found2 = contract.get();
+	assertThat(found2.getPlayer()).isEqualTo(player);
+	assertThat(found2.getTeam()).isEqualTo(team);
+
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Calcola voti della giornata}
+
+Questo unit test verifica il corretto funzionamento del sistema di calcolo dei voti della giornata una volta terminata,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void calculateGrades() {
+
+	entityManager.getTransaction().begin();
+
+	// Users
+	FantaUser admin = new FantaUser("mail", "pswd");
+	FantaUser user = new FantaUser("mail2", "pswd2");
+
+	fantaUserRepository.saveFantaUser(admin);
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(admin, "lega", newsPaper, "0000");
+	leagueRepository.saveLeague(league);
+
+	// Teams
+	FantaTeam team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
+	FantaTeam team2 = new FantaTeam("team2", league, 0, user, new HashSet<Contract>());
+
+	fantaTeamRepository.saveTeam(team1);
+	fantaTeamRepository.saveTeam(team2);
+
+	// MatchDays
+	LocalDate matchDate = LocalDate.of(2025, 9, 14);
+	MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1));
+	MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate);
+
+	entityManager.persist(prevDay);
+	entityManager.persist(dayToCalc);
+
+	// Match
+	Match prevMatch = new Match(prevDay, team1, team2);
+	Match match = new Match(dayToCalc, team1, team2);
+
+	matchRepository.saveMatch(prevMatch);
+	matchRepository.saveMatch(match);
+
+	// Players
+	Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", Club.JUVENTUS);
+	Goalkeeper gk2 = new Goalkeeper("Samir", "Handanović", Club.INTER);
+
+	Defender d1 = new Defender("Paolo", "Maldini", Club.MILAN);
+	Defender d2 = new Defender("Franco", "Baresi", Club.JUVENTUS);
+	Defender d3 = new Defender("Alessandro", "Nesta", Club.LAZIO);
+	Defender d4 = new Defender("Giorgio", "Chiellini", Club.JUVENTUS);
+	Defender d5 = new Defender("Leonardo", "Bonucci", Club.JUVENTUS);
+
+	Midfielder m1 = new Midfielder("Andrea", "Pirlo", Club.JUVENTUS);
+    Midfielder m2 = new Midfielder("Daniele", "De Rossi", Club.ROMA);
+	Midfielder m3 = new Midfielder("Marco", "Verratti", Club.CREMONESE);
+	Midfielder m4 = new Midfielder("Claudio", "Marchisio", Club.JUVENTUS);
+
+	Forward f1 = new Forward("Roberto", "Baggio", Club.BOLOGNA);
+	Forward f2 = new Forward("Francesco", "Totti", Club.ROMA);
+	Forward f3 = new Forward("Alessandro", "Del Piero", Club.JUVENTUS);
+	Forward f4 = new Forward("Lorenzo", "Insigne", Club.NAPOLI);
+
+	List<Player> players = List.of(gk1, gk2, d1, d2, d3, d4, d5, m1, m2, m3, m4, f1, f2, f3, f4);
+
+	players.forEach(playerRepository::addPlayer);
+
+	for (Player player : players) {
+		contractRepository.saveContract(new Contract(team1, player));
+		contractRepository.saveContract(new Contract(team2, player));
+	}
+
+	// LineUps
+	LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).withGoalkeeper(gk1)
+			.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
+			.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
+			.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
+	LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).withGoalkeeper(gk1)
+			.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
+			.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
+			.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
+
+	lineUpRepository.saveLineUp(lineup1);
+	lineUpRepository.saveLineUp(lineup2);
+
+	// Grades
+	Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newsPaper);
+	Grade grade2 = new Grade(gk2, dayToCalc, 60.0, newsPaper);
+
+	gradeRepository.saveGrade(grade1);
+	gradeRepository.saveGrade(grade2);
+
+	entityManager.getTransaction().commit();
+
+	AdminUserService service = new AdminUserService(transactionManager) {
+		@Override
+		protected LocalDate today() {
+			return LocalDate.of(2025, 9, 16); // after 14/09
+		}
+	};
+
+	service.calculateGrades(admin, league);
+
+	List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(match, newsPaper);
+	assertThat(allMatchGrades.size()).isEqualTo(2);
+	assertThat(allMatchGrades.get(0)).isEqualTo(grade1);
+	assertThat(allMatchGrades.get(1)).isEqualTo(grade2);
+
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Unisciti alla lega}
+
+Questo unit test verifica il corretto funzionamento del sistema di ingresso in una League,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void joinLeague() {
+
+	entityManager.getTransaction().begin();
+	
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+		
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+		
+	League league = new League(user, "Test League", newsPaper, "1234");
+	leagueRepository.saveLeague(league);
+		
+	FantaTeam team = new FantaTeam("Team A", league, 0, user, new HashSet<Contract>());
+
+	entityManager.getTransaction().commit();
+		
+	userService.joinLeague(team, league);
+		
+	Optional<League> result = leagueRepository.getLeagueByCode("1234");
+	assertThat(result).isPresent();
+		
+	League resultLeague = result.get();
+	assertThat(resultLeague.getAdmin()).isEqualTo(user);
+	assertThat(resultLeague.getLeagueCode()).isEqualTo("1234");
+	assertThat(resultLeague.getName()).isEqualTo("Test League");
+	assertThat(resultLeague.getNewsPaper()).isEqualTo(newsPaper);
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Visualizza calendario}
+
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del calendario, cioè della lista dei Match,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testGetAllMatches() {
+		
+	entityManager.getTransaction().begin();
+		
+	FantaUser user1 = new FantaUser("user1@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user1);
+	FantaUser user2 = new FantaUser("user2@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user2);
+		
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+		
+	League league = new League(user1, "Test League", newsPaper, "1234");
+	leagueRepository.saveLeague(league);
+		
+	FantaTeam team1 = new FantaTeam("Team A", league, 0, user1, new HashSet<Contract>());
+	fantaTeamRepository.saveTeam(team1);
+	FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
+	fantaTeamRepository.saveTeam(team2);
+		
+	MatchDaySerieA day1 = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 7));
+	matchDayRepository.saveMatchDay(day1);
+		
+	Match m1 = new Match(day1, team1, team2);
+	matchRepository.saveMatch(m1);
+		
+	entityManager.getTransaction().commit();
+		
+	Map<MatchDaySerieA, List<Match>> result = userService.getAllMatches(league);		
+		
+	assertThat(result.get(day1).size()).isEqualTo(1);
+	Match resultMatch = result.get(day1).get(0);
+		
+	assertThat(resultMatch.getMatchDaySerieA().getName()).isEqualTo("MD1");
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Inserisci formazione}
+
+Questo unit test verifica il corretto funzionamento del sistema di salvataggio della LineUp,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testSaveLineUp() {
+		
+	entityManager.getTransaction().begin();
+		
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+		
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+		
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+		
+	MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1)); // Monday
+	matchDayRepository.saveMatchDay(matchDay);
+		
+	FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(team);
+		
+	Match match = new Match(matchDay, team, team);
+	matchRepository.saveMatch(match);
+		
+	LineUp lineUp = new _433LineUp._443LineUpBuilder(match, team).build();
+		
+	entityManager.getTransaction().commit();
+		
+	userService.saveLineUp(lineUp);
+		
+	Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(match, team);
+	assertThat(result).isPresent();
+		
+	LineUp resultLineUp = result.get();
+	assertThat(resultLineUp.getMatch()).isEqualTo(match);
+	assertThat(resultLineUp.getTeam()).isEqualTo(team);
+		
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Visualizza prossimo Match}
+
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del prossimo Match,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testGetNextMatch() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team = new FantaTeam("Team", league, 30, user, new HashSet<>());
+	FantaTeam team2 = new FantaTeam("Team2", league, 40, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(team);
+	fantaTeamRepository.saveTeam(team2);
+
+	MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", LocalDate.now().minusWeeks(1));
+	MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2", LocalDate.now().plusWeeks(1));
+	matchDayRepository.saveMatchDay(prevMatchDay);
+	matchDayRepository.saveMatchDay(nextMatchDay);
+
+	Match prevMatch = new Match(prevMatchDay, team, team2);
+	Match nextMatch = new Match(nextMatchDay, team, team2);
+	matchRepository.saveMatch(prevMatch);
+	matchRepository.saveMatch(nextMatch);
+
+	Result prevResults = new Result(20, 50, 1, 2, prevMatch);
+	resultsRepository.saveResult(prevResults);
+
+	entityManager.getTransaction().commit();
+
+	Match result = userService.getNextMatch(league, team, LocalDate.now());
+	assertThat(result.getMatchDaySerieA().getName()).isEqualTo("MD2");
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Visualizza classifica}
+
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione della classifica,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testGetStandings() {
+
+	entityManager.getTransaction().begin();
+		
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
+	FantaTeam team2 = new FantaTeam("Team2", league, 70, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(team1);
+	fantaTeamRepository.saveTeam(team2);
+		
+	entityManager.getTransaction().commit();
+
+	List<FantaTeam> standings = userService.getStandings(league);
+
+	assertThat(standings.get(0).getName()).isEqualTo("Team2");
+	assertThat(standings.get(1).getName()).isEqualTo("Team1");
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Scambia giocatori - Invia proposta}
+
+Questo unit test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testCreateProposal_HappyPath() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+
+    FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
+    FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(myTeam);
+	fantaTeamRepository.saveTeam(opponentTeam);
+		
+	Player offeredPlayer = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
+	Player requestedPlayer = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
+	playerRepository.addPlayer(offeredPlayer);
+	playerRepository.addPlayer(requestedPlayer);
+
+	Contract offeredContract = new Contract(myTeam, offeredPlayer);
+	Contract requestedContract = new Contract(opponentTeam, requestedPlayer);
+	myTeam.getContracts().add(offeredContract);
+	opponentTeam.getContracts().add(requestedContract);
+	contractRepository.saveContract(offeredContract);
+	contractRepository.saveContract(requestedContract);
+		
+	entityManager.getTransaction().commit();
+
+	assertThat(userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam)).isTrue();
+		
+	Optional<Proposal> result = proposalRepository.getProposal(offeredContract, requestedContract);
+	assertThat(result).isPresent();
+	Proposal resultProposal = result.get();
+	assertThat(resultProposal.getOfferedContract()).isEqualTo(offeredContract);
+	assertThat(resultProposal.getRequestedContract()).isEqualTo(requestedContract);
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Scambia giocatori - Accetta proposta}
+
+Questo unit test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testAcceptProposal() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
+	FantaTeam offeringTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(myTeam);
+	fantaTeamRepository.saveTeam(offeringTeam);
+		
+	Player requestedPlayer = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
+	Player offeredPlayer = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
+	playerRepository.addPlayer(requestedPlayer);
+	playerRepository.addPlayer(offeredPlayer);
+
+	Contract offeredContract = new Contract(offeringTeam, offeredPlayer);
+	Contract requestedContract = new Contract(myTeam, requestedPlayer);
+	offeringTeam.getContracts().add(offeredContract);
+	myTeam.getContracts().add(requestedContract);
+	contractRepository.saveContract(offeredContract);
+	contractRepository.saveContract(requestedContract);
+		
+	Proposal.PendingProposal proposal = new PendingProposal(offeredContract, requestedContract);
+	proposalRepository.saveProposal(proposal);
+		
+	entityManager.getTransaction().commit();
+
+	userService.acceptProposal(proposal, myTeam);
+		
+	assertThat(contractRepository.getContract(offeringTeam, offeredPlayer)).isEmpty();
+	assertThat(contractRepository.getContract(offeringTeam, requestedPlayer)).isPresent();
+		
+	assertThat(contractRepository.getContract(myTeam, requestedPlayer)).isEmpty();
+	assertThat(contractRepository.getContract(myTeam, offeredPlayer)).isPresent();
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Visualizza squadre}
+
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testGetAllFantaTeams() {
+
+	entityManager.getTransaction().begin();
+
+	FantaUser user = new FantaUser("user@test.com", "pwd");
+	fantaUserRepository.saveFantaUser(user);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	League league = new League(user, "Test League", newsPaper, "L003");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
+	FantaTeam team2 = new FantaTeam("Team2", league, 70, user, new HashSet<>());
+	fantaTeamRepository.saveTeam(team1);
+	fantaTeamRepository.saveTeam(team2);
+
+	entityManager.getTransaction().commit();
+		
+	List<FantaTeam> result = userService.getAllFantaTeams(league);
+
+	assertThat(result.size()).isEqualTo(2);
+	assertThat(result.get(0).getLeague()).isEqualTo(result.get(1).getLeague());
+	assertThat(result.get(0).getName()).isIn("Team1", "Team2");
+	assertThat(result.get(1).getName()).isIn("Team1", "Team2");
+	assertThat(result.get(0).getPoints()).isIn(10, 70);
+	assertThat(result.get(1).getPoints()).isIn(10, 70);
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Visualizza listone giocatori}
+
+Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+void testGetAllPlayers() {
+
+	entityManager.getTransaction().begin();
+
+	Player p1 = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
+	Player p2 = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
+	playerRepository.addPlayer(p1);
+	playerRepository.addPlayer(p2);
+
+	entityManager.getTransaction().commit();
+
+	List<Player> result = userService.getAllPlayers();
+	assertThat(result).containsExactly(p1, p2);
+}
+\end{lstlisting}
+
+
+\subsubsection{Test IT XXX: Assegna voti ai giocatori}
+
+Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player,
+implementando il template XXXXXXXX \todo{collegare al template}.
+
+\begin{lstlisting}[language=Java]
+@Test
+public void assignGradesToPlayers() {
+
+	entityManager.getTransaction().begin();
+
+    FantaUser admin = new FantaUser("mail", "pswd");
+	fantaUserRepository.saveFantaUser(admin);
+
+	NewsPaper newsPaper = new NewsPaper("Gazzetta");
+	newspaperRepository.saveNewsPaper(newsPaper);
+
+	Player player = new Player.Forward("player", "1", Club.ATALANTA);
+	Player player2 = new Player.Forward("player", "2", Club.ATALANTA);
+	playerRepository.addPlayer(player);
+	playerRepository.addPlayer(player2);
+
+	MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 13));
+	MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2025, 9, 20));
+	MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26));
+	entityManager.persist(previousDay);
+	entityManager.persist(matchDay);
+	entityManager.persist(nextDay);
+
+	League league = new League(admin, "lega", newsPaper, "1234");
+	leagueRepository.saveLeague(league);
+
+	FantaTeam team1 = new FantaTeam("", league, 0, admin, Set.of());
+	FantaTeam team2 = new FantaTeam("", league, 0, admin, Set.of());
+	fantaTeamRepository.saveTeam(team1);
+	fantaTeamRepository.saveTeam(team2);
+
+	Match match = new Match(matchDay, team1, team2);
+	matchRepository.saveMatch(match);
+
+	Grade grade = new Grade(player, matchDay, 25.0, newsPaper);
+	Grade grade2 = new Grade(player2, matchDay, 20.0, newsPaper);
+
+	entityManager.getTransaction().commit();
+
+    newspaperservice = new NewsPaperService(transactionManager) {
+		@Override
+		protected LocalDate today() {
+			return LocalDate.of(2025, 9, 22); // after 21/09
+		}
+	};
+
+	Set<Player> players = newspaperservice.getPlayersToGrade(Player.Club.ATALANTA);
+	assertThat(players.size()).isEqualTo(2);
+	assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "1");
+	assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "2");
+
+	newspaperservice.setVoteToPlayers(Set.of(grade, grade2));
+	assertThat(gradeRepository.getAllMatchGrades(match, newsPaper));
+
+}
+\end{lstlisting}
+
