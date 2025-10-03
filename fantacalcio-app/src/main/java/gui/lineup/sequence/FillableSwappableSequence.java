@@ -223,7 +223,7 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 
 	private List<MemberWrapper> sequence; 		// contains wrappers for members of the sequence
 	int rightmostFillableIndex = RF_OVERFLOW;   // contains next-fillable's index within the sequence
-	private static final int RF_OVERFLOW = -1;
+	static final int RF_OVERFLOW = -1;
 
 	FillableSwappableSequence(List<F> fillableSwappables) {
 		this.sequence = IntStream.range(0, fillableSwappables.size())
@@ -435,8 +435,10 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 		});
 	}
 
+	// TODO this is not tested!!!
 	public Optional<F> nextFillable() {
-		// TODO Auto-generated method stub
-		return null;
+		if (rightmostFillableIndex != RF_OVERFLOW)
+			return Optional.of(memberAt(rightmostFillableIndex));
+		else return Optional.empty();
 	}
 }

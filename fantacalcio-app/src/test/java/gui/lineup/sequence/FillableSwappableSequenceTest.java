@@ -1,11 +1,13 @@
 package gui.lineup.sequence;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -37,19 +39,19 @@ class FillableSwappableSequenceTest {
 	
 	@Mock private FillableSwappableSequenceListener<TestSpecificFillable> listener;
 
-	private FillableSwappableSequence<TestSpecificFillable> driver;
+	private FillableSwappableSequence<TestSpecificFillable> sequence;
 
 	@Test
 	@DisplayName("when being initialized")
 	void staticFactoryMethod() {
 		
 		// WHEN a sequence is created with the mocked gadgets
-		driver = FillableSwappableSequence.createSequence(
+		sequence = FillableSwappableSequence.createSequence(
 				List.of(fillable0, fillable1, fillable2, fillable3));
 
 		// THEN appropriate initialization members are called on gadgets
 		Stream.of(fillable0, fillable1, fillable2,fillable3).forEach(fillable -> {
-			verify(fillable).attachDriver(driver);
+			verify(fillable).attachDriver(sequence);
 			verify(fillable).setFillingEnabled(false);
 		});
 		verify(fillable0).setFillingEnabled(true);
@@ -60,11 +62,12 @@ class FillableSwappableSequenceTest {
 	@Nested
 	@DisplayName("once initialized")
 	class OnceSequenceInitialized {
+		
 		@BeforeEach
 		void commonSetup() {
-			driver = new FillableSwappableSequence<TestSpecificFillable>(
+			sequence = new FillableSwappableSequence<TestSpecificFillable>(
 					List.of(fillable0, fillable1, fillable2, fillable3));
-			driver.listeners = List.of(listener);
+			sequence.listeners = List.of(listener);
 		}
 
 		@Nested
@@ -86,10 +89,10 @@ class FillableSwappableSequenceTest {
 						@Test
 						@DisplayName("the first gadget")
 						void onFirstNextFillable() {
-							driver.rightmostFillableIndex = 0;
+							sequence.rightmostFillableIndex = 0;
 
 							// WHEN notified of filling on NF
-							driver.contentAdded(fillable0);
+							sequence.contentAdded(fillable0);
 
 							// THEN the sequence is advanced
 							verify(fillable1).setFillingEnabled(true);
@@ -105,10 +108,10 @@ class FillableSwappableSequenceTest {
 						@Test
 						@DisplayName("the last gadget")
 						void onLastNextFillable() {
-							driver.rightmostFillableIndex = 3;
+							sequence.rightmostFillableIndex = 3;
 
 							// WHEN notified of filling on NF
-							driver.contentAdded(fillable3);
+							sequence.contentAdded(fillable3);
 
 							// THEN the sequence is advanced
 							verify(fillable3).setNextFillable(false);
@@ -122,10 +125,10 @@ class FillableSwappableSequenceTest {
 						@Test
 						@DisplayName("an intermediate gadget")
 						void onIntermediateNextFillable() {
-							driver.rightmostFillableIndex = 2;
+							sequence.rightmostFillableIndex = 2;
 
 							// WHEN notified of filling on NF
-							driver.contentAdded(fillable2);
+							sequence.contentAdded(fillable2);
 
 							// THEN the sequence is advanced
 							verify(fillable3).setFillingEnabled(true);
@@ -148,10 +151,10 @@ class FillableSwappableSequenceTest {
 				@Test
 				@DisplayName("when that gadget is before the next-fillable")
 				void onPriorToNFMember() {
-					driver.rightmostFillableIndex = 2;
+					sequence.rightmostFillableIndex = 2;
 					
 					// WHEN notified of filling on NF
-					driver.contentAdded(fillable0);
+					sequence.contentAdded(fillable0);
 					
 					// THEN the sequence is not advanced
 					verifyNoMoreInteractions(fillable0, fillable1, fillable2, fillable3, listener);
@@ -169,13 +172,13 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("is in the sequence, but is past the next-fillable")
 					void onNonNFMember() {
-						driver.rightmostFillableIndex = 0;
+						sequence.rightmostFillableIndex = 0;
 						
 						// WHEN notified of filling a past-NF gadget
-						ThrowingCallable call = () -> driver.contentAdded(fillable1);
+						ThrowingCallable shouldThrow = () -> sequence.contentAdded(fillable1);
 						
 						// THEN an error is thrown
-						assertThatThrownBy(call)
+						assertThatThrownBy(shouldThrow)
 								.isInstanceOf(IllegalStateException.class)
 								.hasMessageContaining("for which filling should have been disabled");
 						
@@ -188,10 +191,10 @@ class FillableSwappableSequenceTest {
 					void onNonMember(@Mock TestSpecificFillable stranger) {
 						
 						// WHEN notified of filling on NF
-						ThrowingCallable call = () -> driver.contentAdded(stranger);
+						ThrowingCallable shouldThrow = () -> sequence.contentAdded(stranger);
 						
 						// THEN the sequence is advanced
-						assertThatThrownBy(call)
+						assertThatThrownBy(shouldThrow)
 								.isInstanceOf(IllegalArgumentException.class)
 								.hasMessageContaining("not a member of this sequence");
 						
@@ -216,10 +219,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("right before next-fillable")
 					void rigthBeforeNF() {
-						driver.rightmostFillableIndex = 2;
+						sequence.rightmostFillableIndex = 2;
 						
 						// WHEN notified of emptying on fillable1
-						driver.contentRemoved(fillable1);
+						sequence.contentRemoved(fillable1);
 						
 						// THEN next-fillable status is moved
 						verify(fillable2).setFillingEnabled(false);
@@ -235,10 +238,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("some steps before next-fillable")
 					void someStepsBeforeNF() {
-						driver.rightmostFillableIndex = 3;
+						sequence.rightmostFillableIndex = 3;
 						
 						// WHEN notified of emptying on fillable1
-						driver.contentRemoved(fillable0);
+						sequence.contentRemoved(fillable0);
 						
 						// THEN content is collapsed
 						InOrder inOrder = inOrder(fillable0, fillable1, fillable2);
@@ -270,10 +273,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("the next-fillable")
 					void onNFMember() {
-						driver.rightmostFillableIndex = 2;
+						sequence.rightmostFillableIndex = 2;
 						
 						// WHEN notified of filling a past-NF gadget
-						ThrowingCallable call = () -> driver.contentRemoved(fillable2);
+						ThrowingCallable call = () -> sequence.contentRemoved(fillable2);
 						
 						// THEN an error is thrown
 						assertThatThrownBy(call)
@@ -287,10 +290,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("after next-fillable")
 					void onPostNFMember() {
-						driver.rightmostFillableIndex = 2;
+						sequence.rightmostFillableIndex = 2;
 						
 						// WHEN notified of filling a past-NF gadget
-						ThrowingCallable call = () -> driver.contentRemoved(fillable3);
+						ThrowingCallable call = () -> sequence.contentRemoved(fillable3);
 						
 						// THEN an error is thrown
 						assertThatThrownBy(call)
@@ -306,7 +309,7 @@ class FillableSwappableSequenceTest {
 					void onNonMember(@Mock TestSpecificFillable stranger) {
 						
 						// WHEN notified of filling on an extraneous gadget
-						ThrowingCallable call = () -> driver.contentRemoved(stranger);
+						ThrowingCallable call = () -> sequence.contentRemoved(stranger);
 						
 						// THEN an error is thrown
 						assertThatThrownBy(call)
@@ -321,6 +324,64 @@ class FillableSwappableSequenceTest {
 		}
 		
 		@Nested
+		@DisplayName("when asked for the next-fillable member")
+		class WhenAskedForNextFillable {
+			
+			@Nested
+			@DisplayName("with next-fillable being")
+			class WithNFBeing {
+
+				@Test
+				@DisplayName("the first gadget")
+				void onFirstNextFillable() {
+					sequence.rightmostFillableIndex = 0;
+
+					// WHEN asked for the NF
+					Optional<TestSpecificFillable> nextFillable = sequence.nextFillable();
+
+					// THEN the correct member is returned
+					assertThat(nextFillable).contains(fillable0);
+				}
+
+				@Test
+				@DisplayName("the last gadget")
+				void onLastNextFillable() {
+					sequence.rightmostFillableIndex = 3;
+
+					// WHEN asked for the NF
+					Optional<TestSpecificFillable> nextFillable = sequence.nextFillable();
+
+					// THEN the correct member is returned
+					assertThat(nextFillable).contains(fillable3);
+				}
+
+				@Test
+				@DisplayName("an intermediate gadget")
+				void onIntermediateNextFillable() {
+					sequence.rightmostFillableIndex = 2;
+
+					// WHEN asked for the NF
+					Optional<TestSpecificFillable> nextFillable = sequence.nextFillable();
+
+					// THEN the correct member is returned
+					assertThat(nextFillable).contains(fillable2);
+				}
+				
+				@Test
+				@DisplayName("non-existent")
+				void withNoNextFillable() {
+					sequence.rightmostFillableIndex = FillableSwappableSequence.RF_OVERFLOW;
+
+					// WHEN asked for the NF
+					Optional<TestSpecificFillable> nextFillable = sequence.nextFillable();
+
+					// THEN an empty Optional is returned
+					assertThat(nextFillable).isEmpty();
+				}
+			}			
+		}
+		
+		@Nested
 		@DisplayName("when asked to swap the contents of a gadget")
 		class WhenAskedToSwap {
 
@@ -331,10 +392,10 @@ class FillableSwappableSequenceTest {
 				@Test
 				@DisplayName("makes a gadget swap with its right neighbor")
 				void toTheRight() {
-					driver.rightmostFillableIndex = 2;
+					sequence.rightmostFillableIndex = 2;
 					
 					// WHEN asked to swap fillable1 to the right
-					driver.swapRight(fillable0);
+					sequence.swapRight(fillable0);
 					
 					// THEN next-fillable status is moved
 					verify(fillable0).swapContentWith(fillable1);
@@ -356,10 +417,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("an empty gadget")
 					void anEmptyGadget() {
-						driver.rightmostFillableIndex = 2;
+						sequence.rightmostFillableIndex = 2;
 						
 						// WHEN asked to swap the next-fillable
-						ThrowingCallable swapRight = () -> driver.swapRight(fillable2);
+						ThrowingCallable swapRight = () -> sequence.swapRight(fillable2);
 						
 						// THEN an error is thrown						
 						assertThatThrownBy(swapRight)
@@ -373,10 +434,10 @@ class FillableSwappableSequenceTest {
 					@Test
 					@DisplayName("a filled gadget with an empty neighbor")
 					void anEmptyNeighbor() {
-						driver.rightmostFillableIndex = 2;
+						sequence.rightmostFillableIndex = 2;
 						
 						// WHEN asked to swap with the neighbor being the next-fillable
-						ThrowingCallable call = () -> driver.swapRight(fillable1);
+						ThrowingCallable call = () -> sequence.swapRight(fillable1);
 						
 						// THEN an error is thrown
 						assertThatThrownBy(call)
@@ -392,7 +453,7 @@ class FillableSwappableSequenceTest {
 					void onNonMember(@Mock TestSpecificFillable stranger) {
 						
 						// WHEN asked to swap a non-member
-						ThrowingCallable call = () -> driver.swapRight(stranger);
+						ThrowingCallable call = () -> sequence.swapRight(stranger);
 						
 						// THEN an error is thrown
 						assertThatThrownBy(call)
