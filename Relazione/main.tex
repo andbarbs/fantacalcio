@@ -6,8 +6,12 @@
 \usepackage{flushend,stfloats,amsthm,chngpage,times,,lipsum,lastpage} 
 \usepackage{calc,listings,color,wrapfig,tabularx,longtable,enumitem}
 \usepackage{multirow}
+\renewcommand{\arraystretch}{1.4}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
 \usepackage{tcolorbox}
 \definecolor{shadecolor}{rgb}{0.86,0.86,0.86}
@@ -62,6 +66,7 @@ numberstyle = \tiny,
 \include{Part/Introduzionegenerale}
 
 \include{Part/Progettazione}
+\include{Part/UseCaseTemplates}
 \include{Part/DataBase}
 
 \include{Part/Implementazione}
