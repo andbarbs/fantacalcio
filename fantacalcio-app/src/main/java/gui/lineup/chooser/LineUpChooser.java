@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.io.IOException;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -466,10 +465,11 @@ public class LineUpChooser implements LineUpChooserController {
 			Supplier<Collection<? extends Selector<T>>> currentSchemeSelectors) {
 		return exitingSelector -> {
 			exitingSelector.removeListener(listener);
-			if (exitingSelector.getSelection().isPresent()) {
-				triplet.getNextFillable()
-						.ifPresent(subSel -> subSel.setSelection(exitingSelector.getSelection()));
+			Optional<T> exitingSelection = exitingSelector.getSelection();
+			if (exitingSelection.isPresent()) {
 				exitingSelector.setSelection(Optional.empty());
+				triplet.getNextFillable()
+						.ifPresent(subSel -> subSel.setSelection(exitingSelection));
 			}
 			hasGroupChoice.flag = currentSchemeSelectors.get().stream().map(Selector::getSelection)
 					.allMatch(Optional::isPresent);
@@ -565,107 +565,102 @@ public class LineUpChooser implements LineUpChooserController {
 			JFrame frame = new JFrame("starter chooser demo");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			try {
-				Dimension screenSize = frame.getToolkit().getScreenSize();
-				Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
-				Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
-						SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
-
-				// I) initializes dependencies
-				SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
-				StarterPlayerSelector<Goalkeeper> goaliePresenter = new StarterPlayerSelector<>(goalieView);
-				goalieView.setController(goaliePresenter);
-
-				SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
-						defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
-						defView3 = new SwingSubPlayerSelector<Defender>(selectorDims),
-						defView4 = new SwingSubPlayerSelector<Defender>(selectorDims),
-						defView5 = new SwingSubPlayerSelector<Defender>(selectorDims);
-				StarterPlayerSelector<Defender> defPres1 = new StarterPlayerSelector<Defender>(defView1),
-						defPres2 = new StarterPlayerSelector<Defender>(defView2),
-						defPres3 = new StarterPlayerSelector<Defender>(defView3),
-						defPres4 = new StarterPlayerSelector<Defender>(defView4),
-						defPres5 = new StarterPlayerSelector<Defender>(defView5);
-				defView1.setController(defPres1);
-				defView2.setController(defPres2);
-				defView3.setController(defPres3);
-				defView4.setController(defPres4);
-				defView5.setController(defPres5);
-
-				SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-						midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-						midView3 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
-						midView4 = new SwingSubPlayerSelector<Midfielder>(selectorDims);
-				StarterPlayerSelector<Midfielder> midPres1 = new StarterPlayerSelector<Midfielder>(midView1),
-						midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
-						midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
-						midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
-				midView1.setController(midPres1);
-				midView2.setController(midPres2);
-				midView3.setController(midPres3);
-				midView4.setController(midPres4);
-
-				SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
-						forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
-						forwView3 = new SwingSubPlayerSelector<Forward>(selectorDims),
-						forwView4 = new SwingSubPlayerSelector<Forward>(selectorDims);
-				StarterPlayerSelector<Forward> forwPres1 = new StarterPlayerSelector<Forward>(forwView1),
-						forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
-						forwPres3 = new StarterPlayerSelector<Forward>(forwView3),
-						forwPres4 = new StarterPlayerSelector<Forward>(forwView4);
-				forwView1.setController(forwPres1);
-				forwView2.setController(forwPres2);
-				forwView3.setController(forwPres3);
-				forwView4.setController(forwPres4);
-
-				// II) initializes competition
-				CompetitiveOptionDealingGroup.initializeDealing(Set.of(goaliePresenter),
-						List.of(new Goalkeeper("Gianluigi", "Buffon")));
-				CompetitiveOptionDealingGroup.initializeDealing(
-						Set.of(defPres1, defPres2, defPres3, defPres4, defPres5),
-						List.of(new Defender("Paolo", "Maldini"), new Defender("Franco", "Baresi"),
-								new Defender("Alessandro", "Nesta"), new Defender("Giorgio", "Chiellini"),
-								new Defender("Leonardo", "Bonucci")));
-				CompetitiveOptionDealingGroup.initializeDealing(Set.of(midPres1, midPres2, midPres3, midPres4),
-						List.of(new Midfielder("Andrea", "Pirlo"), new Midfielder("Daniele", "De Rossi"),
-								new Midfielder("Marco", "Verratti"), new Midfielder("Claudio", "Marchisio")));
-				CompetitiveOptionDealingGroup.initializeDealing(Set.of(forwPres1, forwPres2, forwPres3),
-						List.of(new Forward("Roberto", "Baggio"), new Forward("Francesco", "Totti"),
-								new Forward("Alessandro", "Del Piero"), new Forward("Lorenzo", "Insigne")));
-
-				// III) instantiates StarterChooser
-				SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
-						false, 
-						availableWindow, 						
-						List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)), 
-						goalieView, 
-						List.of(defView1, defView2, defView3, defView4, defView5), 
-						List.of(midView1, midView2, midView3, midView4), 						
-						List.of(forwView1, forwView2, forwView3));
-
-				StarterLineUpChooser starterChooser = new StarterLineUpChooser(
-						goaliePresenter, 
-						List.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
-						List.of(midPres1, midPres2, midPres3, midPres4), 
-						List.of(forwPres1, forwPres2, forwPres3));
-
-				starterWidget.setController(starterChooser);
-				starterChooser.setWidget(starterWidget);
-
-				starterChooser.switchToScheme(Scheme433.INSTANCE);
-
-				// IV) instantiates LineUpChooserWidget
-				SwingLineUpChooserWidget chooserWidget = new SwingLineUpChooserWidget(false, starterWidget, null, null,
-						null, null);
-
-				frame.setContentPane(chooserWidget);
-				frame.pack();
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Dimension screenSize = frame.getToolkit().getScreenSize();
+			Dimension availableWindow = new Dimension((int) (screenSize.width * 0.3), screenSize.height);
+			Dimension selectorDims = SpringSchemePanel.recommendedSlotDimensions(
+					SwingStarterLineUpChooserWidget.eventualFieldDimension(availableWindow));
+			
+			// I) initializes dependencies
+			SwingSubPlayerSelector<Goalkeeper> goalieView = new SwingSubPlayerSelector<Goalkeeper>(selectorDims);
+			StarterPlayerSelector<Goalkeeper> goaliePresenter = new StarterPlayerSelector<>(goalieView);
+			goalieView.setController(goaliePresenter);
+			
+			SwingSubPlayerSelector<Defender> defView1 = new SwingSubPlayerSelector<Defender>(selectorDims),
+					defView2 = new SwingSubPlayerSelector<Defender>(selectorDims),
+					defView3 = new SwingSubPlayerSelector<Defender>(selectorDims),
+					defView4 = new SwingSubPlayerSelector<Defender>(selectorDims),
+					defView5 = new SwingSubPlayerSelector<Defender>(selectorDims);
+			StarterPlayerSelector<Defender> defPres1 = new StarterPlayerSelector<Defender>(defView1),
+					defPres2 = new StarterPlayerSelector<Defender>(defView2),
+					defPres3 = new StarterPlayerSelector<Defender>(defView3),
+					defPres4 = new StarterPlayerSelector<Defender>(defView4),
+					defPres5 = new StarterPlayerSelector<Defender>(defView5);
+			defView1.setController(defPres1);
+			defView2.setController(defPres2);
+			defView3.setController(defPres3);
+			defView4.setController(defPres4);
+			defView5.setController(defPres5);
+			
+			SwingSubPlayerSelector<Midfielder> midView1 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+					midView2 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+					midView3 = new SwingSubPlayerSelector<Midfielder>(selectorDims),
+					midView4 = new SwingSubPlayerSelector<Midfielder>(selectorDims);
+			StarterPlayerSelector<Midfielder> midPres1 = new StarterPlayerSelector<Midfielder>(midView1),
+					midPres2 = new StarterPlayerSelector<Midfielder>(midView2),
+					midPres3 = new StarterPlayerSelector<Midfielder>(midView3),
+					midPres4 = new StarterPlayerSelector<Midfielder>(midView4);
+			midView1.setController(midPres1);
+			midView2.setController(midPres2);
+			midView3.setController(midPres3);
+			midView4.setController(midPres4);
+			
+			SwingSubPlayerSelector<Forward> forwView1 = new SwingSubPlayerSelector<Forward>(selectorDims),
+					forwView2 = new SwingSubPlayerSelector<Forward>(selectorDims),
+					forwView3 = new SwingSubPlayerSelector<Forward>(selectorDims),
+					forwView4 = new SwingSubPlayerSelector<Forward>(selectorDims);
+			StarterPlayerSelector<Forward> forwPres1 = new StarterPlayerSelector<Forward>(forwView1),
+					forwPres2 = new StarterPlayerSelector<Forward>(forwView2),
+					forwPres3 = new StarterPlayerSelector<Forward>(forwView3),
+					forwPres4 = new StarterPlayerSelector<Forward>(forwView4);
+			forwView1.setController(forwPres1);
+			forwView2.setController(forwPres2);
+			forwView3.setController(forwPres3);
+			forwView4.setController(forwPres4);
+			
+			// II) initializes competition
+			CompetitiveOptionDealingGroup.initializeDealing(Set.of(goaliePresenter),
+					List.of(new Goalkeeper("Gianluigi", "Buffon")));
+			CompetitiveOptionDealingGroup.initializeDealing(
+					Set.of(defPres1, defPres2, defPres3, defPres4, defPres5),
+					List.of(new Defender("Paolo", "Maldini"), new Defender("Franco", "Baresi"),
+							new Defender("Alessandro", "Nesta"), new Defender("Giorgio", "Chiellini"),
+							new Defender("Leonardo", "Bonucci")));
+			CompetitiveOptionDealingGroup.initializeDealing(Set.of(midPres1, midPres2, midPres3, midPres4),
+					List.of(new Midfielder("Andrea", "Pirlo"), new Midfielder("Daniele", "De Rossi"),
+							new Midfielder("Marco", "Verratti"), new Midfielder("Claudio", "Marchisio")));
+			CompetitiveOptionDealingGroup.initializeDealing(Set.of(forwPres1, forwPres2, forwPres3),
+					List.of(new Forward("Roberto", "Baggio"), new Forward("Francesco", "Totti"),
+							new Forward("Alessandro", "Del Piero"), new Forward("Lorenzo", "Insigne")));
+			
+			// III) instantiates StarterChooser
+			SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(
+					false, 
+					availableWindow, 						
+					List.of(new Spring433Scheme(false), new Spring343Scheme(false), new Spring532Scheme(false)), 
+					goalieView, 
+					List.of(defView1, defView2, defView3, defView4, defView5), 
+					List.of(midView1, midView2, midView3, midView4), 						
+					List.of(forwView1, forwView2, forwView3));
+			
+			StarterLineUpChooser starterChooser = new StarterLineUpChooser(
+					goaliePresenter, 
+					List.of(defPres1, defPres2, defPres3, defPres4, defPres5), 
+					List.of(midPres1, midPres2, midPres3, midPres4), 
+					List.of(forwPres1, forwPres2, forwPres3));
+			
+			starterWidget.setController(starterChooser);
+			starterChooser.setWidget(starterWidget);
+			
+			starterChooser.switchToScheme(Scheme433.INSTANCE);
+			
+			// IV) instantiates LineUpChooserWidget
+			SwingLineUpChooserWidget chooserWidget = new SwingLineUpChooserWidget(false, starterWidget, null, null,
+					null, null);
+			
+			frame.setContentPane(chooserWidget);
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);
 		});
 	}
 }

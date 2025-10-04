@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -1290,8 +1292,14 @@ public class LineUpChooserTest {
 					// WHEN the exit Consumer is made to process the exiting Selector
 					exitDefConsumer.getValue().accept(exitingSelector);
 
-					// THEN the substitute Selector is given the exiting Selector's selection
-					verify(substituteSelector).setSelection(Optional.of(FAKE_DEFENDER));
+					// THEN to comply with dealing
+					InOrder inOrder = inOrder(exitingSelector, substituteSelector);
+					
+					// FIRSTLY the exiting Selector is emptied
+					inOrder.verify(exitingSelector).setSelection(Optional.empty());
+					
+					// SECONDLY the substitute Selector is given the exiting Selector's selection
+					inOrder.verify(substituteSelector).setSelection(Optional.of(FAKE_DEFENDER));
 				}
 				
 				@Captor	ArgumentCaptor<Consumer<Selector<Midfielder>>> exitMidConsumer;
@@ -1311,8 +1319,14 @@ public class LineUpChooserTest {
 					// WHEN the exit Consumer is made to process the exiting Selector
 					exitMidConsumer.getValue().accept(exitingSelector);
 
-					// THEN the substitute Selector is given the exiting Selector's selection
-					verify(substituteSelector).setSelection(Optional.of(FAKE_MIDFIELDER));
+					// THEN to comply with dealing
+					InOrder inOrder = inOrder(exitingSelector, substituteSelector);
+					
+					// FIRSTLY the exiting Selector is emptied
+					inOrder.verify(exitingSelector).setSelection(Optional.empty());
+					
+					// SECONDLY the substitute Selector is given the exiting Selector's selection
+					inOrder.verify(substituteSelector).setSelection(Optional.of(FAKE_MIDFIELDER));
 				}
 
 				@Captor	ArgumentCaptor<Consumer<Selector<Forward>>> exitForwConsumer;
@@ -1332,8 +1346,14 @@ public class LineUpChooserTest {
 					// WHEN the exit Consumer is made to process the exiting Selector
 					exitForwConsumer.getValue().accept(exitingSelector);
 
-					// THEN the substitute Selector is given the exiting Selector's selection
-					verify(substituteSelector).setSelection(Optional.of(FAKE_FORWARD));
+					// THEN to comply with dealing
+					InOrder inOrder = inOrder(exitingSelector, substituteSelector);
+					
+					// FIRSTLY the exiting Selector is emptied
+					inOrder.verify(exitingSelector).setSelection(Optional.empty());
+					
+					// SECONDLY the substitute Selector is given the exiting Selector's selection
+					inOrder.verify(substituteSelector).setSelection(Optional.of(FAKE_FORWARD));
 				}
 			}
 		}

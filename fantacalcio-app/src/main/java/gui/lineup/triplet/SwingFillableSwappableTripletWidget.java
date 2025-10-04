@@ -54,7 +54,7 @@ public class SwingFillableSwappableTripletWidget extends JPanel implements Filla
 	}
 
 	// graphical appearance
-	private static final float TRIPLET_W_OVER_VIEW_W = 5f, TRIPLET_H_OVER_VIEW_H = 1.3f;
+	private static final float TRIPLET_W_OVER_VIEW_W = 5f, TRIPLET_H_OVER_VIEW_H = 1.2f;
 	private JButton swapMembers1and2, swapMembers2and3;	
 	
 	/*
