@@ -15,7 +15,6 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import domainModel.Player.Club;
 import domainModel.Player.Goalkeeper;
 
 public class UserServiceTest {
@@ -526,26 +525,10 @@ public class UserServiceTest {
 	void testRejectProposal_RequestedNotInvolved() {
 		FantaTeam myTeam = mock(FantaTeam.class);
 		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
-		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
-		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
+		FantaTeam reqTeam = mock(FantaTeam.class);
+		FantaTeam offTeam = mock(FantaTeam.class);
 		when(proposal.getRequestedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getRequestedContract().getTeam()).thenReturn(reqTeam);
-		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
-		when(proposal.getOfferedContract().getTeam()).thenReturn(offTeam);
-
-		assertThatThrownBy(() -> userService.rejectProposal(proposal, myTeam))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("You are not involved in this proposal");
-	}
-
-	@Test
-	void testRejectProposal_OfferedNotInvolved() {
-		FantaTeam myTeam = mock(FantaTeam.class);
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
-		FantaTeam reqTeam = new FantaTeam(null, null, 0, null, null);
-		FantaTeam offTeam = new FantaTeam(null, null, 0, null, null);
-		when(proposal.getRequestedContract())
-				.thenReturn(new Contract(reqTeam, new Player.Goalkeeper(null, null, Club.ATALANTA)));
 		when(proposal.getOfferedContract()).thenReturn(mock(Contract.class));
 		when(proposal.getOfferedContract().getTeam()).thenReturn(offTeam);
 

@@ -6,8 +6,12 @@
 \usepackage{flushend,stfloats,amsthm,chngpage,times,,lipsum,lastpage} 
 \usepackage{calc,listings,color,wrapfig,tabularx,longtable,enumitem}
 \usepackage{multirow}
+\renewcommand{\arraystretch}{1.4}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
 \usepackage{tcolorbox}
 \definecolor{shadecolor}{rgb}{0.86,0.86,0.86}
@@ -16,10 +20,25 @@
 \usetikzlibrary{calc,shapes.multipart,chains,arrows}
 \usepackage[colorinlistoftodos]{todonotes}
 
-
 \usepackage{lineno}
 \usepackage{csquotes}
 \usepackage[italian]{babel}
+
+\usepackage{courier} %% Sets font for listing as Courier.
+\usepackage{listings, xcolor}
+\lstset{
+tabsize = 4, %% set tab space width
+showstringspaces = false, %% prevent space marking in strings, string is defined as the text that is generally printed directly to the console
+numbers = left, %% display line numbers on the left
+commentstyle = \color{green}, %% set comment color
+keywordstyle = \color{blue}, %% set keyword color
+stringstyle = \color{red}, %% set string color
+rulecolor = \color{black}, %% set frame color to avoid being affected by text color
+basicstyle = \small \ttfamily , %% set listing font and size
+breaklines = true, %% enable line breaking
+numberstyle = \tiny,
+}
+
 %%%%%%%%%%%%   Header and Footer  %%%%%%%%%%%%%
 
 \pagestyle{fancy}
@@ -47,6 +66,7 @@
 \include{Part/Introduzionegenerale}
 
 \include{Part/Progettazione}
+\include{Part/UseCaseTemplates}
 \include{Part/DataBase}
 
 \include{Part/Implementazione}

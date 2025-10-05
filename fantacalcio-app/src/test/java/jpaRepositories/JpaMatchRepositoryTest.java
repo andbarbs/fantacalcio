@@ -83,7 +83,11 @@ class JpaMatchRepositoryTest {
 
 		sessionFactory.inTransaction((Session session) -> {
 			List<Match> result = session.createQuery("from Match", Match.class).getResultList();
-			assertThat(result).containsExactly(match);
+			assertThat(result.size()).isEqualTo(1);
+			Match resultMatch = result.get(0);
+			assertThat(resultMatch.getMatchDaySerieA()).isEqualTo(matchDay);
+			assertThat(resultMatch.getTeam1()).isEqualTo(t1);
+			assertThat(resultMatch.getTeam2()).isEqualTo(t2);
 		});
 	}
 

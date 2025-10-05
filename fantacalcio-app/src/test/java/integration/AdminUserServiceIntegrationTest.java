@@ -142,7 +142,7 @@ class AdminUserServiceIntegrationTest {
 
 		Optional<League> result = leagueRepository.getLeagueByCode("1234");
 
-		assertThat(result.isPresent());
+		assertThat(result).isPresent();
 		League league = result.get();
 
 		assertThat(league.getName()).isEqualTo("lega");

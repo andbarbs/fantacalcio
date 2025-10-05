@@ -3,6 +3,10 @@ package jpaRepositories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -14,7 +18,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import domainModel.Contract;
+import domainModel.FantaTeam;
+import domainModel.FantaUser;
+import domainModel.League;
 import domainModel.MatchDaySerieA;
+import domainModel.NewsPaper;
+import domainModel.Player;
 import jakarta.persistence.EntityManager;
 
 class JpaMatchDayRepositoryTest {
@@ -32,6 +42,9 @@ class JpaMatchDayRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(League.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -216,6 +229,39 @@ class JpaMatchDayRepositoryTest {
 	        .isEqualTo(expected);
 	}
 
+	@Test
+	@DisplayName("saveMatch() should persist a match")
+	void testSaveMatch() {
+		FantaUser admin = new FantaUser("admin@" + "L001" + ".com", "pwd");
+		NewsPaper np = new NewsPaper("Gazzetta " + "L001");
+		League league = new League(admin, "League " + "L001", np, "L001");
+		FantaUser user1 = new FantaUser("a@a.com", "pwd");
+		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());
+		FantaUser user2 = new FantaUser("b@b.com", "pwd");
+		FantaTeam t2 = new FantaTeam("Team B", league, 0, user2, Set.of());
+
+		entityManager.getTransaction().begin();
+		entityManager.persist(admin);
+		entityManager.persist(np);
+		entityManager.persist(league);
+		entityManager.persist(user1);
+		entityManager.persist(user2);
+		entityManager.persist(t1);
+		entityManager.persist(t2);
+
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now());
+		
+		matchDayRepository.saveMatchDay(matchDay);
+		entityManager.getTransaction().commit();
+
+		sessionFactory.inTransaction((Session session) -> {
+			List<MatchDaySerieA> result = session.createQuery("from MatchDaySerieA", MatchDaySerieA.class).getResultList();
+			assertThat(result.size()).isEqualTo(1);
+			MatchDaySerieA resultMatch = result.get(0);
+			assertThat(resultMatch.getName()).isEqualTo("MD1");
+			assertThat(resultMatch.getDate()).isEqualTo(LocalDate.now());
+		});
+	}
 	
 
 }

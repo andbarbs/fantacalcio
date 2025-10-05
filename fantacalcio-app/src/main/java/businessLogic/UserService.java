@@ -11,11 +11,11 @@ import domainModel.*;
 public class UserService {
 
 	protected final TransactionManager transactionManager;
-	
+
 	public UserService(TransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
-	
+
 	// League
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
@@ -112,11 +112,11 @@ public class UserService {
 					proposal.getRequestedContract().getPlayer());
 			Contract givenContract = new Contract(proposal.getRequestedContract().getTeam(),
 					proposal.getOfferedContract().getPlayer());
+			context.getProposalRepository().deleteProposal(proposal);
 			context.getContractRepository().deleteContract(proposal.getRequestedContract());
 			context.getContractRepository().deleteContract(proposal.getOfferedContract());
 			context.getContractRepository().saveContract(receivedContract);
 			context.getContractRepository().saveContract(givenContract);
-			context.getProposalRepository().deleteProposal(proposal);
 		});
 	}
 
@@ -214,21 +214,20 @@ public class UserService {
 			if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
 				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
 
+			League league = lineUp.getTeam().getLeague();
+			FantaTeam team = lineUp.getTeam();
+
 			// Check if is legal to save the lineUP
 			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
 			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(),
-						lineUp.getTeam().getLeague(), lineUp.getTeam());
+				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
+						team);
 				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
 
 				if (previousMatchResult.isEmpty()) {
 					throw new UnsupportedOperationException("The grades for the previous match were not calculated");
 				}
 			}
-
-			League league = lineUp.getTeam().getLeague();
-			FantaUser user = lineUp.getTeam().getFantaManager();
-			FantaTeam team = getFantaTeamByUserAndLeague(league, user);
 
 			// Collect all players from the LineUp
 			Set<Player> allPlayers = new HashSet<>();

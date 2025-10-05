@@ -16,4 +16,6 @@ public interface MatchDayRepository {
 
 	Optional<MatchDaySerieA> getMatchDay(LocalDate date);
 
+	void saveMatchDay(MatchDaySerieA matchDay);
+
 }
