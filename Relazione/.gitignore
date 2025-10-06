@@ -1,0 +1,11 @@
+# By default, ignore everything in this directory and all sub-directories
+/**
+
+# But, re-include all directories so that Git will traverse into them
+!/**/
+
+# Now, re-include any file ending in .tex or .png at any level
+!**/*.gitignore
+!**/*.tex
+!**/*.png
+
