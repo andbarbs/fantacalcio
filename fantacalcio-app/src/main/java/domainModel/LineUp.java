@@ -2,15 +2,31 @@ package domainModel;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import domainModel.LineUp.LineUpBuilderSteps.ReadyForStarterLineUp;
+import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteDefenders;
+import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteForwards;
+import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteGoalkeepers;
+import domainModel.LineUp.LineUpBuilderSteps.ReadyForSubstituteMidfielders;
+import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
+import domainModel.Player.Defender;
+import domainModel.Player.Forward;
+import domainModel.Player.Goalkeeper;
+import domainModel.Player.Midfielder;
 
 // coincides with ThreePositionLineUp by definition of the game
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {LineUp_.MATCH, LineUp_.TEAM}))
-public abstract class LineUp {
+public class LineUp {
     // public static enum Module{_343, _433, _352}
+	
+	@Convert(converter = Scheme.SchemeConverter.class)
+	private Scheme scheme;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,13 +45,18 @@ public abstract class LineUp {
 
     protected LineUp() {}
     
-    LineUp(Match match, FantaTeam team, Set<Fielding> fieldings) {
+    LineUp(Scheme scheme, Match match, FantaTeam team, Set<Fielding> fieldings) {
+		this.scheme = scheme;
 		this.match = match;
 		this.team = team;
 		this.fieldings = fieldings;
 	}
 
 	// getters
+    
+    public Scheme getScheme() {
+		return scheme;
+	}
     
     public Match getMatch() {
         return match;
@@ -63,16 +84,183 @@ public abstract class LineUp {
 
 	@Override
 	public int hashCode() {
-	    return Objects.hash(match, team);
+		return Objects.hash(match);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-	    if (this == obj) return true;
-	    if (obj == null || getClass() != obj.getClass()) return false;
-	    LineUp other = (LineUp) obj;
-	    return Objects.equals(match, other.match) &&
-	           Objects.equals(team, other.team);
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LineUp other = (LineUp) obj;
+		return Objects.equals(match, other.match);
 	}
+	
+	public static LineUpBuilderSteps.ReadyForTeam build() {
+		return new LineUpBuilder();
+	}
+	
+	public static abstract class LineUpBuilderSteps {
+		
+		public interface ReadyForTeam {
+			ReadyForMatch forTeam(FantaTeam team);
+		}
+		
+		public interface ReadyForMatch {
+			ReadyForStarterLineUp inMatch(Match match);
+		}
+		
+		public static final class StarterLineUp {
 
+			private Scheme scheme;
+			private Goalkeeper starterGoalie;
+			private Set<Defender> starterDefenders;
+			private Set<Midfielder> starterMidfielders;
+			private Set<Forward> starterForwards;
+
+			public StarterLineUp(Scheme scheme, 
+					Goalkeeper starterGoalie, 
+					Set<Defender> starterDefenders,
+					Set<Midfielder> starterMidfielders, 
+					Set<Forward> starterForwards) {
+				this.scheme = scheme;
+				this.starterGoalie = starterGoalie;
+
+				if (scheme.getNumDefenders() != 
+						starterDefenders.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterDefenders = starterDefenders;
+				
+				if (scheme.getNumMidfielders() != 
+						starterMidfielders.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterMidfielders = starterMidfielders;
+				
+				if (scheme.getNumForwards() != 
+						starterForwards.stream().map(Objects::requireNonNull).distinct().count())
+					throw new IllegalArgumentException("");
+				this.starterForwards = starterForwards;
+			}
+
+			@Override
+			public int hashCode() {
+				return Objects.hash(scheme, starterDefenders, starterForwards, starterGoalie, starterMidfielders);
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj)
+					return true;
+				if (obj == null)
+					return false;
+				if (getClass() != obj.getClass())
+					return false;
+				StarterLineUp other = (StarterLineUp) obj;
+				return Objects.equals(scheme, other.scheme) && Objects.equals(starterDefenders, other.starterDefenders)
+						&& Objects.equals(starterForwards, other.starterForwards)
+						&& Objects.equals(starterGoalie, other.starterGoalie)
+						&& Objects.equals(starterMidfielders, other.starterMidfielders);
+			}			
+		}
+		
+		public interface ReadyForStarterLineUp {
+			ReadyForSubstituteGoalkeepers withStarterLineUp(StarterLineUp starters);
+		}
+		
+		public interface ReadyForSubstituteGoalkeepers {
+			ReadyForSubstituteDefenders withSubstituteGoalkeepers(Goalkeeper goalie1, Goalkeeper goalie2, Goalkeeper goalie3);
+		}
+
+		public interface ReadyForSubstituteDefenders {
+			ReadyForSubstituteMidfielders withSubstituteDefenders(Defender defender1, Defender defender2, Defender defender3);
+		}
+
+		public interface ReadyForSubstituteMidfielders {
+			ReadyForSubstituteForwards withSubstituteMidfielders(Midfielder midfielder1, Midfielder midfielder2,
+					Midfielder midfielder3);
+		}
+
+		public interface ReadyForSubstituteForwards {
+			LineUp withSubstituteForwards(Forward forward1, Forward forward2, Forward forward3);
+		}		
+	}
+	
+	public static final class LineUpBuilder implements LineUpBuilderSteps.ReadyForTeam,
+										LineUpBuilderSteps.ReadyForMatch,
+										LineUpBuilderSteps.ReadyForStarterLineUp,
+										LineUpBuilderSteps.ReadyForSubstituteGoalkeepers, 
+										LineUpBuilderSteps.ReadyForSubstituteDefenders, 
+										LineUpBuilderSteps.ReadyForSubstituteMidfielders,
+										LineUpBuilderSteps.ReadyForSubstituteForwards {
+
+		// initializes LineUp in order to wire it with Fielding instances
+		private LineUp lineUp;
+
+		@Override
+		public LineUpBuilderSteps.ReadyForMatch forTeam(FantaTeam team) {
+			this.lineUp = new LineUp();
+			this.lineUp.team = team;
+			return this;
+		}
+
+		@Override
+		public ReadyForStarterLineUp inMatch(Match match) {
+			this.lineUp.match = match;
+			return this;
+		}
+
+		@Override
+		public ReadyForSubstituteGoalkeepers withStarterLineUp(StarterLineUp starterLineUp) {
+			this.lineUp.scheme = starterLineUp.scheme;
+			this.lineUp.fieldings = new HashSet<Fielding>();
+			Stream.of(Set.of(starterLineUp.starterGoalie), 
+					starterLineUp.starterDefenders, 
+					starterLineUp.starterMidfielders, 
+					starterLineUp.starterForwards)
+				.flatMap(Set::stream)
+				.map(player -> new Fielding.StarterFielding(player, lineUp))
+				.forEach(lineUp.fieldings::add);
+			return this;
+		}
+		
+		private void addSubstituteFieldings(Player player1, Player player2, Player player3) {
+			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player1), lineUp, 1));
+			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player2), lineUp, 2));
+			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player3), lineUp, 3));
+		}
+
+		@Override
+		public ReadyForSubstituteDefenders withSubstituteGoalkeepers(Goalkeeper goalie1, Goalkeeper goalie2,
+				Goalkeeper goalie3) {
+			// TODO add duplicate checks
+			addSubstituteFieldings(goalie1, goalie2, goalie3);
+			return this;
+		}
+
+		@Override
+		public ReadyForSubstituteMidfielders withSubstituteDefenders(Defender defender1, Defender defender2,
+				Defender defender3) {
+			// TODO add duplicate checks
+			addSubstituteFieldings(defender1, defender2, defender3);
+			return this;
+		}
+
+		@Override
+		public ReadyForSubstituteForwards withSubstituteMidfielders(Midfielder midfielder1, Midfielder midfielder2,
+				Midfielder midfielder3) {
+			// TODO add duplicate checks
+			addSubstituteFieldings(midfielder1, midfielder2, midfielder3);
+			return this;
+		}
+
+		@Override
+		public LineUp withSubstituteForwards(Forward forward1, Forward forward2, Forward forward3) {
+			// TODO add duplicate checks
+			addSubstituteFieldings(forward1, forward2, forward3);
+			return lineUp;
+		}
+	}
 }
