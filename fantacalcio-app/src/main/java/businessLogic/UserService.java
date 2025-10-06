@@ -230,17 +230,17 @@ public class UserService {
 			}
 
 			// Collect all players from the LineUp
-			Set<Player> allPlayers = new HashSet<>();
-			allPlayers.addAll(lineUp.extract().starterGoalkeepers());
-			allPlayers.addAll(lineUp.extract().starterDefenders());
-			allPlayers.addAll(lineUp.extract().starterMidfielders());
-			allPlayers.addAll(lineUp.extract().starterForwards());
-			allPlayers.addAll(lineUp.extract().substituteGoalkeepers());
-			allPlayers.addAll(lineUp.extract().substituteDefenders());
-			allPlayers.addAll(lineUp.extract().substituteMidfielders());
-			allPlayers.addAll(lineUp.extract().substituteForwards());
+			Set<Player> fieldedPlayers = new HashSet<>();
+			fieldedPlayers.addAll(lineUp.extract().starterGoalkeepers());
+			fieldedPlayers.addAll(lineUp.extract().starterDefenders());
+			fieldedPlayers.addAll(lineUp.extract().starterMidfielders());
+			fieldedPlayers.addAll(lineUp.extract().starterForwards());
+			fieldedPlayers.addAll(lineUp.extract().substituteGoalkeepers());
+			fieldedPlayers.addAll(lineUp.extract().substituteDefenders());
+			fieldedPlayers.addAll(lineUp.extract().substituteMidfielders());
+			fieldedPlayers.addAll(lineUp.extract().substituteForwards());
 
-			// Collect all players contracted to the team
+			// Collect all players contracted to the team			
 			Set<Player> teamPlayers = new HashSet<>();
 			teamPlayers.addAll(team.extract().goalkeepers());
 			teamPlayers.addAll(team.extract().defenders());
@@ -248,7 +248,7 @@ public class UserService {
 			teamPlayers.addAll(team.extract().forwards());
 
 			// Validate ownership
-			for (Player player : allPlayers) {
+			for (Player player : fieldedPlayers) {
 				if (!teamPlayers.contains(player)) {
 					throw new IllegalArgumentException(
 							"Player " + player + " does not belong to FantaTeam " + team.getName());

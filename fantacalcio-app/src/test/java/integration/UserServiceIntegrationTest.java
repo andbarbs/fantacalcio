@@ -1,21 +1,11 @@
 package integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-
 import domainModel.scheme.Scheme433;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -32,7 +22,6 @@ import businessLogic.UserService;
 import businessLogic.repositories.ContractRepository;
 import businessLogic.repositories.FantaTeamRepository;
 import businessLogic.repositories.FantaUserRepository;
-import businessLogic.repositories.GradeRepository;
 import businessLogic.repositories.LeagueRepository;
 import businessLogic.repositories.LineUpRepository;
 import businessLogic.repositories.MatchDayRepository;
@@ -53,6 +42,10 @@ import domainModel.MatchDaySerieA;
 import domainModel.NewsPaper;
 import domainModel.Player;
 import domainModel.Player.Club;
+import domainModel.Player.Defender;
+import domainModel.Player.Forward;
+import domainModel.Player.Goalkeeper;
+import domainModel.Player.Midfielder;
 import domainModel.Proposal;
 import domainModel.Proposal.PendingProposal;
 import domainModel.Result;
@@ -60,7 +53,6 @@ import jakarta.persistence.EntityManager;
 import jpaRepositories.JpaContractRepository;
 import jpaRepositories.JpaFantaTeamRepository;
 import jpaRepositories.JpaFantaUserRepository;
-import jpaRepositories.JpaGradeRepository;
 import jpaRepositories.JpaLeagueRepository;
 import jpaRepositories.JpaLineUpRepository;
 import jpaRepositories.JpaMatchDayRepository;
@@ -79,7 +71,7 @@ class UserServiceIntegrationTest {
 
 	private MatchRepository matchRepository;
 	private MatchDayRepository matchDayRepository;
-	private GradeRepository gradeRepository;
+	// private GradeRepository gradeRepository;
 	private LineUpRepository lineUpRepository;
 	private FantaTeamRepository fantaTeamRepository;
 	private LeagueRepository leagueRepository;
@@ -97,16 +89,27 @@ class UserServiceIntegrationTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
-					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
-					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Defender.class)
-					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
-					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(Player.Midfielder.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
-					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
-					.addAnnotatedClass(Proposal.class).addAnnotatedClass(Proposal.PendingProposal.class)
-					.addAnnotatedClass(Proposal.RejectedProposal.class).getMetadataBuilder().build();
+					.addAnnotatedClass(Fielding.class)
+					.addAnnotatedClass(LineUp.class)
+					.addAnnotatedClass(Result.class)
+					.addAnnotatedClass(Grade.class)
+					.addAnnotatedClass(Proposal.class)
+					.addAnnotatedClass(Proposal.PendingProposal.class)
+					.addAnnotatedClass(Proposal.RejectedProposal.class)
+					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -127,7 +130,7 @@ class UserServiceIntegrationTest {
 		fantaUserRepository = new JpaFantaUserRepository(entityManager);
 		matchRepository = new JpaMatchRepository(entityManager);
 		matchDayRepository = new JpaMatchDayRepository(entityManager);
-		gradeRepository = new JpaGradeRepository(entityManager);
+		// gradeRepository = new JpaGradeRepository(entityManager);
 		lineUpRepository = new JpaLineUpRepository(entityManager);
 		fantaTeamRepository = new JpaFantaTeamRepository(entityManager);
 		leagueRepository = new JpaLeagueRepository(entityManager);
@@ -225,50 +228,77 @@ class UserServiceIntegrationTest {
 		leagueRepository.saveLeague(league);
 
 		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1)); // Monday
-		matchDayRepository.saveMatchDay(matchDay);
+		matchDayRepository.saveMatchDay(matchDay);		
 
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(team);
+		// Players for LineUp
+		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
 
+		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+
+		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+
+		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
+
+		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+
+		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+
+		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+
+		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+
+		List<Player> players = List.of(
+				gk1, 
+				d1, d2, d3, d4, 
+				m1, m2, m3, 
+				f1, f2, f3, 
+				sgk1, sgk2, sgk3, 
+				sd1, sd2, sd3,
+				sm1, sm2, sm3,
+				sf1, sf2, sf3);
+		
+		players.forEach(playerRepository::addPlayer);
+		
+		// team & contracts
+		HashSet<Contract> contracts = new HashSet<>();
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, contracts);
+		players.forEach(player -> contracts.add(new Contract(team, player)));
+		fantaTeamRepository.saveTeam(team);  // relies on cascading for contracts
+
+		// match
 		Match match = new Match(matchDay, team, team);
-		matchRepository.saveMatch(match);
+		matchRepository.saveMatch(match);		
+		
+		entityManager.getTransaction().commit();
 
+		// LineUp
 		LineUp lineUp = LineUp.build()
 				.forTeam(team)
 				.inMatch(match)
 				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
-
-		entityManager.getTransaction().commit();
+						.withGoalkeeper(gk1)
+						.withDefenders(d1, d2, d3, d4)
+						.withMidfielders(m1, m2, m3)
+						.withForwards(f1, f2, f3))
+				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+				.withSubstituteDefenders(sd1, sd2, sd3)
+				.withSubstituteMidfielders(sm1, sm2, sm3)
+				.withSubstituteForwards(sf1, sf2, sf3);
 
 		userService.saveLineUp(lineUp);
 

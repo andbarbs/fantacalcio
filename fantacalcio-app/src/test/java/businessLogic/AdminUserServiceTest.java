@@ -720,7 +720,7 @@ class AdminUserServiceTest {
 				.forTeam(team1)
 				.inMatch(match)
 				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withGoalkeeper(gk1)
 						.withDefenders(
 								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
 								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
@@ -750,11 +750,12 @@ class AdminUserServiceTest {
 						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
 						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
 						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+		
 		LineUp lineup2 = LineUp.build()
 				.forTeam(team2)
 				.inMatch(match)
 				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withGoalkeeper(gk2)
 						.withDefenders(
 								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
 								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),

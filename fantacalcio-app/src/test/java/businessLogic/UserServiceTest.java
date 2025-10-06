@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import domainModel.*;
 import domainModel.scheme.Scheme433;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +15,10 @@ import businessLogic.repositories.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import domainModel.Player.Defender;
+import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
+import domainModel.Player.Midfielder;
 
 public class UserServiceTest {
 
@@ -131,42 +133,69 @@ public class UserServiceTest {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
 		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15)); // Monday
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
+		
+		// Players for LineUp
+		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
+
+		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+
+		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+
+		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
+
+		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+
+		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+
+		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+
+		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+
+		List<Player> players = List.of(
+				gk1, 
+				d1, d2, d3, d4, 
+				m1, m2, m3, 
+				f1, f2, f3, 
+				sgk1, sgk2, sgk3, 
+				sd1, sd2, sd3,
+				sm1, sm2, sm3,
+				sf1, sf2, sf3);
+		
+		// team & contracts
+		HashSet<Contract> contracts = new HashSet<>();
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, contracts);
+		players.forEach(player -> contracts.add(new Contract(team, player)));
+
+		// match
 		Match match = new Match(matchDay, team, team);
+		
 		LineUp lineUp = LineUp.build()
 				.forTeam(team)
 				.inMatch(match)
 				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+						.withGoalkeeper(gk1)
+						.withDefenders(d1, d2, d3, d4)
+						.withMidfielders(m1, m2, m3)
+						.withForwards(f1, f2, f3))
+				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+				.withSubstituteDefenders(sd1, sd2, sd3)
+				.withSubstituteMidfielders(sm1, sm2, sm3)
+				.withSubstituteForwards(sf1, sf2, sf3);
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
@@ -288,7 +317,7 @@ public class UserServiceTest {
 		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15)); // Monday
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 
-		Goalkeeper gk = new Goalkeeper("Gianluigi", "Buffon", Player.Club.JUVENTUS);
+		// Goalkeeper gk = new Goalkeeper("Gianluigi", "Buffon", Player.Club.JUVENTUS);
 		Match match = new Match(matchDay, team, team);
 
 		LineUp lineUp = LineUp.build()
@@ -395,42 +424,67 @@ public class UserServiceTest {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L005");
 		MatchDaySerieA matchDay = new MatchDaySerieA("MD3", LocalDate.of(2025, 9, 15)); // Monday
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
+		
+		// Players for LineUp
+		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
+
+		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+
+		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+
+		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
+
+		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+
+		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+
+		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+
+		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+
+		List<Player> players = List.of(
+				gk1, 
+				d1, d2, d3, d4, 
+				m1, m2, m3, 
+				f1, f2, f3, 
+				sgk1, sgk2, sgk3, 
+				sd1, sd2, sd3,
+				sm1, sm2, sm3,
+				sf1, sf2, sf3);
+		
+		HashSet<Contract> contracts = new HashSet<>();
+		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, contracts);
+		players.stream().map(player -> new Contract(team, player)).forEach(contracts::add);;
 		Match match = new Match(matchDay, team, team);
+		
+		// LineUps
 		LineUp lineUp = LineUp.build()
 				.forTeam(team)
 				.inMatch(match)
 				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+						.withGoalkeeper(gk1)
+						.withDefenders(d1, d2, d3, d4)
+						.withMidfielders(m1, m2, m3)
+						.withForwards(f1, f2, f3))
+				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+				.withSubstituteDefenders(sd1, sd2, sd3)
+				.withSubstituteMidfielders(sm1, sm2, sm3)
+				.withSubstituteForwards(sf1, sf2, sf3);
 		LineUp oldLineUp = mock(LineUp.class);
 
 		UserService spyService = spy(userService);

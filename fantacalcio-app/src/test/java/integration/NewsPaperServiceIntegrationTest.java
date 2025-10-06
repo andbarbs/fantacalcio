@@ -22,6 +22,7 @@ import domainModel.FantaUser;
 import domainModel.Fielding;
 import domainModel.Grade;
 import domainModel.League;
+import domainModel.LineUp;
 import domainModel.Match;
 import domainModel.MatchDaySerieA;
 import domainModel.NewsPaper;
@@ -59,14 +60,23 @@ public class NewsPaperServiceIntegrationTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
-					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
-					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Defender.class)
-					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
-					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(Player.Midfielder.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
-					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
+					.addAnnotatedClass(Fielding.class)
+					.addAnnotatedClass(LineUp.class)
+					.addAnnotatedClass(Result.class)
+					.addAnnotatedClass(Grade.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -152,7 +162,6 @@ public class NewsPaperServiceIntegrationTest {
 
 		newspaperservice.setVoteToPlayers(Set.of(grade, grade2));
 		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper));
-
 	}
 
 }

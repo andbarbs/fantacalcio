@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import domainModel.scheme.Scheme433;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -26,7 +25,6 @@ import businessLogic.repositories.FantaTeamRepository;
 import businessLogic.repositories.FantaUserRepository;
 import businessLogic.repositories.GradeRepository;
 import businessLogic.repositories.LeagueRepository;
-import businessLogic.repositories.LineUpRepository;
 import businessLogic.repositories.MatchRepository;
 import businessLogic.repositories.NewsPaperRepository;
 import businessLogic.repositories.PlayerRepository;
@@ -53,7 +51,6 @@ import jpaRepositories.JpaFantaTeamRepository;
 import jpaRepositories.JpaFantaUserRepository;
 import jpaRepositories.JpaGradeRepository;
 import jpaRepositories.JpaLeagueRepository;
-import jpaRepositories.JpaLineUpRepository;
 import jpaRepositories.JpaMatchRepository;
 import jpaRepositories.JpaNewsPaperRepository;
 import jpaRepositories.JpaPlayerRepository;
@@ -67,7 +64,7 @@ class AdminUserServiceIntegrationTest {
 
 	private MatchRepository matchRepository;
 	private GradeRepository gradeRepository;
-	private LineUpRepository lineUpRepository;
+//	private LineUpRepository lineUpRepository;
 	private FantaTeamRepository fantaTeamRepository;
 	private LeagueRepository leagueRepository;
 	private PlayerRepository playerRepository;
@@ -82,14 +79,23 @@ class AdminUserServiceIntegrationTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
-					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
-					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Defender.class)
-					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
-					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(Player.Midfielder.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
-					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
+					.addAnnotatedClass(Fielding.class)
+					.addAnnotatedClass(LineUp.class)
+					.addAnnotatedClass(Result.class)
+					.addAnnotatedClass(Grade.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -111,7 +117,7 @@ class AdminUserServiceIntegrationTest {
 		fantaUserRepository = new JpaFantaUserRepository(entityManager);
 		matchRepository = new JpaMatchRepository(entityManager);
 		gradeRepository = new JpaGradeRepository(entityManager);
-		lineUpRepository = new JpaLineUpRepository(entityManager);
+//		lineUpRepository = new JpaLineUpRepository(entityManager);
 		fantaTeamRepository = new JpaFantaTeamRepository(entityManager);
 		leagueRepository = new JpaLeagueRepository(entityManager);
 		playerRepository = new JpaPlayerRepository(entityManager);
@@ -283,43 +289,54 @@ class AdminUserServiceIntegrationTest {
 		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
 		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
 
-		List<Player> players = List.of(gk1, d1, d2, d3, d4, m1, m2, m3, f1, f2, f3, sgk1, sgk2, sgk3, sd1, sd2, sd3, sf1, sf2, sf3);
-
+		List<Player> players = List.of(
+				gk1, 
+				d1, d2, d3, d4, 
+				m1, m2, m3, 
+				f1, f2, f3, 
+				sgk1, sgk2, sgk3, 
+				sd1, sd2, sd3,
+				sm1, sm2, sm3,
+				sf1, sf2, sf3);
+		
 		players.forEach(playerRepository::addPlayer);
 
 		for (Player player : players) {
 			contractRepository.saveContract(new Contract(team1, player));
 			contractRepository.saveContract(new Contract(team2, player));
 		}
+		
+		// TODO se non servono le lineup, forse bastano molti meno players?
 
 		// LineUp
-		LineUp lineup1 = LineUp.build()
-				.forTeam(team1)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(d1, d2, d3, d4)
-						.withMidfielders(m1, m2, m3)
-						.withForwards(f1, f2, f3))
-				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
-				.withSubstituteDefenders(sd1, sd2, sd3)
-				.withSubstituteMidfielders(sm1, sm2, sm3)
-				.withSubstituteForwards(sf1, sf2, sf3);
-		LineUp lineup2 = LineUp.build()
-				.forTeam(team1)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(d1, d2, d3, d4)
-						.withMidfielders(m1, m2, m3)
-						.withForwards(f1, f2, f3))
-				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
-				.withSubstituteDefenders(sd1, sd2, sd3)
-				.withSubstituteMidfielders(sm1, sm2, sm3)
-				.withSubstituteForwards(sf1, sf2, sf3);
-
-		lineUpRepository.saveLineUp(lineup1);
-		lineUpRepository.saveLineUp(lineup2);
+//		LineUp lineup1 = LineUp.build()
+//				.forTeam(team1)
+//				.inMatch(match)
+//				.withStarterLineUp(Scheme433.starterLineUp()
+//						.withGoalkeeper(gk1)
+//						.withDefenders(d1, d2, d3, d4)
+//						.withMidfielders(m1, m2, m3)
+//						.withForwards(f1, f2, f3))
+//				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+//				.withSubstituteDefenders(sd1, sd2, sd3)
+//				.withSubstituteMidfielders(sm1, sm2, sm3)
+//				.withSubstituteForwards(sf1, sf2, sf3);
+//		
+//		LineUp lineup2 = LineUp.build()
+//				.forTeam(team1)
+//				.inMatch(match)
+//				.withStarterLineUp(Scheme433.starterLineUp()
+//						.withGoalkeeper(gk1)
+//						.withDefenders(d1, d2, d3, d4)
+//						.withMidfielders(m1, m2, m3)
+//						.withForwards(f1, f2, f3))
+//				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+//				.withSubstituteDefenders(sd1, sd2, sd3)
+//				.withSubstituteMidfielders(sm1, sm2, sm3)
+//				.withSubstituteForwards(sf1, sf2, sf3);
+//
+//		lineUpRepository.saveLineUp(lineup1);
+//		lineUpRepository.saveLineUp(lineup2);
 
 		// Grades
 		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newsPaper);

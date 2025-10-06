@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JFrame;
 
-import domainModel.Player;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
