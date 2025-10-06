@@ -19,3 +19,225 @@ In questo modo
 
 \todo[color=blue]{Se vuoi scrivi della gui in generale}
 \todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}
+
+\subsection{Use Case Templates}
+
+\begin{table}[H]
+\caption{Crea fantalega}
+\label{UC-01}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-01 (Crea fantalega) \\
+\hline
+\textbf{Scope} & user goal \\
+\hline
+\textbf{Descrizione} & L'utente vuole creare una nuova fantalega di cui sarà admin. \\
+\hline
+\textbf{Attori} & Admin \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'utente inserisce il nome e il codice della lega che vuole creare.
+    \item Il sistema verifica che non sia già presente una lega con lo stesso codice.
+    \item Se i dati sono validi, il sistema crea la nuova lega.
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=2.\arabic*]
+    \item Il codice scelto è già utilizzato per un'altra lega.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT3]{IT3} \\
+\hline
+\end{tabularx}
+
+\end{table}
+
+
+
+\begin{table}[H]
+\caption{Assegna giocatori alle rose}
+\label{UC-02}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-02 (Assegna giocatori alle rose) \\
+\hline
+\textbf{Scope} & user goal \\
+\hline
+\textbf{Descrizione} & L'admin vuole assegnare i giocatori corretti alle rose presenti nella lega. \\
+\hline
+\textbf{Attori} & Admin \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'admin inserisce il team e il giocatore che deve essere assegnato a tale team.
+    \item Il sistema verifica che il numero massimo di giocatori nel team non sia già stato raggiunto.
+    \item Il sistema verifica che il numero massimo di giocatori nel team appartenenti allo 
+            stesso ruolo del nuovo giocatore non sia già stato raggiunto.
+    \item Il sistema salva il nuovo contratto tra team e giocatore.
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=2.\arabic*]
+    \item Il numero massimo di giocatori nel team è già stato raggiunto.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=3.\arabic*]
+    \item Il numero massimo di giocatori nel team appartenenti allo stesso ruolo
+            del nuovo giocatore è già stato raggiunto.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT5]{IT5} \\
+\hline
+\end{tabularx}
+
+\end{table}
+
+
+
+\begin{table}[H]
+\caption{Inserisci formazione}
+\label{UC-03}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-03 (Inserisci formazione) \\
+\hline
+\textbf{Scope} & user goal \\
+\hline
+\textbf{Descrizione} & L'utente vuole inserire la formazione per giocare la partita successiva. \\
+\hline
+\textbf{Attori} & FantaUser \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'utente fornisce la LineUp che vuole utilizzare per la partita successiva.
+    \item Il sistema verifica che la data in cui viene effettuata l'operazione 
+            sia precedente alla data della partita.
+    \item Il sistema verifica che la data in cui viene effettuata l'operazione 
+            non sia un sabato o una domenica.
+    \item Se la partita non è la prima del campionato, il sistema verifica che 
+            i voti per la partita precedente siano già stati calcolati. 
+    \item Il sistema verifica che i giocatori appartenenti alla formazione 
+            siano giocatori posseduti dall'utente.
+    \item Se l'utente ha già stata inserito una formazione per la partita, 
+            il sistema la elimina per poter inserire la nuova formazione.
+    \item Il sistema salva la formazione per la partita successiva.
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=2.\arabic*]
+    \item La data in cui viene effettuata l'operazione è successiva alla data della partita.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=3.\arabic*]
+    \item La data in cui viene effettuata l'operazione è un sabato o una domenica.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} 
+\begin{enumerate}[leftmargin=*,label=4.\arabic*]
+    \item I voti per la partita precedente non sono stati ancora calcolati.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=5.\arabic*]
+    \item C'è almeno un giocatore all'interno della formazione che non appartiene all'utente.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT9]{IT9} \\
+\hline
+\end{tabularx}
+
+\end{table}
+
+
+
+\begin{table}[H]
+\caption{Scambia giocatori - Invia proposta}
+\label{UC-04}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-04 (Scambia giocatori - Invia proposta) \\
+\hline
+\textbf{Scope} & user goal \\
+\hline
+\textbf{Descrizione} & L'utente vuole inviare una proposta di scambio di giocatori ad un altro utente. \\
+\hline
+\textbf{Attori} & FantaUser \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'utente fornisce i giocatori coinvolti nello scambio e le relative rose.
+    \item Il sistema verifica che i due giocatori abbiano lo stesso ruolo.
+    \item Il sistema verifica che i giocatori coinvolti appartengano alle rose fornite dall'utente.
+    \item Viene creata la nuova proposta e si verifica se è già presente una 
+            proposta con le stesse caratteristiche.
+    \item Il sistema salva la nuova proposta.
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=2.\arabic*]
+    \item I due giocatori coinvolti nello scambio non hanno lo stesso ruolo.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=3.\arabic*]
+    \item I giocatori coinvolti nello scambio non appartengono alle rose fornite dall'utente
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} 
+\begin{enumerate}[leftmargin=*,label=4.\arabic*]
+    \item Nel sistema è già presente una proposta con le stesse caratteristiche.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT12]{IT12} \\
+\hline
+\end{tabularx}
+
+\end{table}
+
+
+
+\begin{table}[H]
+\caption{Scambia giocatori - Accetta proposta}
+\label{UC-05}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-05 (Scambia giocatori - Accetta proposta) \\
+\hline
+\textbf{Scope} & user goal \\
+\hline
+\textbf{Descrizione} & L'utente vuole accettare una proposta di scambio di giocatori inviata da un altro utente. \\
+\hline
+\textbf{Attori} & FantaUser \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'utente fornisce la proposta che vuole accettare e la propria rosa.
+    \item Il sistema verifica che la rosa fornita sia coinvolta nella proposta.
+    \item Il sistema verifica che entrambi i contratti dei giocatori coinvolti siano ancora presenti.
+    \item La proposta è accettata, quindi il sistema provvede a modificare i contratti dei giocatori
+            per cambiare la loro squadra di appartenenza.
+    \item Il sistema salva i nuovi contratti. 
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=2.\arabic*]
+    \item La rosa fornita non è coinvolta nella proposta.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=3.\arabic*]
+    \item Il contratto di almeno uno dei giocatori coinvolti non è più presente.
+    \item Il sistema provvede a rifiutare la proposta dato che non è valida.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT13]{IT13} \\
+\hline
+\end{tabularx}
+
+\end{table}
