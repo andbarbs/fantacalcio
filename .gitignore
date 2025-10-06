@@ -42,14 +42,3 @@ build/
 .DS_Store
 
 /.apt_generated_tests/
-
-### Relazione ###
-
-*.aux
-main.lof
-main.log
-main.pdf
-main.synctex.gz
-main.toc
-main.out
-
