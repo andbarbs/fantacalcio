@@ -1,5 +1,6 @@
 package gui.lineup.selectors;
 
+import domainModel.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,10 +37,10 @@ class StarterPlayerSelectorTest {
 
 	// global option pool
 	private static final List<Midfielder> INITIAL_OPTIONS = List.of(
-			new Midfielder("Alpha", null), 
-			new Midfielder("Beta", null), 
-			new Midfielder("Gamma", null),
-			new Midfielder("Delta", null));	
+			new Midfielder("Alpha", null, Player.Club.ATALANTA),
+			new Midfielder("Beta", null, Player.Club.ATALANTA),
+			new Midfielder("Gamma", null, Player.Club.ATALANTA),
+			new Midfielder("Delta", null, Player.Club.ATALANTA));
 
 	@BeforeEach
 	void commonSetup() {
@@ -91,7 +92,7 @@ class StarterPlayerSelectorTest {
 			presenter.restoreOption(2);
 
 			// THEN the view is commanded to insert "Gamma" (relative position 1)
-			verify(mockView).insertOptionAt(new Midfielder("Gamma", null), 1);
+			verify(mockView).insertOptionAt(new Midfielder("Gamma", null, Player.Club.ATALANTA), 1);
 
 			// AND no feedback is sent to the driver
 			verifyNoMoreInteractions(mockGroupDriver, mockListener);
@@ -180,7 +181,7 @@ class StarterPlayerSelectorTest {
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
-				assertThat(presenter.getSelection()).hasValue(new Midfielder("Alpha", null));
+				assertThat(presenter.getSelection()).hasValue(new Midfielder("Alpha", null, Player.Club.ATALANTA));
 			}
 			
 			@Test
@@ -204,7 +205,7 @@ class StarterPlayerSelectorTest {
 				presenter.currentSelection = -1; 				  // no prior selection
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null, Player.Club.ATALANTA)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(mockView).selectOptionAt(1);
@@ -222,7 +223,7 @@ class StarterPlayerSelectorTest {
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null, Player.Club.ATALANTA)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(mockView).selectOptionAt(1);
@@ -245,7 +246,7 @@ class StarterPlayerSelectorTest {
 					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 					
 					// WHEN attempting to select "Gamma", which is not in the current mask
-					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null))))
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null, Player.Club.ATALANTA))))
 							.isInstanceOf(IllegalArgumentException.class)
 							.hasMessageContaining("not found among this dealer's available options");
 
@@ -260,7 +261,7 @@ class StarterPlayerSelectorTest {
 					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 					
 					// WHEN attempting to select "Theta", which is not in the common option list
-					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Theta", null))))
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Theta", null, Player.Club.ATALANTA))))
 							.isInstanceOf(IllegalArgumentException.class)
 							.hasMessageContaining("not found in dealer group option list");
 

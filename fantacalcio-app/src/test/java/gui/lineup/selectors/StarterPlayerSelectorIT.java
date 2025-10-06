@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.swing.JFrame;
 
+import domainModel.Player;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -35,11 +36,11 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @Tag("non-JPMS-compliant")
 public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
-    private static final Defender chiellini = new Defender("Giorgio", "Chiellini");
-    private static final Defender pique = new Defender("Gerard", "Piqué");
-    private static final Defender ramos = new Defender("Sergio", "Ramos");
-    private static final Defender silva = new Defender("Thiago", "Silva");
-    private static final Defender vanDijk = new Defender("Virgil", "van Dijk");    
+    private static final Defender chiellini = new Defender("Giorgio", "Chiellini", Player.Club.ATALANTA);
+    private static final Defender pique = new Defender("Gerard", "Piqué", Player.Club.ATALANTA);
+    private static final Defender ramos = new Defender("Sergio", "Ramos", Player.Club.ATALANTA);
+    private static final Defender silva = new Defender("Thiago", "Silva", Player.Club.ATALANTA);
+    private static final Defender vanDijk = new Defender("Virgil", "van Dijk", Player.Club.ATALANTA);
 
     /**
      * this test case aims to specify what circumstances should

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import domainModel.scheme.Scheme433;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -41,7 +42,6 @@ import domainModel.MatchDaySerieA;
 import domainModel.NewsPaper;
 import domainModel.Player;
 import domainModel.Result;
-import domainModel._433LineUp;
 import domainModel.Player.Club;
 import domainModel.Player.Defender;
 import domainModel.Player.Forward;
@@ -88,7 +88,7 @@ class AdminUserServiceIntegrationTest {
 					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(_433LineUp.class)
+					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
 					.getMetadataBuilder().build();
 
@@ -214,7 +214,6 @@ class AdminUserServiceIntegrationTest {
 
 	@Test
 	void calculateGrades() {
-
 		entityManager.getTransaction().begin();
 
 		// Users
@@ -252,27 +251,39 @@ class AdminUserServiceIntegrationTest {
 		matchRepository.saveMatch(prevMatch);
 		matchRepository.saveMatch(match);
 
-		// Players
-		Goalkeeper gk1 = new Goalkeeper("Gianluigi", "Buffon", Club.JUVENTUS);
-		Goalkeeper gk2 = new Goalkeeper("Samir", "Handanović", Club.INTER);
+		// Players for LineUp (formerly inline)
+		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
 
-		Defender d1 = new Defender("Paolo", "Maldini", Club.MILAN);
-		Defender d2 = new Defender("Franco", "Baresi", Club.JUVENTUS);
-		Defender d3 = new Defender("Alessandro", "Nesta", Club.LAZIO);
-		Defender d4 = new Defender("Giorgio", "Chiellini", Club.JUVENTUS);
-		Defender d5 = new Defender("Leonardo", "Bonucci", Club.JUVENTUS);
+		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
 
-		Midfielder m1 = new Midfielder("Andrea", "Pirlo", Club.JUVENTUS);
-		Midfielder m2 = new Midfielder("Daniele", "De Rossi", Club.ROMA);
-		Midfielder m3 = new Midfielder("Marco", "Verratti", Club.CREMONESE);
-		Midfielder m4 = new Midfielder("Claudio", "Marchisio", Club.JUVENTUS);
+		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
 
-		Forward f1 = new Forward("Roberto", "Baggio", Club.BOLOGNA);
-		Forward f2 = new Forward("Francesco", "Totti", Club.ROMA);
-		Forward f3 = new Forward("Alessandro", "Del Piero", Club.JUVENTUS);
-		Forward f4 = new Forward("Lorenzo", "Insigne", Club.NAPOLI);
+		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
 
-		List<Player> players = List.of(gk1, gk2, d1, d2, d3, d4, d5, m1, m2, m3, m4, f1, f2, f3, f4);
+		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+
+		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+
+		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+
+		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+
+		List<Player> players = List.of(gk1, d1, d2, d3, d4, m1, m2, m3, f1, f2, f3, sgk1, sgk2, sgk3, sd1, sd2, sd3, sf1, sf2, sf3);
 
 		players.forEach(playerRepository::addPlayer);
 
@@ -281,22 +292,38 @@ class AdminUserServiceIntegrationTest {
 			contractRepository.saveContract(new Contract(team2, player));
 		}
 
-		// LineUps
-		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).withGoalkeeper(gk1)
-				.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
-				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
-				.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
-		LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).withGoalkeeper(gk1)
-				.withDefenders(d1, d2, d3, d4).withMidfielders(m1, m2, m3).withForwards(f1, f2, f3)
-				.withSubstituteGoalkeepers(List.of(gk2)).withSubstituteDefenders(List.of(d5))
-				.withSubstituteMidfielders(List.of(m4)).withSubstituteForwards(List.of(f4)).build();
+		// LineUp
+		LineUp lineup1 = LineUp.build()
+				.forTeam(team1)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(gk1)
+						.withDefenders(d1, d2, d3, d4)
+						.withMidfielders(m1, m2, m3)
+						.withForwards(f1, f2, f3))
+				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+				.withSubstituteDefenders(sd1, sd2, sd3)
+				.withSubstituteMidfielders(sm1, sm2, sm3)
+				.withSubstituteForwards(sf1, sf2, sf3);
+		LineUp lineup2 = LineUp.build()
+				.forTeam(team1)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(gk1)
+						.withDefenders(d1, d2, d3, d4)
+						.withMidfielders(m1, m2, m3)
+						.withForwards(f1, f2, f3))
+				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+				.withSubstituteDefenders(sd1, sd2, sd3)
+				.withSubstituteMidfielders(sm1, sm2, sm3)
+				.withSubstituteForwards(sf1, sf2, sf3);
 
 		lineUpRepository.saveLineUp(lineup1);
 		lineUpRepository.saveLineUp(lineup2);
 
 		// Grades
 		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newsPaper);
-		Grade grade2 = new Grade(gk2, dayToCalc, 60.0, newsPaper);
+		Grade grade2 = new Grade(d1, dayToCalc, 60.0, newsPaper);
 
 		gradeRepository.saveGrade(grade1);
 		gradeRepository.saveGrade(grade2);

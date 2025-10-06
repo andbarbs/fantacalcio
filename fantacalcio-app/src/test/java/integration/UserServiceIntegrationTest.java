@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import domainModel.scheme.Scheme433;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -55,7 +56,6 @@ import domainModel.Player.Club;
 import domainModel.Proposal;
 import domainModel.Proposal.PendingProposal;
 import domainModel.Result;
-import domainModel._433LineUp;
 import jakarta.persistence.EntityManager;
 import jpaRepositories.JpaContractRepository;
 import jpaRepositories.JpaFantaTeamRepository;
@@ -103,7 +103,7 @@ class UserServiceIntegrationTest {
 					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(_433LineUp.class)
+					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
 					.addAnnotatedClass(Proposal.class).addAnnotatedClass(Proposal.PendingProposal.class)
 					.addAnnotatedClass(Proposal.RejectedProposal.class).getMetadataBuilder().build();
@@ -233,7 +233,40 @@ class UserServiceIntegrationTest {
 		Match match = new Match(matchDay, team, team);
 		matchRepository.saveMatch(match);
 
-		LineUp lineUp = new _433LineUp._443LineUpBuilder(match, team).build();
+		LineUp lineUp = LineUp.build()
+				.forTeam(team)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withDefenders(
+								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
+						.withMidfielders(
+								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
+						.withForwards(
+								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
+				.withSubstituteGoalkeepers(
+						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteDefenders(
+						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteMidfielders(
+						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteForwards(
+						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
 
 		entityManager.getTransaction().commit();
 

@@ -41,12 +41,19 @@ class JpaGradeRepositoryTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Grade.class)
-					.addAnnotatedClass(Player.class).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class).addAnnotatedClass(Match.class)
-					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Forward.class)
-					.addAnnotatedClass(Contract.class).getMetadataBuilder().build();
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Grade.class)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(Match.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(Contract.class)
+					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 

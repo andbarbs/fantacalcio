@@ -248,13 +248,13 @@ public class StarterLineUpChooserTest {
 				chooser.currentScheme = fakeScheme;
 				
 				// AND Selectors in the current Scheme report fake selections
-				Goalkeeper fakeGoalie = new Goalkeeper("test", "goalie");			
-				Defender fakeDefender = new Defender("test", "defender");			
-				Midfielder fakeMidfielder1 = new Midfielder("test", "midfielder1"),
-						fakeMidfielder2 = new Midfielder("test", "midfielder2");			
-				Forward fakeForward1 = new Forward("test", "forward1"),
-						fakeForward2 = new Forward("test", "forward2"), 
-						fakeForward3 = new Forward("test", "forward3");
+				Goalkeeper fakeGoalie = new Goalkeeper("test", "goalie", Player.Club.ATALANTA);
+				Defender fakeDefender = new Defender("test", "defender", Player.Club.ATALANTA);
+				Midfielder fakeMidfielder1 = new Midfielder("test", "midfielder1", Player.Club.ATALANTA),
+						fakeMidfielder2 = new Midfielder("test", "midfielder2", Player.Club.ATALANTA);
+				Forward fakeForward1 = new Forward("test", "forward1", Player.Club.ATALANTA),
+						fakeForward2 = new Forward("test", "forward2", Player.Club.ATALANTA),
+						fakeForward3 = new Forward("test", "forward3", Player.Club.ATALANTA);
 				
 				when(goalieSelector.getSelection()).thenReturn(Optional.of(fakeGoalie));
 				when(defSel1.getSelection()).thenReturn(Optional.of(fakeDefender));

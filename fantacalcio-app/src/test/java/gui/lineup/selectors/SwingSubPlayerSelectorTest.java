@@ -40,8 +40,8 @@ public class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 			selectorView.setController(selectorPresenter);
 			
 			selectorView.initOptions(List.of(
-					new Player.Defender("Gigi", "Buffon"), 
-					new Player.Defender("Mario", "Rossi")));
+					new Player.Defender("Gigi", "Buffon", Player.Club.ATALANTA),
+					new Player.Defender("Mario", "Rossi", Player.Club.ATALANTA)));
 			
 			JFrame f = new JFrame("Test Frame");
 			f.add(selectorView);

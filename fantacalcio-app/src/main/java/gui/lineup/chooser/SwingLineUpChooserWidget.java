@@ -407,39 +407,39 @@ public class SwingLineUpChooserWidget extends JPanel implements LineUpChooserWid
 			FantaTeam team = new FantaTeam("Elite Team", league, 0, user, contracts);
 			contracts.addAll(Stream.of(
     				// --- Goalkeepers (3) ---
-    				new Goalkeeper("Manuel", "Neuer"), 
-    				new Goalkeeper("Alisson", "Becker"), 
-    				new Goalkeeper("David", "de Gea"),
-    				new Goalkeeper("David", "de Gea junior"),
+    				new Goalkeeper("Manuel", "Neuer", Club.ATALANTA),
+    				new Goalkeeper("Alisson", "Becker", Club.ATALANTA),
+    				new Goalkeeper("David", "de Gea", Club.ATALANTA),
+    				new Goalkeeper("David", "de Gea junior", Club.ATALANTA),
     				
     				
     				// --- Defenders (8) ---
-    				new Defender("Virgil", "van Dijk"), 
-    				new Defender("Sergio", "Ramos"), 
-    				new Defender("Raphael", "Varane"), 
-    				new Defender("Gerard", "Piqué"), 
-    				new Defender("Thiago", "Silva"),
-    				new Defender("Kalidou", "Koulibaly"), // Added 1
-    				new Defender("Trent", "Alexander-Arnold"), // Added 2
-    				new Defender("Andrew", "Robertson"), // Added 3
+    				new Defender("Virgil", "van Dijk", Club.ATALANTA),
+    				new Defender("Sergio", "Ramos", Club.ATALANTA),
+    				new Defender("Raphael", "Varane", Club.ATALANTA),
+    				new Defender("Gerard", "Piqué", Club.ATALANTA),
+    				new Defender("Thiago", "Silva", Club.ATALANTA),
+    				new Defender("Kalidou", "Koulibaly", Club.ATALANTA), // Added 1
+    				new Defender("Trent", "Alexander-Arnold", Club.ATALANTA), // Added 2
+    				new Defender("Andrew", "Robertson", Club.ATALANTA), // Added 3
     				
     				// --- Midfielders (8) ---
-    				new Midfielder("Luka", "Modrić"), 
-    				new Midfielder("Andrés", "Iniesta"), 
-    				new Midfielder("Kevin", "De Bruyne"), 
-    				new Midfielder("N'Golo", "Kanté"), 
-    				new Midfielder("Toni", "Kroos"),
-    				new Midfielder("Bruno", "Fernandes"), // Added 1
-    				new Midfielder("Casemiro", "Casemiro"), // Added 2 (Used name twice for simplicity)
-    				new Midfielder("Frenkie", "de Jong"), // Added 3
+    				new Midfielder("Luka", "Modrić", Club.ATALANTA),
+    				new Midfielder("Andrés", "Iniesta", Club.ATALANTA),
+    				new Midfielder("Kevin", "De Bruyne", Club.ATALANTA),
+    				new Midfielder("N'Golo", "Kanté", Club.ATALANTA),
+    				new Midfielder("Toni", "Kroos", Club.ATALANTA),
+    				new Midfielder("Bruno", "Fernandes", Club.ATALANTA), // Added 1
+    				new Midfielder("Casemiro", "Casemiro", Club.ATALANTA), // Added 2 (Used name twice for simplicity)
+    				new Midfielder("Frenkie", "de Jong", Club.ATALANTA), // Added 3
     				
     				// --- Forwards (6) ---
-    				new Forward("Lionel", "Messi"), 
-    				new Forward("Cristiano", "Ronaldo"), 
-    				new Forward("Neymar", "Jr"), 
-    				new Forward("Robert", "Lewandowski"), 
-    				new Forward("Kylian", "Mbappé"),
-    				new Forward("Erling", "Haaland") // Added 1
+    				new Forward("Lionel", "Messi", Club.ATALANTA),
+    				new Forward("Cristiano", "Ronaldo", Club.ATALANTA),
+    				new Forward("Neymar", "Jr", Club.ATALANTA),
+    				new Forward("Robert", "Lewandowski", Club.ATALANTA),
+    				new Forward("Kylian", "Mbappé", Club.ATALANTA),
+    				new Forward("Erling", "Haaland", Club.ATALANTA) // Added 1
     				)
 	        	    .map(player -> new Contract(team, player))
 	        	    .collect(Collectors.toSet()));	        

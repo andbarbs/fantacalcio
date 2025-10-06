@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JFrame;
 
+import domainModel.Player;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import domainModel.Player.Defender;
+import domainModel.Player.Club;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.triplet.FillableSwappableTriplet;
 import gui.lineup.triplet.SwingFillableSwappableTripletWidget;
@@ -37,11 +39,11 @@ public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 	private JButtonFixture reset1, reset2, reset3;
 	private JButtonFixture swap1_2, swap2_3;
 	
-	private static final Defender chiellini = new Defender("Giorgio", "Chiellini");
-	private static final Defender pique = new Defender("Gerard", "Piqué");
-	private static final Defender ramos = new Defender("Sergio", "Ramos");
-	private static final Defender silva = new Defender("Thiago", "Silva");
-	private static final Defender vanDijk = new Defender("Virgil", "van Dijk");
+	private static final Defender chiellini = new Defender("Giorgio", "Chiellini", Club.ATALANTA);
+	private static final Defender pique = new Defender("Gerard", "Piqué", Club.ATALANTA);
+	private static final Defender ramos = new Defender("Sergio", "Ramos", Club.ATALANTA);
+	private static final Defender silva = new Defender("Thiago", "Silva", Club.ATALANTA);
+	private static final Defender vanDijk = new Defender("Virgil", "van Dijk", Club.ATALANTA);
 
 	@BeforeEach
 	public void testCaseSpecificSetup() {

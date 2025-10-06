@@ -1,6 +1,7 @@
 package businessLogic;
 
 import domainModel.*;
+import domainModel.scheme.Scheme433;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import businessLogic.repositories.*;
@@ -479,8 +480,74 @@ class AdminUserServiceTest {
 		Grade grade2 = new Grade(new Player.Forward(null, null, null), previousMatchDay, 7.0, newspaper);
 		when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
 
-		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).build();
-		LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).build();
+		LineUp lineup1 = LineUp.build()
+				.forTeam(team1)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withDefenders(
+								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
+						.withMidfielders(
+								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
+						.withForwards(
+								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
+				.withSubstituteGoalkeepers(
+						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteDefenders(
+						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteMidfielders(
+						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteForwards(
+						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+		LineUp lineup2 = LineUp.build()
+				.forTeam(team2)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withDefenders(
+								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
+						.withMidfielders(
+								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
+						.withForwards(
+								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
+				.withSubstituteGoalkeepers(
+						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteDefenders(
+						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteMidfielders(
+						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteForwards(
+						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
 		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
 		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
 
@@ -649,8 +716,74 @@ class AdminUserServiceTest {
 		Player.Goalkeeper gk1 = new Player.Goalkeeper("G1", "Alpha", Player.Club.ATALANTA);
 		Player.Goalkeeper gk2 = new Player.Goalkeeper("G2", "Beta", Player.Club.BOLOGNA);
 
-		LineUp lineup1 = new _433LineUp._443LineUpBuilder(match, team1).withGoalkeeper(gk1).build();
-		LineUp lineup2 = new _433LineUp._443LineUpBuilder(match, team2).withGoalkeeper(gk2).build();
+		LineUp lineup1 = LineUp.build()
+				.forTeam(team1)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withDefenders(
+								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
+						.withMidfielders(
+								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
+						.withForwards(
+								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
+				.withSubstituteGoalkeepers(
+						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteDefenders(
+						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteMidfielders(
+						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteForwards(
+						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+		LineUp lineup2 = LineUp.build()
+				.forTeam(team2)
+				.inMatch(match)
+				.withStarterLineUp(Scheme433.starterLineUp()
+						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
+						.withDefenders(
+								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
+								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
+						.withMidfielders(
+								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
+						.withForwards(
+								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
+				.withSubstituteGoalkeepers(
+						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteDefenders(
+						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
+						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteMidfielders(
+						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
+				.withSubstituteForwards(
+						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
 
 		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
 		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));

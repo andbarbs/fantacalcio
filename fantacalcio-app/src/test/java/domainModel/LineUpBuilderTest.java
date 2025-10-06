@@ -24,72 +24,72 @@ class LineUpBuilderTest {
 			.forTeam(team)
 			.inMatch(new Match(matchDay, team, opponent))
 			.withStarterLineUp(Scheme433.starterLineUp()
-					.withGoalkeeper(new Goalkeeper("portiere", "titolare"))
+					.withGoalkeeper(new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
 					.withDefenders(
-							new Defender("difensore1", "titolare"), 
-							new Defender("difensore2", "titolare"), 
-							new Defender("difensore3", "titolare"), 
-							new Defender("difensore4", "titolare"))
+							new Defender("difensore1", "titolare", Player.Club.ATALANTA),
+							new Defender("difensore2", "titolare", Player.Club.ATALANTA),
+							new Defender("difensore3", "titolare", Player.Club.ATALANTA),
+							new Defender("difensore4", "titolare", Player.Club.ATALANTA))
 					.withMidfielders(
-							new Midfielder("centrocampista1", "titolare"), 
-							new Midfielder("centrocampista2", "titolare"), 
-							new Midfielder("centrocampista3", "titolare"))
+							new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+							new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+							new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
 					.withForwards(
-							new Forward("attaccante1", "titolare"), 
-							new Forward("attaccante2", "titolare"), 
-							new Forward("attaccante3", "titolare")))
+							new Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+							new Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+							new Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
 			.withSubstituteGoalkeepers(
-					new Goalkeeper("portiere1", "panchina"),
-					new Goalkeeper("portiere2", "panchina"), 
-					new Goalkeeper("portiere3", "panchina"))
+					new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+					new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+					new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
 			.withSubstituteDefenders(
-					new Defender("difensore1", "panchina"), 
-					new Defender("difensore2", "panchina"),
-					new Defender("difensore3", "panchina"))
+					new Defender("difensore1", "panchina", Player.Club.ATALANTA),
+					new Defender("difensore2", "panchina", Player.Club.ATALANTA),
+					new Defender("difensore3", "panchina", Player.Club.ATALANTA))
 			.withSubstituteMidfielders(
-					new Midfielder("centrocampista1", "panchina"), 
-					new Midfielder("centrocampista2", "panchina"),
-					new Midfielder("centrocampista3", "panchina"))
+					new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+					new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+					new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
 			.withSubstituteForwards(
-					new Forward("attaccante1", "panchina"), 
-					new Forward("attaccante2", "panchina"),
-					new Forward("attaccante3", "panchina"));
+					new Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+					new Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+					new Forward("attaccante3", "panchina", Player.Club.ATALANTA));
 		
 		List<Player> fieldedPlayers = lineUp.getFieldings().stream()
 				.map(fielding -> fielding.getPlayer())
 				.collect(Collectors.toList());
 		
 		assertThat(fieldedPlayers).containsExactlyInAnyOrder(
-				new Goalkeeper("portiere", "titolare"),
+				new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA),
 
-				new Defender("difensore1", "titolare"), 
-				new Defender("difensore2", "titolare"),
-				new Defender("difensore3", "titolare"), 
-				new Defender("difensore4", "titolare"),
+				new Defender("difensore1", "titolare", Player.Club.ATALANTA),
+				new Defender("difensore2", "titolare", Player.Club.ATALANTA),
+				new Defender("difensore3", "titolare", Player.Club.ATALANTA),
+				new Defender("difensore4", "titolare", Player.Club.ATALANTA),
 
-				new Midfielder("centrocampista1", "titolare"), 
-				new Midfielder("centrocampista2", "titolare"),
-				new Midfielder("centrocampista3", "titolare"),
+				new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
+				new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
+				new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA),
 
-				new Forward("attaccante1", "titolare"), 
-				new Forward("attaccante2", "titolare"),
-				new Forward("attaccante3", "titolare"),
+				new Forward("attaccante1", "titolare", Player.Club.ATALANTA),
+				new Forward("attaccante2", "titolare", Player.Club.ATALANTA),
+				new Forward("attaccante3", "titolare", Player.Club.ATALANTA),
 
-				new Goalkeeper("portiere1", "panchina"), 
-				new Goalkeeper("portiere2", "panchina"),
-				new Goalkeeper("portiere3", "panchina"),
+				new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
+				new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
+				new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA),
 
-				new Defender("difensore1", "panchina"), 
-				new Defender("difensore2", "panchina"),
-				new Defender("difensore3", "panchina"),
+				new Defender("difensore1", "panchina", Player.Club.ATALANTA),
+				new Defender("difensore2", "panchina", Player.Club.ATALANTA),
+				new Defender("difensore3", "panchina", Player.Club.ATALANTA),
 
-				new Midfielder("centrocampista1", "panchina"), 
-				new Midfielder("centrocampista2", "panchina"),
-				new Midfielder("centrocampista3", "panchina"),
+				new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
+				new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
+				new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA),
 
-				new Forward("attaccante1", "panchina"), 
-				new Forward("attaccante2", "panchina"),
-				new Forward("attaccante3", "panchina"));	
+				new Forward("attaccante1", "panchina", Player.Club.ATALANTA),
+				new Forward("attaccante2", "panchina", Player.Club.ATALANTA),
+				new Forward("attaccante3", "panchina", Player.Club.ATALANTA));
 	}
 
 }

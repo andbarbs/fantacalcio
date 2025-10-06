@@ -88,7 +88,9 @@ class JpaMatchDayRepositoryTest {
 		});
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(matchDayRepository.getAllMatchDays()).containsExactly(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)), new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19)));
+		assertThat(matchDayRepository.getAllMatchDays()).containsExactly(
+				new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)),
+				new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19)));
 		repositorySession.close();
 	}
 

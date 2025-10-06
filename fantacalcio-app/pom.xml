@@ -213,7 +213,7 @@
 			            </goals>
 			            <configuration>
 			                <excludedGroups>non-JPMS-compliant</excludedGroups>
-			                <argLine>
+							<argLine>
 			                    -javaagent:${mockito.agent.path}
 			                </argLine>
 			            </configuration>

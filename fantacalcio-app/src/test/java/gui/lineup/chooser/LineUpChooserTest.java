@@ -58,10 +58,10 @@ import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 @ExtendWith(MockitoExtension.class)
 public class LineUpChooserTest {
 	
-	private static final Forward FAKE_FORWARD = new Forward(null, null);
-	private static final Midfielder FAKE_MIDFIELDER = new Midfielder(null, null);
-	private static final Defender FAKE_DEFENDER = new Defender(null, null);
-	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null);
+	private static final Forward FAKE_FORWARD = new Forward(null, null, Player.Club.ATALANTA);
+	private static final Midfielder FAKE_MIDFIELDER = new Midfielder(null, null, Player.Club.ATALANTA);
+	private static final Defender FAKE_DEFENDER = new Defender(null, null, Player.Club.ATALANTA);
+	private static final Goalkeeper FAKE_GOALIE = new Goalkeeper(null, null, Player.Club.ATALANTA);
 	
 	// first-level dependencies
 	private @Mock UserService mockService;
@@ -167,21 +167,21 @@ public class LineUpChooserTest {
 		// GIVEN the Team reports these extractions (alphabetically unsorted)
 		when(team.extract()).thenReturn(mockViewer);
 		when(mockViewer.goalkeepers()).thenReturn(Set.of(
-				new Goalkeeper("goalkeeper", "C"),
-				new Goalkeeper("goalkeeper", "B"),
-				new Goalkeeper("goalkeeper", "A")));
+				new Goalkeeper("goalkeeper", "C", Player.Club.ATALANTA),
+				new Goalkeeper("goalkeeper", "B", Player.Club.ATALANTA),
+				new Goalkeeper("goalkeeper", "A", Player.Club.ATALANTA)));
 		when(mockViewer.defenders()).thenReturn(Set.of(
-				new Defender("defender", "C"),
-				new Defender("defender", "B"),
-				new Defender("defender", "A")));
+				new Defender("defender", "C", Player.Club.ATALANTA),
+				new Defender("defender", "B", Player.Club.ATALANTA),
+				new Defender("defender", "A", Player.Club.ATALANTA)));
 		when(mockViewer.midfielders()).thenReturn(Set.of(
-				new Midfielder("midfielder", "C"),
-				new Midfielder("midfielder", "B"),
-				new Midfielder("midfielder", "A")));
+				new Midfielder("midfielder", "C", Player.Club.ATALANTA),
+				new Midfielder("midfielder", "B", Player.Club.ATALANTA),
+				new Midfielder("midfielder", "A", Player.Club.ATALANTA)));
 		when(mockViewer.forwards()).thenReturn(Set.of(
-				new Forward("forward", "C"),
-				new Forward("forward", "B"),
-				new Forward("forward", "A")));
+				new Forward("forward", "C", Player.Club.ATALANTA),
+				new Forward("forward", "B", Player.Club.ATALANTA),
+				new Forward("forward", "A", Player.Club.ATALANTA)));
 		
 		// AND the Starter Delegate returns mock Selectors
 		when(starterChooser.getAllDefSelectors()).thenReturn(Set.copyOf(starterDefs));
@@ -805,31 +805,31 @@ public class LineUpChooserTest {
 			// AND the Starter Delegate reports a current StarterLineUp
 			when(starterChooser.getCurrentStarterLineUp()).thenReturn(
 					Scheme433.starterLineUp()
-					.withGoalkeeper(new Goalkeeper("goalkeeper", "1"))
+					.withGoalkeeper(new Goalkeeper("goalkeeper", "1", Player.Club.ATALANTA))
 					.withDefenders(
-							new Defender("defender", "1"), 
-							new Defender("defender", "2"),
-							new Defender("defender", "3"),
-							new Defender("defender", "4"))
+							new Defender("defender", "1", Player.Club.ATALANTA),
+							new Defender("defender", "2", Player.Club.ATALANTA),
+							new Defender("defender", "3", Player.Club.ATALANTA),
+							new Defender("defender", "4", Player.Club.ATALANTA))
 					.withMidfielders(
-							new Midfielder("midfielder", "1"), 
-							new Midfielder("midfielder", "2"),
-							new Midfielder("midfielder", "3"))
+							new Midfielder("midfielder", "1", Player.Club.ATALANTA),
+							new Midfielder("midfielder", "2", Player.Club.ATALANTA),
+							new Midfielder("midfielder", "3", Player.Club.ATALANTA))
 					.withForwards(
-							new Forward("forward", "1"), 
-							new Forward("forward", "2"),
-							new Forward("forward", "3")));
+							new Forward("forward", "1", Player.Club.ATALANTA),
+							new Forward("forward", "2", Player.Club.ATALANTA),
+							new Forward("forward", "3", Player.Club.ATALANTA)));
 			
 			// AND triplet selectors report substitute lineups
 			IntStream.range(0, tripletDefs.size()).forEach(i -> {
 				when(tripletGoalies.get(i).getSelection()).thenReturn(
-						Optional.of(new Goalkeeper("goalkeeper", "" + (i + 1))));
+						Optional.of(new Goalkeeper("goalkeeper", "" + (i + 1), Player.Club.ATALANTA)));
 				when(tripletDefs.get(i).getSelection()).thenReturn(
-						Optional.of(new Defender("defender", "" + (i + 1))));
+						Optional.of(new Defender("defender", "" + (i + 1), Player.Club.ATALANTA)));
 				when(tripletMids.get(i).getSelection()).thenReturn(
-						Optional.of(new Midfielder("midfielder", "" + (i + 1))));
+						Optional.of(new Midfielder("midfielder", "" + (i + 1), Player.Club.ATALANTA)));
 				when(tripletForws.get(i).getSelection()).thenReturn(
-						Optional.of(new Forward("forward", "" + (i + 1))));
+						Optional.of(new Forward("forward", "" + (i + 1), Player.Club.ATALANTA)));
 			});
 			
 			// WHEN the Widget sends a "save LineUp" request
@@ -851,37 +851,37 @@ public class LineUpChooserTest {
 			assertThat(constructedLineUp.getMatch()).isEqualTo(match);
 			assertThat(constructedLineUp.getScheme()).isEqualTo(Scheme433.INSTANCE);
 			assertThat(constructedLineUp.extract().starterGoalkeepers())
-					.containsExactly(new Goalkeeper("goalkeeper", "1"));
+					.containsExactly(new Goalkeeper("goalkeeper", "1", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().starterDefenders()).containsExactlyInAnyOrder(
-					new Defender("defender", "1"), 
-					new Defender("defender", "2"),
-					new Defender("defender", "3"),
-					new Defender("defender", "4"));
+					new Defender("defender", "1", Player.Club.ATALANTA),
+					new Defender("defender", "2", Player.Club.ATALANTA),
+					new Defender("defender", "3", Player.Club.ATALANTA),
+					new Defender("defender", "4", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().starterMidfielders()).containsExactlyInAnyOrder(
-					new Midfielder("midfielder", "1"), 
-					new Midfielder("midfielder", "2"),
-					new Midfielder("midfielder", "3"));
+					new Midfielder("midfielder", "1", Player.Club.ATALANTA),
+					new Midfielder("midfielder", "2", Player.Club.ATALANTA),
+					new Midfielder("midfielder", "3", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().starterForwards()).containsExactlyInAnyOrder(
-					new Forward("forward", "1"), 
-					new Forward("forward", "2"),
-					new Forward("forward", "3"));
+					new Forward("forward", "1", Player.Club.ATALANTA),
+					new Forward("forward", "2", Player.Club.ATALANTA),
+					new Forward("forward", "3", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().substituteGoalkeepers())
 					.containsExactly(
-							new Goalkeeper("goalkeeper", "1"), 
-							new Goalkeeper("goalkeeper", "2"),
-							new Goalkeeper("goalkeeper", "3"));
+							new Goalkeeper("goalkeeper", "1", Player.Club.ATALANTA),
+							new Goalkeeper("goalkeeper", "2", Player.Club.ATALANTA),
+							new Goalkeeper("goalkeeper", "3", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().substituteDefenders()).containsExactly(
-					new Defender("defender", "1"), 
-					new Defender("defender", "2"),
-					new Defender("defender", "3"));
+					new Defender("defender", "1", Player.Club.ATALANTA),
+					new Defender("defender", "2", Player.Club.ATALANTA),
+					new Defender("defender", "3", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().substituteMidfielders()).containsExactly(
-					new Midfielder("midfielder", "1"), 
-					new Midfielder("midfielder", "2"),
-					new Midfielder("midfielder", "3"));
+					new Midfielder("midfielder", "1", Player.Club.ATALANTA),
+					new Midfielder("midfielder", "2", Player.Club.ATALANTA),
+					new Midfielder("midfielder", "3", Player.Club.ATALANTA));
 			assertThat(constructedLineUp.extract().substituteForwards()).containsExactly(
-					new Forward("forward", "1"), 
-					new Forward("forward", "2"),
-					new Forward("forward", "3"));		
+					new Forward("forward", "1", Player.Club.ATALANTA),
+					new Forward("forward", "2", Player.Club.ATALANTA),
+					new Forward("forward", "3", Player.Club.ATALANTA));
 		}
 		
 		@Test

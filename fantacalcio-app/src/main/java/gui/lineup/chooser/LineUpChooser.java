@@ -619,18 +619,18 @@ public class LineUpChooser implements LineUpChooserController {
 			
 			// II) initializes competition
 			CompetitiveOptionDealingGroup.initializeDealing(Set.of(goaliePresenter),
-					List.of(new Goalkeeper("Gianluigi", "Buffon")));
+					List.of(new Goalkeeper("Gianluigi", "Buffon", Club.ATALANTA)));
 			CompetitiveOptionDealingGroup.initializeDealing(
 					Set.of(defPres1, defPres2, defPres3, defPres4, defPres5),
-					List.of(new Defender("Paolo", "Maldini"), new Defender("Franco", "Baresi"),
-							new Defender("Alessandro", "Nesta"), new Defender("Giorgio", "Chiellini"),
-							new Defender("Leonardo", "Bonucci")));
+					List.of(new Defender("Paolo", "Maldini", Club.ATALANTA), new Defender("Franco", "Baresi", Club.ATALANTA),
+							new Defender("Alessandro", "Nesta", Club.ATALANTA), new Defender("Giorgio", "Chiellini", Club.ATALANTA),
+							new Defender("Leonardo", "Bonucci", Club.ATALANTA)));
 			CompetitiveOptionDealingGroup.initializeDealing(Set.of(midPres1, midPres2, midPres3, midPres4),
-					List.of(new Midfielder("Andrea", "Pirlo"), new Midfielder("Daniele", "De Rossi"),
-							new Midfielder("Marco", "Verratti"), new Midfielder("Claudio", "Marchisio")));
+					List.of(new Midfielder("Andrea", "Pirlo",Club.ATALANTA), new Midfielder("Daniele", "De Rossi", Club.ATALANTA),
+							new Midfielder("Marco", "Verratti",Club.ATALANTA), new Midfielder("Claudio", "Marchisio", Club.ATALANTA)));
 			CompetitiveOptionDealingGroup.initializeDealing(Set.of(forwPres1, forwPres2, forwPres3),
-					List.of(new Forward("Roberto", "Baggio"), new Forward("Francesco", "Totti"),
-							new Forward("Alessandro", "Del Piero"), new Forward("Lorenzo", "Insigne")));
+					List.of(new Forward("Roberto", "Baggio", Club.ATALANTA), new Forward("Francesco", "Totti", Club.ATALANTA),
+							new Forward("Alessandro", "Del Piero", Club.ATALANTA), new Forward("Lorenzo", "Insigne", Club.ATALANTA)));
 			
 			// III) instantiates StarterChooser
 			SwingStarterLineUpChooserWidget starterWidget = new SwingStarterLineUpChooserWidget(

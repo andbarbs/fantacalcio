@@ -28,7 +28,6 @@ import domainModel.NewsPaper;
 import domainModel.Player;
 import domainModel.Player.Club;
 import domainModel.Result;
-import domainModel._433LineUp;
 import jakarta.persistence.EntityManager;
 import jpaRepositories.JpaFantaTeamRepository;
 import jpaRepositories.JpaFantaUserRepository;
@@ -66,7 +65,7 @@ public class NewsPaperServiceIntegrationTest {
 					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(_433LineUp.class)
+					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class).addAnnotatedClass(Result.class).addAnnotatedClass(Grade.class)
 					.getMetadataBuilder().build();
 

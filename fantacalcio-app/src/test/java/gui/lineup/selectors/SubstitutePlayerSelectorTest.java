@@ -1,5 +1,6 @@
 package gui.lineup.selectors;
 
+import domainModel.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,10 +45,10 @@ class SubstitutePlayerSelectorTest {
 
 	// global option pool
 	private static final List<Midfielder> INITIAL_OPTIONS = List.of(
-			new Midfielder("Alpha", null), 
-			new Midfielder("Beta", null), 
-			new Midfielder("Gamma", null),
-			new Midfielder("Delta", null));
+			new Midfielder("Alpha", null, Player.Club.ATALANTA),
+			new Midfielder("Beta", null, Player.Club.ATALANTA),
+			new Midfielder("Gamma", null, Player.Club.ATALANTA),
+			new Midfielder("Delta", null, Player.Club.ATALANTA));
 
 	@Nested
 	@DisplayName("as an member of an ordered dealer group")
@@ -100,7 +101,7 @@ class SubstitutePlayerSelectorTest {
 			presenter.restoreOption(2);
 
 			// THEN the view is commanded to insert "Gamma" (relative position 1)
-			verify(view).insertOptionAt(new Midfielder("Gamma", null), 1);
+			verify(view).insertOptionAt(new Midfielder("Gamma", null, Player.Club.ATALANTA), 1);
 
 			// AND no feedback is sent to the driver
 			verifyNoMoreInteractions(groupDriver, sequenceDriver);
@@ -158,7 +159,7 @@ class SubstitutePlayerSelectorTest {
 					presenter.mask = new ArrayList<>(List.of(0, 3));     // current options "Alpha", "Delta"
 					presenter.currentSelection = NO_SELECTION;			 // collapse initiator is empty
 					
-					Midfielder gamma = new Midfielder("Gamma", null);
+					Midfielder gamma = new Midfielder("Gamma", null, Player.Club.ATALANTA);
 					when(other.getSelection()).thenReturn(
 							Optional.of(gamma)); 						 // other reports "Gamma" selected
 					
@@ -190,7 +191,7 @@ class SubstitutePlayerSelectorTest {
 					presenter.mask = new ArrayList<>(List.of(0, 3));   // current options "Alpha", "Delta"
 					presenter.currentSelection = 0; 				   // current selection is "Alpha"
 					
-					Midfielder gamma = new Midfielder("Gamma", null);
+					Midfielder gamma = new Midfielder("Gamma", null, Player.Club.ATALANTA);
 					when(other.getSelection()).thenReturn(
 							Optional.of(gamma)); 					   // other reports "Gamma" selected
 					
@@ -232,8 +233,8 @@ class SubstitutePlayerSelectorTest {
 			other.mask = new ArrayList<>(List.of(2, 3));       // current options "Gamma", "Delta"
 			other.currentSelection = 2; 				       // current selection is "Gamma"
 			
-			Midfielder gamma = new Midfielder("Gamma", null);
-			Midfielder alpha = new Midfielder("Alpha", null);
+			Midfielder gamma = new Midfielder("Gamma", null, Player.Club.ATALANTA);
+			Midfielder alpha = new Midfielder("Alpha", null, Player.Club.ATALANTA);
 			
 			// WHEN the presenter is asked to swap content with other
 			presenter.swapContentWith(other);
@@ -420,7 +421,7 @@ class SubstitutePlayerSelectorTest {
 				presenter.mask = new ArrayList<>(List.of(0, 3));  // current options "Alpha", "Delta"
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
-				assertThat(presenter.getSelection()).hasValue(new Midfielder("Alpha", null));
+				assertThat(presenter.getSelection()).hasValue(new Midfielder("Alpha", null, Player.Club.ATALANTA));
 			}
 			
 			@Test
@@ -449,7 +450,7 @@ class SubstitutePlayerSelectorTest {
 				presenter.currentSelection = -1; 				  // no prior selection
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null, Player.Club.ATALANTA)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(view).selectOptionAt(1);
@@ -467,7 +468,7 @@ class SubstitutePlayerSelectorTest {
 				presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 				
 				// WHEN a client sets the selection to "Delta"
-				presenter.setSelection(Optional.of(new Midfielder("Delta", null)));
+				presenter.setSelection(Optional.of(new Midfielder("Delta", null, Player.Club.ATALANTA)));
 
 				// THEN the view is commanded to select "Delta" (relative position 1)
 				verify(view).selectOptionAt(1);
@@ -490,7 +491,7 @@ class SubstitutePlayerSelectorTest {
 					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 					
 					// WHEN attempting to select "Gamma", which is not in the current mask
-					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null))))
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Gamma", null, Player.Club.ATALANTA))))
 							.isInstanceOf(IllegalArgumentException.class)
 							.hasMessageContaining("not found among this dealer's available options");
 
@@ -505,7 +506,7 @@ class SubstitutePlayerSelectorTest {
 					presenter.currentSelection = 0; 				  // prior selection is "Alpha"
 					
 					// WHEN attempting to select "Theta", which is not in the common option list
-					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Theta", null))))
+					assertThatThrownBy(() -> presenter.setSelection(Optional.of(new Midfielder("Theta", null, Player.Club.ATALANTA))))
 							.isInstanceOf(IllegalArgumentException.class)
 							.hasMessageContaining("not found in dealer group option list");
 

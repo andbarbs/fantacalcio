@@ -19,6 +19,4 @@ public interface ProposalRepository {
 
 	boolean saveProposal(Proposal proposal);
 
-	Optional<MatchDaySerieA> getProposal(Contract contract, Contract contract2);
-
 }

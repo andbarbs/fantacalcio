@@ -43,10 +43,4 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
         List<LineUp> result = em.createQuery(query).getResultList();
         return result.stream().findFirst();
     }
-
-	@Override
-	public Optional<LineUp> getLineUpByMatchAndTeam(Match match, FantaTeam fantaTeam) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
 }
