@@ -19,16 +19,23 @@ import java.util.Optional;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * tests that a {@link JpaLineUpRepository} correctly
+ * persists, retrieves and deletes {@link LineUp}s.
+ */
 class JpaLineUpRepositoryTest {
 
 	private static SessionFactory sessionFactory;
-	private EntityManager entityManager;
+	
+	// the SUT reference
 	private JpaLineUpRepository lineUpRepository;
-	private FantaUser manager;
-	private NewsPaper newsPaper;
+	private EntityManager entityManager;  // the EntityManager the SUT is constructed on
+	
+	// references to setup entities managed in @BeforeEach
 	private League league;
 	private MatchDaySerieA matchDay;
 	private FantaTeam opponent;
+	private FantaUser manager;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -61,330 +68,197 @@ class JpaLineUpRepositoryTest {
 	}
 
 	@BeforeEach
-	void setup() {
+	void truncatorAndInstantiatorAndSetup() {
+		
+		// GIVEN the persistence unit is wiped clean
 		sessionFactory.getSchemaManager().truncateMappedObjects();
+		
+		// AND a new SUT instance is constructed
 		entityManager = sessionFactory.createEntityManager();
 		lineUpRepository = new JpaLineUpRepository(entityManager);
 
-		sessionFactory.inTransaction(t -> {
+		// AND common setup entities are assembled and persisted
+		sessionFactory.inTransaction(em -> {
+			NewsPaper newsPaper = new NewsPaper("Gazzetta");
+			em.persist(newsPaper);
 			manager = new FantaUser("manager@example.com", "securePass");
-			t.persist(manager);
-			newsPaper = new NewsPaper("Gazzetta");
-			t.persist(newsPaper);
+			em.persist(manager);
 			league = new League(manager, "Serie A", newsPaper, "code");
-			t.persist(league);
+			em.persist(league);
 			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
-			t.persist(matchDay);
+			em.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
-			t.persist(opponent);
+			em.persist(opponent);
 		});
-
 	}
 
 	@AfterAll
 	static void tearDown() {
 		sessionFactory.close();
 	}
-
-	@Test
-	@DisplayName("deleteLineUp should remove the LineUp by match and team")
-	void testDeleteLineUpRemovesCorrectly() {
-	    entityManager.getTransaction().begin();
-
-		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
-
-		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
-		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
-		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
-		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
-
-		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
-		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
-		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
-
-		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
-		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
-		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
-
-		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
-
-		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
-		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
-		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
-
-		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
-		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
-		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
-
-		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
-		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
-		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
-
-		List<Player> players = List.of(
-				gk1, 
-				d1, d2, d3, d4, 
-				m1, m2, m3, 
-				f1, f2, f3, 
-				sgk1, sgk2, sgk3, 
-				sd1, sd2, sd3,
-				sm1, sm2, sm3,
-				sf1, sf2, sf3);
-
-		players.forEach(entityManager::persist);
-
-		// Contracts, FantaTeam and Match
-		Set<Contract> contracts = new HashSet<Contract>();
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, contracts);
-		players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
-
-		entityManager.persist(team);
-
-		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
-		entityManager.persist(opponent);
-
-		Match match = new Match(matchDay, team, opponent);
-		entityManager.persist(match);
-
-		LineUp lineUp = LineUp.build()
-				.forTeam(team)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(d1, d2, d3, d4)
-						.withMidfielders(m1, m2, m3)
-						.withForwards(f1, f2, f3))
-				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
-				.withSubstituteDefenders(sd1, sd2, sd3)
-				.withSubstituteMidfielders(sm1, sm2, sm3)
-				.withSubstituteForwards(sf1, sf2, sf3);
-		entityManager.persist(lineUp);
-	    entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // Verify it exists
-	    Optional<LineUp> beforeDelete = lineUpRepository.getLineUpByMatchAndTeam(match, team);
-	    assertThat(beforeDelete).isPresent();
-
-	    // Delete
-	    entityManager.getTransaction().begin();
-	    lineUpRepository.deleteLineUp(lineUp);
-	    entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // Verify it is gone
-	    Optional<LineUp> afterDelete = lineUpRepository.getLineUpByMatchAndTeam(match, team);
-	    assertThat(afterDelete).isEmpty();
-	}
-
 	
-	@Test
-	@DisplayName("saveLineUp should persist a LineUp correctly")
-	void testSaveLineUpPersistsCorrectly() {
-		entityManager.getTransaction().begin();
+	@Nested
+	@DisplayName("given a LineUp instance is ready to be persisted")
+	class LineUpReadyForPersisting {			
 		
-		// Players
-		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
+		private FantaTeam team;
+		private Match match;
+		private LineUp readyToBePersisted;
 
-		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
-		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
-		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
-		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+		@BeforeEach
+		void prepareLineUpInstance() {
+			
+			// GIVEN a LineUp's ancillary entities are instantiated
+			Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
+			
+			Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+			Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+			Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+			Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+			
+			Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+			Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+			Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+			
+			Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+			Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+			Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
+			
+			Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+			Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+			Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+			
+			Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+			Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+			Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+			
+			Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+			Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+			Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+			
+			Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+			Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+			Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+			
+			List<Player> players = List.of(
+					gk1, 
+					d1, d2, d3, d4, 
+					m1, m2, m3, 
+					f1, f2, f3, 
+					sgk1, sgk2, sgk3, 
+					sd1, sd2, sd3,
+					sm1, sm2, sm3,
+					sf1, sf2, sf3);
+			
+			Set<Contract> contracts = new HashSet<Contract>();
+			team = new FantaTeam("Dream Team", league, 30, manager, contracts);
+			players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
+			
+			match = new Match(matchDay, team, opponent);
+			
+			// AND a LineUp's ancillary entities are persisted
+			sessionFactory.inTransaction(em -> {
+				players.forEach(em::persist);
+				em.persist(team);  // relies on cascading for Contracts
+				em.persist(match);
+			});
+			
+			// AND a LineUp instance is assembled, ready to be persisted
+			readyToBePersisted = LineUp.build()
+					.forTeam(team)
+					.inMatch(match)
+					.withStarterLineUp(Scheme433.starterLineUp()
+							.withGoalkeeper(gk1)
+							.withDefenders(d1, d2, d3, d4)
+							.withMidfielders(m1, m2, m3)
+							.withForwards(f1, f2, f3))
+					.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+					.withSubstituteDefenders(sd1, sd2, sd3)
+					.withSubstituteMidfielders(sm1, sm2, sm3)
+					.withSubstituteForwards(sf1, sf2, sf3);
+		}
 
-		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
-		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
-		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+		@Test
+		@DisplayName("deleteLineUp removes the LineUp by match and team")
+		void testDeleteLineUpRemovesCorrectly() {
+			
+			// GIVEN a LineUp instance is persisted
+			sessionFactory.inTransaction(em -> em.persist(readyToBePersisted));
+			
+			// AND the LineUp is confirmed to have been persisted
+			sessionFactory.inTransaction(
+					em -> assertThat(em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
+							.setParameter("match", match).setParameter("team", team).getResultStream().findFirst())
+					.isPresent());
+			
+			// WHEN the SUT is used to delete the LineUp
+			entityManager.getTransaction().begin();
+			lineUpRepository.deleteLineUp(readyToBePersisted);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the LineUp is removed from the persistence unit
+			assertThat(sessionFactory.fromTransaction(
+					(Session em) -> em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
+					.setParameter("match", match).setParameter("team", team).getResultStream().findFirst()))
+			.isEmpty();
+		}
 
-		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
-		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
-		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
 
-		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+		@Test
+		@DisplayName("saveLineUp persists a LineUp correctly")
+		void testSaveLineUpPersistsCorrectly() {
 
-		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
-		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
-		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+			// GIVEN a LineUp instance is assembled
+			
+			// WHEN the SUT is used to persist it		
+			entityManager.getTransaction().begin();
+			lineUpRepository.saveLineUp(readyToBePersisted);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the LineUp is actually saved to the persistence unit
+			assertThat(
+					sessionFactory.fromTransaction((Session em) -> em
+							.createQuery(
+									"SELECT DISTINCT l FROM LineUp l " + "JOIN FETCH l.match "
+											+ "LEFT JOIN FETCH l.fieldings " + "WHERE l.match = :match AND l.team = :team",
+											LineUp.class)
+							.setParameter("match", match).setParameter("team", team).getResultStream().findFirst()))
+			.isPresent().hasValueSatisfying(readyToBePersisted::recursiveEquals);
+		}
+		
+		@Test
+		@DisplayName("getLineUpByMatchAndTeam retrieves a saved LineUp correctly")
+		void testGetLineUpByMatchAndTeamRetrievesCorrectly() {	
+			
+			// GIVEN a LineUp instance is persisted
+			sessionFactory.inTransaction(em -> em.persist(readyToBePersisted));
+			
+			// WHEN the SUT is used to retrieve a LineUp
+			entityManager.getTransaction().begin();
+			Optional<LineUp> retrieved = lineUpRepository.getLineUpByMatchAndTeam(match, team);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the retrieved LineUp is equal to that persisted
+			assertThat(retrieved).isPresent().hasValueSatisfying(readyToBePersisted::recursiveEquals);
+		}
 
-		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
-		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
-		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
-
-		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
-		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
-		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
-
-		List<Player> players = List.of(
-				gk1, 
-				d1, d2, d3, d4, 
-				m1, m2, m3, 
-				f1, f2, f3, 
-				sgk1, sgk2, sgk3, 
-				sd1, sd2, sd3,
-				sm1, sm2, sm3,
-				sf1, sf2, sf3);
-
-		players.forEach(entityManager::persist);
-
-		// Contracts, FantaTeam and Match
-		Set<Contract> contracts = new HashSet<Contract>();
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, contracts);
-		players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
-
-		entityManager.persist(team);
-
-		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
-		entityManager.persist(opponent);
-
-		Match match = new Match(matchDay, team, opponent);
-		entityManager.persist(match);
-
-		// Build LineUp with starters and substitutes, save and commit
-		lineUpRepository.saveLineUp(LineUp.build()
-				.forTeam(team)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(d1, d2, d3, d4)
-						.withMidfielders(m1, m2, m3)
-						.withForwards(f1, f2, f3))
-				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
-				.withSubstituteDefenders(sd1, sd2, sd3)
-				.withSubstituteMidfielders(sm1, sm2, sm3)
-				.withSubstituteForwards(sf1, sf2, sf3));
-		entityManager.getTransaction().commit();
-		entityManager.clear();
-
-		// Assert
-		sessionFactory.inTransaction((Session em) -> {
-			Optional<LineUp> result = em
-					.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
-					.setParameter("match", match).setParameter("team", team).getResultStream().findFirst();
-
-			assertThat(result).isPresent();
-			LineUp found = result.get();
-			assertThat(found.getTeam()).isEqualTo(team);
-			assertThat(found.getMatch()).isEqualTo(match);
-		});
-
+		@Test
+		@DisplayName("getLineUpByMatchAndTeam returns empty if no lineup exists")
+		void testGetLineUpByMatchAndTeamEmpty() {		
+			
+			// GIVEN a LineUp instance is assembled, but not persisted
+			
+			// WHEN the SUT is used to retrieve a non-existent LineUp
+			entityManager.getTransaction().begin();
+			Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(match, team);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the SUT confirms the LineUp being looked up does not exist
+			assertThat(result).isEmpty();
+		}
 	}
-
-	@Test
-	@DisplayName("getLineUpByMatchAndTeam should retrieve a saved LineUp correctly")
-	void testGetLineUpByMatchAndTeamRetrievesCorrectly() {
-		entityManager.getTransaction().begin();
-
-		// Players
-		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
-
-		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
-		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
-		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
-		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
-
-		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
-		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
-		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
-
-		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
-		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
-		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
-
-		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
-		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
-
-		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
-		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
-		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
-
-		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
-		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
-		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
-
-		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
-		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
-		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
-
-		List<Player> players = List.of(
-				gk1, 
-				d1, d2, d3, d4, 
-				m1, m2, m3, 
-				f1, f2, f3, 
-				sgk1, sgk2, sgk3, 
-				sd1, sd2, sd3,
-				sm1, sm2, sm3,
-				sf1, sf2, sf3);
-
-		players.forEach(entityManager::persist);
-
-		// Contracts, FantaTeam and Match
-		Set<Contract> contracts = new HashSet<Contract>();
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, contracts);
-		players.stream().map(p -> new Contract(team, p)).forEach(contracts::add);
-
-		entityManager.persist(team);
-
-		Match match = new Match(matchDay, team, opponent);
-		entityManager.persist(match);
-
-		LineUp lineUp = LineUp.build()
-				.forTeam(team)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(d1, d2, d3, d4)
-						.withMidfielders(m1, m2, m3)
-						.withForwards(f1, f2, f3))
-				.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
-				.withSubstituteDefenders(sd1, sd2, sd3)
-				.withSubstituteMidfielders(sm1, sm2, sm3)
-				.withSubstituteForwards(sf1, sf2, sf3);
-				
-		// Build LineUp with starters and substitutes, save and commit
-		entityManager.persist(lineUp);
-		entityManager.getTransaction().commit();
-		entityManager.clear(); // the Session is not closed! SUT instance is still used for verifications
-
-		// Verify
-		Optional<LineUp> retrieved = lineUpRepository.getLineUpByMatchAndTeam(match, team);
-		assertThat(retrieved).isPresent();
-
-		LineUp persistedLineUp = retrieved.get();
-		assertThat(persistedLineUp.getTeam()).isEqualTo(team);
-		assertThat(persistedLineUp.getMatch()).isEqualTo(match);
-		assertThat(persistedLineUp.getMatch()).isEqualTo(match);
-		assertThat(persistedLineUp.getTeam()).isEqualTo(team);
-
-		assertThat(persistedLineUp.extract().starterGoalkeepers()).containsExactly(gk1);
-		assertThat(persistedLineUp.extract().starterDefenders()).containsExactlyInAnyOrder(d1, d2, d3, d4);
-		assertThat(persistedLineUp.extract().starterMidfielders()).containsExactlyInAnyOrder(m1, m2, m3);
-		assertThat(persistedLineUp.extract().starterForwards()).containsExactlyInAnyOrder(f1, f2, f3);
-
-		assertThat(persistedLineUp.extract().substituteGoalkeepers()).containsExactly(sgk1, sgk2, sgk3);
-		assertThat(persistedLineUp.extract().substituteDefenders()).containsExactly(sd1, sd2, sd3);
-		assertThat(persistedLineUp.extract().substituteMidfielders()).containsExactly(sm1, sm2, sm3);
-		assertThat(persistedLineUp.extract().substituteForwards()).containsExactly(sf1, sf2, sf3);
-	}
-
-	@Test
-	@DisplayName("getLineUpByMatchAndTeam should return empty if no lineup exists")
-	void testGetLineUpByMatchAndTeamEmpty() {
-		entityManager.getTransaction().begin();
-
-		// FantaTeam and Match
-		FantaTeam team = new FantaTeam("Dream Team", league, 30, manager, new HashSet<Contract>());
-		entityManager.persist(team);
-
-		Match match = new Match(matchDay, team, opponent);
-		entityManager.persist(match);
-
-		entityManager.getTransaction().commit();
-
-		Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(match, team);
-		assertThat(result).isEmpty();
-	}
-
 }

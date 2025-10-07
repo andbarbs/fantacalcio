@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import domainModel.scheme.Scheme433;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -103,6 +104,8 @@ class UserServiceIntegrationTest {
 					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
+					.addAnnotatedClass(Fielding.StarterFielding.class)
+					.addAnnotatedClass(Fielding.SubstituteFielding.class)
 					.addAnnotatedClass(LineUp.class)
 					.addAnnotatedClass(Result.class)
 					.addAnnotatedClass(Grade.class)
@@ -116,7 +119,6 @@ class UserServiceIntegrationTest {
 		} catch (Throwable ex) {
 			throw new ExceptionInInitializerError(ex);
 		}
-
 	}
 
 	@BeforeEach
@@ -285,6 +287,7 @@ class UserServiceIntegrationTest {
 		matchRepository.saveMatch(match);		
 		
 		entityManager.getTransaction().commit();
+		entityManager.clear();
 
 		// LineUp
 		LineUp lineUp = LineUp.build()
@@ -302,13 +305,8 @@ class UserServiceIntegrationTest {
 
 		userService.saveLineUp(lineUp);
 
-		Optional<LineUp> result = lineUpRepository.getLineUpByMatchAndTeam(match, team);
-		assertThat(result).isPresent();
-
-		LineUp resultLineUp = result.get();
-		assertThat(resultLineUp.getMatch()).isEqualTo(match);
-		assertThat(resultLineUp.getTeam()).isEqualTo(team);
-
+		assertThat(lineUpRepository.getLineUpByMatchAndTeam(match, team)).isPresent()
+				.hasValueSatisfying(lineUp::recursiveEquals);
 	}
 
 	@Test

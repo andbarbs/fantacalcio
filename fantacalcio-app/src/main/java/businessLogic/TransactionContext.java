@@ -1,10 +1,8 @@
 package businessLogic;
 
 import businessLogic.repositories.*;
-import jakarta.persistence.EntityManagerFactory;
 
 public class TransactionContext {
-	private final EntityManagerFactory entityManagerFactory;
 	private final LeagueRepository leagueRepository;
 	private final MatchRepository matchRepository;
 	private final PlayerRepository playerRepository;
@@ -19,14 +17,13 @@ public class TransactionContext {
 	private final NewsPaperRepository newspaperRepository;
 	private final FantaUserRepository fantaUserRepository;
 
-	public TransactionContext(EntityManagerFactory entityManagerFactory, LeagueRepository leagueRepository,
+	public TransactionContext(LeagueRepository leagueRepository,
 							  MatchRepository matchRepository, PlayerRepository playerRepository,
 							  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 							  ProposalRepository proposalRepository, ContractRepository contractRepository,
 							  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
 							  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository,
 							  NewsPaperRepository newspaperRepository, FantaUserRepository fantaUserRepository) {
-		this.entityManagerFactory = entityManagerFactory;
 		this.leagueRepository = leagueRepository;
 		this.matchRepository = matchRepository;
 		this.playerRepository = playerRepository;
@@ -41,10 +38,6 @@ public class TransactionContext {
 		this.newspaperRepository = newspaperRepository;
 		this.fantaUserRepository = fantaUserRepository;
 		
-	}
-
-	public EntityManagerFactory getEntityManagerFactory() {
-		return entityManagerFactory;
 	}
 
 	public LeagueRepository getLeagueRepository() {

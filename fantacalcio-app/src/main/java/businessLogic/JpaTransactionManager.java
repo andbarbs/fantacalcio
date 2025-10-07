@@ -32,16 +32,23 @@ public class JpaTransactionManager implements TransactionManager {
 	public <T> T fromTransaction(Function<TransactionContext, T> code) {
 
 		EntityManager em = emFactory.createEntityManager();
-		TransactionContext context = new TransactionContext(emFactory, new JpaLeagueRepository(em),
-				new JpaMatchRepository(em), new JpaPlayerRepository(em), new JpaFantaTeamRepository(em),
-				new JpaGradeRepository(em), new JpaProposalRepository(em), new JpaContractRepository(em),
-				new JpaResultsRepository(em), new JpaFieldingRepository(em), new JpaLineUpRepository(em),
-				new JpaMatchDayRepository(em), new JpaNewsPaperRepository(em), new JpaFantaUserRepository(em));
-
 		EntityTransaction transaction = em.getTransaction();
 		try {
 			transaction.begin();
-			T result = code.apply(context);
+			T result = code.apply(new TransactionContext(
+										new JpaLeagueRepository(em), 
+										new JpaMatchRepository(em),
+										new JpaPlayerRepository(em), 
+										new JpaFantaTeamRepository(em), 
+										new JpaGradeRepository(em),
+										new JpaProposalRepository(em), 
+										new JpaContractRepository(em), 
+										new JpaResultsRepository(em),
+										new JpaFieldingRepository(em), 
+										new JpaLineUpRepository(em), 
+										new JpaMatchDayRepository(em),
+										new JpaNewsPaperRepository(em), 
+										new JpaFantaUserRepository(em)));
 			transaction.commit();
 			return result;
 		} catch (Exception e) {

@@ -255,10 +255,11 @@ public class UserService {
 				}
 			}
 
-			if (getLineUpByMatch(match, team).isPresent())
-				context.getLineUpRepository().deleteLineUp(lineUp);
+			context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)
+					.ifPresent(lineup -> context.getLineUpRepository().deleteLineUp(lineup));
 
 			context.getLineUpRepository().saveLineUp(lineUp);
+			System.out.println("cuccessfully called Repository.saveLineUp  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		});
 	}
 

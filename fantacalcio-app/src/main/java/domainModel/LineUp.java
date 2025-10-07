@@ -18,12 +18,9 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 
-// coincides with ThreePositionLineUp by definition of the game
-
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {LineUp_.MATCH, LineUp_.TEAM}))
 public class LineUp {
-    // public static enum Module{_343, _433, _352}
 	
 	@Convert(converter = Scheme.SchemeConverter.class)
 	private Scheme scheme;
@@ -44,13 +41,6 @@ public class LineUp {
     private Set<Fielding> fieldings;
 
     protected LineUp() {}
-    
-    LineUp(Scheme scheme, Match match, FantaTeam team, Set<Fielding> fieldings) {
-		this.scheme = scheme;
-		this.match = match;
-		this.team = team;
-		this.fieldings = fieldings;
-	}
 
 	// getters
     
@@ -77,14 +67,14 @@ public class LineUp {
     
     /*
 	 * equals and hashCode do not include the fielding attribute to avoid infinite recursion
-	 *   > this would feel better if there was a unique constraint on LineUp.(match, team)
+	 *   > this feels better given the unique constraint on LineUp.(match, team)
 	 *   > an alternative solution would be: requiring lineUp == other.lineUp in Fielding.equals(),
 	 *     and excluding lineUp from Fielding.hashCode?
 	 */
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(match);
+		return Objects.hash(match, team);
 	}
 
 	@Override
@@ -96,7 +86,19 @@ public class LineUp {
 		if (getClass() != obj.getClass())
 			return false;
 		LineUp other = (LineUp) obj;
-		return Objects.equals(match, other.match);
+		return Objects.equals(match, other.match) && Objects.equals(team, other.team);
+	}
+	
+	public boolean recursiveEquals(LineUp other) {
+		return this.equals(other)
+				&& Objects.equals(scheme, other.scheme)
+				&& Objects.equals(extract().starterGoalkeepers(), other.extract().starterGoalkeepers())
+				&& Objects.equals(extract().starterDefenders(), other.extract().starterDefenders())
+				&& Objects.equals(extract().starterMidfielders(), other.extract().starterMidfielders())
+				&& Objects.equals(extract().substituteGoalkeepers(), other.extract().substituteGoalkeepers())
+				&& Objects.equals(extract().substituteDefenders(), other.extract().substituteDefenders())
+				&& Objects.equals(extract().substituteMidfielders(), other.extract().substituteMidfielders())
+				&& Objects.equals(extract().substituteForwards(), other.extract().substituteForwards());
 	}
 	
 	public static LineUpBuilderSteps.ReadyForTeam build() {
