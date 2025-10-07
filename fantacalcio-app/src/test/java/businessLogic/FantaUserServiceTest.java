@@ -1,5 +1,6 @@
 package businessLogic;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -9,6 +10,7 @@ import businessLogic.repositories.*;
 
 import jakarta.persistence.EntityManager;
 
+@Tag("mockito-agent")
 @ExtendWith(MockitoExtension.class)
 public class FantaUserServiceTest {
 

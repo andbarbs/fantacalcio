@@ -49,7 +49,8 @@ import gui.utils.schemes.SpringSchemePanel;
 @DisplayName("A SwingStarterLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
-public class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
+@Tag("mockito-agent")
+class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 	
 	// private constants simulate Singletons
 	private static final Scheme scheme123 = new Scheme(1, 2, 3) {

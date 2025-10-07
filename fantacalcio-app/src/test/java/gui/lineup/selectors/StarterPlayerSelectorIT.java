@@ -34,6 +34,7 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @DisplayName("Starter Player Selector: MVP Presenter + View integration test")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
+@Tag("mockito-agent")
 public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
     private static final Defender chiellini = new Defender("Giorgio", "Chiellini", Player.Club.ATALANTA);

@@ -55,7 +55,7 @@ import jpaRepositories.JpaMatchRepository;
 import jpaRepositories.JpaNewsPaperRepository;
 import jpaRepositories.JpaPlayerRepository;
 
-class AdminUserServiceIntegrationTest {
+class AdminUserServiceIntegrationIT {
 
 	private static SessionFactory sessionFactory;
 	private AdminUserService adminUserService;

@@ -27,7 +27,8 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @DisplayName("A SwingFillableSwappableTriplet")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
-public class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase {
+@Tag("mockito-agent")
+class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase {
 	
 	private JPanel fakeWidget1, fakeWidget2, fakeWidget3;
 

@@ -26,7 +26,8 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @DisplayName("SwingSubPlayerSelector: MVP-View unit test")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
-public class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
+@Tag("mockito-agent")
+class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 
 	@Mock
     private OrderedDealerPresenter<Defender> selectorPresenter;

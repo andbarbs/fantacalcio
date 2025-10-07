@@ -32,7 +32,7 @@ import gui.utils.TypedJComboBoxFixture;
  */
 @DisplayName("SubstituteSelectorTriplet: MVP View + Presenter IT")
 @Tag("non-JPMS-compliant")
-public class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
+class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
     
 	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
 	private JButtonFixture reset1, reset2, reset3;

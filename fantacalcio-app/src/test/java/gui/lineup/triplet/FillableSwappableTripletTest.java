@@ -14,6 +14,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,7 +30,8 @@ import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceLi
 
 @DisplayName("A FillableSwappableTriplet")
 @ExtendWith(MockitoExtension.class)
-public class FillableSwappableTripletTest {
+@Tag("mockito-agent")
+class FillableSwappableTripletTest {
 	
 	// horizontal dependencies
 	private @Mock SubstituteSelectorDelegate<Defender> mockFillable1, mockFillable2, mockFillable3;

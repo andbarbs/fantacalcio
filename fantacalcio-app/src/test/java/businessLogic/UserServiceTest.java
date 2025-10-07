@@ -9,6 +9,7 @@ import java.util.function.Function;
 import domainModel.*;
 import domainModel.scheme.Scheme433;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import businessLogic.repositories.*;
 
@@ -20,6 +21,7 @@ import domainModel.Player.Forward;
 import domainModel.Player.Goalkeeper;
 import domainModel.Player.Midfielder;
 
+@Tag("mockito-agent")
 public class UserServiceTest {
 
 	private MatchRepository matchRepository;

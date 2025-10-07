@@ -28,6 +28,7 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @DisplayName("A SwingLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
+@Tag("mockito-agent")
 public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 	
 	// injected Widget refs

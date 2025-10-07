@@ -14,6 +14,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -23,8 +24,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import gui.lineup.sequence.FillableSwappableSequence.FillableSwappable;
 import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceListener;
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("A FillableSwappableSequence")
+@ExtendWith(MockitoExtension.class)
+@Tag("mockito-agent")
 class FillableSwappableSequenceTest {
 
 	/**

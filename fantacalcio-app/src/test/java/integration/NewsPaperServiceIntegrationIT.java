@@ -38,7 +38,7 @@ import jpaRepositories.JpaMatchRepository;
 import jpaRepositories.JpaNewsPaperRepository;
 import jpaRepositories.JpaPlayerRepository;
 
-public class NewsPaperServiceIntegrationTest {
+public class NewsPaperServiceIntegrationIT {
 
 	private static SessionFactory sessionFactory;
 	private JpaTransactionManager transactionManager;

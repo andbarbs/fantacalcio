@@ -63,7 +63,7 @@ import jpaRepositories.JpaPlayerRepository;
 import jpaRepositories.JpaProposalRepository;
 import jpaRepositories.JpaResultsRepository;
 
-class UserServiceIntegrationTest {
+class UserServiceIntegrationIT {
 
 	private static SessionFactory sessionFactory;
 	private UserService userService;

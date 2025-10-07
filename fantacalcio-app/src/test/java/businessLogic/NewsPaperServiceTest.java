@@ -2,6 +2,7 @@ package businessLogic;
 
 import domainModel.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import businessLogic.repositories.GradeRepository;
 import businessLogic.repositories.MatchDayRepository;
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@Tag("mockito-agent")
 class NewsPaperServiceTest {
 
 	private TransactionManager transactionManager;

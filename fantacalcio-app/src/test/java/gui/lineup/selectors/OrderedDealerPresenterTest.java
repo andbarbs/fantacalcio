@@ -3,6 +3,7 @@ package gui.lineup.selectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,9 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("An OrderedDealerPresenter")
-public class OrderedDealerPresenterTest {
+@ExtendWith(MockitoExtension.class)
+@Tag("mockito-agent")
+class OrderedDealerPresenterTest {
 
 	/**
 	 * a test-specific concrete inheritor of {@link OrderedDealerPresenter}

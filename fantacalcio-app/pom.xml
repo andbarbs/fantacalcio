@@ -15,6 +15,13 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<mockito.version>5.19.0</mockito.version>
+		<mockito.agent.arg>-javaagent:${mockito.agent.path}</mockito.agent.arg>
+		<assertj.swing.args>
+			--add-opens java.base/java.util=ALL-UNNAMED
+			--add-opens java.base/java.lang=ALL-UNNAMED
+			--add-opens java.desktop/java.awt=ALL-UNNAMED
+			--add-opens java.desktop/javax.swing=ALL-UNNAMED
+		</assertj.swing.args>
 	</properties>
 
 	<dependencyManagement>
@@ -85,7 +92,7 @@
 			<version>[2.1.212,)</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- Depends on the API to use the annotation -->
 		<dependency>
 			<groupId>com.fantacalcio.app</groupId>
@@ -194,87 +201,118 @@
 			        </execution>
 			    </executions>
 			</plugin>
+
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-surefire-plugin</artifactId>
-			    <version>3.2.5</version>
-			    <executions>
-			        <!-- explicitly disables the default execution -->
-			        <execution>
-			            <id>default-test</id>
-			            <phase>none</phase>
-			        </execution>
-			
-			        <!-- custom executions -->
-			        <execution>
-			            <id>jpms-compliant-tests</id>
-			            <goals>
-			                <goal>test</goal>
-			            </goals>
-			            <configuration>
-			                <excludedGroups>non-JPMS-compliant</excludedGroups>
-							<argLine>
-			                    -javaagent:${mockito.agent.path}
-			                </argLine>
-			            </configuration>
-			        </execution>
-			        <execution>
-			            <id>non-jpms-compliant-tests</id>
-			            <goals>
-			                <goal>test</goal>
-			            </goals>
-			            <configuration>
-			                <groups>non-JPMS-compliant</groups>
-			                <argLine>
-			                    --add-opens java.base/java.util=ALL-UNNAMED
-			                    --add-opens java.base/java.lang=ALL-UNNAMED
-			                    --add-opens java.desktop/java.awt=ALL-UNNAMED
-			                    --add-opens java.desktop/javax.swing=ALL-UNNAMED
-			                    -javaagent:${mockito.agent.path}
-			                </argLine>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version>
+				<executions>
+					<!-- Tests that require NO custom args -->
+					<execution>
+						<id>default-test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<excludedGroups>mockito-agent | non-JPMS-compliant</excludedGroups>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require ONLY the Mockito agent -->
+					<execution>
+						<id>mockito-only-test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<groups>mockito-agent &amp; !non-JPMS-compliant</groups>
+							<argLine>${mockito.agent.arg}</argLine>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require ONLY the AssertJ Swing args -->
+					<execution>
+						<id>non-JPMS-compliant-only-test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<groups>non-JPMS-compliant &amp; !mockito-agent</groups>
+							<argLine>${assertj.swing.args}</argLine>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require BOTH Mockito and AssertJ Swing args -->
+					<execution>
+						<id>mockito-and-non-JPMS-compliant-test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<groups>mockito-agent &amp; non-JPMS-compliant</groups>
+							<argLine>${mockito.agent.arg} ${assertj.swing.args}</argLine>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
-			
+
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-failsafe-plugin</artifactId>
-			    <version>3.2.5</version> <!-- Use the same version as Surefire for consistency -->
-			    <executions>
-			        <!-- This execution handles JPMS-compliant integration tests -->
-			        <execution>
-			            <id>jpms-compliant-it</id>
-			            <goals>
-			                <goal>integration-test</goal>
-			                <goal>verify</goal>
-			            </goals>
-			            <configuration>
-			                <excludedGroups>non-JPMS-compliant</excludedGroups>
-			                <argLine>
-			                    -javaagent:${mockito.agent.path}
-			                </argLine>
-			            </configuration>
-			        </execution>
-			        <!-- This execution handles non-JPMS-compliant integration tests -->
-			        <execution>
-			            <id>non-jpms-compliant-it</id>
-			            <goals>
-			                <goal>integration-test</goal>
-			                <goal>verify</goal>
-			            </goals>
-			            <configuration>
-			                <groups>non-JPMS-compliant</groups>
-			                <argLine>
-			                    --add-opens java.base/java.util=ALL-UNNAMED
-			                    --add-opens java.base/java.lang=ALL-UNNAMED
-			                    --add-opens java.desktop/java.awt=ALL-UNNAMED
-			                    --add-opens java.desktop/javax.swing=ALL-UNNAMED
-			                    -javaagent:${mockito.agent.path}
-			                </argLine>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.2.5</version> <!-- Use the same version as Surefire
+				for consistency -->
+				<executions>
+					<!-- Tests that require NO custom args -->
+					<execution>
+						<id>default-it</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<excludedGroups>mockito-agent | non-JPMS-compliant</excludedGroups>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require ONLY the Mockito agent -->
+					<execution>
+						<id>mockito-only-it</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<groups>mockito-agent &amp; !non-JPMS-compliant</groups>
+							<argLine>${mockito.agent.arg}</argLine>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require ONLY the AssertJ Swing args -->
+					<execution>
+						<id>non-jpms-compliant-only-it</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<groups>non-JPMS-compliant &amp; !mockito-agent</groups>
+							<argLine>${assertj.swing.args}</argLine>
+						</configuration>
+					</execution>
+
+					<!-- Tests that require BOTH Mockito and AssertJ Swing args -->
+					<execution>
+						<id>mockito-and-non-jpms-compliant-it</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<groups>mockito-agent &amp; non-JPMS-compliant</groups>
+							<argLine>${mockito.agent.arg} ${assertj.swing.args}</argLine>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

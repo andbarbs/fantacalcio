@@ -3,6 +3,7 @@ package businessLogic;
 import domainModel.*;
 import domainModel.scheme.Scheme433;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import businessLogic.repositories.*;
 
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Tag("mockito-agent")
 class AdminUserServiceTest {
 
 	private TransactionManager transactionManager;

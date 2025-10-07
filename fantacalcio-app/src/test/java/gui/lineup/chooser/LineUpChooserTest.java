@@ -27,6 +27,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +36,8 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+
 import businessLogic.UserService;
 import domainModel.FantaTeam;
 import domainModel.FantaTeamViewer;
@@ -56,6 +59,7 @@ import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 
 @DisplayName("A LineUpChooser")
 @ExtendWith(MockitoExtension.class)
+@Tag("mockito-agent")
 public class LineUpChooserTest {
 	
 	private static final Forward FAKE_FORWARD = new Forward(null, null, Player.Club.ATALANTA);

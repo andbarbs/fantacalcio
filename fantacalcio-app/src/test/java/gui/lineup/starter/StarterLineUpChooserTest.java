@@ -20,6 +20,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -48,7 +49,8 @@ import gui.lineup.chooser.Selector;
  */
 @DisplayName("A SwingStarterLineUpChooser")
 @ExtendWith(MockitoExtension.class)
-public class StarterLineUpChooserTest {
+@Tag("mockito-agent")
+class StarterLineUpChooserTest {
 	
 	private @Mock StarterSelectorDelegate<Goalkeeper> goalieSelector;
 	private @Mock StarterSelectorDelegate<Defender> defSel1, defSel2, defSel3;
