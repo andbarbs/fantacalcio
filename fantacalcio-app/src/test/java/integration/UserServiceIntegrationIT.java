@@ -199,7 +199,7 @@ class UserServiceIntegrationIT {
 		FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA day1 = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 7));
+		MatchDaySerieA day1 = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 7), 1);
 		matchDayRepository.saveMatchDay(day1);
 
 		Match m1 = new Match(day1, team1, team2);
@@ -229,7 +229,7 @@ class UserServiceIntegrationIT {
 		League league = new League(user, "Test League", newsPaper, "L003");
 		leagueRepository.saveLeague(league);
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1), 1); // Monday
 		matchDayRepository.saveMatchDay(matchDay);		
 
 		// Players for LineUp
@@ -328,8 +328,8 @@ class UserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team);
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", LocalDate.now().minusWeeks(1));
-		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2", LocalDate.now().plusWeeks(1));
+		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", LocalDate.now().minusWeeks(1), 1);
+		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2", LocalDate.now().plusWeeks(1), 1);
 		matchDayRepository.saveMatchDay(prevMatchDay);
 		matchDayRepository.saveMatchDay(nextMatchDay);
 

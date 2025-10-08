@@ -86,7 +86,7 @@ class JpaLineUpRepositoryTest {
 			em.persist(manager);
 			league = new League(manager, "Serie A", newsPaper, "code");
 			em.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
+			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
 			em.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			em.persist(opponent);

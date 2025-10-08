@@ -57,7 +57,7 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("saveMatch() should persist a match")
 	void testSaveMatch() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now());
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@" + "L001" + ".com", "pwd");
 		NewsPaper np = new NewsPaper("Gazzetta " + "L001");
 		League league = new League(admin, "League " + "L001", np, "L001");
@@ -94,7 +94,7 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchesByMatchDay() should return all matches of a given MatchDay")
 	void testGetAllMatchesByMatchDay() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.now());
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@" + "L002" + ".com", "pwd");
 		NewsPaper np = new NewsPaper("Gazzetta " + "L002");
 		League league = new League(admin, "League " + "L002", np, "L002");
@@ -131,7 +131,7 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should return the correct match when team is team1")
 	void testGetMatchByMatchDayWithTeam1() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD5", LocalDate.now());
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD5", LocalDate.now(), 1);
 	    FantaUser admin = new FantaUser("admin@L005.com", "pwd");
 	    NewsPaper np = new NewsPaper("Gazzetta L005");
 	    League league = new League(admin, "League L005", np, "L005");
@@ -161,7 +161,7 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should return the correct match when team is team2")
 	void testGetMatchByMatchDayWithTeam2() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD6", LocalDate.now());
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD6", LocalDate.now(), 1);
 	    FantaUser admin = new FantaUser("admin@L006.com", "pwd");
 	    NewsPaper np = new NewsPaper("Gazzetta L006");
 	    League league = new League(admin, "League L006", np, "L006");
@@ -191,7 +191,7 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should throw NoSuchElementException when no match exists")
 	void testGetMatchByMatchDayWhenNoMatchExists() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD7", LocalDate.now());
+	    MatchDaySerieA matchDay = new MatchDaySerieA("MD7", LocalDate.now(),1 );
 	    FantaUser admin = new FantaUser("admin@L007.com", "pwd");
 	    NewsPaper np = new NewsPaper("Gazzetta L007");
 	    League league = new League(admin, "League L007", np, "L007");

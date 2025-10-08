@@ -79,7 +79,7 @@ class JpaGradeRepositoryTest {
 			t.persist(newsPaper);
 			league = new League(manager, "Serie A", newsPaper, "code");
 			t.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
+			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
 			t.persist(matchDay);
 			user1 = new FantaUser("mail1", "pswd1");
 			t.persist(user1);

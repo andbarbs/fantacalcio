@@ -24,7 +24,7 @@ public class UserService {
 
 			LeagueRepository leagueRepository = context.getLeagueRepository();
 
-			final int maxFantaTeamsPerLeague = 12;
+			final int maxFantaTeamsPerLeague = 8;
 			if (leagueRepository.getAllTeams(league).size() >= maxFantaTeamsPerLeague)
 				throw new UnsupportedOperationException("Maximum 12 teams per league");
 

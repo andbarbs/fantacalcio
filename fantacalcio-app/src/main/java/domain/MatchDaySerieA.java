@@ -22,12 +22,16 @@ public class MatchDaySerieA {
 	@Basic(optional = false)
 	private LocalDate date;
 
+	@Basic(optional = false)
+	private int number;
+
 	protected MatchDaySerieA() {
 	}
 
-	public MatchDaySerieA(String name, LocalDate date) {
+	public MatchDaySerieA(String name, LocalDate date, int number) {
 		this.name = name;
 		this.date = date;
+		this.number = number;
 	}
 
 	public String getName() {
@@ -43,6 +47,11 @@ public class MatchDaySerieA {
 		return Objects.hash(date, name);
 	}
 
+	public int getNumber() {
+		return number;
+	}
+
+	//TODO aggiungere number nell'equals e aggiustare test se necessario
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

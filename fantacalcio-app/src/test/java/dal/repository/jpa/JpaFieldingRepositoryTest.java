@@ -90,7 +90,7 @@ class JpaFieldingRepositoryTest {
 			t.persist(newsPaper);
 			league = new League(manager, "Serie A", newsPaper, "code");
 			t.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19));
+			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
 			t.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			t.persist(opponent);

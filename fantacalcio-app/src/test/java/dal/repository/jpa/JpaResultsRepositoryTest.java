@@ -57,7 +57,7 @@ class JpaResultsRepositoryTest {
 		// Minimal setup for a Match and related entities
 		entityManager.getTransaction().begin();
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now());
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@l001.com", "pwd");
 		NewsPaper np = new NewsPaper("Gazzetta L001");
 		League league = new League(admin, "League L001", np, "L001");

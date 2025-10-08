@@ -197,7 +197,7 @@ class AdminUserServiceIntegrationIT {
 
 		List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
 		for (int i = 0; i < 38; i++) {
-			matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i)));
+			matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i), 1));
 		}
 
 		sessionFactory.inTransaction(t -> {
@@ -244,8 +244,8 @@ class AdminUserServiceIntegrationIT {
 
 		// MatchDays
 		LocalDate matchDate = LocalDate.of(2025, 9, 14);
-		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1));
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate);
+		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1),1 );
+		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate, 1);
 
 		entityManager.persist(prevDay);
 		entityManager.persist(dayToCalc);

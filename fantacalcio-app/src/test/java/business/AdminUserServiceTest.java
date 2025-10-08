@@ -30,6 +30,7 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -293,6 +294,18 @@ class AdminUserServiceTest {
 	 * 
 	 * Per ArgumentCaptor, sono usati ad es in {@link LineUpChooserTest}	
 	 */
+
+	private String pairKey(FantaTeam home, FantaTeam away) {
+		return home.getName() + "-" + away.getName();
+	}
+
+	private List<Match> getMatchesInRange(List<Match> all, int from, int to) {
+		return all.stream()
+				.filter(m -> m.getMatchDaySerieA().getNumber() >= from
+						&& m.getMatchDaySerieA().getNumber() <= to)
+				.toList();
+	}
+
 	@Test
 	void testGenerateCalendar_SavesMatches() {
 		FantaUser admin = new FantaUser(null, null);
@@ -303,12 +316,16 @@ class AdminUserServiceTest {
 		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
 		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
 		FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
-		List<FantaTeam> teams = List.of(team1, team2, team3, team4);
+		FantaTeam team5 = new FantaTeam("Team5", null, 0, null, new HashSet<>());
+		FantaTeam team6 = new FantaTeam("Team6", null, 0, null, new HashSet<>());
+		FantaTeam team7 = new FantaTeam("Team7", null, 0, null, new HashSet<>());
+		FantaTeam team8 = new FantaTeam("Team8", null, 0, null, new HashSet<>());
+		List<FantaTeam> teams = List.of(team1, team2, team3, team4, team5, team6, team7, team8);
 
 		// 38 match days (real objects are okay)
 		List<MatchDaySerieA> matchDays = new ArrayList<>();
-		for (int i = 0; i < 38; i++)
-			matchDays.add(new MatchDaySerieA("match", LocalDate.now()));
+		for (int i = 0; i < 20; i++)
+			matchDays.add(new MatchDaySerieA("match", LocalDate.now().plusDays(i), i));
 
 		// Mock repositories
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
@@ -316,8 +333,68 @@ class AdminUserServiceTest {
 
 		adminUserService.generateCalendar(league);
 
-		verify(matchRepository, atLeastOnce()).saveMatch(any(Match.class));
+		ArgumentCaptor<Match> matchCaptor = ArgumentCaptor.forClass(Match.class);
+		verify(matchRepository, times(80)).saveMatch(matchCaptor.capture());
+		verifyNoMoreInteractions(matchRepository);
+
+		List<Match> allMatches = matchCaptor.getAllValues();
+		assertEquals(20 * 4, allMatches.size(), "Devono esserci 80 match (4 per giornata × 20 giornate)");
+
+		Map<Integer, List<Match>> matchesByDay = new HashMap<>();
+		for (Match m : allMatches) {
+			int n = m.getMatchDaySerieA().getNumber();
+			matchesByDay.computeIfAbsent(n, k -> new ArrayList<>()).add(m);
+		}
+
+		for (var entry : matchesByDay.entrySet()) {
+			int giornata = entry.getKey();
+			List<FantaTeam> teamsInDay = new ArrayList<>();
+			for (Match m : entry.getValue()) {
+				assertNotEquals(m.getTeam1(), m.getTeam2(), "Un team non può giocare contro sé stesso");
+				teamsInDay.add(m.getTeam1());
+				teamsInDay.add(m.getTeam2());
+			}
+			assertEquals(8, new HashSet<>(teamsInDay).size(),
+					"Giornata " + giornata + ": ogni team deve giocare una sola volta");
+		}
+
+		List<Match> andata = getMatchesInRange(allMatches, 1, 7);
+		List<Match> ritorno = getMatchesInRange(allMatches, 8, 14);
+		List<Match> nuovaAndata = getMatchesInRange(allMatches, 15, 20);
+
+		// --- ANDATA ---
+		Set<String> coppieAndata = new HashSet<>();
+		for (Match m : andata) {
+			coppieAndata.add(pairKey(m.getTeam1(), m.getTeam2()));
+		}
+
+		// --- RITORNO (invertito rispetto all’andata) ---
+		Set<String> coppieRitorno = new HashSet<>();
+		for (Match m : ritorno) {
+			coppieRitorno.add(pairKey(m.getTeam2(), m.getTeam1())); // invertite
+		}
+
+		for (String coppia : coppieAndata) {
+			assertTrue(coppieRitorno.contains(coppia),
+					"La coppia " + coppia + " dell’andata non ha ritorno invertito corrispondente");
+		}
+
+		// --- NUOVA ANDATA (giornate 15–20) ---
+		Set<String> coppieNuovaAndata = new HashSet<>();
+		for (Match m : nuovaAndata) {
+			coppieNuovaAndata.add(pairKey(m.getTeam1(), m.getTeam2()));
+		}
+
+		// Devono esserci le stesse coppie dell’andata originale (stesso verso)
+		for (String coppia : coppieNuovaAndata) {
+			assertTrue(coppieAndata.contains(coppia),
+					"La coppia " + coppia + " nella nuova andata non esisteva nella prima andata");
+		}
+
+		// Verifica numero totale giornate
+		assertEquals(20, matchesByDay.size(), "Devono esserci 20 giornate generate");
 	}
+
 
 	@Test
 	void testGenerateCalendar_LessThanTwoTeams_Throws() {
@@ -410,7 +487,7 @@ class AdminUserServiceTest {
 		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
 
 		FantaTeam[] match = new FantaTeam[] { t1, t2 };
-		List<MatchDaySerieA> matchDays = List.of(new MatchDaySerieA(null, null));
+		List<MatchDaySerieA> matchDays = List.of(new MatchDaySerieA(null, null, 1));
 
 		List<FantaTeam[]> round = new ArrayList<>();
 		round.add(match);
@@ -490,7 +567,7 @@ class AdminUserServiceTest {
 		League league = new League(admin, "league", newspaper, "12345");
 
 		// Create a previous match day so that the "season started" check passes
-		MatchDaySerieA previousMatchDay = new MatchDaySerieA(null, null);
+		MatchDaySerieA previousMatchDay = new MatchDaySerieA(null, null, 1);
 		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
 
 		// Set up a match day to calculate with at least one match
@@ -607,7 +684,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(saturday))
-				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday, 1)));
 
 		// Override today() to return the Saturday we want to test
 		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
@@ -634,7 +711,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(saturday))
-				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday, 1)));
 
 		// Override today() to return the Saturday we want to test
 		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
@@ -645,7 +722,7 @@ class AdminUserServiceTest {
 		};
 
 		when(serviceWithSaturday.getNextMatchDayToCalculate(saturday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDaySerieA(null, saturday)));
+				.thenReturn(Optional.of(new MatchDaySerieA(null, saturday, 1)));
 
 		assertThatThrownBy(() -> serviceWithSaturday.calculateGrades(admin, league))
 				.isInstanceOf(RuntimeException.class).hasMessageContaining("The matches are not finished yet");
@@ -661,7 +738,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(sunday))
-				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday)));
+				.thenReturn(Optional.of(new MatchDaySerieA("", previousSaturday, 1)));
 
 		AdminUserService serviceWithSunday = new AdminUserService(transactionManager) {
 			@Override
@@ -671,7 +748,7 @@ class AdminUserServiceTest {
 		};
 
 		when(serviceWithSunday.getNextMatchDayToCalculate(sunday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDaySerieA(null, sunday)));
+				.thenReturn(Optional.of(new MatchDaySerieA(null, sunday, 1)));
 
 		assertThatThrownBy(() -> serviceWithSunday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The matches are not finished yet");
@@ -686,7 +763,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 
 		when(league.getAdmin()).thenReturn(admin);
-		when(matchDayRepository.getPreviousMatchDay(monday)).thenReturn(Optional.of(new MatchDaySerieA("", sunday)));
+		when(matchDayRepository.getPreviousMatchDay(monday)).thenReturn(Optional.of(new MatchDaySerieA("", sunday, 1)));
 
 		AdminUserService serviceWithMonday = new AdminUserService(transactionManager) {
 			@Override
@@ -696,7 +773,7 @@ class AdminUserServiceTest {
 		};
 
 		when(serviceWithMonday.getNextMatchDayToCalculate(monday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDaySerieA(null, monday)));
+				.thenReturn(Optional.of(new MatchDaySerieA(null, monday, 1)));
 
 		assertThatThrownBy(() -> serviceWithMonday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The matches are not finished yet");
@@ -710,8 +787,8 @@ class AdminUserServiceTest {
 		League league = new League(admin, "Serie A", newspaper, "1234");
 
 		LocalDate matchDate = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1));
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate);
+		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1), 1);
+		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate,1 );
 
 		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(prevDay));
 
@@ -831,3 +908,4 @@ class AdminUserServiceTest {
 	}
 
 }
+// --- Helper methods ---

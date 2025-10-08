@@ -83,14 +83,14 @@ class JpaMatchDayRepositoryTest {
 	public void testGetAllMatchDaysWhenTwoMatchDaysExist() {
 		
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)));
-			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19)));
+			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12), 1));
+			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19), 2));
 		});
 
 		EntityManager repositorySession = sessionFactory.createEntityManager();
 		assertThat(matchDayRepository.getAllMatchDays()).containsExactly(
-				new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)),
-				new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19)));
+				new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12), 1),
+				new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19), 2));
 		repositorySession.close();
 	}
 
@@ -101,7 +101,7 @@ class JpaMatchDayRepositoryTest {
 		LocalDate matchDate = LocalDate.of(2020, 1, 12);
 
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", matchDate));
+			session.persist(new MatchDaySerieA("prima giornata", matchDate, 1));
 		});
 
 		assertThat(matchDayRepository.getPreviousMatchDay(matchDate).isEmpty()).isTrue();
@@ -115,8 +115,8 @@ class JpaMatchDayRepositoryTest {
 		LocalDate secondDate = LocalDate.of(2020, 1, 19);
 
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)));
-			session.persist(new MatchDaySerieA("seconda giornata", secondDate));
+			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12), 1));
+			session.persist(new MatchDaySerieA("seconda giornata", secondDate, 1));
 		});
 
 		assertThat(matchDayRepository.getPreviousMatchDay(secondDate).isPresent()).isTrue();
@@ -127,13 +127,13 @@ class JpaMatchDayRepositoryTest {
 	@DisplayName("getPreviousMatchDay() when many previous days exist")
 	public void testGetPreviousMatchDayWhenMultiplePreviousMatchDayExist() {
 
-		MatchDaySerieA previousDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19));
+		MatchDaySerieA previousDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19),1 );
 		LocalDate lastDate = LocalDate.of(2020, 1, 26);
 
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)));
+			session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12),1 ));
 			session.persist(previousDay);
-			session.persist(new MatchDaySerieA("terza giornata", lastDate));
+			session.persist(new MatchDaySerieA("terza giornata", lastDate, 1));
 		});
 
 		assertThat(matchDayRepository.getPreviousMatchDay(lastDate).get()).isEqualTo(previousDay);
@@ -147,7 +147,7 @@ class JpaMatchDayRepositoryTest {
 		LocalDate matchDate = LocalDate.of(2020, 1, 12);
 
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("ultima giornata", matchDate));
+			session.persist(new MatchDaySerieA("ultima giornata", matchDate, 1));
 		});
 
 		assertThat(matchDayRepository.getNextMatchDay(matchDate).isEmpty()).isTrue();
@@ -161,8 +161,8 @@ class JpaMatchDayRepositoryTest {
 		LocalDate firstDate = LocalDate.of(2020, 1, 12);
 
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", firstDate));
-			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19)));
+			session.persist(new MatchDaySerieA("prima giornata", firstDate, 1));
+			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19),1 ));
 		});
 
 		assertThat(matchDayRepository.getNextMatchDay(firstDate).isPresent()).isTrue();
@@ -174,12 +174,12 @@ class JpaMatchDayRepositoryTest {
 	public void testGetNextMatchDayWhenMultipleNextMatchDayExist() {
 
 		LocalDate firstDate = LocalDate.of(2020, 1, 12);
-		MatchDaySerieA nextDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19));
+		MatchDaySerieA nextDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 19), 1);
 		
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDaySerieA("prima giornata", firstDate));
+			session.persist(new MatchDaySerieA("prima giornata", firstDate, 1));
 			session.persist(nextDay);
-			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 26)));
+			session.persist(new MatchDaySerieA("seconda giornata", LocalDate.of(2020, 1, 26), 1));
 		});
 
 		assertThat(matchDayRepository.getNextMatchDay(firstDate).get()).isEqualTo(nextDay);
@@ -191,7 +191,7 @@ class JpaMatchDayRepositoryTest {
 	    LocalDate date = LocalDate.of(2020, 1, 12);
 
 	    sessionFactory.inTransaction(session -> {
-	        session.persist(new MatchDaySerieA("prima giornata", date.plusDays(7)));
+	        session.persist(new MatchDaySerieA("prima giornata", date.plusDays(7), 1));
 	    });
 
 	    assertThat(matchDayRepository.getMatchDay(date)).isEmpty();
@@ -201,7 +201,7 @@ class JpaMatchDayRepositoryTest {
 	@DisplayName("getMatchDay() when the match day exists")
 	public void testGetMatchDayWhenExists() {
 	    LocalDate date = LocalDate.of(2020, 1, 12);
-	    MatchDaySerieA expected = new MatchDaySerieA("prima giornata", date);
+	    MatchDaySerieA expected = new MatchDaySerieA("prima giornata", date, 1);
 
 	    sessionFactory.inTransaction(session -> {
 	        session.persist(expected);
@@ -217,12 +217,12 @@ class JpaMatchDayRepositoryTest {
 	@DisplayName("getMatchDay() when multiple days exist but only one matches")
 	public void testGetMatchDayWhenMultipleDaysExist() {
 	    LocalDate matchDate = LocalDate.of(2020, 1, 19);
-	    MatchDaySerieA expected = new MatchDaySerieA("seconda giornata", matchDate);
+	    MatchDaySerieA expected = new MatchDaySerieA("seconda giornata", matchDate, 1);
 
 	    sessionFactory.inTransaction(session -> {
-	        session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12)));
+	        session.persist(new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 12), 1));
 	        session.persist(expected);
-	        session.persist(new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26)));
+	        session.persist(new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26), 1));
 	    });
 
 	    assertThat(matchDayRepository.getMatchDay(matchDate))
@@ -251,7 +251,7 @@ class JpaMatchDayRepositoryTest {
 		entityManager.persist(t1);
 		entityManager.persist(t2);
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now());
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
 		
 		matchDayRepository.saveMatchDay(matchDay);
 		entityManager.getTransaction().commit();

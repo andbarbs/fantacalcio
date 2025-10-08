@@ -97,7 +97,7 @@ public class AdminUserService extends UserService {
 	public void generateCalendar(League league) {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
-			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 38);
+			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 20);
 			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
 			List<Match> matches = createMatches(schedule, matchDaySerieA);
 			for (Match match : matches) {

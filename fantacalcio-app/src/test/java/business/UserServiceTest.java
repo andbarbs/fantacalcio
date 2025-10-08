@@ -146,7 +146,7 @@ public class UserServiceTest {
 	void testSaveLineUp() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15),1 ); // Monday
 		
 		// Players for LineUp
 		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
@@ -228,7 +228,7 @@ public class UserServiceTest {
 	void testSaveLineUp_AfterMatchDate() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15), 1); // Monday
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match match = new Match(matchDay, team, team);
 		LineUp lineUp = LineUp.build()
@@ -278,7 +278,7 @@ public class UserServiceTest {
 	void testSaveLineUp_Weekend() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 20)); // Monday match
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 20),1 ); // Monday match
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match match = new Match(matchDay, team, team);
 		LineUp lineUp = LineUp.build()
@@ -328,7 +328,7 @@ public class UserServiceTest {
 	void testSaveLineUp_PlayerNotInTeam() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15), 1); // Monday
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 
 		// Goalkeeper gk = new Goalkeeper("Gianluigi", "Buffon", Player.Club.JUVENTUS);
@@ -381,7 +381,7 @@ public class UserServiceTest {
 	void testSaveLineUp_PreviousMatchNotGraded() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L004");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.of(2025, 9, 15)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.of(2025, 9, 15), 1); // Monday
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match previousMatch = mock(Match.class);
 		Match match = new Match(matchDay, team, team);
@@ -437,7 +437,7 @@ public class UserServiceTest {
 	void testSaveLineUp_AlreadyExistsLineUp() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L005");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD3", LocalDate.of(2025, 9, 15)); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD3", LocalDate.of(2025, 9, 15), 1); // Monday
 		
 		// Players for LineUp
 		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
@@ -537,7 +537,7 @@ public class UserServiceTest {
 	@Test
 	void testGetAllMatches() {
 		League league = new League(null, null, null, null);
-		MatchDaySerieA day1 = new MatchDaySerieA(null, null);
+		MatchDaySerieA day1 = new MatchDaySerieA(null, null,1 );
 		Match m1 = new Match(day1, null, null);
 		when(context.getMatchDayRepository().getAllMatchDays()).thenReturn(List.of(day1));
 		when(context.getMatchRepository().getAllMatchesByMatchDay(day1, league)).thenReturn(List.of(m1));
@@ -550,8 +550,8 @@ public class UserServiceTest {
 	void testGetNextMatch() {
 		League league = new League(null, null, null, null);
 		FantaTeam team = new FantaTeam(null, league, 0, null, null);
-		MatchDaySerieA prev = new MatchDaySerieA(null, null);
-		MatchDaySerieA next = new MatchDaySerieA(null, null);
+		MatchDaySerieA prev = new MatchDaySerieA(null, null, 1);
+		MatchDaySerieA next = new MatchDaySerieA(null, null, 1);
 		Match prevMatch = new Match(next, team, team);
 		Match nextMatch = new Match(next, team, team);
 
@@ -570,7 +570,7 @@ public class UserServiceTest {
 		League league = new League(null, null, null, null);
 		FantaTeam team = new FantaTeam(null, league, 0, null, null);
 		LocalDate today = LocalDate.now();
-		MatchDaySerieA prev = new MatchDaySerieA(null, today);
+		MatchDaySerieA prev = new MatchDaySerieA(null, today, 1);
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.of(prev));
 		Match prevMatch = new Match(prev, team, team);

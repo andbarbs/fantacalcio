@@ -125,9 +125,9 @@ public class NewsPaperServiceIntegrationIT {
 		playerRepository.addPlayer(player);
 		playerRepository.addPlayer(player2);
 
-		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 13));
-		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2025, 9, 20));
-		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26));
+		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 13), 1);
+		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2025, 9, 20), 2);
+		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26), 3);
 		entityManager.persist(previousDay);
 		entityManager.persist(matchDay);
 		entityManager.persist(nextDay);
