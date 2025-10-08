@@ -306,12 +306,44 @@ class AdminUserServiceTest {
 				.toList();
 	}
 
+    private void assertNoDuplicateMatchesPerPhase(Map<Integer, List<Match>> matchesByDay) {
+        // Mappa fase -> Set delle coppie (team1, team2)
+        Map<String, Set<String>> seenMatches = new HashMap<>();
+
+        for (var entry : matchesByDay.entrySet()) {
+            int giornata = entry.getKey();
+            List<Match> matches = entry.getValue();
+
+            String phase;
+            if (giornata <= 7) {
+                phase = "andata";
+            } else if (giornata <= 14) {
+                phase = "ritorno";
+            } else {
+                phase = "nuova_andata";
+            }
+
+            seenMatches.putIfAbsent(phase, new HashSet<>());
+
+            for (Match m : matches) {
+                String matchKey = m.getTeam1().getName() + "-" + m.getTeam2().getName();
+
+                // se già visto nella stessa fase → errore
+                assertTrue(
+                        seenMatches.get(phase).add(matchKey),
+                        () -> "Match duplicato nella fase " + phase + ": " + matchKey +
+                                " (giornata " + giornata + ")"
+                );
+            }
+        }
+    }
+
 	@Test
 	void testGenerateCalendar_SavesMatches() {
 		FantaUser admin = new FantaUser(null, null);
 		League league = new League(admin, "Serie A", null, null);
 
-		// Create 4 real teams (even number for round-robin)
+		// Create 8 real teams (even number for round-robin)
 		FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
 		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
 		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
@@ -322,7 +354,7 @@ class AdminUserServiceTest {
 		FantaTeam team8 = new FantaTeam("Team8", null, 0, null, new HashSet<>());
 		List<FantaTeam> teams = List.of(team1, team2, team3, team4, team5, team6, team7, team8);
 
-		// 38 match days (real objects are okay)
+		// 20 match days (real objects are okay)
 		List<MatchDaySerieA> matchDays = new ArrayList<>();
 		for (int i = 0; i < 20; i++)
 			matchDays.add(new MatchDaySerieA("match", LocalDate.now().plusDays(i), i));
@@ -385,12 +417,13 @@ class AdminUserServiceTest {
 			coppieNuovaAndata.add(pairKey(m.getTeam1(), m.getTeam2()));
 		}
 
-		// Devono esserci le stesse coppie dell’andata originale (stesso verso)
+		// Devono esserci le stesse coppie dell’andata originale
 		for (String coppia : coppieNuovaAndata) {
 			assertTrue(coppieAndata.contains(coppia),
 					"La coppia " + coppia + " nella nuova andata non esisteva nella prima andata");
 		}
 
+        assertNoDuplicateMatchesPerPhase(matchesByDay);
 		// Verifica numero totale giornate
 		assertEquals(20, matchesByDay.size(), "Devono esserci 20 giornate generate");
 	}
