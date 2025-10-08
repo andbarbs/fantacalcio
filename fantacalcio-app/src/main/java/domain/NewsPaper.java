@@ -12,9 +12,10 @@ public class NewsPaper {
     private Long id;
 
     @Basic(optional=false)
-    String name;
+    private String name;
 
     protected NewsPaper() {}
+    
     public NewsPaper(String name) {
         this.name = name;
     }

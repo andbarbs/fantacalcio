@@ -12,10 +12,10 @@ public class FantaUser {
     private Long id;
 
     @Basic(optional=false)
-    public String email;
+    private String email;
 
     @Basic(optional=false)
-    public String password;
+    private String password;
 
     protected FantaUser() {}
     public FantaUser(String email, String password) {

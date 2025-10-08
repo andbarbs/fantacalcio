@@ -1,9 +1,12 @@
 package business;
 
 import domain.scheme.Scheme433;
+import gui.lineup.chooser.LineUpChooserTest;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import business.ports.repository.ContractRepository;
 import business.ports.repository.FantaTeamRepository;
@@ -283,6 +286,13 @@ class AdminUserServiceTest {
 		assertThat(result).containsExactly(np1, np2);
 	}
 
+	/**
+	 * TODO per asserire davvero sull'algoritmo bisognerebbe fare argument capture
+	 * (con {@link ArgumentCaptor}) di tutti (con verifyoMoreInteractions) i Match
+	 * passati a matchRepository, e poi asserire le proprietà che dovrebbero avere.
+	 * 
+	 * Per ArgumentCaptor, sono usati ad es in {@link LineUpChooserTest}	
+	 */
 	@Test
 	void testGenerateCalendar_SavesMatches() {
 		FantaUser admin = new FantaUser(null, null);
