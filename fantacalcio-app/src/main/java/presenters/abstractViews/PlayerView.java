@@ -2,7 +2,7 @@ package presenters.abstractViews;
 
 import java.util.List;
 
-import domainModel.Player;
+import domain.Player;
 
 public interface PlayerView extends View {
 

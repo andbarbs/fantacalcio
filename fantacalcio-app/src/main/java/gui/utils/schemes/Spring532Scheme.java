@@ -4,7 +4,7 @@ import javax.swing.JPanel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 
-import domainModel.scheme.Scheme532;
+import domain.scheme.Scheme532;
 
 import java.awt.Dimension;
 import java.awt.Color;

@@ -1,6 +1,6 @@
 package gui.lineup.chooser;
 
-import domainModel.LineUp;
+import domain.LineUp;
 
 /**
  * a type for a graphical component that can collaborate with a

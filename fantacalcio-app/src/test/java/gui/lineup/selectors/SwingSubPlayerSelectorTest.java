@@ -19,8 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.Player;
-import domainModel.Player.Defender;
+import domain.Player;
+import domain.Player.Defender;
 import gui.utils.AssertJSwingJUnit5TestCase;
 
 @DisplayName("SwingSubPlayerSelector: MVP-View unit test")

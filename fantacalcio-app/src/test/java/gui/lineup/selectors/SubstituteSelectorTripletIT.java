@@ -16,8 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import domainModel.Player.Defender;
-import domainModel.Player.Club;
+
+import domain.Player.Club;
+import domain.Player.Defender;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.triplet.FillableSwappableTriplet;
 import gui.lineup.triplet.SwingFillableSwappableTripletWidget;

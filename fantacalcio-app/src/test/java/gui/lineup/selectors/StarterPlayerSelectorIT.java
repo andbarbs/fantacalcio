@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.swing.JFrame;
 
-import domainModel.Player;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
@@ -23,7 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.Player.Defender;
+import domain.Player;
+import domain.Player.Defender;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;

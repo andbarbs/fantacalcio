@@ -13,13 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import domainModel.Contract;
-import domainModel.FantaTeam;
-import domainModel.FantaUser;
-import domainModel.League;
-import domainModel.LineUp;
-import domainModel.Match;
-import domainModel.Player.*;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteTripletChooserDelegate;
 import gui.lineup.selectors.SelectorController;
@@ -43,7 +36,14 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.border.TitledBorder;
 
-import businessLogic.UserService;
+import business.UserService;
+import domain.Contract;
+import domain.FantaTeam;
+import domain.FantaUser;
+import domain.League;
+import domain.LineUp;
+import domain.Match;
+import domain.Player.*;
 
 import javax.swing.border.LineBorder;
 import java.awt.Color;

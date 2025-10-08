@@ -26,13 +26,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
-import domainModel.Player;
-import domainModel.Player.Defender;
-import domainModel.Player.Forward;
-import domainModel.Player.Goalkeeper;
-import domainModel.Player.Midfielder;
-import domainModel.Scheme;
+import domain.Player;
+import domain.Scheme;
+import domain.LineUp.LineUpBuilderSteps.StarterLineUp;
+import domain.Player.Defender;
+import domain.Player.Forward;
+import domain.Player.Goalkeeper;
+import domain.Player.Midfielder;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector;
 

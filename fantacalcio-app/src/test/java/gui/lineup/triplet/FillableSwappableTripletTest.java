@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.Player.Defender;
+import domain.Player.Defender;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.sequence.FillableSwappableSequence;
 import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceListener;

@@ -12,10 +12,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import domainModel.LineUp.LineUpBuilderSteps.StarterLineUp;
-import domainModel.Player;
-import domainModel.Player.*;
-import domainModel.Scheme;
+import domain.Player;
+import domain.Scheme;
+import domain.LineUp.LineUpBuilderSteps.StarterLineUp;
+import domain.Player.*;
 import gui.lineup.chooser.LineUpChooser.StarterLineUpChooserDelegate;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;

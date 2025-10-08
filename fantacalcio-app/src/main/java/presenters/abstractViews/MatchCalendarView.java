@@ -2,7 +2,7 @@ package presenters.abstractViews;
 
 import java.util.List;
 
-import domainModel.Match;
+import domain.Match;
 
 public interface MatchCalendarView {
 

@@ -2,7 +2,7 @@ package presenters.abstractViews;
 
 import java.util.List;
 
-import domainModel.Proposal;
+import domain.Proposal;
 
 public interface ProposalView {
 

@@ -3,8 +3,8 @@ package gui.lineup.triplet;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import domainModel.Player;
-import domainModel.Player.Defender;
+import domain.Player;
+import domain.Player.Defender;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteTripletChooserDelegate;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;

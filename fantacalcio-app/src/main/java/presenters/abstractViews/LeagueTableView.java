@@ -2,7 +2,7 @@ package presenters.abstractViews;
 
 import java.util.List;
 
-import domainModel.FantaTeam;
+import domain.FantaTeam;
 
 public interface LeagueTableView extends View {
 

@@ -44,7 +44,7 @@ public class SchemeGeneratorProcessor extends AbstractProcessor {
 	private void generateSchemeClass(GenerateScheme scheme) throws IOException {
 
 		// 1. constructs Names for existing domain classes
-		String domainPackage = "domainModel";
+		String domainPackage = "domain";
 		ClassName schemeBaseClass = ClassName.get(domainPackage, "Scheme");
 		ClassName starterLineUpClass = ClassName.get(domainPackage, "LineUp")
 				.nestedClass("LineUpBuilderSteps")

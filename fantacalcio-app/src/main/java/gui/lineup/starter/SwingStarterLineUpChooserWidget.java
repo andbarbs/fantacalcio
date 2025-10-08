@@ -27,10 +27,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import domainModel.Player;
-import domainModel.Player.*;
-import domainModel.Scheme;
-import domainModel.scheme.Scheme433;
+import domain.Player;
+import domain.Scheme;
+import domain.Player.*;
+import domain.scheme.Scheme433;
 import gui.ImageManager;
 import gui.ImageManager.ImageKey;
 import gui.lineup.chooser.Selector;

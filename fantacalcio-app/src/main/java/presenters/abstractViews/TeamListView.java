@@ -2,8 +2,8 @@ package presenters.abstractViews;
 
 import java.util.List;
 
-import domainModel.FantaTeam;
-import domainModel.Player;
+import domain.FantaTeam;
+import domain.Player;
 
 public interface TeamListView {
 

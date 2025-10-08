@@ -1,6 +1,6 @@
 package gui.lineup.starter;
 
-import domainModel.Scheme;
+import domain.Scheme;
 
 /**
  * a type for a graphical component that can collaborate with a

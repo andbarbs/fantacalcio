@@ -16,9 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 
-import domainModel.Player;
-import domainModel.Player.Defender;
-import domainModel.Player.Forward;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.selectors.SubstitutePlayerSelector;
 import gui.lineup.selectors.SwingSubPlayerSelector;
@@ -29,6 +26,11 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.border.TitledBorder;
+
+import domain.Player;
+import domain.Player.Defender;
+import domain.Player.Forward;
+
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 

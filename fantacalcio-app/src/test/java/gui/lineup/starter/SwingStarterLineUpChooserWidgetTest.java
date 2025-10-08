@@ -26,7 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.Scheme;
+import domain.Scheme;
 import gui.utils.AssertJSwingJUnit5TestCase;
 import gui.utils.schemes.SpringSchemePanel;
 

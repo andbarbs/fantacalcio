@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-import domainModel.Scheme;
+import domain.Scheme;
 
 @SuppressWarnings("serial")
 public abstract class SpringSchemePanel extends JPanel {

@@ -1,6 +1,5 @@
 package gui.lineup.selectors;
 
-import domainModel.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domainModel.Player.Midfielder;
+import domain.Player;
+import domain.Player.Midfielder;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
 import gui.lineup.chooser.Selector.SelectorListener;

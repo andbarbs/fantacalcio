@@ -1,6 +1,6 @@
 package presenters.abstractViews;
 
-import domainModel.League;
+import domain.League;
 
 public interface LeagueView {
 

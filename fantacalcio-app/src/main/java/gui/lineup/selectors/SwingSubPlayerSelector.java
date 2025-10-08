@@ -20,7 +20,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import domainModel.Player;
+import domain.Player;
 import gui.ImageManager;
 import gui.ImageManager.ImageKey;
 import gui.lineup.selectors.SubstitutePlayerSelector.SubstituteSelectorWidget;
