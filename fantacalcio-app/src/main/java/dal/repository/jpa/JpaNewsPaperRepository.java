@@ -16,6 +16,7 @@ public class JpaNewsPaperRepository extends BaseJpaRepository implements NewsPap
 		super(em);
 	}
 
+    //TODO modificare adesso il newspaper è un utente
 	@Override
 	public List<NewsPaper> getAllNewspapers() {
 		EntityManager em = getEntityManager();
