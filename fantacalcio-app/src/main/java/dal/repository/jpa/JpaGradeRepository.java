@@ -17,22 +17,17 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 	}
 
 	@Override
-	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+	public List<Grade> getAllMatchGrades(MatchDaySerieA matchDay) {
 		EntityManager em = getEntityManager();
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Grade> cq = cb.createQuery(Grade.class);
-		Root<Grade> gradeRoot = cq.from(Grade.class);
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Grade> cq = cb.createQuery(Grade.class);
 
-		cq.where(
-				cb.and(
-						cb.equal(gradeRoot.get(Grade_.matchDay), match.getMatchDaySerieA()),
-						cb.equal(gradeRoot.get(Grade_.newsPaper), newsPaper)
-				)
-		);
+        Root<Grade> grade = cq.from(Grade.class);
 
-		cq.select(gradeRoot).distinct(true); // avoid duplicates
+        cq.select(grade)
+                .where(cb.equal(grade.get(Grade_.MATCH_DAY), matchDay));
 
-		return em.createQuery(cq).getResultList();
+        return em.createQuery(cq).getResultList();
 	}
 
 	@Override
