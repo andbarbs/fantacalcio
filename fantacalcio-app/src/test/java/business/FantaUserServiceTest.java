@@ -61,10 +61,10 @@ public class FantaUserServiceTest {
 //    void testGetAllMatches_delegatesToRepository() {
 //        FantaUser fantaUser = new FantaUser("testMail", "password");
 //        League league = new League(fantaUser, "testLeague", new NewsPaper("gazzetta"), "001");
-//        MatchDaySerieA matchDay = new MatchDaySerieA("giornata1", LocalDate.of(2020, 01, 01));
+//        MatchDay matchDay = new MatchDay("giornata1", LocalDate.of(2020, 01, 01));
 //        Set<Contract> contractsA = new HashSet<>();
 //        Set<Contract> contractsB = new HashSet<>();
-//        Map<MatchDaySerieA, Set<Match>> expectedMatches = new HashMap<>();
+//        Map<MatchDay, Set<Match>> expectedMatches = new HashMap<>();
 //        expectedMatches.put(matchDay, new HashSet<Match>(List.of(
 //        		new Match(
 //        				matchDay, 
@@ -76,7 +76,7 @@ public class FantaUserServiceTest {
 //        when(matchRepository.getAllMatches(eq(league))).thenReturn(expectedMatches);
 //
 //        // Call the service method.
-//        Map<MatchDaySerieA, List<Match>> actualMatches = userService.getAllMatches(league);
+//        Map<MatchDay, List<Match>> actualMatches = userService.getAllMatches(league);
 //
 //        // Verify that the repository method was called once, and with the correct league.
 //        verify(matchRepository, times(1)).getAllMatches(eq(league));

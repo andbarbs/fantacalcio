@@ -26,7 +26,7 @@ class NewsPaperServiceTest {
 	private NewsPaperService service;
 
 	private Grade grade;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private GradeRepository gradeRepository;
 	private PlayerRepository playerRepository;
 	private MatchDayRepository matchDayRepository;
@@ -54,7 +54,7 @@ class NewsPaperServiceTest {
 		service = new NewsPaperService(transactionManager);
 
 		grade = mock(Grade.class);
-		matchDay = mock(MatchDaySerieA.class);
+		matchDay = mock(MatchDay.class);
 
 		when(grade.getMatchDay()).thenReturn(matchDay);
 		when(grade.getMark()).thenReturn(10.0);
@@ -96,7 +96,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_WrongMatchDay() {
 		NewsPaperService spyService = spy(service);
-		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
+		MatchDay otherDay = mock(MatchDay.class);
 		doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
@@ -187,7 +187,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_Error_WrongMatchDay_NoUnexpectedRepoCalls() {
 		NewsPaperService spyService = spy(service);
-		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
+		MatchDay otherDay = mock(MatchDay.class);
 		doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
@@ -223,7 +223,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testGetMatchDay_Saturday() {
 		LocalDate saturday = LocalDate.of(2025, 9, 20); // Saturday
-		MatchDaySerieA next = mock(MatchDaySerieA.class);
+		MatchDay next = mock(MatchDay.class);
 
 		NewsPaperService spyService = spy(service);
 
@@ -233,7 +233,7 @@ class NewsPaperServiceTest {
 		// Stub repository calls
 		when(context.getMatchDayRepository().getNextMatchDay(saturday)).thenReturn(Optional.of(next));
 
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
+		Optional<MatchDay> result = spyService.getMatchDay();
 
 		assertThat(result).contains(next);
 	}
@@ -241,14 +241,14 @@ class NewsPaperServiceTest {
 	@Test
 	void testGetMatchDay_SundayNextPresent() {
 		LocalDate sunday = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDaySerieA next = mock(MatchDaySerieA.class);
+		MatchDay next = mock(MatchDay.class);
 
 		NewsPaperService spyService = spy(service);
 		doReturn(sunday).when(spyService).today();
 
 		when(context.getMatchDayRepository().getNextMatchDay(sunday)).thenReturn(Optional.of(next));
 
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
+		Optional<MatchDay> result = spyService.getMatchDay();
 
 		assertThat(result).contains(next);
 	}
@@ -256,7 +256,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testGetMatchDay_SundayNextEmpty() {
 		LocalDate sunday = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
+		MatchDay prev = mock(MatchDay.class);
 
 		NewsPaperService spyService = spy(service);
 		doReturn(sunday).when(spyService).today();
@@ -264,7 +264,7 @@ class NewsPaperServiceTest {
 		when(context.getMatchDayRepository().getNextMatchDay(sunday)).thenReturn(Optional.empty());
 		when(context.getMatchDayRepository().getPreviousMatchDay(sunday)).thenReturn(Optional.of(prev));
 
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
+		Optional<MatchDay> result = spyService.getMatchDay();
 
 		assertThat(result).contains(prev);
 	}
@@ -272,14 +272,14 @@ class NewsPaperServiceTest {
 	@Test
 	void testGetMatchDay_Monday() {
 		LocalDate monday = LocalDate.of(2025, 9, 22); // Monday
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
+		MatchDay prev = mock(MatchDay.class);
 
 		NewsPaperService spyService = spy(service);
 		doReturn(monday).when(spyService).today();
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(monday)).thenReturn(Optional.of(prev));
 
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
+		Optional<MatchDay> result = spyService.getMatchDay();
 
 		assertThat(result).contains(prev);
 	}
@@ -290,7 +290,7 @@ class NewsPaperServiceTest {
 	    NewsPaperService spyService = spy(service);
 	    doReturn(tuesday).when(spyService).today();
 
-	    Optional<MatchDaySerieA> result = spyService.getMatchDay();
+	    Optional<MatchDay> result = spyService.getMatchDay();
 
 	    assertThat(result).isEmpty();
 	    verifyNoInteractions(matchDayRepository);

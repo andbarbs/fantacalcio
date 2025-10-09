@@ -12,14 +12,14 @@ import business.ports.repository.MatchRepository;
 import domain.FantaTeam;
 import domain.League;
 import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 
 public class JpaMatchRepository extends BaseJpaRepository implements MatchRepository {
 
     public JpaMatchRepository(EntityManager em) {super(em);}
 
     @Override
-    public Match getMatchByMatchDay(MatchDaySerieA matchDaySerieA, League league, FantaTeam fantaTeam) {
+    public Match getMatchByMatchDay(MatchDay matchDaySerieA, League league, FantaTeam fantaTeam) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
@@ -37,7 +37,7 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
     }
 
     @Override
-    public List<Match> getAllMatchesByMatchDay(MatchDaySerieA matchDaySerieA, League league) {
+    public List<Match> getAllMatchesByMatchDay(MatchDay matchDaySerieA, League league) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);

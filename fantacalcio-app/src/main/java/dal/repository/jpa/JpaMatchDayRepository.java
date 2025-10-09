@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import business.ports.repository.MatchDayRepository;
-import domain.MatchDaySerieA;
-import domain.MatchDaySerieA_;
+import domain.MatchDay;
+import domain.MatchDay_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
@@ -22,70 +22,70 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public List<MatchDaySerieA> getAllMatchDays() {
+	public List<MatchDay> getAllMatchDays() {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+		CriteriaQuery<MatchDay> criteriaQuery = criteriaBuilder.createQuery(MatchDay.class);
+		Root<MatchDay> root = criteriaQuery.from(MatchDay.class);
 
 		criteriaQuery.select(root);
-		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(MatchDaySerieA_.DATE)));
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(MatchDay_.DATE)));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 
 	@Override
-	public Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date) {
+	public Optional<MatchDay> getPreviousMatchDay(LocalDate date) {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+		CriteriaQuery<MatchDay> criteriaQuery = criteriaBuilder.createQuery(MatchDay.class);
+		Root<MatchDay> root = criteriaQuery.from(MatchDay.class);
 
 		Predicate beforeDate = criteriaBuilder.lessThan(root.get("date"), date);
 		criteriaQuery.select(root).where(beforeDate);
 
 		criteriaQuery.orderBy(criteriaBuilder.desc(root.get("date")));
 
-		TypedQuery<MatchDaySerieA> query = entityManager.createQuery(criteriaQuery);
+		TypedQuery<MatchDay> query = entityManager.createQuery(criteriaQuery);
 		query.setMaxResults(1);
 
-		List<MatchDaySerieA> resultList = query.getResultList();
+		List<MatchDay> resultList = query.getResultList();
 		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getNextMatchDay(LocalDate date) {
+	public Optional<MatchDay> getNextMatchDay(LocalDate date) {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+		CriteriaQuery<MatchDay> criteriaQuery = criteriaBuilder.createQuery(MatchDay.class);
+		Root<MatchDay> root = criteriaQuery.from(MatchDay.class);
 
 		Predicate afterDate = criteriaBuilder.greaterThan(root.get("date"), date);
 		criteriaQuery.select(root).where(afterDate);
 
 		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("date")));
 
-		TypedQuery<MatchDaySerieA> query = entityManager.createQuery(criteriaQuery);
+		TypedQuery<MatchDay> query = entityManager.createQuery(criteriaQuery);
 		query.setMaxResults(1);
 
-		List<MatchDaySerieA> resultList = query.getResultList();
+		List<MatchDay> resultList = query.getResultList();
 		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getMatchDay(LocalDate date) {
+	public Optional<MatchDay> getMatchDay(LocalDate date) {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+		CriteriaQuery<MatchDay> criteriaQuery = criteriaBuilder.createQuery(MatchDay.class);
+		Root<MatchDay> root = criteriaQuery.from(MatchDay.class);
 
 		// WHERE date = :date
 		criteriaQuery.select(root)
-				.where(criteriaBuilder.equal(root.get(MatchDaySerieA_.date), date));
+				.where(criteriaBuilder.equal(root.get(MatchDay_.date), date));
 
 		try {
-			MatchDaySerieA result = entityManager.createQuery(criteriaQuery).getSingleResult();
+			MatchDay result = entityManager.createQuery(criteriaQuery).getSingleResult();
 			return Optional.of(result);
 		} catch (NoResultException e) {
 			return Optional.empty();
@@ -93,7 +93,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public void saveMatchDay(MatchDaySerieA matchDay) {
+	public void saveMatchDay(MatchDay matchDay) {
 		getEntityManager().persist(matchDay);
 	}
 

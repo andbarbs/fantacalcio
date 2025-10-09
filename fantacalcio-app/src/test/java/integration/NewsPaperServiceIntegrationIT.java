@@ -31,7 +31,7 @@ import domain.Grade;
 import domain.League;
 import domain.LineUp;
 import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.NewsPaper;
 import domain.Player;
 import domain.Result;
@@ -71,7 +71,7 @@ public class NewsPaperServiceIntegrationIT {
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(LineUp.class)
@@ -125,9 +125,9 @@ public class NewsPaperServiceIntegrationIT {
 		playerRepository.addPlayer(player);
 		playerRepository.addPlayer(player2);
 
-		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 13), 1);
-		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2025, 9, 20), 2);
-		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26), 3);
+		MatchDay previousDay = new MatchDay("prima giornata", LocalDate.of(2020, 1, 13), 1);
+		MatchDay matchDay = new MatchDay("seconda giornata", LocalDate.of(2025, 9, 20), 2);
+		MatchDay nextDay = new MatchDay("terza giornata", LocalDate.of(2020, 1, 26), 3);
 		entityManager.persist(previousDay);
 		entityManager.persist(matchDay);
 		entityManager.persist(nextDay);

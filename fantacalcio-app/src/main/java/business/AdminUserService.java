@@ -98,7 +98,7 @@ public class AdminUserService extends UserService {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 20);
-			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
+			List<MatchDay> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
 			List<Match> matches = createMatches(schedule, matchDaySerieA);
 			for (Match match : matches) {
 				context.getMatchRepository().saveMatch(match);
@@ -108,7 +108,7 @@ public class AdminUserService extends UserService {
 	}
 
 	// package-private for tests
-	List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
+	private List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
 		int n = teams.size();
 
 		if (n < 2) {
@@ -180,7 +180,7 @@ public class AdminUserService extends UserService {
 	}
 
 	//TODO dovrebbe essere privato viene usato in generate calendar
-	public List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDaySerieA> matchDays) {
+	public List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDay> matchDays) {
 		List<Match> matches = new ArrayList<>();
 
 		if (schedule.size() != matchDays.size()) {
@@ -188,7 +188,7 @@ public class AdminUserService extends UserService {
 		}
 
 		for (int roundIndex = 0; roundIndex < schedule.size(); roundIndex++) {
-			MatchDaySerieA matchDay = matchDays.get(roundIndex);
+			MatchDay matchDay = matchDays.get(roundIndex);
 			List<FantaTeam[]> round = schedule.get(roundIndex);
 
 			for (FantaTeam[] pairing : round) {
@@ -207,15 +207,15 @@ public class AdminUserService extends UserService {
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
 			LocalDate localDate = today();
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
 			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
 			}
-			Optional<MatchDaySerieA> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
+			Optional<MatchDay> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
 			if (matchDayToCalculate.isEmpty()) {
 				throw new RuntimeException("There are no results to calculate");
 			}
-			MatchDaySerieA matchDaySerieA = matchDayToCalculate.get();
+			MatchDay matchDaySerieA = matchDayToCalculate.get();
 			if (!isLegalToCalculateResults(matchDaySerieA.getDate())) {
 				throw new RuntimeException("The matches are not finished yet");
 			}
@@ -223,7 +223,7 @@ public class AdminUserService extends UserService {
 			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDaySerieA, league);
 			for (Match match : allMatches) {
 				
-				System.out.println("Considering match: " + match.getMatchDaySerieA().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
+				System.out.println("Considering match: " + match.getMatchDay().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
 				
 				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match,
 						league.getNewsPaper());
@@ -335,12 +335,12 @@ public class AdminUserService extends UserService {
 		return LocalDate.now();
 	}
 
-	Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league,
+	Optional<MatchDay> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league,
 			FantaUser user) {
-		Optional<MatchDaySerieA> matchDayToCalculate;
+		Optional<MatchDay> matchDayToCalculate;
 		boolean found = false;
 		while (!found) {
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
 			if (previousMatchDay.isPresent()) {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
 						getFantaTeamByUserAndLeague(league, user));

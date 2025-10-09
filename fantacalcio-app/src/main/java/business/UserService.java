@@ -40,14 +40,14 @@ public class UserService {
 
 	// Matches
 
-	public Map<MatchDaySerieA, List<Match>> getAllMatches(League league) {
+	public Map<MatchDay, List<Match>> getAllMatches(League league) {
 
 		return transactionManager.fromTransaction((context) -> {
 
-			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
-			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
+			List<MatchDay> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
+			Map<MatchDay, List<Match>> map = new HashMap<MatchDay, List<Match>>();
 
-			for (MatchDaySerieA matchDay : allMatchDays) {
+			for (MatchDay matchDay : allMatchDays) {
 				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
 			}
 
@@ -58,7 +58,7 @@ public class UserService {
 
 	public Match getNextMatch(League league, FantaTeam fantaTeam, LocalDate date) {
 		return transactionManager.fromTransaction((context) -> {
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
 			if (previousMatchDay.isPresent()) {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
 						fantaTeam);
@@ -67,7 +67,7 @@ public class UserService {
 					throw new RuntimeException("The results for the previous match have not been calculated yet");
 				}
 			}
-			Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
+			Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
 			if (nextMatchDay.isEmpty()) {
 				throw new RuntimeException("The league ended");
 			} else {
@@ -208,7 +208,7 @@ public class UserService {
 
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
-			LocalDate matchDate = match.getMatchDaySerieA().getDate();
+			LocalDate matchDate = match.getMatchDay().getDate();
 			if (today.isAfter(matchDate))
 				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
 
@@ -219,7 +219,7 @@ public class UserService {
 			FantaTeam team = lineUp.getTeam();
 
 			// Check if is legal to save the lineUP
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
 			if (previousMatchDay.isPresent()) {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
 						team);

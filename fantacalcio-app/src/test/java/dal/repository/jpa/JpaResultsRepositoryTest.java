@@ -35,7 +35,7 @@ class JpaResultsRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Result.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(Match.class).addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class).
@@ -57,7 +57,7 @@ class JpaResultsRepositoryTest {
 		// Minimal setup for a Match and related entities
 		entityManager.getTransaction().begin();
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
+		MatchDay matchDay = new MatchDay("MD1", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@l001.com", "pwd");
 		NewsPaper np = new NewsPaper("Gazzetta L001");
 		League league = new League(admin, "League L001", np, "L001");

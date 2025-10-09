@@ -11,7 +11,7 @@ public class Match {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private MatchDaySerieA matchDaySerieA;
+    private MatchDay matchDaySerieA;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private FantaTeam team1;
@@ -21,7 +21,7 @@ public class Match {
 
     protected Match() {}
 
-    public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
+    public Match(MatchDay matchDaySerieA, FantaTeam team1, FantaTeam team2) {
         this.matchDaySerieA = matchDaySerieA;
         this.team1 = team1;
         this.team2 = team2;
@@ -37,7 +37,7 @@ public class Match {
         return team2;
     }
     
-    public MatchDaySerieA getMatchDaySerieA() {
+    public MatchDay getMatchDay() {
 		return matchDaySerieA;
 	}
 

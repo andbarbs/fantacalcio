@@ -4,18 +4,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 
 public interface MatchDayRepository {
 	
-	List<MatchDaySerieA> getAllMatchDays();
+	List<MatchDay> getAllMatchDays();
 
-	Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date);
+	Optional<MatchDay> getPreviousMatchDay(LocalDate date);
 
-	Optional<MatchDaySerieA> getNextMatchDay(LocalDate date);
+	Optional<MatchDay> getNextMatchDay(LocalDate date);
 
-	Optional<MatchDaySerieA> getMatchDay(LocalDate date);
+	Optional<MatchDay> getMatchDay(LocalDate date);
 
-	void saveMatchDay(MatchDaySerieA matchDay);
+	void saveMatchDay(MatchDay matchDay);
 
 }

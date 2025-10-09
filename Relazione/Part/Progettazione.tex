@@ -16,6 +16,23 @@ In questo modo
         la ricerca di soluzioni efficaci anche quando scomode da mappare manualmente
 \end{itemize}
 
+Principi di gestione della persistenza:
+\begin{itemize}
+    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
+    \item entità applicative vs entità relazionali (cascading)
+    \item inheritance vs type mapping
+    \item lazy fetching nelle entità vs deep fetching nel DAL
+\end{itemize}
+
+Principi di design della GUI:
+\begin{itemize}
+    \item MVP
+    \item MVP, modularità e Dependency Injection (disegno)
+    \item private vs public design-time logic
+    \item instantiation vs configuration
+    \item limiti di AssertJSwing, limiti di WB
+\end{itemize}
+
 
 \todo[color=blue]{Se vuoi scrivi della gui in generale}
 \todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}

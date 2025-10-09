@@ -86,6 +86,11 @@ public class FantaTeam {
     public int hashCode() {
         return Objects.hash(name, league, points, fantaManager);
     }
+    
+    @Override
+    public String toString() {
+    	return name;
+    }
 	
 }
 

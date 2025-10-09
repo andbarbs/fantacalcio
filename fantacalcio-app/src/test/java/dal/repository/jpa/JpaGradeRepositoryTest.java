@@ -27,7 +27,7 @@ class JpaGradeRepositoryTest {
 	private FantaUser manager;
 	private NewsPaper newsPaper;
 	private League league;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private FantaUser user1;
 	private FantaUser user2;
 	private FantaTeam team1;
@@ -48,7 +48,7 @@ class JpaGradeRepositoryTest {
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Player.Goalkeeper.class)
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(Contract.class)
@@ -79,7 +79,7 @@ class JpaGradeRepositoryTest {
 			t.persist(newsPaper);
 			league = new League(manager, "Serie A", newsPaper, "code");
 			t.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
+			matchDay = new MatchDay("Matchday 1", LocalDate.of(2025, 6, 19), 1);
 			t.persist(matchDay);
 			user1 = new FantaUser("mail1", "pswd1");
 			t.persist(user1);

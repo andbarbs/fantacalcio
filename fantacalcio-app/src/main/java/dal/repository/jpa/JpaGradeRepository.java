@@ -25,7 +25,7 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 
 		cq.where(
 				cb.and(
-						cb.equal(gradeRoot.get(Grade_.matchDay), match.getMatchDaySerieA()),
+						cb.equal(gradeRoot.get(Grade_.matchDay), match.getMatchDay()),
 						cb.equal(gradeRoot.get(Grade_.newsPaper), newsPaper)
 				)
 		);

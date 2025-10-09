@@ -21,7 +21,7 @@ public class Grade {
 	private Player player;
 	
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	
 	@Basic(optional=false)
 	private double mark;
@@ -31,7 +31,7 @@ public class Grade {
 
 	protected Grade() {}
 	
-	public Grade(Player player, MatchDaySerieA matchDay, double mark, NewsPaper newsPaper) {
+	public Grade(Player player, MatchDay matchDay, double mark, NewsPaper newsPaper) {
 		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
@@ -50,7 +50,7 @@ public class Grade {
 		return newsPaper;
 	}
 
-	public MatchDaySerieA getMatchDay() {
+	public MatchDay getMatchDay() {
 		return matchDay;
 	}
 

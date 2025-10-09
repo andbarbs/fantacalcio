@@ -10,7 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class MatchDaySerieA {
+public class MatchDay {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +25,10 @@ public class MatchDaySerieA {
 	@Basic(optional = false)
 	private int number;
 
-	protected MatchDaySerieA() {
+	protected MatchDay() {
 	}
 
-	public MatchDaySerieA(String name, LocalDate date, int number) {
+	public MatchDay(String name, LocalDate date, int number) {
 		this.name = name;
 		this.date = date;
 		this.number = number;
@@ -60,7 +60,7 @@ public class MatchDaySerieA {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MatchDaySerieA other = (MatchDaySerieA) obj;
+		MatchDay other = (MatchDay) obj;
 		return Objects.equals(date, other.date) && Objects.equals(name, other.name);
 	}
 

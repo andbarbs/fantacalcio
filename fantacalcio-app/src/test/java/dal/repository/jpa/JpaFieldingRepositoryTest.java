@@ -24,7 +24,7 @@ import domain.Fielding;
 import domain.League;
 import domain.LineUp;
 import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.NewsPaper;
 import domain.Player;
 import domain.Player.Defender;
@@ -41,7 +41,7 @@ class JpaFieldingRepositoryTest {
 	private EntityManager entityManager;
 	private League league;
 	private FantaUser manager;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private NewsPaper newsPaper;
 	private FantaTeam opponent;
 
@@ -53,7 +53,7 @@ class JpaFieldingRepositoryTest {
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
@@ -90,7 +90,7 @@ class JpaFieldingRepositoryTest {
 			t.persist(newsPaper);
 			league = new League(manager, "Serie A", newsPaper, "code");
 			t.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
+			matchDay = new MatchDay("Matchday 1", LocalDate.of(2025, 6, 19), 1);
 			t.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			t.persist(opponent);

@@ -49,7 +49,7 @@ import domain.Grade;
 import domain.League;
 import domain.LineUp;
 import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.NewsPaper;
 import domain.Player;
 import domain.Proposal;
@@ -101,7 +101,7 @@ class UserServiceIntegrationIT {
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(Fielding.StarterFielding.class)
@@ -199,7 +199,7 @@ class UserServiceIntegrationIT {
 		FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA day1 = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 7), 1);
+		MatchDay day1 = new MatchDay("MD1", LocalDate.of(2025, 9, 7), 1);
 		matchDayRepository.saveMatchDay(day1);
 
 		Match m1 = new Match(day1, team1, team2);
@@ -207,12 +207,12 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		Map<MatchDaySerieA, List<Match>> result = userService.getAllMatches(league);
+		Map<MatchDay, List<Match>> result = userService.getAllMatches(league);
 
 		assertThat(result.get(day1).size()).isEqualTo(1);
 		Match resultMatch = result.get(day1).get(0);
 
-		assertThat(resultMatch.getMatchDaySerieA().getName()).isEqualTo("MD1");
+		assertThat(resultMatch.getMatchDay().getName()).isEqualTo("MD1");
 	}
 
 	@Test
@@ -229,7 +229,7 @@ class UserServiceIntegrationIT {
 		League league = new League(user, "Test League", newsPaper, "L003");
 		leagueRepository.saveLeague(league);
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1), 1); // Monday
+		MatchDay matchDay = new MatchDay("MD1", LocalDate.now().plusWeeks(1), 1); // Monday
 		matchDayRepository.saveMatchDay(matchDay);		
 
 		// Players for LineUp
@@ -328,8 +328,8 @@ class UserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team);
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", LocalDate.now().minusWeeks(1), 1);
-		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2", LocalDate.now().plusWeeks(1), 1);
+		MatchDay prevMatchDay = new MatchDay("MD1", LocalDate.now().minusWeeks(1), 1);
+		MatchDay nextMatchDay = new MatchDay("MD2", LocalDate.now().plusWeeks(1), 1);
 		matchDayRepository.saveMatchDay(prevMatchDay);
 		matchDayRepository.saveMatchDay(nextMatchDay);
 
@@ -344,7 +344,7 @@ class UserServiceIntegrationIT {
 		entityManager.getTransaction().commit();
 
 		Match result = userService.getNextMatch(league, team, LocalDate.now());
-		assertThat(result.getMatchDaySerieA().getName()).isEqualTo("MD2");
+		assertThat(result.getMatchDay().getName()).isEqualTo("MD2");
 	}
 
 	@Test

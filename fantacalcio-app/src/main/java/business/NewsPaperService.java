@@ -7,7 +7,7 @@ import java.util.Set;
 
 import business.ports.transaction.TransactionManager;
 import domain.Grade;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.Player;
 
 public class NewsPaperService {
@@ -20,7 +20,7 @@ public class NewsPaperService {
 
 	public void setVoteToPlayers(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
-			Optional<MatchDaySerieA> matchDaySerieA = getMatchDay();
+			Optional<MatchDay> matchDaySerieA = getMatchDay();
 			if (matchDaySerieA.isEmpty()) {
 				throw new RuntimeException("Now you can't assign the votes");
 			}
@@ -42,11 +42,11 @@ public class NewsPaperService {
 		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findByClub(club));
 	}
 
-	public Optional<MatchDaySerieA> getMatchDay() {
+	public Optional<MatchDay> getMatchDay() {
 	    return transactionManager.fromTransaction((context) -> {
 	        LocalDate now = today();
 	        DayOfWeek dayOfWeek = now.getDayOfWeek();
-	        Optional<MatchDaySerieA> matchDaySerieA = Optional.empty();
+	        Optional<MatchDay> matchDaySerieA = Optional.empty();
 	        if (dayOfWeek == DayOfWeek.SATURDAY) {
 	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
 	        } else if (dayOfWeek == DayOfWeek.SUNDAY) {

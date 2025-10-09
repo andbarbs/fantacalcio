@@ -44,7 +44,7 @@ import domain.Grade;
 import domain.League;
 import domain.LineUp;
 import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.NewsPaper;
 import domain.Player;
 import domain.Result;
@@ -90,7 +90,7 @@ class AdminUserServiceIntegrationIT {
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(LineUp.class)
@@ -195,13 +195,14 @@ class AdminUserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team1);
 		fantaTeamRepository.saveTeam(team2);
 
-		List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
-		for (int i = 0; i < 38; i++) {
-			matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i), 1));
+		// TODO 20 deve diventare una costante da qualche parte!
+		List<MatchDay> matchDays = new ArrayList<MatchDay>();
+		for (int i = 0; i < 20; i++) {
+			matchDays.add(new MatchDay("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i), 1));
 		}
 
 		sessionFactory.inTransaction(t -> {
-			for (MatchDaySerieA matchDaySerieA : matchDays) {
+			for (MatchDay matchDaySerieA : matchDays) {
 				t.persist(matchDaySerieA);
 			}
 		});
@@ -210,10 +211,10 @@ class AdminUserServiceIntegrationIT {
 
 		adminUserService.generateCalendar(league);
 
-		for (MatchDaySerieA matchDaySerieA : matchDays) {
+		for (MatchDay matchDaySerieA : matchDays) {
 			Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
 
-			assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
+			assertThat(matchByMatchDay.getMatchDay()).isEqualTo(matchDaySerieA);
 			assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
 		}
 	}
@@ -244,8 +245,8 @@ class AdminUserServiceIntegrationIT {
 
 		// MatchDays
 		LocalDate matchDate = LocalDate.of(2025, 9, 14);
-		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1),1 );
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate, 1);
+		MatchDay prevDay = new MatchDay("Day0", matchDate.minusWeeks(1),1 );
+		MatchDay dayToCalc = new MatchDay("Day1", matchDate, 1);
 
 		entityManager.persist(prevDay);
 		entityManager.persist(dayToCalc);
