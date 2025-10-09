@@ -3,15 +3,12 @@ package domain;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class MatchDaySerieA {
-    public static enum Status {PAST, PRESENT, FUTURE}
+    public static final int matchDaysInLeague = 20;
+    public enum Status {PAST, PRESENT, FUTURE}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,17 +20,22 @@ public class MatchDaySerieA {
 	@Basic(optional = false)
 	private int number;
 
-    @Basic(optional = false)
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+    @ManyToOne(optional = false, fetch=FetchType.LAZY)
+    private League league;
 
 	protected MatchDaySerieA() {
 	}
 
-    //TODO devo controllare che number sia compreso tra 1 e 20?
-	public MatchDaySerieA(String name, int number, Status status) {
+	public MatchDaySerieA(String name, int number, Status status, League league) {
+        if(number < 0 || number > matchDaysInLeague)
+            throw new IllegalArgumentException("number out of range");
 		this.name = name;
 		this.number = number;
         this.status = status;
+        this.league = league;
 	}
 
 	public String getName() {
@@ -44,6 +46,10 @@ public class MatchDaySerieA {
 		return number;
 	}
 
+    public League getLeague() {
+        return league;
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -52,11 +58,11 @@ public class MatchDaySerieA {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         MatchDaySerieA that = (MatchDaySerieA) o;
-        return number == that.number && Objects.equals(name, that.name) && status == that.status;
+        return number == that.number && Objects.equals(name, that.name) && status == that.status && Objects.equals(league, that.league);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, number, status);
+        return Objects.hash(name, number, status, league);
     }
 }

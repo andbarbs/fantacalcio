@@ -31,11 +31,10 @@ public class Grade {
 
 	protected Grade() {}
 	
-	public Grade(Player player, MatchDaySerieA matchDay, double mark, League league) {
+	public Grade(Player player, MatchDaySerieA matchDay, double mark) {
 		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
-		this.league= league;
 	}
 
 	public double getMark() {
@@ -46,9 +45,6 @@ public class Grade {
 		return player;
 	}
 
-    public League getLeague() {
-        return league;
-    }
 
     public MatchDaySerieA getMatchDay() {
 		return matchDay;
@@ -58,11 +54,11 @@ public class Grade {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Grade grade = (Grade) o;
-        return Double.compare(mark, grade.mark) == 0 && Objects.equals(player, grade.player) && Objects.equals(matchDay, grade.matchDay) && Objects.equals(league, grade.league);
+        return Double.compare(mark, grade.mark) == 0 && Objects.equals(player, grade.player) && Objects.equals(matchDay, grade.matchDay);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(player, matchDay, mark, league);
+        return Objects.hash(player, matchDay, mark);
     }
 }
