@@ -25,7 +25,6 @@ import domain.League;
 import domain.LineUp;
 import domain.Match;
 import domain.MatchDaySerieA;
-import domain.NewsPaper;
 import domain.Player;
 import domain.Player.Defender;
 import domain.Player.Forward;

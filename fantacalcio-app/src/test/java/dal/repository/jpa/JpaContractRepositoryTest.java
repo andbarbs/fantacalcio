@@ -22,7 +22,6 @@ import domain.Contract;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
-import domain.NewsPaper;
 import domain.Player;
 import domain.Player.Club;
 import domain.Player.Forward;

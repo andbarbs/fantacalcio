@@ -4,7 +4,6 @@ import java.util.List;
 
 import domain.Grade;
 import domain.Match;
-import domain.NewsPaper;
 
 public interface GradeRepository {
 

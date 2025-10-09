@@ -18,13 +18,13 @@ public class League {
     private String name;
 
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    private NewsPaper newsPaper;
+    private FantaUser newsPaper;
 
     @Basic(optional=false)
     private String leagueCode;
 
     protected League() {}
-    public League(FantaUser admin, String name, NewsPaper newsPaper, String leagueCode) {
+    public League(FantaUser admin, String name, FantaUser newsPaper, String leagueCode) {
         this.admin = admin;
         this.name = name;
         this.newsPaper = newsPaper;
@@ -39,7 +39,7 @@ public class League {
         return name;
     }
 
-    public NewsPaper getNewsPaper() {
+    public FantaUser getNewsPaper() {
         return newsPaper;
     }
 

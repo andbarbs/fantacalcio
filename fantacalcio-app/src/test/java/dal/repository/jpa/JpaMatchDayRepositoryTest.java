@@ -23,7 +23,6 @@ import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
 import domain.MatchDaySerieA;
-import domain.NewsPaper;
 import domain.Player;
 import jakarta.persistence.EntityManager;
 

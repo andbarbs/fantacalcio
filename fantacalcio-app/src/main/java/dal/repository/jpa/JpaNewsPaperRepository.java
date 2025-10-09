@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import business.ports.repository.NewsPaperRepository;
-import domain.NewsPaper;
 import domain.NewsPaper_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;

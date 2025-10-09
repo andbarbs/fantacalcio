@@ -8,8 +8,6 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.jupiter.api.*;
 
-import domain.NewsPaper;
-
 import java.util.List;
 import java.util.Optional;
 

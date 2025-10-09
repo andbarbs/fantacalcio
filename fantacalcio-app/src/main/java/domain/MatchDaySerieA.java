@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 
 @Entity
 public class MatchDaySerieA {
+    public static enum Status {PAST, PRESENT, FUTURE}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,48 +21,42 @@ public class MatchDaySerieA {
 	private String name;
 
 	@Basic(optional = false)
-	private LocalDate date;
-
-	@Basic(optional = false)
 	private int number;
+
+    @Basic(optional = false)
+    private Status status;
 
 	protected MatchDaySerieA() {
 	}
 
-	public MatchDaySerieA(String name, LocalDate date, int number) {
+    //TODO devo controllare che number sia compreso tra 1 e 20?
+	public MatchDaySerieA(String name, int number, Status status) {
 		this.name = name;
-		this.date = date;
 		this.number = number;
+        this.status = status;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public LocalDate getDate() {
-		return date;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(date, name);
-	}
-
 	public int getNumber() {
 		return number;
 	}
 
-	//TODO aggiungere number nell'equals e aggiustare test se necessario
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MatchDaySerieA other = (MatchDaySerieA) obj;
-		return Objects.equals(date, other.date) && Objects.equals(name, other.name);
-	}
+    public Status getStatus() {
+        return status;
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        MatchDaySerieA that = (MatchDaySerieA) o;
+        return number == that.number && Objects.equals(name, that.name) && status == that.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, number, status);
+    }
 }

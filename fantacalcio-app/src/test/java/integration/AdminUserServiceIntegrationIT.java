@@ -45,7 +45,6 @@ import domain.League;
 import domain.LineUp;
 import domain.Match;
 import domain.MatchDaySerieA;
-import domain.NewsPaper;
 import domain.Player;
 import domain.Result;
 import domain.Player.Club;

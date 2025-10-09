@@ -9,7 +9,6 @@ import business.ports.repository.NewsPaperRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.FantaUser;
-import domain.NewsPaper;
 
 import java.util.Optional;
 import java.util.function.Consumer;
