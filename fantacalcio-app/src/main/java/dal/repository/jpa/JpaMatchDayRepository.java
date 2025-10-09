@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import business.ports.repository.MatchDayRepository;
+import domain.League;
 import domain.MatchDaySerieA;
 import domain.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
@@ -22,36 +23,37 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public List<MatchDaySerieA> getAllMatchDays() {
-		EntityManager entityManager = getEntityManager();
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+	public List<MatchDaySerieA> getAllMatchDays(League league) {
+		EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
 
-		criteriaQuery.select(root);
-		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(MatchDaySerieA_.DATE)));
+        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
 
-		return entityManager.createQuery(criteriaQuery).getResultList();
+        cq.select(matchDay)
+                .where(cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league))
+                .orderBy(cb.asc(matchDay.get(MatchDaySerieA_.NUMBER)));
+
+        return em.createQuery(cq).getResultList();
 	}
 
 //TODO vanno aggiustate tutte rimuovendo la data e controllando number
 	@Override
-	public Optional<MatchDaySerieA> getPreviousMatchDay(LocalDate date) {
-		EntityManager entityManager = getEntityManager();
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+	public Optional<MatchDaySerieA> getPreviousMatchDay() {
+		EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
 
-		Predicate beforeDate = criteriaBuilder.lessThan(root.get("date"), date);
-		criteriaQuery.select(root).where(beforeDate);
+        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
 
-		criteriaQuery.orderBy(criteriaBuilder.desc(root.get("date")));
+        cq.select(matchDay)
+                .where(cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PAST))
+                .orderBy(cb.desc(matchDay.get(MatchDaySerieA_.NUMBER)));
 
-		TypedQuery<MatchDaySerieA> query = entityManager.createQuery(criteriaQuery);
-		query.setMaxResults(1);
-
-		List<MatchDaySerieA> resultList = query.getResultList();
-		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
+        List<MatchDaySerieA> result = em.createQuery(cq)
+                .setMaxResults(1)
+                .getResultList();
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 	@Override
