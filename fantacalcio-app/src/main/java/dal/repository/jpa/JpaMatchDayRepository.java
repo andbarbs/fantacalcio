@@ -35,7 +35,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 
 //TODO vanno aggiustate tutte rimuovendo la data e controllando number
 	@Override
-	public Optional<MatchDaySerieA> getPreviousMatchDay() {
+	public Optional<MatchDaySerieA> getPreviousMatchDay(League league) {
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);

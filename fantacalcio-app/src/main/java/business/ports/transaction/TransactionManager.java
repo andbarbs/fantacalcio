@@ -12,7 +12,6 @@ import business.ports.repository.LeagueRepository;
 import business.ports.repository.LineUpRepository;
 import business.ports.repository.MatchDayRepository;
 import business.ports.repository.MatchRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.repository.PlayerRepository;
 import business.ports.repository.ProposalRepository;
 import business.ports.repository.ResultsRepository;

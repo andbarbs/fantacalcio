@@ -1,7 +1,6 @@
 package business;
 
 import business.ports.repository.FantaUserRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.transaction.TransactionManager;
 import domain.FantaUser;
 

@@ -20,7 +20,6 @@ import dal.repository.jpa.JpaFantaUserRepository;
 import dal.repository.jpa.JpaGradeRepository;
 import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaMatchRepository;
-import dal.repository.jpa.JpaNewsPaperRepository;
 import dal.repository.jpa.JpaPlayerRepository;
 import dal.transaction.jpa.JpaTransactionManager;
 import domain.Contract;

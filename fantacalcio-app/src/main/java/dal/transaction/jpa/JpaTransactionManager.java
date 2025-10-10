@@ -13,7 +13,6 @@ import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaLineUpRepository;
 import dal.repository.jpa.JpaMatchDayRepository;
 import dal.repository.jpa.JpaMatchRepository;
-import dal.repository.jpa.JpaNewsPaperRepository;
 import dal.repository.jpa.JpaPlayerRepository;
 import dal.repository.jpa.JpaProposalRepository;
 import dal.repository.jpa.JpaResultsRepository;

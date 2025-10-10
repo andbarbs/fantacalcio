@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import business.ports.repository.FantaUserRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.FantaUser;

@@ -8,7 +8,7 @@ import domain.MatchDaySerieA;
 
 public interface MatchDayRepository {
 	
-	List<MatchDaySerieA> getAllMatchDays();
+	List<MatchDaySerieA> getAllMatchDays(League league);
 
 	Optional<MatchDaySerieA> getPreviousMatchDay(League league);
 
