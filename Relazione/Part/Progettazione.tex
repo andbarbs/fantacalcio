@@ -16,6 +16,23 @@ In questo modo
         la ricerca di soluzioni efficaci anche quando scomode da mappare manualmente
 \end{itemize}
 
+Principi di gestione della persistenza:
+\begin{itemize}
+    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
+    \item entità applicative vs entità relazionali (cascading)
+    \item inheritance vs type mapping
+    \item lazy fetching nelle entità vs deep fetching nel DAL
+\end{itemize}
+
+Principi di design della GUI:
+\begin{itemize}
+    \item MVP
+    \item MVP, modularità e Dependency Injection (disegno)
+    \item private vs public design-time logic
+    \item instantiation vs configuration
+    \item limiti di AssertJSwing, limiti di WB
+\end{itemize}
+
 
 \todo[color=blue]{Se vuoi scrivi della gui in generale}
 \todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}
@@ -241,3 +258,150 @@ In questo modo
 \end{tabularx}
 
 \end{table}
+
+\subsection{GUI-Mockups}
+\begin{figure}[H]
+    \centering
+
+    % 1ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/Login.png}
+        \caption{Mockup della pagina di login.}
+        \label{fig:pagina_login}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/Registrazione.png}
+        \caption{Mockup della pagina di registrazione.}
+        \label{fig:pagina_registrazione}
+    \end{subfigure}
+
+    % 2ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/HomePage.png}
+        \caption{Mockup della homepage.}
+        \label{fig:pagina_homepage}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/Classifica.png}
+        \caption{Mockup della classifica.}
+        \label{fig:pagina_classifica}
+    \end{subfigure}
+
+    \caption{Mockup delle pagine di accesso e homepage.}
+    \label{fig:mockup_parte1}
+\end{figure}
+\begin{figure}[H]
+    \centering
+
+    % 3ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/Squadre.png}
+        \caption{Mockup della pagina delle squadre.}
+        \label{fig:pagina_squadre}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/VisualizzaSquadra.png}
+        \caption{Mockup pagina di visualizzazione di un team.}
+        \label{fig:pagina_visualizza_squadra}
+    \end{subfigure}
+
+    % 4ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/Calendario.png}
+        \caption{Mockup della pagina del calendario.}
+        \label{fig:pagina_calendario}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/VisualizzaMatch.png}
+        \caption{Mockup pagina di visualizzazione di un match.}
+        \label{fig:pagina_visualizza_match}
+    \end{subfigure}
+
+    \caption{Mockup delle pagine relative a squadre, calendario e match.}
+    \label{fig:mockup_parte2}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+    \centering
+
+    % 5ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/ProposteAttive.png}
+        \caption{Mockup della pagina delle proposte attive.}
+        \label{fig:pagina_proposte_attive}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/ProposteRifiutate.png}
+        \caption{Mockup della pagina delle proposte rifiutate.}
+        \label{fig:pagina_proposte_rifiutate}
+    \end{subfigure}
+
+    % 6ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/CreaProposta.png}
+        \caption{Mockup pagina per la creazione delle proposte.}
+        \label{fig:pagina_crea_proposta}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/CreaLega.png}
+        \caption{Mockup della pagina di creazione di una lega.}
+        \label{fig:pagina_crea_lega}
+    \end{subfigure}
+
+    \caption{Mockup delle pagine relative a proposte e creazione di leghe.}
+    \label{fig:mockup_parte3}
+\end{figure}
+\begin{figure}[H]
+    \centering
+
+    % 7ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/UniscitiAdUnaLega.png}
+        \caption{Mockup della pagina per l'adesione a una lega.}
+        \label{fig:pagina_unisciti_lega}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/GestisciLega.png}
+        \caption{Mockup della pagina per la gestione della lega.}
+        \label{fig:pagina_gestisci_lega}
+    \end{subfigure}
+
+    % 8ª riga
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/AssegnaGiocatori.png}
+        \caption{Mockup pagina assegnazione dei giocatori ai team.}
+        \label{fig:pagina_assegna_giocatori}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Resources/Mockups/AssegnaVoti.png}
+        \caption{Mockup della pagina per l'assegnazione dei voti.}
+        \label{fig:pagina_assegna_voti}
+    \end{subfigure}
+
+    \caption{Mockup delle pagine di gestione delle leghe e assegnazioni.}
+    \label{fig:mockup_parte4}
+\end{figure}

@@ -1,0 +1,258 @@
+package gui.lineup.selectors;
+
+import java.util.Optional;
+
+import gui.lineup.chooser.LineUpChooser.SubstituteSelectorDelegate;
+import gui.lineup.sequence.FillableSwappableSequence;
+import gui.lineup.sequence.FillableSwappableSequence.FillableSwappable;
+import gui.lineup.sequence.FillableSwappableSequence.FillableSwappableSequenceListener;
+
+/**
+ * implements {@linkplain SubstituteSelectorDelegate} as a {@code Controller} in
+ * a bidirectional collaboration scheme inspired by the <b>MVP pattern</b>.
+ * 
+ * <h1>Listener notification policy</h1> Once a {@code SubstitutePlayerSelector}
+ * instance is made to participate in a
+ * {@linkplain CompetitiveOptionDealingGroup competitive dealing group}
+ * <b>and</b> in a {@linkplain FillableSwappableSequence fillable-swappable
+ * sequence}, a {@link SelectorListener} attached to it will be notified of
+ * <ul>
+ * <li>a <i>selection-made</i> event whenever an option on the <i>previously
+ * empty</i> {@code Selector} is selected
+ * <li>a <i>selection-cleared</i> event whenever the selection on the
+ * {@code Selector} is cleared, after <i>{@linkplain FillableSwappableSequence
+ * sequence} operations</i> have taken place
+ * </ul>
+ * 
+ * @param <T> the type for options in the {@code SubstitutePlayerSelector}
+ * @implNote this class implements its own {@linkplain SelectorListener}
+ *           notification mechanism by means of a
+ *           {@link FillableSwappableSequenceListener} attached to the very
+ *           {@code Sequence} it is part of
+ */
+public final class SubstitutePlayerSelector<T> extends OrderedDealerPresenter<T>
+		implements SubstituteSelectorDelegate<T> {
+
+	// 1. MVP Presenter: additional View interface
+
+	/**
+	 * an interface for Views wishing to collaborate with a
+	 * {@linkplain SubstitutePlayerSelector}.
+	 * 
+	 * <p>
+	 * Functionally, a {@code SubstituteSelectorWidget} is supposed to implement
+	 * all capabilities in {@linkplain SelectorWidget} and also be able to
+	 * <ul>
+	 * <li>toggle its ability to receive user input
+	 * <li>toggle visual decoration of its status as the <i>next-fillable</i> gadget
+	 * in a {@code FillableSwappableSequenceDriver}
+	 * </ul>
+	 * 
+	 * @param <T> the type for options in the View's option list
+	 */
+	public interface SubstituteSelectorWidget<T> extends SelectorWidget<T> {
+
+		// TODO rimpiazzare con un setNextFillable(boolean)
+		/**
+		 * requests the {@linkplain SubstituteSelectorWidget} to take on
+		 * <i>next-fillable</i> status.
+		 */
+		void highlight();
+
+		/**
+		 * requests the {@linkplain SubstituteSelectorWidget} to relinquish
+		 * <i>next-fillable</i> status.
+		 */
+		void dehighlight();
+
+		/**
+		 * requests the {@link SelectorWidget} to toggle the visual availability of
+		 * its controls to the user.
+		 */
+		void setControlsEnabled(boolean b);
+	}
+
+	/**
+	 * a separate reference to the view in the more specific type
+	 * {@linkplain SubstituteSelectorWidget} is necessary for this Presenter to
+	 * implement additional interaction with the View, as per its
+	 * {@linkplain FillableSwappable} duties
+	 */
+	private final SubstituteSelectorWidget<T> view;
+
+	public SubstitutePlayerSelector(SubstituteSelectorWidget<T> view) {
+		super(view);
+		this.view = view;
+	}
+
+	// 2. FillableSwappable: mandated functions
+
+	private FillableSwappableSequence<SubstituteSelectorDelegate<T>> sequenceDriver;
+
+	@Override
+	public void attachDriver(FillableSwappableSequence<SubstituteSelectorDelegate<T>> driver) {
+		this.sequenceDriver = driver;
+		this.sequenceDriver.attachListener(
+				new FillableSwappableSequenceListener<SubstituteSelectorDelegate<T>>() {
+
+			@Override
+			public void becameEmpty(SubstituteSelectorDelegate<T> emptiedMember) {
+				if (emptiedMember == SubstitutePlayerSelector.this)
+					listeners().forEach(listener -> listener.selectionClearedOn(SubstitutePlayerSelector.this));
+			}
+
+			@Override
+			public void becameFilled(SubstituteSelectorDelegate<T> filledMember) {
+				if (filledMember == SubstitutePlayerSelector.this)
+					listeners().forEach(listener -> listener.selectionMadeOn(SubstitutePlayerSelector.this));
+			}
+		});
+	}
+
+	/**
+	 * causes a {@code SubstitutePlayerSelector} to clear its selection and retire
+	 * the corresponding option, as requested by the
+	 * {@linkplain FillableSwappableSequence} during a <i>collapse operation</i>,
+	 * <b>without</b> notifying back the sequence driver.
+	 * 
+	 * @implNote this is a local operation with respect to the dealer group, i.e. it
+	 *           does not notify the {@code OptionDealerGroupDriver}
+	 */
+	@Override
+	public void discardContent() {
+		int pos = options.indexOf(getSelection().get());
+		selectOption(NO_SELECTION);
+		retireOption(pos);
+	}
+
+	/**
+	 * causes a {@code SubstitutePlayerSelector} to "equalize" to another
+	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, as
+	 * requested by the {@linkplain FillableSwappableSequence} during a <i>collapse
+	 * operation</i>, <b>without</b> notifying back the sequence driver.
+	 * <p>
+	 * In the context of the dealer group, this means
+	 * <ul>
+	 * <li>restoring <i><b>{@code other}</i></b>'s selected option
+	 * <li>setting the newly restored option as the selected one
+	 * <li>retiring the previously selected option, if existing
+	 * </ul>
+	 * 
+	 * @implNote
+	 *           <ol>
+	 *           <li>this is a local operation with respect to the dealer group,
+	 *           i.e. it does not notify the
+	 *           {@linkplain CompetitiveOptionDealingGroup}
+	 *           <li>this operation does <b>not</b> rely on temporarily clearing the
+	 *           View's selection
+	 *           </ol>
+	 */
+	@Override
+	public void acquireContentFrom(SubstituteSelectorDelegate<T> other) {
+		// saves the current selection on this
+		Optional<T> thisOldSelection = this.getSelection();
+
+		// makes this acquire other's selection
+		T otherSelection = other.getSelection().get();
+		this.restoreOption(options.indexOf(otherSelection));
+		this.selectOption(options.indexOf(otherSelection));
+
+		// on the emptied selector it drops nothing,
+		// on others it ensures correct option propagation across selectors
+		thisOldSelection.ifPresent(o -> this.retireOption(options.indexOf(o)));
+	}
+
+	/**
+	 * causes a {@code SubstitutePlayerSelector} to swap contents with another
+	 * {@code SubstitutePlayerSelector} instance, <i><b>{@code other}</i></b>, as
+	 * requested by the {@linkplain FillableSwappableSequence} during a <i>swap
+	 * operation</i>, <b>without</b> notifying back the sequence driver.
+	 * <p>
+	 * In the context of the dealer group, this means
+	 * <ul>
+	 * <li>restoring <i><b>{@code other}</i></b>'s selected option
+	 * <li>setting the newly restored option as the selected one
+	 * <li>retiring the previously selected option
+	 * </ul>
+	 * and reciprocally on <i><b>{@code other}</i></b> with
+	 * <i><b>{@code this}</i></b>.
+	 * <p>
+	 * 
+	 * @implNote
+	 *           <ol>
+	 *           <li>this is a local operation with respect to the dealer group,
+	 *           i.e. it does not notify the
+	 *           {@linkplain CompetitiveOptionDealingGroup}
+	 *           <li>this operation does <b>not</b> rely on temporarily clearing the
+	 *           View's selection
+	 *           </ol>
+	 */
+	@Override
+	public void swapContentWith(SubstituteSelectorDelegate<T> other) {
+		T otherOldSelection = other.getSelection().get();
+		other.acquireContentFrom(this);
+
+		T thisOldSelection = this.getSelection().get();
+		this.restoreOption(options.indexOf(otherOldSelection));
+		this.selectOption(options.indexOf(otherOldSelection));
+		this.retireOption(options.indexOf(thisOldSelection));
+	}
+
+	@Override
+	public void setNextFillable(boolean flag) {
+		if (flag)
+			view.highlight();
+		else
+			view.dehighlight();
+	}
+
+	@Override
+	public void setFillingEnabled(boolean flag) {
+		view.setControlsEnabled(flag);
+	}
+
+	// 3. OrderedDealerPresenter: response to selection events
+
+	/**
+	 * ensures the sequence driver - and thereby listeners - are only notified when
+	 * Selector <i>enters</i> "filled" state, but not during selection updates
+	 * (Selector <i>remains</i> in "filled" state)
+	 */
+	@Override
+	public void selectedOption(int position) {
+		Optional<T> selection = getSelection();
+		super.selectedOption(position);
+		if (selection.isEmpty())
+			sequenceDriver.contentAdded(this);
+	}
+
+	/**
+	 * ensures the group driver is notified every time an option needs to be
+	 * withdrawn from competitors
+	 */
+	@Override
+	protected void selectionSetFor(int absoluteIndex) {
+		groupDriver.selectionMadeOn(this, absoluteIndex);
+	}
+
+	/**
+	 * ensures the sequence driver - and thereby listeners - are only notified when
+	 * Selector <i>enters</i> "empty" state, but not during selection updates
+	 * (Selector remains in <i>"filled"</i> state)
+	 */
+	@Override
+	public void selectionCleared() {
+		super.selectionCleared();
+		sequenceDriver.contentRemoved(this);
+	}
+
+	/**
+	 * ensures the group driver is notified every time an option needs to be added
+	 * back to competitors
+	 */
+	@Override
+	protected void selectionClearedFor(int absoluteIndex) {
+		groupDriver.selectionClearedOn(this, absoluteIndex);
+	}
+
+}

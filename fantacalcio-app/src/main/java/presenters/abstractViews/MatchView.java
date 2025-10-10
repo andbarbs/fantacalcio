@@ -1,6 +1,6 @@
 package presenters.abstractViews;
 
-import domainModel.Match;
+import domain.Match;
 
 public interface MatchView {
 
