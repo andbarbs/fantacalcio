@@ -43,20 +43,5 @@ public abstract class Proposal {
         return Objects.hash(offeredContract, requestedContract);
     }
 
-    @Entity
-    public static class PendingProposal extends Proposal {
-        public PendingProposal() {}
-        public PendingProposal(Contract offeredContract, Contract requestedContract) {
-            super(offeredContract, requestedContract);
-        }
-    }
-
-    @Entity
-    public static class RejectedProposal extends Proposal {
-        public RejectedProposal() {}
-        public RejectedProposal(Contract offeredContract, Contract requestedContract) {
-            super(offeredContract, requestedContract);
-        }
-    }
 }
 
