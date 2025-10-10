@@ -1,6 +1,5 @@
 package dal.repository.jpa;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,11 +8,8 @@ import domain.League;
 import domain.MatchDaySerieA;
 import domain.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDayRepository {
@@ -47,51 +43,66 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
         Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
 
         cq.select(matchDay)
-                .where(cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PAST))
+                .where(
+                        cb.and(
+                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PAST)
+                        )
+                )
                 .orderBy(cb.desc(matchDay.get(MatchDaySerieA_.NUMBER)));
 
         List<MatchDaySerieA> result = em.createQuery(cq)
                 .setMaxResults(1)
                 .getResultList();
+
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getNextMatchDay(LocalDate date) {
-		EntityManager entityManager = getEntityManager();
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+	public Optional<MatchDaySerieA> getNextMatchDay(League league) {
+		EntityManager em= getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
 
-		Predicate afterDate = criteriaBuilder.greaterThan(root.get("date"), date);
-		criteriaQuery.select(root).where(afterDate);
+        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
 
-		criteriaQuery.orderBy(criteriaBuilder.asc(root.get("date")));
+        cq.select(matchDay)
+                .where(
+                        cb.and(
+                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.FUTURE)
+                        )
+                )
+                .orderBy(cb.asc(matchDay.get(MatchDaySerieA_.NUMBER)));
 
-		TypedQuery<MatchDaySerieA> query = entityManager.createQuery(criteriaQuery);
-		query.setMaxResults(1);
+        List<MatchDaySerieA> result = em.createQuery(cq)
+                .setMaxResults(1)
+                .getResultList();
 
-		List<MatchDaySerieA> resultList = query.getResultList();
-		return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getMatchDay(LocalDate date) {
-		EntityManager entityManager = getEntityManager();
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<MatchDaySerieA> criteriaQuery = criteriaBuilder.createQuery(MatchDaySerieA.class);
-		Root<MatchDaySerieA> root = criteriaQuery.from(MatchDaySerieA.class);
+	public Optional<MatchDaySerieA> getMatchDay(League league) {
+		EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
 
-		// WHERE date = :date
-		criteriaQuery.select(root)
-				.where(criteriaBuilder.equal(root.get(MatchDaySerieA_.date), date));
+        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
 
-		try {
-			MatchDaySerieA result = entityManager.createQuery(criteriaQuery).getSingleResult();
-			return Optional.of(result);
-		} catch (NoResultException e) {
-			return Optional.empty();
-		}
+        cq.select(matchDay)
+                .where(
+                        cb.and(
+                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PRESENT)
+                        )
+                );
+
+        List<MatchDaySerieA> result = em.createQuery(cq)
+                .setMaxResults(1)
+                .getResultList();
+
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
 	}
 
 	@Override
