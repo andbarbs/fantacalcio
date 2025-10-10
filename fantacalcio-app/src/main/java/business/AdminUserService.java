@@ -336,6 +336,7 @@ public class AdminUserService extends UserService {
 		return 1 + (int) Math.floor((points - 66.0) / 6.0);
 	}
 
+    //TODO testa
     public void startMatchDay(League league) {
         transactionManager.inTransaction((context)->{
             Optional<MatchDaySerieA> matchDayToPlay = context.getMatchDayRepository().getNextMatchDay(league);
@@ -353,6 +354,7 @@ public class AdminUserService extends UserService {
         });
     }
 
+    //TODO testa
     public void endMatchDay(League league) {
         transactionManager.inTransaction((context)->{
             Optional<MatchDaySerieA> matchDayToEnd = context.getMatchDayRepository().getMatchDay(league);
