@@ -1,7 +1,5 @@
 package business;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,11 +19,15 @@ public class AdminUserService extends UserService {
 		super(transactionManager);
 	}
 
-	public void createLeague(String leagueName, FantaUser admin, NewsPaper newsPaper, String leagueCode) {
+    //TODO ritesta
+	public void createLeague(String leagueName, FantaUser admin, String leagueCode) {
 		transactionManager.inTransaction((context) -> {
 			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
-				League league = new League(admin, leagueName, newsPaper, leagueCode);
+				League league = new League(admin, leagueName, leagueCode);
 				context.getLeagueRepository().saveLeague(league);
+                for(int i = 1; i < 21; i++){
+                    context.getMatchDayRepository().saveMatchDay(new MatchDaySerieA("MatchDay "+ i, i, MatchDaySerieA.Status.FUTURE, league));
+                }
 			} else {
 				throw new IllegalArgumentException("A league with the same league code already exists");
 			}
@@ -90,15 +92,11 @@ public class AdminUserService extends UserService {
 		});
 	}
 
-	public List<NewsPaper> getAllNewspapers() {
-		return transactionManager.fromTransaction((context) -> context.getNewspaperRepository().getAllNewspapers());
-	}
-
 	public void generateCalendar(League league) {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 20);
-			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays();
+			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays(league);
 			List<Match> matches = createMatches(schedule, matchDaySerieA);
 			for (Match match : matches) {
 				context.getMatchRepository().saveMatch(match);
@@ -108,7 +106,7 @@ public class AdminUserService extends UserService {
 	}
 
 	// package-private for tests
-	List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
+	private List<List<FantaTeam[]>> generateSchedule(List<FantaTeam> teams) {
 		int n = teams.size();
 
 		if (n < 2) {
@@ -180,7 +178,7 @@ public class AdminUserService extends UserService {
 	}
 
 	//TODO dovrebbe essere privato viene usato in generate calendar
-	public List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDaySerieA> matchDays) {
+	private List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDaySerieA> matchDays) {
 		List<Match> matches = new ArrayList<>();
 
 		if (schedule.size() != matchDays.size()) {
@@ -206,27 +204,22 @@ public class AdminUserService extends UserService {
 			throw new IllegalArgumentException("You are not the admin of the league");
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
-			LocalDate localDate = today();
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
+			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
 			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
 			}
-			Optional<MatchDaySerieA> matchDayToCalculate = getNextMatchDayToCalculate(localDate, context, league, user);
-			if (matchDayToCalculate.isEmpty()) {
-				throw new RuntimeException("There are no results to calculate");
-			}
-			MatchDaySerieA matchDaySerieA = matchDayToCalculate.get();
-			if (!isLegalToCalculateResults(matchDaySerieA.getDate())) {
-				throw new RuntimeException("The matches are not finished yet");
-			}
+            if(allMatchesHaveResult(previousMatchDay.get(), context)){
+                throw new RuntimeException("The results have already been calculated");
+            }
 
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(matchDaySerieA, league);
+
+			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(previousMatchDay.get(), league);
+            List<Grade> allGrades = context.getGradeRepository().getAllMatchGrades(previousMatchDay.get());
 			for (Match match : allMatches) {
 				
 				System.out.println("Considering match: " + match.getMatchDaySerieA().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
 				
-				List<Grade> allMatchGrades = context.getGradeRepository().getAllMatchGrades(match,
-						league.getNewsPaper());
+				List<Grade> allMatchGrades = findGradesForMatch(match, allGrades);
 				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
 						match.getTeam1());
 				Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
@@ -267,7 +260,33 @@ public class AdminUserService extends UserService {
 		});
 	}
 
-	private double getTeamResult(LineUp lineUp, Map<Player, Grade> gradesByPlayer) {
+    private boolean allMatchesHaveResult(MatchDaySerieA matchDay, TransactionContext context) {
+        // recupera tutti i match della giornata e della lega corrispondente
+        List<Match> matches = context.getMatchRepository().getAllMatchesByMatchDay(matchDay, matchDay.getLeague());
+
+        // controlla che per ogni match ci sia un result
+        return matches.stream()
+                .allMatch(match -> context.getResultsRepository().getResult(match).isPresent());
+    }
+
+    private List<Grade> findGradesForMatch(Match match, List<Grade> allGrades) {
+        // Ottieni tutti i player dei due team
+        Set<Player> matchPlayers = new HashSet<>();
+        matchPlayers.addAll(match.getTeam1().getContracts().stream()
+                .map(Contract::getPlayer)
+                .toList());
+        matchPlayers.addAll(match.getTeam2().getContracts().stream()
+                .map(Contract::getPlayer)
+                .toList());
+
+        // Filtra i grade solo per i player dei due team
+        return allGrades.stream()
+                .filter(grade -> matchPlayers.contains(grade.getPlayer()))
+                .toList();
+    }
+
+
+    private double getTeamResult(LineUp lineUp, Map<Player, Grade> gradesByPlayer) {
 		double result = 0;
 		result += calculateRoleResults(lineUp.extract().starterGoalkeepers(), lineUp.extract().substituteGoalkeepers(),
 				gradesByPlayer);
@@ -317,44 +336,33 @@ public class AdminUserService extends UserService {
 		return 1 + (int) Math.floor((points - 66.0) / 6.0);
 	}
 
-	private boolean isLegalToCalculateResults(LocalDate matchDate) {
-		LocalDate now = today();
-		LocalDate legalDate;
-		DayOfWeek dayOfWeek = matchDate.getDayOfWeek();
-		if (dayOfWeek == DayOfWeek.SATURDAY) {
-			legalDate = matchDate.plusDays(3);
-		} else if (dayOfWeek == DayOfWeek.SUNDAY) {
-			legalDate = matchDate.plusDays(2);
-		} else {
-			legalDate = now.plusDays(1);
-		}
-		return !now.isBefore(legalDate);
-	}
+    public void startMatchDay(League league) {
+        transactionManager.inTransaction((context)->{
+            Optional<MatchDaySerieA> matchDayToPlay = context.getMatchDayRepository().getNextMatchDay(league);
+            if (matchDayToPlay.isPresent()) {
+                Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+                if(previousMatchDay.isPresent()) {
+                    if(!allMatchesHaveResult(previousMatchDay.get(), context)) {
+                        throw new RuntimeException("You have to calculate the results before advancing the game state");
+                    }
+                }
+                matchDayToPlay.get().setStatus(MatchDaySerieA.Status.PRESENT);
+            } else{
+                throw new RuntimeException("The are no more matchdays to play");
+            }
+        });
+    }
 
-	protected LocalDate today() {
-		return LocalDate.now();
-	}
+    public void endMatchDay(League league) {
+        transactionManager.inTransaction((context)->{
+            Optional<MatchDaySerieA> matchDayToEnd = context.getMatchDayRepository().getMatchDay(league);
+            if (matchDayToEnd.isPresent()) {
+                matchDayToEnd.get().setStatus(MatchDaySerieA.Status.PAST);
+            }else {
+                throw new RuntimeException("The is no matchDay to end");
+            }
+        });
+    }
 
-	Optional<MatchDaySerieA> getNextMatchDayToCalculate(LocalDate localDate, TransactionContext context, League league,
-			FantaUser user) {
-		Optional<MatchDaySerieA> matchDayToCalculate;
-		boolean found = false;
-		while (!found) {
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(localDate);
-			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
-						getFantaTeamByUserAndLeague(league, user));
-				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
-				if (previousMatchResult.isPresent()) {
-					found = true;
-				} else {
-					localDate = previousMatchDay.get().getDate();
-				}
-			} else {
-				found = true;
-			}
-		}
-		matchDayToCalculate = context.getMatchDayRepository().getMatchDay(localDate);
-		return matchDayToCalculate;
-	}
+
 }

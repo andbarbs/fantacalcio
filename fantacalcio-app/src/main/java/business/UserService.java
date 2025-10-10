@@ -1,7 +1,5 @@
 package business;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,7 +54,7 @@ public class UserService {
 		return transactionManager.fromTransaction((context) -> {
 
 			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays(league);
-			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
+			Map<MatchDaySerieA, List<Match>> map = new HashMap<>();
 
 			for (MatchDaySerieA matchDay : allMatchDays) {
 				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
@@ -206,20 +204,20 @@ public class UserService {
 				.fromTransaction((context) -> context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
 	}
 
-	protected LocalDate today() {
-		return LocalDate.now();
-	}
-
 	public void saveLineUp(LineUp lineUp) {
 		transactionManager.inTransaction((context) -> {
-			LocalDate today = today();
-			DayOfWeek day = today.getDayOfWeek();
-
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
             if(match.getMatchDaySerieA().getStatus() == MatchDaySerieA.Status.PAST ||
                     match.getMatchDaySerieA().getStatus() == MatchDaySerieA.Status.PRESENT){
                 throw new UnsupportedOperationException("Can't modify the lineup after the match is over or is being played");
+            }
+            Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(lineUp.getTeam().getLeague());
+            if (nextMatchDay.isEmpty()) {
+                throw new RuntimeException("The league ended");
+            }
+            if(!nextMatchDay.get().equals(match.getMatchDaySerieA())) {
+                throw new RuntimeException("The matchDay of the lineUp is incorrect");
             }
 
 			League league = lineUp.getTeam().getLeague();
