@@ -1,7 +1,5 @@
 package business;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,13 +18,14 @@ public class NewsPaperService {
 
 	public void setVoteToPlayers(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
-			Optional<MatchDaySerieA> matchDaySerieA = getMatchDay();
+            Grade anyGrade = grades.stream().findAny().orElseThrow(() -> new RuntimeException("No grades found"));
+			Optional<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getMatchDay(anyGrade.getMatchDay().getLeague());
 			if (matchDaySerieA.isEmpty()) {
 				throw new RuntimeException("Now you can't assign the votes");
 			}
 			for (Grade grade : grades) {
 				if (!(grade.getMatchDay().equals(matchDaySerieA.get()))) {
-					throw new RuntimeException("The match date is not correct");
+					throw new RuntimeException("The matchDay is not the present one or is of another League");
 				}
 				if (grade.getMark() < -5 || grade.getMark() > 25) {
 					throw new IllegalArgumentException("Marks must be between -5 and 25");
@@ -40,29 +39,6 @@ public class NewsPaperService {
 
 	public Set<Player> getPlayersToGrade(Player.Club club) {
 		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findByClub(club));
-	}
-
-	public Optional<MatchDaySerieA> getMatchDay() {
-	    return transactionManager.fromTransaction((context) -> {
-	        LocalDate now = today();
-	        DayOfWeek dayOfWeek = now.getDayOfWeek();
-	        Optional<MatchDaySerieA> matchDaySerieA = Optional.empty();
-	        if (dayOfWeek == DayOfWeek.SATURDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-	        } else if (dayOfWeek == DayOfWeek.SUNDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-	            if (matchDaySerieA.isEmpty()) {
-	                matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-	            }
-	        } else if (dayOfWeek == DayOfWeek.MONDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-	        }
-	        return matchDaySerieA;
-	    });
-	}
-
-	protected LocalDate today() {
-		return LocalDate.now();
 	}
 
 }

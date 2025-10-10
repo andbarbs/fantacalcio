@@ -17,17 +17,16 @@ public class League {
     @Basic(optional=false)
     private String name;
 
-    @ManyToOne(optional=false, fetch=FetchType.LAZY)
+    @ManyToOne(optional=true, fetch=FetchType.LAZY)
     private FantaUser newsPaper;
 
     @Basic(optional=false)
     private String leagueCode;
 
     protected League() {}
-    public League(FantaUser admin, String name, FantaUser newsPaper, String leagueCode) {
+    public League(FantaUser admin, String name, String leagueCode) {
         this.admin = admin;
         this.name = name;
-        this.newsPaper = newsPaper;
         this.leagueCode = leagueCode;
     }
     // Getters
@@ -45,6 +44,10 @@ public class League {
 
     public String getLeagueCode() {
         return leagueCode;
+    }
+
+    public void setNewsPaper(FantaUser newsPaper) {
+        this.newsPaper = newsPaper;
     }
 
     @Override

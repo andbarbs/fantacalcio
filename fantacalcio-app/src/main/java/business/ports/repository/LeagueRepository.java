@@ -16,5 +16,8 @@ public interface LeagueRepository {
 	List<League> getLeaguesByUser(FantaUser user);
 	
 	List<FantaTeam> getAllTeams(League league);
+
+    //TODO implementa
+    List<League> getLeaguesByJournalist(FantaUser journalist);
 	
 }

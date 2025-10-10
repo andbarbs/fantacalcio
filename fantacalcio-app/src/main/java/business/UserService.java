@@ -26,7 +26,7 @@ public class UserService {
 
 			final int maxFantaTeamsPerLeague = 8;
 			if (leagueRepository.getAllTeams(league).size() >= maxFantaTeamsPerLeague)
-				throw new UnsupportedOperationException("Maximum 12 teams per league");
+				throw new UnsupportedOperationException("Maximum 8 teams per league");
 
 			FantaUser user = fantaTeam.getFantaManager();
 			List<League> UserLeagues = leagueRepository.getLeaguesByUser(user);
@@ -38,13 +38,24 @@ public class UserService {
 		});
 	}
 
+    //TODO Testa
+    //Mi fido che la lista sia stata passata bene
+    public void joinLeagueAsJournalist(League league, FantaUser journalist) {
+        transactionManager.inTransaction((context) -> {
+            if (league.getNewsPaper() != null) {
+                throw new IllegalStateException("La lega ha già un giornale associato!");
+            }
+            league.setNewsPaper(journalist);
+        });
+    }
+
 	// Matches
 
 	public Map<MatchDaySerieA, List<Match>> getAllMatches(League league) {
 
 		return transactionManager.fromTransaction((context) -> {
 
-			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
+			List<MatchDaySerieA> allMatchDays = context.getMatchDayRepository().getAllMatchDays(league);
 			Map<MatchDaySerieA, List<Match>> map = new HashMap<MatchDaySerieA, List<Match>>();
 
 			for (MatchDaySerieA matchDay : allMatchDays) {
@@ -56,9 +67,9 @@ public class UserService {
 		});
 	}
 
-	public Match getNextMatch(League league, FantaTeam fantaTeam, LocalDate date) {
+	public Match getNextMatch(League league, FantaTeam fantaTeam) {
 		return transactionManager.fromTransaction((context) -> {
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
+			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
 			if (previousMatchDay.isPresent()) {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
 						fantaTeam);
@@ -67,7 +78,7 @@ public class UserService {
 					throw new RuntimeException("The results for the previous match have not been calculated yet");
 				}
 			}
-			Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
+			Optional<MatchDaySerieA> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(league);
 			if (nextMatchDay.isEmpty()) {
 				throw new RuntimeException("The league ended");
 			} else {
@@ -93,7 +104,8 @@ public class UserService {
 				.fromTransaction((context) -> context.getProposalRepository().getMyProposals(league, team));
 	}
 
-	public void acceptProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
+    //TODO ritesta
+	public void acceptProposal(Proposal proposal, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
@@ -106,7 +118,7 @@ public class UserService {
 			Optional<Contract> offeredContract = searchContract(offeringTeam, offeredPlayer);
 
 			if (requestedContract.isEmpty() || offeredContract.isEmpty()) {
-				rejectProposal(proposal, fantaTeam);
+                context.getProposalRepository().deleteProposal(proposal);
 				throw new IllegalArgumentException("One or both players do not play anymore in the teams");
 			}
 			Contract receivedContract = new Contract(proposal.getOfferedContract().getTeam(),
@@ -121,7 +133,7 @@ public class UserService {
 		});
 	}
 
-	public void rejectProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
+	public void rejectProposal(Proposal proposal, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
@@ -129,10 +141,7 @@ public class UserService {
 			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
-			Proposal.RejectedProposal rejectedProposal = new Proposal.RejectedProposal(proposal.getOfferedContract(),
-					proposal.getRequestedContract());
 			context.getProposalRepository().deleteProposal(proposal);
-			context.getProposalRepository().saveProposal(rejectedProposal);
 		});
 	}
 
@@ -147,7 +156,7 @@ public class UserService {
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
 
 			if (requestedContract.isPresent() && offeredContract.isPresent()) {
-				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
+				Proposal newProposal = new Proposal(offeredContract.get(), requestedContract.get());
 
 				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get())
 						.isPresent()) {
@@ -180,9 +189,9 @@ public class UserService {
 
 	// Grades
 
-	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+	public List<Grade> getAllMatchGrades(Match match) {
 		return transactionManager
-				.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
+				.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match.getMatchDaySerieA()));
 	}
 
 	// Results
@@ -208,18 +217,16 @@ public class UserService {
 
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
-			LocalDate matchDate = match.getMatchDaySerieA().getDate();
-			if (today.isAfter(matchDate))
-				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
-
-			if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
-				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
+            if(match.getMatchDaySerieA().getStatus() == MatchDaySerieA.Status.PAST ||
+                    match.getMatchDaySerieA().getStatus() == MatchDaySerieA.Status.PRESENT){
+                throw new UnsupportedOperationException("Can't modify the lineup after the match is over or is being played");
+            }
 
 			League league = lineUp.getTeam().getLeague();
 			FantaTeam team = lineUp.getTeam();
 
 			// Check if is legal to save the lineUP
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
+			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(match.getMatchDaySerieA().getLeague());
 			if (previousMatchDay.isPresent()) {
 				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
 						team);

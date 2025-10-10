@@ -26,9 +26,6 @@ public class Grade {
 	@Basic(optional=false)
 	private double mark;
 
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private League league;
-
 	protected Grade() {}
 	
 	public Grade(Player player, MatchDaySerieA matchDay, double mark) {

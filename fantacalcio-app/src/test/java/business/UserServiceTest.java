@@ -561,7 +561,7 @@ public class UserServiceTest {
 		when(context.getMatchDayRepository().getNextMatchDay(any())).thenReturn(Optional.of(next));
 		when(context.getMatchRepository().getMatchByMatchDay(next, league, team)).thenReturn(nextMatch);
 
-		Match result = userService.getNextMatch(league, team, LocalDate.now());
+		Match result = userService.getNextMatch(league, team);
 		assertThat(result).isEqualTo(nextMatch);
 	}
 
@@ -577,7 +577,7 @@ public class UserServiceTest {
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> userService.getNextMatch(league, team, today)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("results for the previous match have not been calculated yet");
 	}
 
@@ -590,7 +590,7 @@ public class UserServiceTest {
 		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.empty());
 		when(context.getMatchDayRepository().getNextMatchDay(today)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> userService.getNextMatch(league, team, today)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The league ended");
 	}
 
@@ -898,7 +898,7 @@ public class UserServiceTest {
 		NewsPaper newsPaper = new NewsPaper("Gazzetta");
 
 		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
-		List<Grade> result = userService.getAllMatchGrades(match, newsPaper);
+		List<Grade> result = userService.getAllMatchGrades(match);
 		assertThat(result).containsExactly(grade);
 	}
 

@@ -340,7 +340,7 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		Match result = userService.getNextMatch(league, team, LocalDate.now());
+		Match result = userService.getNextMatch(league, team);
 		assertThat(result.getMatchDaySerieA().getName()).isEqualTo("MD2");
 	}
 
