@@ -64,5 +64,8 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    return getEntityManager().createQuery(query).getResultList();
 	}
 
-
+    @Override
+    public List<League> getLeaguesByJournalist(FantaUser journalist) {
+        return List.of();
+    }
 }
