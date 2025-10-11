@@ -7,7 +7,6 @@ import business.ports.transaction.TransactionManager;
 import dal.repository.jpa.JpaContractRepository;
 import dal.repository.jpa.JpaFantaTeamRepository;
 import dal.repository.jpa.JpaFantaUserRepository;
-import dal.repository.jpa.JpaFieldingRepository;
 import dal.repository.jpa.JpaGradeRepository;
 import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaLineUpRepository;
@@ -44,7 +43,6 @@ public class JpaTransactionManager implements TransactionManager {
 										new JpaProposalRepository(em), 
 										new JpaContractRepository(em), 
 										new JpaResultsRepository(em),
-										new JpaFieldingRepository(em), 
 										new JpaLineUpRepository(em), 
 										new JpaMatchDayRepository(em),
 										new JpaFantaUserRepository(em)));

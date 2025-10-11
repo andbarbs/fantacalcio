@@ -6,7 +6,6 @@ import java.util.function.Function;
 import business.ports.repository.ContractRepository;
 import business.ports.repository.FantaTeamRepository;
 import business.ports.repository.FantaUserRepository;
-import business.ports.repository.FieldingRepository;
 import business.ports.repository.GradeRepository;
 import business.ports.repository.LeagueRepository;
 import business.ports.repository.LineUpRepository;
@@ -31,7 +30,6 @@ public interface TransactionManager {
 		private final ProposalRepository proposalRepository;
 		private final ContractRepository contractRepository;
 		private final ResultsRepository resultsRepository;
-		private final FieldingRepository fieldingRepository;
 		private final LineUpRepository lineUpRepository;
 		private final MatchDayRepository matchDayRepository;
 		private final FantaUserRepository fantaUserRepository;
@@ -40,7 +38,7 @@ public interface TransactionManager {
 								  MatchRepository matchRepository, PlayerRepository playerRepository,
 								  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 								  ProposalRepository proposalRepository, ContractRepository contractRepository,
-								  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
+								  ResultsRepository resultsRepository,
 								  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository
 								  , FantaUserRepository fantaUserRepository) {
 			this.leagueRepository = leagueRepository;
@@ -51,7 +49,6 @@ public interface TransactionManager {
 			this.proposalRepository = proposalRepository;
 			this.contractRepository = contractRepository;
 			this.resultsRepository = resultsRepository;
-			this.fieldingRepository = fieldingRepository;
 			this.lineUpRepository = lineUpRepository;
 			this.matchDayRepository = matchDayRepository;
 			this.fantaUserRepository = fantaUserRepository;
@@ -88,10 +85,6 @@ public interface TransactionManager {
 
 		public ResultsRepository getResultsRepository() {
 			return resultsRepository;
-		}
-
-		public FieldingRepository getFieldingRepository() {
-			return fieldingRepository;
 		}
 
 		public LineUpRepository getLineUpRepository() {
