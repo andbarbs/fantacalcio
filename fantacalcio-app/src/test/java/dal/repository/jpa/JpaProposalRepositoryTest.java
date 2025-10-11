@@ -28,11 +28,11 @@ class JpaProposalRepositoryTest {
 	private JpaProposalRepository proposalRepository;
 	private EntityManager entityManager;
 	private FantaUser admin;
-	private NewsPaper newspaper;
 	private League league;
 	private FantaTeam team;
 	private FantaUser user;
 
+    //TODO ricontrollare tutti gli assert perchè mi convincono poco ed alcuni test non ho idea di cosa controllino ATTENZIONE non c'è più lo storico delle proposte
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
@@ -40,10 +40,10 @@ class JpaProposalRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Proposal.class)
-					.addAnnotatedClass(Proposal.PendingProposal.class).addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(FantaTeam.class)
 					.addAnnotatedClass(Player.class).addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Contract.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(FantaTeam.class)
 					.getMetadataBuilder().build();
 
@@ -63,9 +63,7 @@ class JpaProposalRepositoryTest {
 		sessionFactory.inTransaction(t -> {
 			admin = new FantaUser("adminMail", "adminPswd");
 			t.persist(admin);
-			newspaper = new NewsPaper("gazzetta");
-			t.persist(newspaper);
-			league = new League(admin, "lega", newspaper, "1234");
+			league = new League(admin, "lega", "1234");
 			t.persist(league);
 			user = new FantaUser("userMail", "userPswd");
 			t.persist(user);
@@ -100,7 +98,7 @@ class JpaProposalRepositoryTest {
 			session.persist(requestedContract);
 		});
 
-		Proposal.PendingProposal proposal = new Proposal.PendingProposal(offeredContract, requestedContract);
+		Proposal proposal = new Proposal(offeredContract, requestedContract);
 
 		assertThat(proposalRepository.deleteProposal(proposal)).isFalse();
 
@@ -128,7 +126,7 @@ class JpaProposalRepositoryTest {
 			session.persist(requestedContract);
 		});
 
-		Proposal.PendingProposal proposal = new Proposal.PendingProposal(offeredContract, requestedContract);
+		Proposal proposal = new Proposal(offeredContract, requestedContract);
 		entityManager.persist(proposal);
 
 		assertThat(proposalRepository.deleteProposal(proposal)).isTrue();
@@ -158,8 +156,8 @@ class JpaProposalRepositoryTest {
 		Contract requestedContract = new Contract(team2, player2);
 		Contract offeredContract2 = new Contract(team, player1);
 		Contract requestedContract2 = new Contract(team3, player2);
-		Proposal.PendingProposal proposal1 = new Proposal.PendingProposal(offeredContract, requestedContract);
-		Proposal.PendingProposal proposal2 = new Proposal.PendingProposal(offeredContract2, requestedContract2);
+		Proposal proposal1 = new Proposal(offeredContract, requestedContract);
+		Proposal proposal2 = new Proposal(offeredContract2, requestedContract2);
 		
 		sessionFactory.inTransaction(session -> {
 			session.persist(user2);
@@ -200,7 +198,7 @@ class JpaProposalRepositoryTest {
 			session.persist(requestedContract);
 		});
 
-		Proposal proposal = new Proposal.PendingProposal(offeredContract, requestedContract);
+		Proposal proposal = new Proposal(offeredContract, requestedContract);
 		proposalRepository.saveProposal(proposal);
 
 		entityManager.createQuery(
@@ -243,7 +241,7 @@ class JpaProposalRepositoryTest {
 		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", Club.NAPOLI);
 		Contract offeredContract = new Contract(team, player1);
 		Contract requestedContract = new Contract(team2, player2);
-		Proposal.PendingProposal proposal = new Proposal.PendingProposal(offeredContract, requestedContract);
+		Proposal proposal = new Proposal(offeredContract, requestedContract);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(team2);
