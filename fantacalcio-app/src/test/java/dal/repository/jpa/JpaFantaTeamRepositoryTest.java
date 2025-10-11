@@ -30,7 +30,6 @@ class JpaFantaTeamRepositoryTest {
 	private EntityManager entityManager;
 	private League league;
 	private FantaUser admin;
-	private NewsPaper newsPaper;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -39,7 +38,7 @@ class JpaFantaTeamRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class).addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class)
 					.getMetadataBuilder().build();
 
@@ -59,9 +58,7 @@ class JpaFantaTeamRepositoryTest {
 		sessionFactory.inTransaction(t -> {
 			admin = new FantaUser("email", "pswd");
 			t.persist(admin);
-			newsPaper = new NewsPaper("gazzetta");
-			t.persist(newsPaper);
-			league = new League(admin, "league", newsPaper, "1234");
+			league = new League(admin, "league", "1234");
 			t.persist(league);
 		});
 	}
