@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import domain.Contract;
@@ -60,42 +63,65 @@ class JpaLeagueRepositoryTest {
 		sessionFactory.close();
 	}
 
-	@Test
-	@DisplayName("getLeagueByCode() when the league does not exist")
-	void testGetLeagueByCodeWithNoLeague() {
-        Optional<League> league = leagueRepository.getLeagueByCode("1234");
-        entityManager.getTransaction().begin();
-		assertThat(league).isEmpty();
-        entityManager.getTransaction().commit();
-        entityManager.clear();
+	@Nested
+	@DisplayName("can look up a League by its code")
+	class LookupByCode {
+		
+		@Test
+		@DisplayName("when no League with the given code exists in the database")
+		void testGetLeagueByCodeWithNoLeague() {
+			
+			// GIVEN no League exists in the database with the given code
+			FantaUser admin = new FantaUser("user", "pswd");
+			League league = new League(admin, "lega", "exists");
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league);
+			});
+			
+			// WHEN the SUT is used to retrieve a League with that code
+			entityManager.getTransaction().begin();
+			Optional<League> retrieved = leagueRepository.getLeagueByCode("does not exist");
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Optional is returned
+			assertThat(retrieved).isEmpty();
+		}
+		
+		@Test
+		@DisplayName("when a League with the given code exists in the database")
+		void testGetLeagueByCodeWhenLeagueExists() {
+			
+			// GIVEN a League is manually persisted to the database
+			FantaUser admin = new FantaUser("user", "pswd");
+			String leagueCode = "1234";
+			League league = new League(admin, "lega", leagueCode);
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league);
+			});
+			
+			// WHEN the SUT is used to look up that League
+			entityManager.getTransaction().begin();
+			Optional<League> result = leagueRepository.getLeagueByCode(leagueCode);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the expected League is retrieved
+			assertThat(result).hasValue(league);
+			
+		}
 	}
+	
 
 	@Test
-	@DisplayName("getLeagueByCode() when the league exists")
-	void testGetLeagueByCodeWhenLeagueExists() {
-
-		FantaUser admin = new FantaUser("user", "pswd");
-		String leagueCode = "1234";
-		League league = new League(admin, "lega", leagueCode);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(admin);
-			session.persist(league);
-		});
-
-        entityManager.getTransaction().begin();
-		Optional<League> result = leagueRepository.getLeagueByCode(leagueCode);
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-		assertThat(result).isPresent();
-		assertThat(result.get()).isEqualTo(league);
-
-	}
-
-	@Test
-	@DisplayName("saveLeague() should persist the league correctly")
+	@DisplayName("can persist a League to the database")
 	void testSaveLeague() {
 
+		// GIVEN a League's ancillary entities are manually persisted
 		FantaUser admin = new FantaUser("user", "pswd");
 		String leagueCode = "1234";
 		League league = new League(admin, "lega", leagueCode);
@@ -104,108 +130,173 @@ class JpaLeagueRepositoryTest {
             session.persist(admin);
         });
 
+		// WHEN the SUT is used to persist a League to the database
         entityManager.getTransaction().begin();
 		leagueRepository.saveLeague(league);
         entityManager.getTransaction().commit();
         entityManager.clear();
 
-		assertThat(entityManager.createQuery("FROM League l WHERE l.leagueCode = :leagueCode", League.class)
-				.setParameter("leagueCode", leagueCode).getSingleResult()).isEqualTo(league);
-
-
-	}
-
-	@Test
-	@DisplayName("getLeaguesByUser() when there is no league with the specified user")
-	void testGetLeaguesByUserWhenNoLeagueExists() {
-
-		FantaUser admin = new FantaUser("adminMail", "adminPswd");
-		League league = new League(admin, "lega", "1234");
-		FantaUser user = new FantaUser("mail", "pswd");
-
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(admin);
-			session.persist(league);
-			session.persist(user);
-		});
-
-        entityManager.getTransaction().begin();
-		assertThat(leagueRepository.getLeaguesByUser(user)).isEmpty();
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-
-	}
-
-	@Test
-	@DisplayName("getLeaguesByUser() when there are some leagues with the specified user")
-	void testGetLeaguesByUserWhenSomeLeaguesExist() {
-
-		FantaUser user = new FantaUser("user", "userPswd");
-
-		FantaUser admin1 = new FantaUser("admin1", "adminPswd1");
-		League league1 = new League(admin1, "lega1", "1234");
-		FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
-
-		FantaUser admin2 = new FantaUser("admin2", "adminPswd2");
-		League league2 = new League(admin2, "lega2", "5678");
-		FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
-		
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(admin1);
-			session.persist(league1);
-			session.persist(fantaTeam1);
-			session.persist(admin2);
-			session.persist(league2);
-			session.persist(fantaTeam2);
-		});
-
-        entityManager.getTransaction().begin();
-        List<League> leagues = leagueRepository.getLeaguesByUser(user);
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-        assertThat(leagues).containsExactlyInAnyOrder(league1, league2);
+		// THEN the database contains the League
+		assertThat(sessionFactory.fromTransaction((Session em) -> em
+				.createQuery("FROM League l JOIN FETCH l.admin", League.class).getResultStream().toList()))
+				.containsExactly(league);
 	}
 	
-	@Test
-	@DisplayName("getAllTeams() should return all teams for the given league")
-	void testGetAllTeams() {
-	    FantaUser admin = new FantaUser("admin", "pswd");
-	    League league = new League(admin, "lega1", "1234");
-
-	    FantaUser manager1 = new FantaUser("user1", "pswd1");
-	    FantaUser manager2 = new FantaUser("user2", "pswd2");
-
-	    FantaTeam team1 = new FantaTeam("team1", league, 10, manager1, new HashSet<Contract>());
-	    FantaTeam team2 = new FantaTeam("team2", league, 20, manager2, new HashSet<Contract>());
-
-	    // League unrelated to test
-	    FantaUser admin2 = new FantaUser("admin2", "pswd2");
-	    League otherLeague = new League(admin2, "lega2", "5678");
-	    FantaUser otherManager = new FantaUser("other", "pswd3");
-	    FantaTeam otherTeam = new FantaTeam("otherTeam", otherLeague, 5, otherManager, new HashSet<Contract>());
-
-	    sessionFactory.inTransaction(session -> {
-	        session.persist(admin);
-	        session.persist(league);
-	        session.persist(manager1);
-	        session.persist(manager2);
-	        session.persist(team1);
-	        session.persist(team2);
-	        session.persist(admin2);
-	        session.persist(otherLeague);
-	        session.persist(otherManager);
-	        session.persist(otherTeam);
-	    });
-
-        List<FantaTeam> teams = leagueRepository.getAllTeams(league);
-        entityManager.getTransaction().begin();
-	    assertThat(teams)
-	        .containsExactlyInAnyOrder(team1, team2)
-	        .doesNotContain(otherTeam);
-        entityManager.getTransaction().commit();
-        entityManager.clear();
+	@Nested
+	@DisplayName("can look up a League by a member")
+	class LookupByMember {
+		
+		@Test
+		@DisplayName("when no League with the given member exists in the database")
+		void testGetLeaguesByUserWhenNoLeagueExists() {
+			
+			// GIVEN the database contains no League for a given User
+			FantaUser admin = new FantaUser("admin1", "adminPswd1");
+			League league1 = new League(admin, "lega1", "1234");
+			League league2 = new League(admin, "lega2", "5678");
+			
+			FantaUser user = new FantaUser("user", "userPswd");
+			FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
+			FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
+			
+			FantaUser otherUser = new FantaUser("admin2", "adminPswd2");
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league1);
+				session.persist(league2);
+				session.persist(user);
+				session.persist(fantaTeam1);
+				session.persist(fantaTeam2);
+				session.persist(otherUser);
+			});
+			
+			// WHEN the SUT is used to look up Leagues where the user is admin
+			entityManager.getTransaction().begin();
+			Set<League> retrieved = leagueRepository.getLeaguesByMember(otherUser);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Set is returned
+			assertThat(retrieved).isEmpty();
+		}
+		
+		@Test
+		@DisplayName("when a League with the given member exists in the database")
+		void testGetLeaguesByUserWhenSomeLeaguesExist() {
+			
+			// GIVEN some Leagues with a given User as member exist in the database
+			FantaUser admin = new FantaUser("admin1", "adminPswd1");
+			League league1 = new League(admin, "lega1", "1234");
+			League league2 = new League(admin, "lega2", "5678");
+			
+			FantaUser otherAdmin = new FantaUser("admin2", "adminPswd2");
+			League otherLeague = new League(otherAdmin, "lega2", "5678");
+			
+			FantaUser user = new FantaUser("user", "userPswd");
+			FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
+			FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league1);
+				session.persist(league2);
+				session.persist(otherAdmin);
+				session.persist(otherLeague);
+				session.persist(user);
+				session.persist(fantaTeam1);
+				session.persist(fantaTeam2);
+			});
+			
+			// WHEN the SUT is used to look up all Leagues the user is a member of
+			entityManager.getTransaction().begin();
+			Set<League> leagues = leagueRepository.getLeaguesByMember(user);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the expected Leagues are retrieved
+			assertThat(leagues).containsExactlyInAnyOrder(league1, league2);
+		}
 	}
 
+	@Nested
+	@DisplayName("can retrieve all Teams belonging to a League")
+	class Deletion {
+		
+		@Test
+		@DisplayName("when some Teams belonging to a given League exist in the database")
+		void testGetAllTeams() {
+			
+			// GIVEN some Teams are associated with a given League
+			FantaUser admin = new FantaUser("admin", "pswd");
+			League league1 = new League(admin, "lega1", "1234");
+			FantaUser manager1 = new FantaUser("user1", "pswd1");
+			FantaUser manager2 = new FantaUser("user2", "pswd2");
+			FantaTeam team1 = new FantaTeam("team1", league1, 10, manager1, new HashSet<Contract>());
+			FantaTeam team2 = new FantaTeam("team2", league1, 20, manager2, new HashSet<Contract>());
+			
+			FantaUser otherAdmin = new FantaUser("admin2", "pswd2");
+			League otherLeague = new League(otherAdmin, "lega2", "5678");
+			FantaUser otherManager = new FantaUser("other", "pswd3");
+			FantaTeam otherTeam = new FantaTeam("otherTeam", otherLeague, 5, otherManager, new HashSet<Contract>());
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league1);
+				session.persist(manager1);
+				session.persist(manager2);
+				session.persist(team1);
+				session.persist(team2);
+				session.persist(otherAdmin);
+				session.persist(otherLeague);
+				session.persist(otherManager);
+				session.persist(otherTeam);
+			});
+			
+			// WHEN the SUT is used to retrieve all Teams belonging to a given League
+			entityManager.getTransaction().begin();
+			List<FantaTeam> retrieved = leagueRepository.getAllTeams(league1);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the expected Teams are retrieved
+			assertThat(retrieved).containsExactlyInAnyOrder(team1, team2).doesNotContain(otherTeam);
+		}
+		
+		@Test
+		@DisplayName("when no Teams belonging to a given League exist in the database")
+		void testGetAllTeams_NoneExist() {
+			
+			// GIVEN no Teams are associated with a given League
+			FantaUser admin = new FantaUser("admin", "pswd");
+			League league1 = new League(admin, "lega1", "1234");
+			FantaUser manager1 = new FantaUser("user1", "pswd1");
+			FantaUser manager2 = new FantaUser("user2", "pswd2");
+			FantaTeam team1 = new FantaTeam("team1", league1, 10, manager1, new HashSet<Contract>());
+			FantaTeam team2 = new FantaTeam("team2", league1, 20, manager2, new HashSet<Contract>());
+			
+			FantaUser otherAdmin = new FantaUser("admin2", "pswd2");
+			League otherLeague = new League(otherAdmin, "lega2", "5678");
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(admin);
+				session.persist(league1);
+				session.persist(manager1);
+				session.persist(manager2);
+				session.persist(team1);
+				session.persist(team2);
+				session.persist(otherAdmin);
+				session.persist(otherLeague);
+			});
+			
+			// WHEN the SUT is used to retrieve all Teams belonging to a given League
+			entityManager.getTransaction().begin();
+			List<FantaTeam> retrieved = leagueRepository.getAllTeams(otherLeague);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the expected Teams are retrieved
+			assertThat(retrieved).isEmpty();
+		}
+	}
 }

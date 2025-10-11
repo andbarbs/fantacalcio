@@ -19,7 +19,7 @@ public class NewsPaperService {
 	public void setVoteToPlayers(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
             Grade anyGrade = grades.stream().findAny().orElseThrow(() -> new RuntimeException("No grades found"));
-			Optional<MatchDay> matchDaySerieA = context.getMatchDayRepository().getMatchDay(anyGrade.getMatchDay().getLeague());
+			Optional<MatchDay> matchDaySerieA = context.getMatchDayRepository().getOngoingMatchDay(anyGrade.getMatchDay().getLeague());
 			if (matchDaySerieA.isEmpty()) {
 				throw new RuntimeException("Now you can't assign the votes");
 			}

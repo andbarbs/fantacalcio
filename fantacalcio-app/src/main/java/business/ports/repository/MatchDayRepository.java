@@ -10,11 +10,11 @@ public interface MatchDayRepository {
 	
 	List<MatchDay> getAllMatchDays(League league);
 
-	Optional<MatchDay> getPreviousMatchDay(League league);
+	Optional<MatchDay> getLatestEndedMatchDay(League league);
 
-	Optional<MatchDay> getNextMatchDay(League league);
+	Optional<MatchDay> getEarliestUpcomingMatchDay(League league);
 
-	Optional<MatchDay> getMatchDay(League league);
+	Optional<MatchDay> getOngoingMatchDay(League league);
 
 	void saveMatchDay(MatchDay matchDay);
 

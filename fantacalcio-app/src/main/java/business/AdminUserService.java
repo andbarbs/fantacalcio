@@ -205,7 +205,7 @@ public class AdminUserService extends UserService {
 			throw new IllegalArgumentException("You are not the admin of the league");
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
 			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
 			}
@@ -340,9 +340,9 @@ public class AdminUserService extends UserService {
     //TODO testa
     public void startMatchDay(League league) {
         transactionManager.inTransaction((context)->{
-            Optional<MatchDay> matchDayToPlay = context.getMatchDayRepository().getNextMatchDay(league);
+            Optional<MatchDay> matchDayToPlay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(league);
             if (matchDayToPlay.isPresent()) {
-                Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+                Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
                 if(previousMatchDay.isPresent()) {
                     if(!allMatchesHaveResult(previousMatchDay.get(), context)) {
                         throw new RuntimeException("You have to calculate the results before advancing the game state");
@@ -358,7 +358,7 @@ public class AdminUserService extends UserService {
     //TODO testa
     public void endMatchDay(League league) {
         transactionManager.inTransaction((context)->{
-            Optional<MatchDay> matchDayToEnd = context.getMatchDayRepository().getMatchDay(league);
+            Optional<MatchDay> matchDayToEnd = context.getMatchDayRepository().getOngoingMatchDay(league);
             if (matchDayToEnd.isPresent()) {
                 matchDayToEnd.get().setStatus(MatchDay.Status.PAST);
             }else {

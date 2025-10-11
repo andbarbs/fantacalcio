@@ -31,10 +31,12 @@ class JpaProposalRepositoryTest {
 	private static SessionFactory sessionFactory;
 	private JpaProposalRepository proposalRepository;
 	private EntityManager entityManager;
+	
+	// setup entities
 	private FantaUser admin;
 	private League league;
-	private FantaTeam team;
 	private FantaUser user;
+	private FantaTeam team;
 
 	@BeforeAll
 	static void initializeSessionFactory() {

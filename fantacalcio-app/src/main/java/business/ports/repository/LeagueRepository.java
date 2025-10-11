@@ -2,6 +2,7 @@ package business.ports.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import domain.FantaTeam;
 import domain.FantaUser;
@@ -13,7 +14,7 @@ public interface LeagueRepository {
 
 	boolean saveLeague(League league);
 
-	List<League> getLeaguesByUser(FantaUser user);
+	Set<League> getLeaguesByMember(FantaUser user);
 	
 	List<FantaTeam> getAllTeams(League league);
 

@@ -27,7 +27,7 @@ public class UserService {
 				throw new UnsupportedOperationException("Maximum 8 teams per league");
 
 			FantaUser user = fantaTeam.getFantaManager();
-			List<League> UserLeagues = leagueRepository.getLeaguesByUser(user);
+			Set<League> UserLeagues = leagueRepository.getLeaguesByMember(user);
 			if (UserLeagues.contains(league)) {
 				throw new IllegalArgumentException("You have already a team in this league");
 			} else {
@@ -68,7 +68,7 @@ public class UserService {
 	public Optional<Match> getNextMatch(League league, FantaTeam fantaTeam) {
 		// TODO molto da vedere
 		return transactionManager.fromTransaction((context) -> {
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
 			if (previousMatchDay.isPresent()) {
 				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(),
 						fantaTeam);
@@ -77,7 +77,7 @@ public class UserService {
 					throw new RuntimeException("The results for the previous match have not been calculated yet");
 				}
 			}
-			Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(league);
+			Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(league);
 			if (nextMatchDay.isEmpty()) {
 				throw new RuntimeException("The league ended");
 			} else {
@@ -88,7 +88,7 @@ public class UserService {
 
 	// Players
 
-	public List<Player> getAllPlayers() {
+	public Set<Player> getAllPlayers() {
 		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findAll());
 	}
 
@@ -216,7 +216,7 @@ public class UserService {
                     match.getMatchDaySerieA().getStatus() == MatchDay.Status.PRESENT){
                 throw new UnsupportedOperationException("Can't modify the lineup after the match is over or is being played");
             }
-            Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(lineUp.getTeam().getLeague());
+            Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(lineUp.getTeam().getLeague());
             if (nextMatchDay.isEmpty()) {
                 throw new RuntimeException("The league ended");
             }
@@ -227,7 +227,7 @@ public class UserService {
 			FantaTeam team = lineUp.getTeam();
 
 			// Check if is legal to save the lineUP
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(match.getMatchDaySerieA().getLeague());
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(match.getMatchDaySerieA().getLeague());
 			if (previousMatchDay.isPresent()) {
 				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(), 
 						team);

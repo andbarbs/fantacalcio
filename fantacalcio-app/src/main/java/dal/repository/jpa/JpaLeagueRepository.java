@@ -2,6 +2,8 @@ package dal.repository.jpa;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import business.ports.repository.LeagueRepository;
 import domain.FantaTeam;
@@ -38,23 +40,23 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	}
 
 	@Override
-	public List<League> getLeaguesByUser(FantaUser user) {
+	public Set<League> getLeaguesByMember(FantaUser user) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<League> cq = cb.createQuery(League.class);
 
         Root<FantaTeam> teamRoot = cq.from(FantaTeam.class);
 
-        // Join to League
+        // join, for query logic
         Join<FantaTeam, League> leagueJoin = teamRoot.join(FantaTeam_.league);
 
-        // Fetch the admin (FantaUser) field from League
-        leagueJoin.fetch(League_.admin, JoinType.LEFT);
+        // deep fetching
+        leagueJoin.fetch(League_.ADMIN);
 
         cq.select(leagueJoin)
                 .distinct(true)
                 .where(cb.equal(teamRoot.get(FantaTeam_.fantaManager), user));
 
-        return getEntityManager().createQuery(cq).getResultList();
+        return getEntityManager().createQuery(cq).getResultStream().collect(Collectors.toSet());
 	}
 
 	@Override
@@ -62,6 +64,10 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 	    CriteriaQuery<FantaTeam> query = cb.createQuery(FantaTeam.class);
 	    Root<FantaTeam> root = query.from(FantaTeam.class);
+	    
+	    // deep fetching
+	    root.fetch(FantaTeam_.FANTA_MANAGER);
+	    root.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
 
 	    query.select(root).where(cb.equal(root.get(FantaTeam_.league), league));
 

@@ -458,8 +458,8 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		List<Player> result = userService.getAllPlayers();
-		assertThat(result).containsExactly(p1, p2);
+		Set<Player> result = userService.getAllPlayers();
+		assertThat(result).containsExactlyInAnyOrder(p1, p2);
 	}
 
 }

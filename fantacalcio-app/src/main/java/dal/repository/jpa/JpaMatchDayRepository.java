@@ -37,7 +37,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public Optional<MatchDay> getPreviousMatchDay(League league) {
+	public Optional<MatchDay> getLatestEndedMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
@@ -62,7 +62,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public Optional<MatchDay> getNextMatchDay(League league) {
+	public Optional<MatchDay> getEarliestUpcomingMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
@@ -87,7 +87,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public Optional<MatchDay> getMatchDay(League league) {
+	public Optional<MatchDay> getOngoingMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 

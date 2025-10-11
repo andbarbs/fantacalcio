@@ -50,7 +50,7 @@ class JpaFantaUserRepositoryTest {
     }
 
 	@Test
-	@DisplayName("saveFantaUser() should persist a new user")
+	@DisplayName("can persist a FantaUser instance to the database")
 	void testSaveFantaUser() {
 
 		// GIVEN a User is instatiated
@@ -64,43 +64,50 @@ class JpaFantaUserRepositoryTest {
 
 		// THEN the User is persisted to the database
 		assertThat(sessionFactory.fromTransaction(
-				(Session em) -> em.createQuery("SELECT u FROM FantaUser u WHERE u.email = :email", FantaUser.class)
-						.setParameter("email", "john@example.com").getResultStream().findFirst()))
-				.hasValue(user);
+				(Session em) -> em.createQuery("FROM FantaUser", FantaUser.class).getResultStream().toList()))
+				.containsExactly(user);
+	}
+	
+	@Nested
+	@DisplayName("can look up a FantaUser from the database")
+	class Retrieval {	
+		
+		@Test
+		@DisplayName("when the given credentials exist in the database")
+		void testGetUser_Found() {
+			
+			// GIVEN the test User is manually persisted
+			FantaUser user = new FantaUser("anna@example.com", "mypassword");
+			sessionFactory.inTransaction(session -> session.persist(user));
+			
+			// WHEN the SUT is used to retrieve the test User
+			entityManager.getTransaction().begin();
+			Optional<FantaUser> result = fantaUserRepository.getUser("anna@example.com", "mypassword");
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the expected User is retrieved
+			assertThat(result).hasValue(user);
+		}
+		
+		@Test
+		@DisplayName("when the given credentials do not exist in the database")
+		void testGetUser_NotFound() {
+			
+			// GIVEN no User has been persisted with some credentials
+			FantaUser user = new FantaUser("anna@example.com", "mypassword");
+			sessionFactory.inTransaction(session -> session.persist(user));
+			
+			// WHEN the SUT is used to retrieve a User based on those credentials
+			entityManager.getTransaction().begin();
+			Optional<FantaUser> result = fantaUserRepository.getUser("nonexistent@example.com", "wrong");
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Optional is returned
+			assertThat(result).isEmpty();
+		}    
 	}
 
-    @Test
-    @DisplayName("getUser() should return a user if email and password match")
-    void testGetUser_Found() {
-    	
-    	// GIVEN the test User is manually persisted
-        FantaUser user = new FantaUser("anna@example.com", "mypassword");
-        sessionFactory.inTransaction(session -> session.persist(user));
-        
-        // WHEN the SUT is used to retrieve the test User
-        entityManager.getTransaction().begin();
-        Optional<FantaUser> result = fantaUserRepository.getUser("anna@example.com", "mypassword");
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-
-        // THEN the expected User is retrieved
-        assertThat(result).hasValue(user);
-    }
-
-    @Test
-    @DisplayName("getUser() should return empty if credentials do not match")
-    void testGetUser_NotFound() {
-    	
-    	// GIVEN no User has been persisted with some credentials
-    	
-    	// WHEN the SUT is used to retrieve a User based on those credentials
-        entityManager.getTransaction().begin();
-        Optional<FantaUser> result = fantaUserRepository.getUser("nonexistent@example.com", "wrong");
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-
-        // THEN an empty Optional is returned
-        assertThat(result).isEmpty();
-    }    
 }
 

@@ -601,7 +601,7 @@ class AdminUserServiceTest {
 
 		// Create a previous match day so that the "season started" check passes
 		MatchDay previousMatchDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST,league);
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
+		when(matchDayRepository.getLatestEndedMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
 
 		// Set up a match day to calculate with at least one match
 		FantaTeam team1 = new FantaTeam("Team1", league, 0, user, Set.of());
@@ -700,7 +700,7 @@ class AdminUserServiceTest {
 		FantaUser admin = new FantaUser(null, null);
 		League league = new League(admin, "Serie A", null);
 
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
+		when(matchDayRepository.getLatestEndedMatchDay(any())).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> adminUserService.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The season hasn't started yet");
@@ -714,7 +714,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 		when(league.getAdmin()).thenReturn(admin);
 
-		when(matchDayRepository.getPreviousMatchDay(league))
+		when(matchDayRepository.getLatestEndedMatchDay(league))
 				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO riscrivi non serve più la roba che fa e non so cosa fa
@@ -745,7 +745,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 		when(league.getAdmin()).thenReturn(admin);
 
-		when(matchDayRepository.getPreviousMatchDay(league))
+		when(matchDayRepository.getLatestEndedMatchDay(league))
 				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
@@ -775,7 +775,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 		when(league.getAdmin()).thenReturn(admin);
 
-		when(matchDayRepository.getPreviousMatchDay(league))
+		when(matchDayRepository.getLatestEndedMatchDay(league))
 				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
@@ -805,7 +805,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 
 		when(league.getAdmin()).thenReturn(admin);
-		when(matchDayRepository.getPreviousMatchDay(league)).thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
+		when(matchDayRepository.getLatestEndedMatchDay(league)).thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
         /*
@@ -835,7 +835,7 @@ class AdminUserServiceTest {
 		MatchDay prevDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
 		MatchDay dayToCalc = new MatchDay("2 giornata", 2, MatchDay.Status.PAST, league);
 
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(prevDay));
+		when(matchDayRepository.getLatestEndedMatchDay(any())).thenReturn(Optional.of(prevDay));
 
         //TODO inutili da riscrivere
         /*

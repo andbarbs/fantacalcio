@@ -12,10 +12,7 @@ import domain.*;
 import domain.Player.Club;
 import jakarta.persistence.EntityManager;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JpaGradeRepositoryTest {
@@ -23,15 +20,10 @@ class JpaGradeRepositoryTest {
 	private static SessionFactory sessionFactory;
 	private JpaGradeRepository gradeRepository;
 	private EntityManager entityManager;
-	private FantaUser manager;
+	private FantaUser admin;
 	private League league;
 	private MatchDay matchDay;
-	private FantaUser user1;
-	private FantaUser user2;
-	private FantaTeam team1;
-	private FantaTeam team2;
-	private Match match;
-
+	
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
@@ -70,22 +62,12 @@ class JpaGradeRepositoryTest {
 		gradeRepository = new JpaGradeRepository(entityManager);
 
 		sessionFactory.inTransaction(t -> {
-			manager = new FantaUser("manager@example.com", "securePass");
-			t.persist(manager);
-			league = new League(manager, "Serie A", "code");
+			admin = new FantaUser("admin@example.com", "securePass");
+			t.persist(admin);
+			league = new League(admin, "Serie A", "code");
 			t.persist(league);
             matchDay = new MatchDay("1 Giornata", 1, MatchDay.Status.FUTURE, league);
             t.persist(matchDay);
-			user1 = new FantaUser("mail1", "pswd1");
-			t.persist(user1);
-			user2 = new FantaUser("mail2", "pswd2");
-			t.persist(user2);
-			team1 = new FantaTeam("Team1", league, 32, user1, new HashSet<Contract>());
-			t.persist(team1);
-			team2 = new FantaTeam("Team2", league, 13, user2, new HashSet<Contract>());
-			t.persist(team2);
-			match = new Match(matchDay, team1, team2);
-			t.persist(match);
 		});
 	}
 
@@ -93,76 +75,92 @@ class JpaGradeRepositoryTest {
 	static void tear() {
 		sessionFactory.close();
 	}
-
-	@Test
-	@DisplayName("getAllMatchGrades() on an empty table")
-	public void testGetAllMatchGradesWhenNoGradesExist() {
-        entityManager.getTransaction().begin();
-		assertThat(gradeRepository.getAllMatchGrades(matchDay)).isEmpty();
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-    }
-
-	@Test
-	@DisplayName("getAllMatchGrades() when two grades have been persisted")
-	public void testGetAllMatchGradesWhenTwoGradesExist() {
-		Player player1 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-		Player player2 = new Player.Forward("Gigi", "Riva", Club.CAGLIARI);
-
-		Grade voto1 = new Grade(player1, matchDay, 6.0);
-		Grade voto2 = new Grade(player2, matchDay, 8.0);
-		Contract contract1 = new Contract(team1, player1);
-		Contract contract2 = new Contract(team1, player2);
-		sessionFactory.inTransaction(session -> {
-			session.persist(player1);
-			session.persist(player2);
-			session.persist(voto1);
-			session.persist(voto2);
-			session.persist(contract1);
-			session.persist(contract2);
-		});
-        entityManager.getTransaction().begin();
-        List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(matchDay);
-        entityManager.getTransaction().commit();
-        entityManager.clear();
-		assertThat(allMatchGrades.size()).isEqualTo(2);
-        assertThat(allMatchGrades.get(0)).isEqualTo(voto1);
-        assertThat(allMatchGrades.get(1)).isEqualTo(voto2);
-		assertThat(allMatchGrades.get(0).getMark() + allMatchGrades.get(1).getMark()).isEqualTo(6.0 + 8.0);
+	
+	@Nested
+	@DisplayName("can look up all Grades for a given MatchDay from the database")
+	class Retrieval {
 		
+		@Test
+		@DisplayName("when no Grades for the given MatchDay exist in the database")
+		public void testGetAllMatchGradesWhenNoGradesExist() {
+			
+			// GIVEN no Grades exist for a given MatchDay
+			Player player1 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);			
+			Grade voto1 = new Grade(player1, matchDay, 6.0);
+			
+			MatchDay gradeless = new MatchDay("1 Giornata", 2, MatchDay.Status.FUTURE, league);
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(player1);
+				session.persist(voto1);
+				session.persist(gradeless);
+			});
+			
+			// WHEN the SUT is used to retrieve Grades for that MatchDay
+			entityManager.getTransaction().begin();
+			List<Grade> retrieved = gradeRepository.getAllMatchGrades(gradeless);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Set is returned
+			assertThat(retrieved).isEmpty();
+		}
+		
+		@Test
+		@DisplayName("when some Grades for the given MatchDay exist in the database")
+		public void testGetAllMatchGradesWhenTwoGradesExist() {
+			
+			// GIVEN some Grades for a given MatchDay exist in the database
+			Player player1 = new Player.Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+			Player player2 = new Player.Forward("Gigi", "Riva", Club.CAGLIARI);
+			MatchDay matchDay2 = new MatchDay("1 Giornata", 2, MatchDay.Status.FUTURE, league);
+			
+			Grade voto1 = new Grade(player1, matchDay, 6.0);
+			Grade voto2 = new Grade(player2, matchDay2, 8.0);			
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(player1);
+				session.persist(player2);
+				session.persist(matchDay2);
+				session.persist(voto1);
+				session.persist(voto2);
+			});
+			
+			// WHEN the SUT is used to retrieve Grades for that MatchDay
+			entityManager.getTransaction().begin();
+			List<Grade> retrieved = gradeRepository.getAllMatchGrades(matchDay);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the expected Grades are retrieved
+			assertThat(retrieved).containsExactlyInAnyOrder(voto1);
+		}
 	}
 
+
 	@Test
-	@DisplayName("saveGrade should persist correctly")
+	@DisplayName("can persist a Grade to the database")
 	void testSaveGradePersistsCorrectly() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN a Grade's ancillary entities are manually persisted
 		Player totti = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		sessionFactory.inTransaction(session -> session.persist(totti));
+
+		// WHEN the SUT is used to persist a Grade to the database
 		Grade grade = new Grade(totti, matchDay, 9.0);
-
-		sessionFactory.inTransaction(session -> {
-            session.persist(totti);
-        });
+		entityManager.getTransaction().begin();
 		gradeRepository.saveGrade(grade);
-
 		entityManager.getTransaction().commit();
 	    entityManager.clear();
 
-		sessionFactory.inTransaction((Session em) -> {
-			Optional<Grade> result = em
-					.createQuery("SELECT g FROM Grade g " + "WHERE g.player = :player " + "AND g.matchDay = :matchDay "
-							, Grade.class)
-					.setParameter("player", totti).setParameter("matchDay", matchDay)
-					.getResultStream().findFirst();
-
-			assertThat(result).isPresent();
-			Grade found = result.get();
-			assertThat(found.getPlayer()).isEqualTo(totti);
-            assertThat(found.getMatchDay()).isEqualTo(matchDay);
-            assertThat(found.getMark()).isEqualTo(9.0);
-		});
-
+	    // THEN the Grade is present in the database
+	    List<Grade> result = sessionFactory.fromTransaction((Session em) -> em
+				.createQuery("FROM Grade g "
+						+ "JOIN FETCH g.player "
+						+ "JOIN FETCH g.matchDay md JOIN FETCH md.league l JOIN FETCH l.admin"
+						, Grade.class)
+				.getResultStream().toList());
+	    
+	    assertThat(result).containsExactly(grade);
 	}
-
 }

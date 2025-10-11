@@ -104,7 +104,7 @@ public class UserServiceTest {
 		League league = new League(user, "Test League", "L002");
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
-		when(leagueRepository.getLeaguesByUser(user)).thenReturn(Collections.emptyList());
+		when(leagueRepository.getLeaguesByMember(user)).thenReturn(Set.of());
 
 		userService.joinLeague(team, league);
 
@@ -134,7 +134,7 @@ public class UserServiceTest {
 		League league = new League(user, "Test League", "L002");
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
-		when(leagueRepository.getLeaguesByUser(user)).thenReturn(List.of(league));
+		when(leagueRepository.getLeaguesByMember(user)).thenReturn(Set.of(league));
 
 		assertThatThrownBy(() -> userService.joinLeague(team, league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("You have already a team in this league");
@@ -217,7 +217,7 @@ public class UserServiceTest {
 		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Current Monday
 
 		// Stub repos
-		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(any())).thenReturn(Optional.empty());
 		when(context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)).thenReturn(Optional.empty());
 
         //TODO serve spy?
@@ -430,7 +430,7 @@ public class UserServiceTest {
         //TODO same
 		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(league))
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(league))
 				.thenReturn(Optional.of(mock(MatchDay.class)));
 		when(context.getMatchRepository().getMatchBy(any(), eq(team))).thenReturn(Optional.of(previousMatch));
 		when(context.getResultsRepository().getResult(previousMatch)).thenReturn(Optional.empty());
@@ -512,7 +512,7 @@ public class UserServiceTest {
         //TODO same
 		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(any())).thenReturn(Optional.empty());
 		when(context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)).thenReturn(Optional.of(oldLineUp));
 
 		spyService.saveLineUp(lineUp);
@@ -526,10 +526,10 @@ public class UserServiceTest {
 	void testGetAllPlayers() {
 		Player p1 = new Player.Goalkeeper(null, null, null);
 		Player p2 = new Player.Goalkeeper(null, null, null);
-		when(context.getPlayerRepository().findAll()).thenReturn(List.of(p1, p2));
+		when(context.getPlayerRepository().findAll()).thenReturn(Set.of(p1, p2));
 
-		List<Player> result = userService.getAllPlayers();
-		assertThat(result).containsExactly(p1, p2);
+		Set<Player> result = userService.getAllPlayers();
+		assertThat(result).containsExactlyInAnyOrder(p1, p2);
 	}
 
 	@Test
@@ -564,10 +564,10 @@ public class UserServiceTest {
 		Match prevMatch = new Match(next, team, team);
 		Match nextMatch = new Match(next, team, team);
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.of(prev));
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(any())).thenReturn(Optional.of(prev));
 		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
-		when(context.getMatchDayRepository().getNextMatchDay(any())).thenReturn(Optional.of(next));
+		when(context.getMatchDayRepository().getEarliestUpcomingMatchDay(any())).thenReturn(Optional.of(next));
 		when(context.getMatchRepository().getMatchBy(next, team)).thenReturn(Optional.of(nextMatch));
 
 		Optional<Match> result = userService.getNextMatch(league, team);
@@ -581,7 +581,7 @@ public class UserServiceTest {
         FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
         MatchDay prev = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(league)).thenReturn(Optional.of(prev));
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(league)).thenReturn(Optional.of(prev));
 		Match prevMatch = new Match(prev, team, team);
 		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
@@ -596,8 +596,8 @@ public class UserServiceTest {
         League league = new League(user, "Test League", "L005");
         FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(league)).thenReturn(Optional.empty());
-		when(context.getMatchDayRepository().getNextMatchDay(league)).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getLatestEndedMatchDay(league)).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getEarliestUpcomingMatchDay(league)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The league ended");

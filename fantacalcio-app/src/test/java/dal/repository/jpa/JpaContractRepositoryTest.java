@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import domain.Contract;
@@ -81,90 +82,101 @@ class JpaContractRepositoryTest {
 	static void tearDown() {
 		sessionFactory.close();
 	}
-
-	@Test
-	@DisplayName("getContract() when contract doesn't exist")
-	public void testGetContractWithNoContractExisting() {
+	
+	@Nested
+	@DisplayName("can look up a Contract from the database")
+	class Retrieval {	
 		
-		// GIVEN no Contract for test Player under test Team was persisted
-
-		// WHEN the SUT is used to retrieve a Contract for test Player under test Team
-		entityManager.getTransaction().begin();
-		Optional<Contract> retrieved = contractRepository.getContract(team, player);
-		entityManager.getTransaction().commit();
-	    entityManager.clear();
-	    
-	    // THEN an empty Optional is returned
-	    assertThat(retrieved).isEmpty();		
+		@Test
+		@DisplayName("when the Contract does not exist in the database")
+		public void testGetContractWithNoContractExisting() {
+			
+			// GIVEN no Contract for test Player under test Team was persisted
+			
+			// WHEN the SUT is used to retrieve a Contract for test Player under test Team
+			entityManager.getTransaction().begin();
+			Optional<Contract> retrieved = contractRepository.getContract(team, player);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Optional is returned
+			assertThat(retrieved).isEmpty();		
+		}
+		
+		@Test
+		@DisplayName("when the Contract exists in the database")
+		public void testGetContractWithContractExisting() {
+			
+			// GIVEN two Contracts are instantiated
+			Contract contract1 = new Contract(team, player);
+			Player player2 = new Player.Defender("Giorgio", "Chiellini", Club.JUVENTUS);
+			Contract contract2 = new Contract(team, player2);
+			
+			// AND are manually persisted
+			sessionFactory.inTransaction(session -> {
+				session.persist(player2);
+				session.persist(contract1);
+				session.persist(contract2);
+			});
+			
+			// WHEN the SUT is used to retrieve the Contracts
+			entityManager.getTransaction().begin();
+			Optional<Contract> retrieved1 = contractRepository.getContract(team, player);
+			Optional<Contract> retrieved2 = contractRepository.getContract(team, player2);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN Contracts are retrieved correctly
+			assertThat(retrieved1).hasValue(contract1);
+			assertThat(retrieved2).hasValue(contract2);	
+		}
 	}
 
-	@Test
-	@DisplayName("getContract() when contract exists")
-	public void testGetContractWithContractExisting() {
-
-		// GIVEN two Contracts are instantiated
-		Contract contract1 = new Contract(team, player);
-		Player player2 = new Player.Defender("Giorgio", "Chiellini", Club.JUVENTUS);
-		Contract contract2 = new Contract(team, player2);
-
-		// AND are manually persisted
-		sessionFactory.inTransaction(session -> {
-			session.persist(player2);
-			session.persist(contract1);
-			session.persist(contract2);
-		});
+	@Nested
+	@DisplayName("can delete a Contract from the database")
+	class Deletion {	
 		
-		// WHEN the SUT is used to retrieve the Contracts
-		entityManager.getTransaction().begin();
-		Optional<Contract> retrieved1 = contractRepository.getContract(team, player);
-		Optional<Contract> retrieved2 = contractRepository.getContract(team, player2);
-		entityManager.getTransaction().commit();
-	    entityManager.clear();
+		@Test
+		@DisplayName("when the Contract does not exist in the database")
+		public void testDeleteContractWithNoContractExisting() {
+			
+			// GIVEN no Contract has been persisted
+			
+			// WHEN the SUT is used to delete a non-persisted Contract
+			entityManager.getTransaction().begin();
+			contractRepository.deleteContract(new Contract(team, player));
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN no Contracts exist in the database
+			assertThat(sessionFactory.fromTransaction(
+					(Session em) -> em.createQuery("FROM Contract", Contract.class).getResultStream().toList())).isEmpty();
+		}
 		
-		// THEN Contracts are retrieved correctly
-	    assertThat(retrieved1).hasValue(contract1);
-	    assertThat(retrieved2).hasValue(contract2);	
+		@Test
+		@DisplayName("when the Contract exists in the database")
+		public void testDeleteContractWithContractExisting() {
+			
+			// GIVEN a Contract is persisted
+			Contract contract = new Contract(team, player);		
+			sessionFactory.inTransaction(em -> entityManager.persist(contract));
+			
+			// WHEN the SUT is used to delete the Contract
+			entityManager.getTransaction().begin();
+			contractRepository.deleteContract(contract);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the Contract is removed from the db
+			assertThat(sessionFactory.fromTransaction((Session em) -> em
+					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+					.setParameter("player", player).setParameter("team", team).getResultStream().toList())).isEmpty();
+		}
 	}
+	
 
 	@Test
-	@DisplayName("deleteContract() when contract doesn't exist")
-	public void testDeleteContractWithNoContractExisting() {
-
-		// GIVEN no Contract has been persisted
-
-		// WHEN the SUT is used to delete a non-persisted Contract
-		entityManager.getTransaction().begin();
-		contractRepository.deleteContract(new Contract(team, player));
-		entityManager.getTransaction().commit();
-		entityManager.clear();
-
-		// THEN no Contracts exist in the database
-		assertThat(sessionFactory.fromTransaction(
-				(Session em) -> em.createQuery("FROM Contract", Contract.class).getResultStream().toList())).isEmpty();
-	}
-
-	@Test
-	@DisplayName("deleteContract() when contract exists")
-	public void testDeleteContractWithContractExisting() {
-		
-		// GIVEN a Contract is persisted
-		Contract contract = new Contract(team, player);		
-		sessionFactory.inTransaction(em -> entityManager.persist(contract));
-
-		// WHEN the SUT is used to delete the Contract
-	    entityManager.getTransaction().begin();
-		contractRepository.deleteContract(contract);
-		entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // THEN the Contract is removed from the db
-		assertThat(sessionFactory.fromTransaction((Session em) -> em
-				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-				.setParameter("player", player).setParameter("team", team).getResultStream().toList())).isEmpty();
-	}
-
-	@Test
-	@DisplayName("saveContract should persist correctly")
+	@DisplayName("can persist a Contract to the database")
 	void testSaveContractPersistsCorrectly() {
 
 		// GIVEN a Contract is instantiated

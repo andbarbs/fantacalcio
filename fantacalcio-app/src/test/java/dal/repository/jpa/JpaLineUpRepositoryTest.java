@@ -182,12 +182,6 @@ class JpaLineUpRepositoryTest {
 			// GIVEN a LineUp instance is persisted
 			sessionFactory.inTransaction(em -> em.persist(readyToBePersisted));
 			
-			// AND the LineUp is confirmed to have been persisted
-			sessionFactory.inTransaction(
-					em -> assertThat(em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
-							.setParameter("match", match).setParameter("team", team).getResultStream().findFirst())
-					.isPresent());
-			
 			// WHEN the SUT is used to delete the LineUp
 			entityManager.getTransaction().begin();
 			lineUpRepository.deleteLineUp(readyToBePersisted);
@@ -195,14 +189,13 @@ class JpaLineUpRepositoryTest {
 			entityManager.clear();
 			
 			// THEN the LineUp is removed from the persistence unit
-			assertThat(sessionFactory.fromTransaction(
-					(Session em) -> em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
-					.setParameter("match", match).setParameter("team", team).getResultStream().findFirst()))
-			.isEmpty();
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM LineUp", LineUp.class).getResultList()))
+					.isEmpty();
 			
 			// AND Fieldings are removed via cascading
-			assertThat(sessionFactory.fromTransaction(
-					(Session em) -> em.createQuery("FROM Fielding", Fielding.class).getResultStream().toList()))
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM Fielding", Fielding.class).getResultList()))
 					.isEmpty();
 		}
 

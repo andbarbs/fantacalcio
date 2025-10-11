@@ -59,7 +59,7 @@ class JpaMatchRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("saveMatch() should persist a match")
+	@DisplayName("can persist a Match instance to the database")
 	void testSaveMatch() {
 		
 		// GIVEN a Match's auxiliary entities are manually persisted
@@ -95,146 +95,156 @@ class JpaMatchRepositoryTest {
 				.getResultList())).containsExactly(match);
 	}
 
-	@Test
-	@DisplayName("getAllMatchesByMatchDay() should return all matches of a given MatchDay")
-	void testGetAllMatchesByMatchDay() {
+	@Nested
+	@DisplayName("can look up Matches happening on a MatchDay")
+	class LookupByMatchDay {
 		
-		// GIVEN two Match instances are manually persisted for test MatchDay
-		FantaUser admin = new FantaUser("admin@" + "L002" + ".com", "pwd");
-		League league = new League(admin, "League " + "L002", "L002");
-        MatchDay matchDay = new MatchDay("MD2", 2, MatchDay.Status.FUTURE, league);
-		FantaUser user1 = new FantaUser("c@c.com", "pwd");
-		FantaTeam t1 = new FantaTeam("Team C", league, 0, user1, Set.of());
-		FantaUser user2 = new FantaUser("d@d.com", "pwd");
-		FantaTeam t2 = new FantaTeam("Team D", league, 0, user2, Set.of());
-		FantaUser user3 = new FantaUser("e@e.com", "pwd");
-		FantaTeam t3 = new FantaTeam("Team E", league, 0, user3, Set.of());
-
-		Match m1 = new Match(matchDay, t1, t2);
-		Match m2 = new Match(matchDay, t3, t1);
-		
-		sessionFactory.inTransaction(em -> {
-			em.persist(admin);
-			em.persist(league);
-			em.persist(matchDay);
-			em.persist(user1);
-			em.persist(user2);
-			em.persist(user3);
-			em.persist(t1);
-			em.persist(t2);
-			em.persist(t3);
-			em.persist(m1);
-			em.persist(m2);
-		});
-
-		// WHEN the SUT is used to retrieve all Matches in a MatchDay
-		entityManager.getTransaction().begin();
-		List<Match> matches = matchRepository.getAllMatchesIn(matchDay);		
-		entityManager.getTransaction().commit();
-		entityManager.clear();
-
-		// THEN the expected Matches are returned
-		assertThat(matches).containsExactlyInAnyOrder(m1, m2);
+		@Test
+		@DisplayName("when some Matches are associated with a MatchDay")
+		void testGetAllMatchesByMatchDay() {
+			
+			// GIVEN two Match instances are manually persisted for test MatchDay
+			FantaUser admin = new FantaUser("admin@" + "L002" + ".com", "pwd");
+			League league = new League(admin, "League " + "L002", "L002");
+			MatchDay matchDay = new MatchDay("MD2", 2, MatchDay.Status.FUTURE, league);
+			FantaUser user1 = new FantaUser("c@c.com", "pwd");
+			FantaTeam t1 = new FantaTeam("Team C", league, 0, user1, Set.of());
+			FantaUser user2 = new FantaUser("d@d.com", "pwd");
+			FantaTeam t2 = new FantaTeam("Team D", league, 0, user2, Set.of());
+			FantaUser user3 = new FantaUser("e@e.com", "pwd");
+			FantaTeam t3 = new FantaTeam("Team E", league, 0, user3, Set.of());
+			
+			Match m1 = new Match(matchDay, t1, t2);
+			Match m2 = new Match(matchDay, t3, t1);
+			
+			sessionFactory.inTransaction(em -> {
+				em.persist(admin);
+				em.persist(league);
+				em.persist(matchDay);
+				em.persist(user1);
+				em.persist(user2);
+				em.persist(user3);
+				em.persist(t1);
+				em.persist(t2);
+				em.persist(t3);
+				em.persist(m1);
+				em.persist(m2);
+			});
+			
+			// WHEN the SUT is used to retrieve all Matches in a MatchDay
+			entityManager.getTransaction().begin();
+			List<Match> matches = matchRepository.getAllMatchesIn(matchDay);		
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the expected Matches are returned
+			assertThat(matches).containsExactlyInAnyOrder(m1, m2);
+		}
 	}
-
-	@Test
-	@DisplayName("getMatchByMatchDay() should return the correct match when team is team1")
-	void testGetMatchByMatchDayWithTeam1() {
+	
+	@Nested
+	@DisplayName("can look up Matches happening on a MatchDay involving a Team")
+	class LookupByMatchDayAndTeam {
 		
-		// GIVEN a Match is manually persisted for a Team as home team
-	    FantaUser admin = new FantaUser("admin@L005.com", "pwd");
-	    League league = new League(admin, "League L005", "L005");
-        MatchDay matchDay = new MatchDay("MD5", 5, MatchDay.Status.FUTURE, league);
-	    FantaUser user1 = new FantaUser("i@i.com", "pwd");
-	    FantaTeam t1 = new FantaTeam("Team I", league, 0, user1, Set.of());
-	    FantaUser user2 = new FantaUser("j@j.com", "pwd");
-	    FantaTeam t2 = new FantaTeam("Team J", league, 0, user2, Set.of());
-
-	    Match match = new Match(matchDay, t1, t2);
-	    
-	    sessionFactory.inTransaction(em -> {
-	    	em.persist(admin);
-	    	em.persist(league);
-	    	em.persist(matchDay);
-		    em.persist(user1);
-		    em.persist(user2);
-		    em.persist(t1);
-		    em.persist(t2);
-		    em.persist(match);
-	    });
-
-	    // WHEN the SUT is used to retrieve the Match associated with a given Team as home
-	    entityManager.getTransaction().begin();	    
-	    Optional<Match> found = matchRepository.getMatchBy(matchDay, t1);
-	    entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // THEN the retrieved Match is the expected one
-	    assertThat(found).hasValue(match);
-	}
-
-	@Test
-	@DisplayName("getMatchByMatchDay() should return the correct match when team is team2")
-	void testGetMatchByMatchDayWithTeam2() {
+		@Test
+		@DisplayName("when a Team is associated with an existing Match as the 'home' team")
+		void testGetMatchByMatchDayWithTeam1() {
+			
+			// GIVEN a Match is manually persisted for a Team as home team
+			FantaUser admin = new FantaUser("admin@L005.com", "pwd");
+			League league = new League(admin, "League L005", "L005");
+			MatchDay matchDay = new MatchDay("MD5", 5, MatchDay.Status.FUTURE, league);
+			FantaUser user1 = new FantaUser("i@i.com", "pwd");
+			FantaTeam t1 = new FantaTeam("Team I", league, 0, user1, Set.of());
+			FantaUser user2 = new FantaUser("j@j.com", "pwd");
+			FantaTeam t2 = new FantaTeam("Team J", league, 0, user2, Set.of());
+			
+			Match match = new Match(matchDay, t1, t2);
+			
+			sessionFactory.inTransaction(em -> {
+				em.persist(admin);
+				em.persist(league);
+				em.persist(matchDay);
+				em.persist(user1);
+				em.persist(user2);
+				em.persist(t1);
+				em.persist(t2);
+				em.persist(match);
+			});
+			
+			// WHEN the SUT is used to retrieve the Match associated with a given Team as home
+			entityManager.getTransaction().begin();	    
+			Optional<Match> found = matchRepository.getMatchBy(matchDay, t1);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the retrieved Match is the expected one
+			assertThat(found).hasValue(match);
+		}
 		
-		// GIVEN a Match is manually persisted for a Team as away team
-	    FantaUser admin = new FantaUser("admin@L006.com", "pwd");
-	    League league = new League(admin, "League L006", "L006");
-        MatchDay matchDay = new MatchDay("MD6", 6, MatchDay.Status.FUTURE, league);
-	    FantaUser user1 = new FantaUser("k@k.com", "pwd");
-	    FantaTeam t1 = new FantaTeam("Team K", league, 0, user1, Set.of());
-	    FantaUser user2 = new FantaUser("l@l.com", "pwd");
-	    FantaTeam t2 = new FantaTeam("Team L", league, 0, user2, Set.of());
-
-	    Match match = new Match(matchDay, t1, t2);
-	    
-	    sessionFactory.inTransaction(em -> {
-	    	em.persist(admin);
-	    	em.persist(league);
-	    	em.persist(matchDay);
-		    em.persist(user1);
-		    em.persist(user2);
-		    em.persist(t1);
-		    em.persist(t2);
-		    em.persist(match);
-	    });
-
-	    // WHEN the SUT is used to retrieve the Match associated with a given Team as away
-	    entityManager.getTransaction().begin();
-	    Optional<Match> found = matchRepository.getMatchBy(matchDay, t2);
-	    entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // THEN the retrieved Match is the expected one
-	    assertThat(found).hasValue(match);
-	}
-
-	@Test
-	@DisplayName("getMatchByMatchDay() should throw NoSuchElementException when no match exists")
-	void testGetMatchByMatchDayWhenNoMatchExists() {
+		@Test
+		@DisplayName("when a Team is associated with an existing Match as the 'away' team")
+		void testGetMatchByMatchDayWithTeam2() {
+			
+			// GIVEN a Match is manually persisted for a Team as away team
+			FantaUser admin = new FantaUser("admin@L006.com", "pwd");
+			League league = new League(admin, "League L006", "L006");
+			MatchDay matchDay = new MatchDay("MD6", 6, MatchDay.Status.FUTURE, league);
+			FantaUser user1 = new FantaUser("k@k.com", "pwd");
+			FantaTeam t1 = new FantaTeam("Team K", league, 0, user1, Set.of());
+			FantaUser user2 = new FantaUser("l@l.com", "pwd");
+			FantaTeam t2 = new FantaTeam("Team L", league, 0, user2, Set.of());
+			
+			Match match = new Match(matchDay, t1, t2);
+			
+			sessionFactory.inTransaction(em -> {
+				em.persist(admin);
+				em.persist(league);
+				em.persist(matchDay);
+				em.persist(user1);
+				em.persist(user2);
+				em.persist(t1);
+				em.persist(t2);
+				em.persist(match);
+			});
+			
+			// WHEN the SUT is used to retrieve the Match associated with a given Team as away
+			entityManager.getTransaction().begin();
+			Optional<Match> found = matchRepository.getMatchBy(matchDay, t2);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the retrieved Match is the expected one
+			assertThat(found).hasValue(match);
+		}
 		
-		// GIVEN a Match's auxiliary entities are manually persisted
-	    FantaUser admin = new FantaUser("admin@L007.com", "pwd");
-	    League league = new League(admin, "League L007", "L007");
-        MatchDay matchDay = new MatchDay("MD7", 7, MatchDay.Status.FUTURE, league);
-	    FantaUser user1 = new FantaUser("m@m.com", "pwd");
-	    FantaTeam t1 = new FantaTeam("Team M", league, 0, user1, Set.of());
-	    
-	    sessionFactory.inTransaction(em -> {
-	    	em.persist(admin);
-	    	em.persist(league);
-	    	em.persist(matchDay);
-		    em.persist(user1);
-		    em.persist(t1);
-	    });
-
-	    // WHEN the SUT is used to retrieve a Match for a Team that doesn't exist
-	    entityManager.getTransaction().begin();
-	    Optional<Match> retrieved = matchRepository.getMatchBy(matchDay, t1);
-	    entityManager.getTransaction().commit();
-	    entityManager.clear();
-
-	    // THEN an empty Optional is returned
-	    assertThat(retrieved).isEmpty();
+		@Test
+		@DisplayName("when a Team is associated with no existing Match")
+		void testGetMatchByMatchDayWhenNoMatchExists() {
+			
+			// GIVEN a Match's auxiliary entities are manually persisted
+			FantaUser admin = new FantaUser("admin@L007.com", "pwd");
+			League league = new League(admin, "League L007", "L007");
+			MatchDay matchDay = new MatchDay("MD7", 7, MatchDay.Status.FUTURE, league);
+			FantaUser user1 = new FantaUser("m@m.com", "pwd");
+			FantaTeam t1 = new FantaTeam("Team M", league, 0, user1, Set.of());
+			
+			sessionFactory.inTransaction(em -> {
+				em.persist(admin);
+				em.persist(league);
+				em.persist(matchDay);
+				em.persist(user1);
+				em.persist(t1);
+			});
+			
+			// WHEN the SUT is used to retrieve a Match for a Team that has none
+			entityManager.getTransaction().begin();
+			Optional<Match> retrieved = matchRepository.getMatchBy(matchDay, t1);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Optional is returned
+			assertThat(retrieved).isEmpty();
+		}
 	}
 }
