@@ -47,7 +47,6 @@ public class JpaTransactionManager implements TransactionManager {
 										new JpaFieldingRepository(em), 
 										new JpaLineUpRepository(em), 
 										new JpaMatchDayRepository(em),
-										new JpaNewsPaperRepository(em), 
 										new JpaFantaUserRepository(em)));
 			transaction.commit();
 			return result;
