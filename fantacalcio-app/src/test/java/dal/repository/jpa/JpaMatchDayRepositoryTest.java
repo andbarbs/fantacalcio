@@ -76,8 +76,9 @@ class JpaMatchDayRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchDays() on an empty table")
 	public void testGetAllMatchDaysWhenNoMatchDaysExist() {
+        List<MatchDay> matchDays = matchDayRepository.getAllMatchDays(league);
         entityManager.getTransaction().begin();
-		assertThat(matchDayRepository.getAllMatchDays(league)).isEmpty();
+		assertThat(matchDays).isEmpty();
         entityManager.getTransaction().commit();
         entityManager.clear();
 	}

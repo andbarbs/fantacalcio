@@ -64,8 +64,9 @@ class JpaLeagueRepositoryTest {
 	@Test
 	@DisplayName("getLeagueByCode() when the league does not exist")
 	void testGetLeagueByCodeWithNoLeague() {
+        Optional<League> league = leagueRepository.getLeagueByCode("1234");
         entityManager.getTransaction().begin();
-		assertThat(leagueRepository.getLeagueByCode("1234")).isEmpty();
+		assertThat(league).isEmpty();
         entityManager.getTransaction().commit();
         entityManager.clear();
 	}

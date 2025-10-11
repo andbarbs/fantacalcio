@@ -62,7 +62,10 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findAll() on an empty table")
 	public void testFindAllWhenNoPlayersExist() {
-		assertThat(playerRepository.findAll()).isEmpty();
+        entityManager.getTransaction().begin();
+        assertThat(playerRepository.findAll()).isEmpty();
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 	@Test
