@@ -124,18 +124,19 @@ class JpaContractRepositoryTest {
 	@DisplayName("deleteContract() when contract doesn't exist")
 	public void testDeleteContractWithNoContractExisting() {
 
+		// GIVEN no Contract has been persisted
+
+		// WHEN the SUT is used to delete a non-persisted Contract
 		entityManager.getTransaction().begin();
-
 		contractRepository.deleteContract(new Contract(team, player));
+		entityManager.getTransaction().commit();
+		entityManager.clear();
 
-		Optional<Contract> result = entityManager
-				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
-
-		assertThat(result).isEmpty();
-
-		entityManager.close();
-
+		// THEN no Contracts exist
+		assertThat(
+				entityManager.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+						.setParameter("player", player).setParameter("team", team).getResultStream().findFirst())
+				.isEmpty();
 	}
 
 	@Test
