@@ -11,7 +11,6 @@ import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.*;
 
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,10 +68,12 @@ class NewsPaperServiceTest {
 
 	}
 
+    //TODO ricontrollare logica
 	@Test
 	void testSetVoteToPlayers_NoMatchDay() {
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.empty()).when(spyService).getMatchDay();
+        //TODO penso inutile non esiste più il metodo get matchDay
+		//doReturn(Optional.empty()).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("Now you can't assign the votes");
@@ -85,7 +86,8 @@ class NewsPaperServiceTest {
 		when(grades.getMark()).thenReturn(15.0);
 
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 
 		spyService.setVoteToPlayers(Set.of(grade, grades));
 
@@ -97,7 +99,8 @@ class NewsPaperServiceTest {
 	void testSetVoteToPlayers_WrongMatchDay() {
 		NewsPaperService spyService = spy(service);
 		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
-		doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra non capisco spy
+		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The match date is not correct");
@@ -106,7 +109,8 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooLow() {
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 		when(grade.getMatchDay()).thenReturn(matchDay);
 		when(grade.getMark()).thenReturn(-10.0); // invalid
 
@@ -117,7 +121,8 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooHigh() {
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 		when(grade.getMatchDay()).thenReturn(matchDay);
 		when(grade.getMark()).thenReturn(30.0); // invalid
 
@@ -132,7 +137,8 @@ class NewsPaperServiceTest {
 		when(minGrade.getMark()).thenReturn(-5.0);
 
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 
 		spyService.setVoteToPlayers(Set.of(minGrade));
 
@@ -147,7 +153,8 @@ class NewsPaperServiceTest {
 		when(maxGrade.getMark()).thenReturn(25.0);
 
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 
 		spyService.setVoteToPlayers(Set.of(maxGrade));
 
@@ -159,7 +166,8 @@ class NewsPaperServiceTest {
 	void testSetVoteToPlayers_HappyPath() {
 		// Spy the service to mock getMatchDay
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 
 		// Mock the grade
 		when(grade.getMatchDay()).thenReturn(matchDay);
@@ -174,8 +182,9 @@ class NewsPaperServiceTest {
 
 	@Test
 	void testSetVoteToPlayers_Error_NoUnexpectedRepoCalls() {
+        //TODO uguale a sopra
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.empty()).when(spyService).getMatchDay();
+		//doReturn(Optional.empty()).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("Now you can't assign the votes");
@@ -188,7 +197,8 @@ class NewsPaperServiceTest {
 	void testSetVoteToPlayers_Error_WrongMatchDay_NoUnexpectedRepoCalls() {
 		NewsPaperService spyService = spy(service);
 		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
-		doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The match date is not correct");
@@ -200,7 +210,8 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_Error_InvalidMark_NoUnexpectedRepoCalls() {
 		NewsPaperService spyService = spy(service);
-		doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+        //TODO uguale a sopra
+		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
 		when(grade.getMark()).thenReturn(30.0); // invalid
 
 		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade)))
@@ -219,81 +230,4 @@ class NewsPaperServiceTest {
 
 		assertThat(players).containsExactly(player);
 	}
-
-	@Test
-	void testGetMatchDay_Saturday() {
-		LocalDate saturday = LocalDate.of(2025, 9, 20); // Saturday
-		MatchDaySerieA next = mock(MatchDaySerieA.class);
-
-		NewsPaperService spyService = spy(service);
-
-		// Override today()
-		doReturn(saturday).when(spyService).today();
-
-		// Stub repository calls
-		when(context.getMatchDayRepository().getNextMatchDay(saturday)).thenReturn(Optional.of(next));
-
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
-
-		assertThat(result).contains(next);
-	}
-
-	@Test
-	void testGetMatchDay_SundayNextPresent() {
-		LocalDate sunday = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDaySerieA next = mock(MatchDaySerieA.class);
-
-		NewsPaperService spyService = spy(service);
-		doReturn(sunday).when(spyService).today();
-
-		when(context.getMatchDayRepository().getNextMatchDay(sunday)).thenReturn(Optional.of(next));
-
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
-
-		assertThat(result).contains(next);
-	}
-
-	@Test
-	void testGetMatchDay_SundayNextEmpty() {
-		LocalDate sunday = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
-
-		NewsPaperService spyService = spy(service);
-		doReturn(sunday).when(spyService).today();
-
-		when(context.getMatchDayRepository().getNextMatchDay(sunday)).thenReturn(Optional.empty());
-		when(context.getMatchDayRepository().getPreviousMatchDay(sunday)).thenReturn(Optional.of(prev));
-
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
-
-		assertThat(result).contains(prev);
-	}
-
-	@Test
-	void testGetMatchDay_Monday() {
-		LocalDate monday = LocalDate.of(2025, 9, 22); // Monday
-		MatchDaySerieA prev = mock(MatchDaySerieA.class);
-
-		NewsPaperService spyService = spy(service);
-		doReturn(monday).when(spyService).today();
-
-		when(context.getMatchDayRepository().getPreviousMatchDay(monday)).thenReturn(Optional.of(prev));
-
-		Optional<MatchDaySerieA> result = spyService.getMatchDay();
-
-		assertThat(result).contains(prev);
-	}
-	
-	@Test
-	void testGetMatchDay_Tuesday_ReturnsEmpty() {
-	    LocalDate tuesday = LocalDate.of(2025, 9, 23); // Tuesday
-	    NewsPaperService spyService = spy(service);
-	    doReturn(tuesday).when(spyService).today();
-
-	    Optional<MatchDaySerieA> result = spyService.getMatchDay();
-
-	    assertThat(result).isEmpty();
-	    verifyNoInteractions(matchDayRepository);
-	}
-
 }
