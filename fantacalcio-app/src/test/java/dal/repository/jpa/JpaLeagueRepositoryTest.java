@@ -36,7 +36,7 @@ class JpaLeagueRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class)
+					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Contract.class)
 					.addAnnotatedClass(Player.class).getMetadataBuilder().build();
 
@@ -72,13 +72,11 @@ class JpaLeagueRepositoryTest {
 	void testGetLeagueByCodeWhenLeagueExists() {
 
 		FantaUser admin = new FantaUser("user", "pswd");
-		NewsPaper newsPaper = new NewsPaper("gazzetta");
 		String leagueCode = "1234";
-		League league = new League(admin, "lega", newsPaper, leagueCode);
+		League league = new League(admin, "lega", leagueCode);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(admin);
-			session.persist(newsPaper);
 			session.persist(league);
 		});
 
@@ -95,12 +93,10 @@ class JpaLeagueRepositoryTest {
 		entityManager.getTransaction().begin();
 
 		FantaUser admin = new FantaUser("user", "pswd");
-		NewsPaper newsPaper = new NewsPaper("gazzetta");
 		String leagueCode = "1234";
-		League league = new League(admin, "lega", newsPaper, leagueCode);
+		League league = new League(admin, "lega", leagueCode);
 
 		entityManager.persist(admin);
-		entityManager.persist(newsPaper);
 
 		leagueRepository.saveLeague(league);
 
@@ -116,14 +112,12 @@ class JpaLeagueRepositoryTest {
 	void testGetLeaguesByUserWhenNoLeagueExists() {
 
 		FantaUser admin = new FantaUser("adminMail", "adminPswd");
-		NewsPaper newsPaper = new NewsPaper("gazzetta");
-		League league = new League(admin, "lega", newsPaper, "1234");
+		League league = new League(admin, "lega", "1234");
 		FantaUser user = new FantaUser("mail", "pswd");
 
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(admin);
-			session.persist(newsPaper);
 			session.persist(league);
 			session.persist(user);
 		});
@@ -136,19 +130,17 @@ class JpaLeagueRepositoryTest {
 	@DisplayName("getLeaguesByUser() when there are some leagues with the specified user")
 	void testGetLeaguesByUserWhenSomeLeaguesExist() {
 
-		NewsPaper newsPaper = new NewsPaper("gazzetta");
 		FantaUser user = new FantaUser("user", "userPswd");
 
 		FantaUser admin1 = new FantaUser("admin1", "adminPswd1");
-		League league1 = new League(admin1, "lega1", newsPaper, "1234");
+		League league1 = new League(admin1, "lega1", "1234");
 		FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
 
 		FantaUser admin2 = new FantaUser("admin2", "adminPswd2");
-		League league2 = new League(admin2, "lega2", newsPaper, "5678");
+		League league2 = new League(admin2, "lega2", "5678");
 		FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
 		
 		sessionFactory.inTransaction(session -> {
-			session.persist(newsPaper);
 			session.persist(user);
 			session.persist(admin1);
 			session.persist(league1);
@@ -165,9 +157,8 @@ class JpaLeagueRepositoryTest {
 	@Test
 	@DisplayName("getAllTeams() should return all teams for the given league")
 	void testGetAllTeams() {
-	    NewsPaper newsPaper = new NewsPaper("gazzetta");
 	    FantaUser admin = new FantaUser("admin", "pswd");
-	    League league = new League(admin, "lega1", newsPaper, "1234");
+	    League league = new League(admin, "lega1", "1234");
 
 	    FantaUser manager1 = new FantaUser("user1", "pswd1");
 	    FantaUser manager2 = new FantaUser("user2", "pswd2");
@@ -177,12 +168,11 @@ class JpaLeagueRepositoryTest {
 
 	    // League unrelated to test
 	    FantaUser admin2 = new FantaUser("admin2", "pswd2");
-	    League otherLeague = new League(admin2, "lega2", newsPaper, "5678");
+	    League otherLeague = new League(admin2, "lega2", "5678");
 	    FantaUser otherManager = new FantaUser("other", "pswd3");
 	    FantaTeam otherTeam = new FantaTeam("otherTeam", otherLeague, 5, otherManager, new HashSet<Contract>());
 
 	    sessionFactory.inTransaction(session -> {
-	        session.persist(newsPaper);
 	        session.persist(admin);
 	        session.persist(league);
 	        session.persist(manager1);
