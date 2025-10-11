@@ -13,7 +13,6 @@ import domain.*;
 import domain.Player.*;
 import domain.scheme.Scheme433;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -200,6 +199,11 @@ class JpaLineUpRepositoryTest {
 					(Session em) -> em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
 					.setParameter("match", match).setParameter("team", team).getResultStream().findFirst()))
 			.isEmpty();
+			
+			// AND Fieldings are removed via cascading
+			assertThat(sessionFactory.fromTransaction(
+					(Session em) -> em.createQuery("FROM Fielding", Fielding.class).getResultStream().toList()))
+					.isEmpty();
 		}
 
 
