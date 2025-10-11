@@ -54,7 +54,6 @@ class JpaResultsRepositoryTest {
 		resultsRepository = new JpaResultsRepository(entityManager);
 
 		// Minimal setup for a Match and related entities
-		entityManager.getTransaction().begin();
 
 		FantaUser admin = new FantaUser("admin@l001.com", "pwd");
 		League league = new League(admin, "League L001", "L001");
@@ -63,19 +62,20 @@ class JpaResultsRepositoryTest {
 		FantaUser user2 = new FantaUser("b@b.com", "pwd");
 		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());
 		FantaTeam t2 = new FantaTeam("Team B", league, 0, user2, Set.of());
+        match = new Match(matchDay, t1, t2);
 
-		entityManager.persist(matchDay);
-		entityManager.persist(admin);
-		entityManager.persist(league);
-		entityManager.persist(user1);
-		entityManager.persist(user2);
-		entityManager.persist(t1);
-		entityManager.persist(t2);
+		sessionFactory.inTransaction(session -> {
+            session.persist(admin);
+            session.persist(league);
+            session.persist(matchDay);
+            session.persist(user1);
+            session.persist(user2);
+            session.persist(t1);
+            session.persist(t2);
+            session.persist(match);
+        });
 
-		match = new Match(matchDay, t1, t2);
-		entityManager.persist(match);
 
-		entityManager.getTransaction().commit();
 	}
 
 	@AfterEach
@@ -96,6 +96,7 @@ class JpaResultsRepositoryTest {
 		entityManager.getTransaction().begin();
 		resultsRepository.saveResult(result);
 		entityManager.getTransaction().commit();
+        entityManager.clear();
 
 		sessionFactory.inTransaction((Session session) -> {
 			List<Result> results = session.createQuery("from Result", Result.class).getResultList();
@@ -108,19 +109,25 @@ class JpaResultsRepositoryTest {
 	void testGetResultWhenExists() {
 		Result result = new Result(2.0, 2.0, 1, 1, match);
 
+        sessionFactory.inTransaction((Session session) -> {
+            session.persist(result);
+        });
 		entityManager.getTransaction().begin();
-		entityManager.persist(result);
+        Optional<Result> retrieved = resultsRepository.getResult(match);
 		entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		Optional<Result> retrieved = resultsRepository.getResult(match);
-		assertTrue(retrieved.isPresent());
-		assertThat(retrieved.get()).isEqualTo(result);
+		assertThat(retrieved).hasValue(result);
+
 	}
 
 	@Test
 	@DisplayName("getResult() should return empty if no result exists")
 	void testGetResultWhenNotExists() {
+        entityManager.getTransaction().begin();
 		Optional<Result> retrieved = resultsRepository.getResult(match);
-		assertFalse(retrieved.isPresent());
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertTrue(retrieved.isEmpty());
 	}
 }
