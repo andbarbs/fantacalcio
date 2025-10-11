@@ -2,7 +2,6 @@ package integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
@@ -66,7 +65,6 @@ class AdminUserServiceIntegrationIT {
 	private LeagueRepository leagueRepository;
 	private PlayerRepository playerRepository;
 	private ContractRepository contractRepository;
-	private NewsPaperRepository newspaperRepository;
 	private FantaUserRepository fantaUserRepository;
 
 	@BeforeAll
@@ -85,7 +83,6 @@ class AdminUserServiceIntegrationIT {
 					.addAnnotatedClass(Player.Midfielder.class)
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
@@ -119,7 +116,6 @@ class AdminUserServiceIntegrationIT {
 		leagueRepository = new JpaLeagueRepository(entityManager);
 		playerRepository = new JpaPlayerRepository(entityManager);
 		contractRepository = new JpaContractRepository(entityManager);
-		newspaperRepository = new JpaNewsPaperRepository(entityManager);
 
 	}
 
@@ -136,12 +132,9 @@ class AdminUserServiceIntegrationIT {
 		FantaUser admin = new FantaUser("mail", "pswd");
 		fantaUserRepository.saveFantaUser(admin);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
 		entityManager.getTransaction().commit();
 
-		adminUserService.createLeague("lega", admin, newsPaper, "1234");
+		adminUserService.createLeague("lega", admin, "1234");
 
 		Optional<League> result = leagueRepository.getLeagueByCode("1234");
 
@@ -150,7 +143,6 @@ class AdminUserServiceIntegrationIT {
 
 		assertThat(league.getName()).isEqualTo("lega");
 		assertThat(league.getAdmin()).isEqualTo(admin);
-		assertThat(league.getNewsPaper()).isEqualTo(newsPaper);
 		assertThat(league.getLeagueCode()).isEqualTo("1234");
 	}
 
@@ -180,10 +172,8 @@ class AdminUserServiceIntegrationIT {
 		fantaUserRepository.saveFantaUser(admin);
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
 
-		League league = new League(admin, "lega", newsPaper, "0000");
+		League league = new League(admin, "lega", "0000");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team1 = new FantaTeam("team1", league, 0, admin, new HashSet<Contract>());
@@ -193,8 +183,8 @@ class AdminUserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team2);
 
 		List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
-		for (int i = 0; i < 38; i++) {
-			matchDays.add(new MatchDaySerieA("Match " + String.valueOf(i), LocalDate.of(2025, 9, 7).plusWeeks(i), 1));
+		for (int i = 0; i < 20; i++) {
+			matchDays.add(new MatchDaySerieA("Match " + i, 1, MatchDaySerieA.Status.FUTURE, league));
 		}
 
 		sessionFactory.inTransaction(t -> {
@@ -226,10 +216,8 @@ class AdminUserServiceIntegrationIT {
 		fantaUserRepository.saveFantaUser(admin);
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
 
-		League league = new League(admin, "lega", newsPaper, "0000");
+		League league = new League(admin, "lega", "0000");
 		leagueRepository.saveLeague(league);
 
 		// Teams
@@ -240,9 +228,9 @@ class AdminUserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team2);
 
 		// MatchDays
-		LocalDate matchDate = LocalDate.of(2025, 9, 14);
-		MatchDaySerieA prevDay = new MatchDaySerieA("Day0", matchDate.minusWeeks(1),1 );
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day1", matchDate, 1);
+		//TODO che senso ha creare 2 matchday?
+		MatchDaySerieA prevDay = new MatchDaySerieA("Day1",1, MatchDaySerieA.Status.PAST,league);
+		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day2", 2, MatchDaySerieA.Status.PAST, league);
 
 		entityManager.persist(prevDay);
 		entityManager.persist(dayToCalc);
@@ -336,24 +324,22 @@ class AdminUserServiceIntegrationIT {
 //		lineUpRepository.saveLineUp(lineup2);
 
 		// Grades
-		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newsPaper);
-		Grade grade2 = new Grade(d1, dayToCalc, 60.0, newsPaper);
+		Grade grade1 = new Grade(gk1, dayToCalc, 70.0);
+		Grade grade2 = new Grade(d1, dayToCalc, 60.0);
 
 		gradeRepository.saveGrade(grade1);
 		gradeRepository.saveGrade(grade2);
 
 		entityManager.getTransaction().commit();
 
+        //TODO ma se lo sto testando perchè lo creo?
 		AdminUserService service = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return LocalDate.of(2025, 9, 16); // after 14/09
-			}
+
 		};
 
 		service.calculateGrades(admin, league);
 
-		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(match, newsPaper);
+		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(dayToCalc);
 		assertThat(allMatchGrades.size()).isEqualTo(2);
 		assertThat(allMatchGrades.get(0)).isEqualTo(grade1);
 		assertThat(allMatchGrades.get(1)).isEqualTo(grade2);
@@ -368,10 +354,7 @@ class AdminUserServiceIntegrationIT {
 		FantaUser admin = new FantaUser("mail", "pswd");
 		fantaUserRepository.saveFantaUser(admin);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(admin, "lega", newsPaper, "1234");
+		League league = new League(admin, "lega", "1234");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team = new FantaTeam("", league, 0, admin, Set.of());
