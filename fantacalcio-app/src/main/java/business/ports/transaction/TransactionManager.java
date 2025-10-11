@@ -34,7 +34,6 @@ public interface TransactionManager {
 		private final FieldingRepository fieldingRepository;
 		private final LineUpRepository lineUpRepository;
 		private final MatchDayRepository matchDayRepository;
-		private final NewsPaperRepository newspaperRepository;
 		private final FantaUserRepository fantaUserRepository;
 
 		public TransactionContext(LeagueRepository leagueRepository,
@@ -42,8 +41,8 @@ public interface TransactionManager {
 								  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 								  ProposalRepository proposalRepository, ContractRepository contractRepository,
 								  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
-								  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository,
-								  NewsPaperRepository newspaperRepository, FantaUserRepository fantaUserRepository) {
+								  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository
+								  , FantaUserRepository fantaUserRepository) {
 			this.leagueRepository = leagueRepository;
 			this.matchRepository = matchRepository;
 			this.playerRepository = playerRepository;
@@ -55,7 +54,6 @@ public interface TransactionManager {
 			this.fieldingRepository = fieldingRepository;
 			this.lineUpRepository = lineUpRepository;
 			this.matchDayRepository = matchDayRepository;
-			this.newspaperRepository = newspaperRepository;
 			this.fantaUserRepository = fantaUserRepository;
 			
 		}
@@ -102,10 +100,6 @@ public interface TransactionManager {
 
 		public MatchDayRepository getMatchDayRepository() {
 			return matchDayRepository;
-		}
-
-		public NewsPaperRepository getNewspaperRepository() {
-			return newspaperRepository;
 		}
 
 		public FantaUserRepository getFantaUserRepository() {
