@@ -170,17 +170,20 @@ public class UserService {
 	// Standings
 
 	public List<FantaTeam> getStandings(League league) {
-		return getAllFantaTeams(league).stream().sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
+		// TODO what if no Teams exist?
+		return getAllFantaTeams(league)
+				.stream()
+				.sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
 				.collect(Collectors.toList());
 	}
 
 	// Teams
 
-	public List<FantaTeam> getAllFantaTeams(League league) {
+	public Set<FantaTeam> getAllFantaTeams(League league) {
 		return transactionManager.fromTransaction((context) -> context.getTeamRepository().getAllTeams(league));
 	}
 
-	public FantaTeam getFantaTeamByUserAndLeague(League league, FantaUser user) {
+	public Optional<FantaTeam> getFantaTeamByUserAndLeague(League league, FantaUser user) {
 		return transactionManager
 				.fromTransaction((context) -> context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
 	}

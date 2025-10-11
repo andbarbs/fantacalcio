@@ -74,9 +74,7 @@ class JpaFantaUserRepositoryTest {
     @DisplayName("getUser() should return a user if email and password match")
     void testGetUser_Found() {
         FantaUser user = new FantaUser("anna@example.com", "mypassword");
-        sessionFactory.inTransaction(session -> {
-            session.save(user);
-        });
+        sessionFactory.inTransaction(session -> session.persist(user));
         entityManager.getTransaction().begin();
         Optional<FantaUser> result = fantaUserRepository.getUser("anna@example.com", "mypassword");
         entityManager.getTransaction().commit();

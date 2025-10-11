@@ -345,7 +345,7 @@ class AdminUserServiceTest {
 			matchDays.add(new MatchDay("match", i, MatchDay.Status.FUTURE, league));
 
 		// Mock repositories
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
+		when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.copyOf(teams));
 		when(matchDayRepository.getAllMatchDays(league)).thenReturn(matchDays);
 
 		adminUserService.generateCalendar(league);
@@ -420,7 +420,7 @@ class AdminUserServiceTest {
 		League league = new League(admin, "Serie A", null);
 		FantaTeam onlyTeam = new FantaTeam("Solo", null, 0, null, new HashSet<>());
 
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(onlyTeam));
+		when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.of(onlyTeam));
 
 		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("At least 2 teams are required");
@@ -434,7 +434,7 @@ class AdminUserServiceTest {
 		FantaTeam t2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
 		FantaTeam t3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
 
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(t1, t2, t3));
+		when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.of(t1, t2, t3));
 
 		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Number of teams must be even");

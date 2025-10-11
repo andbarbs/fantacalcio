@@ -627,10 +627,10 @@ public class UserServiceTest {
         FantaUser user = new FantaUser("user@test.com", "pwd");
         League league = new League(user, "Test League", "L005");
         FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
-		when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(team);
+		when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
 
-		FantaTeam result = userService.getFantaTeamByUserAndLeague(league, user);
-		assertThat(result).isEqualTo(team);
+		Optional<FantaTeam> result = userService.getFantaTeamByUserAndLeague(league, user);
+		assertThat(result).hasValue(team);
 	}
 
 	@Test
@@ -924,11 +924,11 @@ public class UserServiceTest {
 		FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
 		FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
 
-		when(context.getTeamRepository().getAllTeams(league)).thenReturn(List.of(t1, t2));
+		when(context.getTeamRepository().getAllTeams(league)).thenReturn(Set.of(t1, t2));
 
-		List<FantaTeam> result = userService.getAllFantaTeams(league);
+		Set<FantaTeam> result = userService.getAllFantaTeams(league);
 
-		assertThat(result).containsExactly(t1, t2);
+		assertThat(result).containsExactlyInAnyOrder(t1, t2);
 		verify(context.getTeamRepository(), times(1)).getAllTeams(league);
 	}
 

@@ -1,10 +1,8 @@
 package dal.repository.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -77,11 +75,15 @@ class JpaFantaTeamRepositoryTest {
 	@DisplayName("getAllTeams() with no team in the league")
 	public void testGetAllTeamsWithNoTeam() {
 
+		// GIVEN no Teams are persisted for the test League
+		
+		// WHEN the SUT is used to retrieve Teams for the test League
 		entityManager.getTransaction().begin();
-		List<FantaTeam> retrieved = fantaTeamRepository.getAllTeams(league);
+		Set<FantaTeam> retrieved = fantaTeamRepository.getAllTeams(league);
 		entityManager.getTransaction().commit();
 	    entityManager.clear();		
 		
+	    // THEN an empty Optional is returned
 		assertThat(retrieved).isEmpty();
 	}
 
@@ -106,11 +108,11 @@ class JpaFantaTeamRepositoryTest {
 
 		// WHEN the SUT is used to retrieve all teams in the League
 		entityManager.getTransaction().begin();
-		List<FantaTeam> allTeams = fantaTeamRepository.getAllTeams(league);
+		Set<FantaTeam> allTeams = fantaTeamRepository.getAllTeams(league);
 		entityManager.getTransaction().commit();
 	    entityManager.clear();
 	    
-	    // THEN exactly the supposed Teams are retrieved
+		// THEN exactly the supposed Teams are retrieved
 		assertThat(allTeams).containsExactlyInAnyOrder(team1, team2);
 	}
 
@@ -143,26 +145,36 @@ class JpaFantaTeamRepositoryTest {
 	@Test
 	@DisplayName("getFantaTeamByUserAndLeague() when that team does not exist")
 	public void testGetFantaTeamByUserAndLeagueWhenNotPresent() {
+		
+		// GIVEN no Team exists for the test user in the league
+		
+		// WHEN the SUT is used to retrieve a Team for test user in the league
+		entityManager.getTransaction().begin();
+		Optional<FantaTeam> retrieved = fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin);
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
 
-		assertThrows(jakarta.persistence.NoResultException.class,
-				() -> fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin));
-
+		// THEN an empty Optional is returned
+	    assertThat(retrieved).isEmpty();
 	}
 
 	@Test
 	@DisplayName("getFantaTeamByUserAndLeague() when that team exists")
 	public void testGetFantaTeamByUserAndLeagueWhenPresent() {
 
+		// GIVEN a Team is persisted for test user under test League
 		FantaUser user = new FantaUser("mail", "pswd");
-		FantaTeam team = new FantaTeam("team", league, 0, user, new HashSet<Contract>());
+		FantaTeam team = new FantaTeam("team", league, 0, user, null);
 
 		sessionFactory.inTransaction(session -> {
 			session.persist(user);
 			session.persist(team);
 		});
+		
+		// WHEN the SUT is used to retrieve a Team for test user in the league
+		Optional<FantaTeam> retrieved = fantaTeamRepository.getFantaTeamByUserAndLeague(league, user);		
 
-		assertThat(fantaTeamRepository.getFantaTeamByUserAndLeague(league, user)).isEqualTo(team);
-
+		// THEN the correct Team is returned
+		assertThat(retrieved).hasValue(team);
 	}
-
 }

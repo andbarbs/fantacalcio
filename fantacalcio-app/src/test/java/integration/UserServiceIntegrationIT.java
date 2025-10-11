@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import domain.*;
 import org.hibernate.SessionFactory;
@@ -40,7 +41,6 @@ import dal.repository.jpa.JpaPlayerRepository;
 import dal.repository.jpa.JpaProposalRepository;
 import dal.repository.jpa.JpaResultsRepository;
 import dal.transaction.jpa.JpaTransactionManager;
-import domain.MatchDay;
 import domain.Player.Club;
 import domain.Player.Defender;
 import domain.Player.Forward;
@@ -440,14 +440,10 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		List<FantaTeam> result = userService.getAllFantaTeams(league);
+		Set<FantaTeam> result = userService.getAllFantaTeams(league);
 
 		assertThat(result.size()).isEqualTo(2);
-		assertThat(result.get(0).getLeague()).isEqualTo(result.get(1).getLeague());
-		assertThat(result.get(0).getName()).isIn("Team1", "Team2");
-		assertThat(result.get(1).getName()).isIn("Team1", "Team2");
-		assertThat(result.get(0).getPoints()).isIn(10, 70);
-		assertThat(result.get(1).getPoints()).isIn(10, 70);
+		assertThat(result).containsExactlyInAnyOrder(team1, team2);
 	}
 
 	@Test
