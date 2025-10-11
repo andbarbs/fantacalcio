@@ -11,7 +11,6 @@ import org.junit.jupiter.api.*;
 import domain.*;
 import jakarta.persistence.EntityManager;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +29,7 @@ class JpaMatchRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class).addAnnotatedClass(League.class)
+					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class).addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class)
 					.getMetadataBuilder().build();
@@ -57,10 +56,9 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("saveMatch() should persist a match")
 	void testSaveMatch() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@" + "L001" + ".com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta " + "L001");
-		League league = new League(admin, "League " + "L001", np, "L001");
+		League league = new League(admin, "League " + "L001", "L001");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD1", 1, MatchDaySerieA.Status.FUTURE, league);
 		FantaUser user1 = new FantaUser("a@a.com", "pwd");
 		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());
 		FantaUser user2 = new FantaUser("b@b.com", "pwd");
@@ -71,7 +69,6 @@ class JpaMatchRepositoryTest {
 		entityManager.getTransaction().begin();
 		entityManager.persist(matchDay);
 		entityManager.persist(admin);
-		entityManager.persist(np);
 		entityManager.persist(league);
 		entityManager.persist(user1);
 		entityManager.persist(user2);
@@ -94,10 +91,9 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchesByMatchDay() should return all matches of a given MatchDay")
 	void testGetAllMatchesByMatchDay() {
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@" + "L002" + ".com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta " + "L002");
-		League league = new League(admin, "League " + "L002", np, "L002");
+		League league = new League(admin, "League " + "L002", "L002");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD2", 2, MatchDaySerieA.Status.FUTURE, league);
 		FantaUser user1 = new FantaUser("c@c.com", "pwd");
 		FantaTeam t1 = new FantaTeam("Team C", league, 0, user1, Set.of());
 		FantaUser user2 = new FantaUser("d@d.com", "pwd");
@@ -111,7 +107,6 @@ class JpaMatchRepositoryTest {
 		entityManager.getTransaction().begin();
 		entityManager.persist(matchDay);
 		entityManager.persist(admin);
-		entityManager.persist(np);
 		entityManager.persist(league);
 		entityManager.persist(user1);
 		entityManager.persist(user2);
@@ -131,10 +126,9 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should return the correct match when team is team1")
 	void testGetMatchByMatchDayWithTeam1() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD5", LocalDate.now(), 1);
 	    FantaUser admin = new FantaUser("admin@L005.com", "pwd");
-	    NewsPaper np = new NewsPaper("Gazzetta L005");
-	    League league = new League(admin, "League L005", np, "L005");
+	    League league = new League(admin, "League L005", "L005");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD5", 5, MatchDaySerieA.Status.FUTURE, league);
 	    FantaUser user1 = new FantaUser("i@i.com", "pwd");
 	    FantaTeam t1 = new FantaTeam("Team I", league, 0, user1, Set.of());
 	    FantaUser user2 = new FantaUser("j@j.com", "pwd");
@@ -145,7 +139,6 @@ class JpaMatchRepositoryTest {
 	    entityManager.getTransaction().begin();
 	    entityManager.persist(matchDay);
 	    entityManager.persist(admin);
-	    entityManager.persist(np);
 	    entityManager.persist(league);
 	    entityManager.persist(user1);
 	    entityManager.persist(user2);
@@ -161,10 +154,9 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should return the correct match when team is team2")
 	void testGetMatchByMatchDayWithTeam2() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD6", LocalDate.now(), 1);
 	    FantaUser admin = new FantaUser("admin@L006.com", "pwd");
-	    NewsPaper np = new NewsPaper("Gazzetta L006");
-	    League league = new League(admin, "League L006", np, "L006");
+	    League league = new League(admin, "League L006", "L006");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD6", 6, MatchDaySerieA.Status.FUTURE, league);
 	    FantaUser user1 = new FantaUser("k@k.com", "pwd");
 	    FantaTeam t1 = new FantaTeam("Team K", league, 0, user1, Set.of());
 	    FantaUser user2 = new FantaUser("l@l.com", "pwd");
@@ -175,7 +167,6 @@ class JpaMatchRepositoryTest {
 	    entityManager.getTransaction().begin();
 	    entityManager.persist(matchDay);
 	    entityManager.persist(admin);
-	    entityManager.persist(np);
 	    entityManager.persist(league);
 	    entityManager.persist(user1);
 	    entityManager.persist(user2);
@@ -191,17 +182,15 @@ class JpaMatchRepositoryTest {
 	@Test
 	@DisplayName("getMatchByMatchDay() should throw NoSuchElementException when no match exists")
 	void testGetMatchByMatchDayWhenNoMatchExists() {
-	    MatchDaySerieA matchDay = new MatchDaySerieA("MD7", LocalDate.now(),1 );
 	    FantaUser admin = new FantaUser("admin@L007.com", "pwd");
-	    NewsPaper np = new NewsPaper("Gazzetta L007");
-	    League league = new League(admin, "League L007", np, "L007");
+	    League league = new League(admin, "League L007", "L007");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD7", 7, MatchDaySerieA.Status.FUTURE, league);
 	    FantaUser user1 = new FantaUser("m@m.com", "pwd");
 	    FantaTeam t1 = new FantaTeam("Team M", league, 0, user1, Set.of());
 
 	    entityManager.getTransaction().begin();
 	    entityManager.persist(matchDay);
 	    entityManager.persist(admin);
-	    entityManager.persist(np);
 	    entityManager.persist(league);
 	    entityManager.persist(user1);
 	    entityManager.persist(t1);
