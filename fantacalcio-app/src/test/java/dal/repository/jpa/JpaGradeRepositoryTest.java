@@ -97,8 +97,11 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
+        entityManager.getTransaction().begin();
 		assertThat(gradeRepository.getAllMatchGrades(matchDay)).isEmpty();
-	}
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+    }
 
 	@Test
 	@DisplayName("getAllMatchGrades() when two grades have been persisted")
@@ -118,11 +121,13 @@ class JpaGradeRepositoryTest {
 			session.persist(contract1);
 			session.persist(contract2);
 		});
-
-        //TODO get allMatchGrades funziona in maniera diversa ora però dovrebbe andare bene lo stesso
-        //getAllMatchGrades ora prende i voti di tutti i match di quel matchday però come detto sopra dovrebbe andare bene lo stesso
-		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(matchDay);
+        entityManager.getTransaction().begin();
+        List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(matchDay);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 		assertThat(allMatchGrades.size()).isEqualTo(2);
+        assertThat(allMatchGrades.get(0)).isEqualTo(voto1);
+        assertThat(allMatchGrades.get(1)).isEqualTo(voto2);
 		assertThat(allMatchGrades.get(0).getMark() + allMatchGrades.get(1).getMark()).isEqualTo(6.0 + 8.0);
 		
 	}
@@ -136,13 +141,14 @@ class JpaGradeRepositoryTest {
 		Player totti = new Player.Forward("Francesco", "Totti", Club.ROMA);
 		Grade grade = new Grade(totti, matchDay, 9.0);
 
-		entityManager.persist(totti);
+		sessionFactory.inTransaction(session -> {
+            session.persist(totti);
+        });
 		gradeRepository.saveGrade(grade);
 
 		entityManager.getTransaction().commit();
 	    entityManager.clear();
 
-        //TODO ricontrollare cosa fa
 		sessionFactory.inTransaction((Session em) -> {
 			Optional<Grade> result = em
 					.createQuery("SELECT g FROM Grade g " + "WHERE g.player = :player " + "AND g.matchDay = :matchDay "
@@ -153,6 +159,8 @@ class JpaGradeRepositoryTest {
 			assertThat(result).isPresent();
 			Grade found = result.get();
 			assertThat(found.getPlayer()).isEqualTo(totti);
+            assertThat(found.getMatchDay()).isEqualTo(matchDay);
+            assertThat(found.getMark()).isEqualTo(9.0);
 		});
 
 	}
