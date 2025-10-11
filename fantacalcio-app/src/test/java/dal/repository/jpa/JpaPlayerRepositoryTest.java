@@ -20,6 +20,9 @@ import domain.Player;
 import domain.Player.*;
 import jakarta.persistence.EntityManager;
 
+import java.util.List;
+import java.util.Set;
+
 class JpaPlayerRepositoryTest {
 
 	private static SessionFactory sessionFactory;
@@ -62,8 +65,9 @@ class JpaPlayerRepositoryTest {
 	@Test
 	@DisplayName("findAll() on an empty table")
 	public void testFindAllWhenNoPlayersExist() {
+        List<Player> players = playerRepository.findAll();
         entityManager.getTransaction().begin();
-        assertThat(playerRepository.findAll()).isEmpty();
+        assertThat(players).isEmpty();
         entityManager.getTransaction().commit();
         entityManager.clear();
 	}
@@ -78,23 +82,23 @@ class JpaPlayerRepositoryTest {
 			session.persist(buffon);
 			session.persist(messi);
 		});
-
-		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
+        List<Player> players = playerRepository.findAll();
+        entityManager.getTransaction().begin();
+		assertThat(players).containsExactly(buffon, messi);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 	@Test
 	@DisplayName("addPlayer() with a non-persisted player")
 	public void testAddPlayerWithNonPersistedPlayer() {
 		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+        entityManager.getTransaction().begin();
+        playerRepository.addPlayer(buffon);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		entityManager.getTransaction().begin(); // Start the transaction
-		assertTrue(playerRepository.addPlayer(buffon));
-		entityManager.getTransaction().commit(); // Commit the transaction to flush changes
-		entityManager.close();
-
-		assertThat(sessionFactory.fromTransaction(
-				(Session session) -> session.createSelectionQuery("from Player", Player.class).getResultList()))
-				.containsExactly(buffon);
+		assertThat(entityManager.createQuery("from Player", Player.class).getResultList()).containsExactly(buffon);
 	}
 
 	@Test
@@ -103,9 +107,11 @@ class JpaPlayerRepositoryTest {
 		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
 
 		sessionFactory.inTransaction(session -> session.persist(buffon));
-
-		assertFalse(playerRepository.addPlayer(buffon));
-		entityManager.close();
+        entityManager.getTransaction().begin();
+        Boolean result = playerRepository.addPlayer(buffon);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertFalse(result);
 	}
 
 	@Test
@@ -118,10 +124,11 @@ class JpaPlayerRepositoryTest {
 			session.persist(buffon);
 			session.persist(messi);
 		});
-
-		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
-		entityManager.close();
-
+        entityManager.getTransaction().begin();
+        List<Player> players = playerRepository.findBySurname("Thuram");
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(players).isEmpty();
 	}
 
 	@Test
@@ -137,8 +144,12 @@ class JpaPlayerRepositoryTest {
 			session.persist(eljif);
 		});
 
-		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
-		entityManager.close();
+        entityManager.getTransaction().begin();
+        List<Player> players = playerRepository.findBySurname("Thuram");
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+
+		assertThat(players).containsExactlyInAnyOrder(marcus, kephren);
 	}
 
 	@Test
@@ -151,10 +162,11 @@ class JpaPlayerRepositoryTest {
 			session.persist(buffon);
 			session.persist(messi);
 		});
-
-		assertThat(playerRepository.findByClub(Club.NAPOLI)).isEmpty();
-		entityManager.close();
-
+        entityManager.getTransaction().begin();
+        Set<Player> players = playerRepository.findByClub(Club.NAPOLI);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(players).isEmpty();
 	}
 
 	@Test
@@ -169,9 +181,12 @@ class JpaPlayerRepositoryTest {
 			session.persist(messi);
 			session.persist(yamal);
 		});
+        entityManager.getTransaction().begin();
+        Set<Player> players = playerRepository.findByClub(Club.MILAN);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		assertThat(playerRepository.findByClub(Club.MILAN)).containsExactlyInAnyOrder(messi, yamal);
-		entityManager.close();
+		assertThat(players).containsExactlyInAnyOrder(messi, yamal);
 	}
 
 }
