@@ -56,7 +56,6 @@ import domain.Player.Defender;
 import domain.Player.Forward;
 import domain.Player.Goalkeeper;
 import domain.Player.Midfielder;
-import domain.Proposal.PendingProposal;
 import domain.scheme.Scheme433;
 import jakarta.persistence.EntityManager;
 
@@ -75,7 +74,6 @@ class UserServiceIntegrationIT {
 	private LeagueRepository leagueRepository;
 	private PlayerRepository playerRepository;
 	private ContractRepository contractRepository;
-	private NewsPaperRepository newspaperRepository;
 	private FantaUserRepository fantaUserRepository;
 	private ResultsRepository resultsRepository;
 	private ProposalRepository proposalRepository;
@@ -96,7 +94,6 @@ class UserServiceIntegrationIT {
 					.addAnnotatedClass(Player.Midfielder.class)
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
@@ -107,8 +104,6 @@ class UserServiceIntegrationIT {
 					.addAnnotatedClass(Result.class)
 					.addAnnotatedClass(Grade.class)
 					.addAnnotatedClass(Proposal.class)
-					.addAnnotatedClass(Proposal.PendingProposal.class)
-					.addAnnotatedClass(Proposal.RejectedProposal.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -135,7 +130,6 @@ class UserServiceIntegrationIT {
 		leagueRepository = new JpaLeagueRepository(entityManager);
 		playerRepository = new JpaPlayerRepository(entityManager);
 		contractRepository = new JpaContractRepository(entityManager);
-		newspaperRepository = new JpaNewsPaperRepository(entityManager);
 		resultsRepository = new JpaResultsRepository(entityManager);
 		proposalRepository = new JpaProposalRepository(entityManager);
 	}
@@ -153,10 +147,7 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "1234");
+		League league = new League(user, "Test League", "1234");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, new HashSet<Contract>());
@@ -172,7 +163,7 @@ class UserServiceIntegrationIT {
 		assertThat(resultLeague.getAdmin()).isEqualTo(user);
 		assertThat(resultLeague.getLeagueCode()).isEqualTo("1234");
 		assertThat(resultLeague.getName()).isEqualTo("Test League");
-		assertThat(resultLeague.getNewsPaper()).isEqualTo(newsPaper);
+
 	}
 
 	@Test
@@ -185,10 +176,7 @@ class UserServiceIntegrationIT {
 		FantaUser user2 = new FantaUser("user2@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user2);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user1, "Test League", newsPaper, "1234");
+		League league = new League(user1, "Test League", "1234");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team1 = new FantaTeam("Team A", league, 0, user1, new HashSet<Contract>());
@@ -196,7 +184,7 @@ class UserServiceIntegrationIT {
 		FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA day1 = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 7), 1);
+		MatchDaySerieA day1 = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.PAST, league);
 		matchDayRepository.saveMatchDay(day1);
 
 		Match m1 = new Match(day1, team1, team2);
@@ -220,13 +208,10 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now().plusWeeks(1), 1); // Monday
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league); // Monday
 		matchDayRepository.saveMatchDay(matchDay);		
 
 		// Players for LineUp
@@ -314,10 +299,7 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team = new FantaTeam("Team", league, 30, user, new HashSet<>());
@@ -325,8 +307,8 @@ class UserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team);
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", LocalDate.now().minusWeeks(1), 1);
-		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2", LocalDate.now().plusWeeks(1), 1);
+		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", 1, MatchDaySerieA.Status.PAST, league);
+		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2",  2, MatchDaySerieA.Status.FUTURE, league);
 		matchDayRepository.saveMatchDay(prevMatchDay);
 		matchDayRepository.saveMatchDay(nextMatchDay);
 
@@ -352,10 +334,7 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
@@ -379,10 +358,8 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
 
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
@@ -421,10 +398,7 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
@@ -444,7 +418,7 @@ class UserServiceIntegrationIT {
 		contractRepository.saveContract(offeredContract);
 		contractRepository.saveContract(requestedContract);
 
-		Proposal.PendingProposal proposal = new PendingProposal(offeredContract, requestedContract);
+		Proposal proposal = new Proposal(offeredContract, requestedContract);
 		proposalRepository.saveProposal(proposal);
 
 		entityManager.getTransaction().commit();
@@ -466,10 +440,7 @@ class UserServiceIntegrationIT {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
 		fantaUserRepository.saveFantaUser(user);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
-
-		League league = new League(user, "Test League", newsPaper, "L003");
+		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
 		FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
