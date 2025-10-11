@@ -42,7 +42,6 @@ class JpaFantaUserRepositoryTest {
     	sessionFactory.getSchemaManager().truncateMappedObjects();
         entityManager = sessionFactory.createEntityManager();
         fantaUserRepository = new JpaFantaUserRepository(entityManager);
-        entityManager.getTransaction().begin();
     }
 
     @AfterAll
@@ -55,6 +54,7 @@ class JpaFantaUserRepositoryTest {
     void testSaveFantaUser() {
         FantaUser user = new FantaUser("john@example.com", "secret");
 
+        entityManager.getTransaction().begin();
         fantaUserRepository.saveFantaUser(user);
         entityManager.getTransaction().commit();
 
@@ -74,11 +74,13 @@ class JpaFantaUserRepositoryTest {
     @DisplayName("getUser() should return a user if email and password match")
     void testGetUser_Found() {
         FantaUser user = new FantaUser("anna@example.com", "mypassword");
-        fantaUserRepository.saveFantaUser(user);
-        entityManager.getTransaction().commit();
-
-        entityManager.clear();
+        sessionFactory.inTransaction(session -> {
+            session.save(user);
+        });
+        entityManager.getTransaction().begin();
         Optional<FantaUser> result = fantaUserRepository.getUser("anna@example.com", "mypassword");
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
         assertThat(result).isPresent();
         assertThat(result.get().getEmail()).isEqualTo("anna@example.com");
@@ -87,7 +89,10 @@ class JpaFantaUserRepositoryTest {
     @Test
     @DisplayName("getUser() should return empty if credentials do not match")
     void testGetUser_NotFound() {
+        entityManager.getTransaction().begin();
         Optional<FantaUser> result = fantaUserRepository.getUser("nonexistent@example.com", "wrong");
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
         assertThat(result).isEmpty();
     }
