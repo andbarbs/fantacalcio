@@ -33,7 +33,6 @@ class JpaContractRepositoryTest {
 	private JpaContractRepository contractRepository;
 	private EntityManager entityManager;
 	private FantaUser user;
-	private NewsPaper newspaper;
 	private FantaTeam team;
 	private League league;
 	private Forward player;
@@ -47,7 +46,7 @@ class JpaContractRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
 					.addAnnotatedClass(Player.Forward.class).addAnnotatedClass(Player.Defender.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class).getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -66,9 +65,7 @@ class JpaContractRepositoryTest {
 		sessionFactory.inTransaction(t -> {
 			user = new FantaUser("manager@example.com", "securePass");
 			t.persist(user);
-			newspaper = new NewsPaper("Gazzetta");
-			t.persist(newspaper);
-			league = new League(user, "Lega", newspaper, "1234");
+			league = new League(user, "Lega", "1234");
 			t.persist(league);
 			team = new FantaTeam("Dream Team", league, 10, user, new HashSet<Contract>());
 			t.persist(team);
