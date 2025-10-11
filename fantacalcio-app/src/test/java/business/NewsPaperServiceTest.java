@@ -98,7 +98,6 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_WrongMatchDay() {
 		NewsPaperService spyService = spy(service);
-		MatchDay otherDay = mock(MatchDay.class);
         //TODO uguale a sopra non capisco spy
 		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
@@ -196,7 +195,6 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_Error_WrongMatchDay_NoUnexpectedRepoCalls() {
 		NewsPaperService spyService = spy(service);
-		MatchDay otherDay = mock(MatchDay.class);
         //TODO uguale a sopra
 		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 

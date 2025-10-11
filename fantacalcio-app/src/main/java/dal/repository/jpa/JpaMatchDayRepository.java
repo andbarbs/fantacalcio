@@ -6,7 +6,7 @@ import java.util.Optional;
 import business.ports.repository.MatchDayRepository;
 import domain.League;
 import domain.MatchDay;
-import domain.MatchDaySerieA_;
+import domain.MatchDay_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -27,8 +27,8 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
         Root<MatchDay> matchDay = cq.from(MatchDay.class);
 
         cq.select(matchDay)
-                .where(cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league))
-                .orderBy(cb.asc(matchDay.get(MatchDaySerieA_.NUMBER)));
+                .where(cb.equal(matchDay.get(MatchDay_.LEAGUE), league))
+                .orderBy(cb.asc(matchDay.get(MatchDay_.NUMBER)));
 
         return em.createQuery(cq).getResultList();
 	}
@@ -45,11 +45,11 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
         cq.select(matchDay)
                 .where(
                         cb.and(
-                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.PAST)
+                                cb.equal(matchDay.get(MatchDay_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDay_.STATUS), MatchDay.Status.PAST)
                         )
                 )
-                .orderBy(cb.desc(matchDay.get(MatchDaySerieA_.NUMBER)));
+                .orderBy(cb.desc(matchDay.get(MatchDay_.NUMBER)));
 
         List<MatchDay> result = em.createQuery(cq)
                 .setMaxResults(1)
@@ -69,11 +69,11 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
         cq.select(matchDay)
                 .where(
                         cb.and(
-                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.FUTURE)
+                                cb.equal(matchDay.get(MatchDay_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDay_.STATUS), MatchDay.Status.FUTURE)
                         )
                 )
-                .orderBy(cb.asc(matchDay.get(MatchDaySerieA_.NUMBER)));
+                .orderBy(cb.asc(matchDay.get(MatchDay_.NUMBER)));
 
         List<MatchDay> result = em.createQuery(cq)
                 .setMaxResults(1)
@@ -93,8 +93,8 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
         cq.select(matchDay)
                 .where(
                         cb.and(
-                                cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.PRESENT)
+                                cb.equal(matchDay.get(MatchDay_.LEAGUE), league),
+                                cb.equal(matchDay.get(MatchDay_.STATUS), MatchDay.Status.PRESENT)
                         )
                 );
 
