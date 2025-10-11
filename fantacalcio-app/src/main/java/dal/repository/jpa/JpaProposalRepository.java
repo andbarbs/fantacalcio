@@ -10,13 +10,14 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import business.ports.repository.ProposalRepository;
 import domain.Contract;
 import domain.FantaTeam;
-import domain.League;
+import domain.League_;
 import domain.Proposal;
 
 public class JpaProposalRepository extends BaseJpaRepository implements ProposalRepository {
@@ -42,20 +43,30 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
     }
 
     @Override
-    public List<Proposal> getMyProposals(League actualLeague, FantaTeam myTeam) {
+    public Set<Proposal> getProposalsFor(FantaTeam myTeam) {
         EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Proposal> query = cb.createQuery(Proposal.class);
         Root<Proposal> root = query.from(Proposal.class);
 
-        Join<Proposal, Contract> offeredJoin = root.join(Proposal_.offeredContract);
-        Join<Proposal, Contract> requestedJoin = root.join(Proposal_.requestedContract);
-        Join<Contract, FantaTeam> offeredTeam = offeredJoin.join(Contract_.team);
-        Join<Contract, FantaTeam> requestedTeam = requestedJoin.join(Contract_.team);
+        // joining, for query logic
+        Join<Proposal, Contract> offeredJoin = root.join(Proposal_.OFFERED_CONTRACT);
+        Join<Proposal, Contract> requestedJoin = root.join(Proposal_.REQUESTED_CONTRACT);
+        Join<Contract, FantaTeam> offeredTeam = offeredJoin.join(Contract_.TEAM);
+        Join<Contract, FantaTeam> requestedTeam = requestedJoin.join(Contract_.TEAM);
+        
+        // deep fetching
+        var offeredTeamFetch = root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.TEAM);
+		offeredTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
+		offeredTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.PLAYER);
+        var requestedTeamFetch = root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.TEAM);
+		requestedTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
+		requestedTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.PLAYER);
 
         query.select(root).where(
             cb.and(
-                cb.equal(offeredTeam.get(FantaTeam_.league), actualLeague),
                 cb.or(
                     cb.equal(offeredTeam, myTeam),
                     cb.equal(requestedTeam, myTeam)
@@ -63,7 +74,7 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
             )
         );
 
-        return em.createQuery(query).getResultList();
+        return em.createQuery(query).getResultStream().collect(Collectors.toSet());
     }
 
 
@@ -74,10 +85,20 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
     }
 
 	@Override
-	public Optional<Proposal> getProposal(Contract offeredContract, Contract requestedContract) {
+	public Optional<Proposal> getProposalBy(Contract offeredContract, Contract requestedContract) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<Proposal> criteriaQuery = cb.createQuery(Proposal.class);
         Root<Proposal> root = criteriaQuery.from(Proposal.class);
+        
+        // deep fetching
+        var offeredTeamFetch = root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.TEAM);
+		offeredTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
+		offeredTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.PLAYER);
+        var requestedTeamFetch = root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.TEAM);
+		requestedTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
+		requestedTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.PLAYER);
 
         criteriaQuery.where(
                 cb.and(

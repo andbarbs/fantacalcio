@@ -639,9 +639,9 @@ public class UserServiceTest {
         League league = new League(user, "Test League", "L005");
         FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
 		Proposal p = new Proposal(null, null);
-		when(context.getProposalRepository().getMyProposals(league, team)).thenReturn(List.of(p));
+		when(context.getProposalRepository().getProposalsFor(team)).thenReturn(Set.of(p));
 
-		List<Proposal> result = userService.getAllTeamProposals(league, team);
+		Set<Proposal> result = userService.getAllTeamProposals(league, team);
 		assertThat(result).containsExactly(p);
 	}
 
@@ -877,7 +877,7 @@ public class UserServiceTest {
 		opponentTeam.getContracts().add(requestedContract);
 
         //TODO bo?
-		when(context.getProposalRepository().getProposal(offeredContract, requestedContract))
+		when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
 				.thenReturn(Optional.of(new Proposal(offeredContract,requestedContract)));
 
 		assertThatThrownBy(() -> userService.createProposal(player, player, myTeam, opponentTeam))
@@ -898,7 +898,7 @@ public class UserServiceTest {
 		myTeam.getContracts().add(offeredContract);
 		opponentTeam.getContracts().add(requestedContract);
 
-		when(context.getProposalRepository().getProposal(offeredContract, requestedContract))
+		when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
 				.thenReturn(Optional.empty());
 		when(context.getProposalRepository().saveProposal(any())).thenReturn(true);
 

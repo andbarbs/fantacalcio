@@ -4,10 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
 import domain.*;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -38,10 +35,13 @@ class JpaMatchDayRepositoryTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(MatchDay.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(FantaTeam.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(MatchDay.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(FantaTeam.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(Player.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();

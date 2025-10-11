@@ -373,7 +373,7 @@ class UserServiceIntegrationIT {
 
 		assertThat(userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam)).isTrue();
 
-		Optional<Proposal> result = proposalRepository.getProposal(offeredContract, requestedContract);
+		Optional<Proposal> result = proposalRepository.getProposalBy(offeredContract, requestedContract);
 		assertThat(result).isPresent();
 		Proposal resultProposal = result.get();
 		assertThat(resultProposal.getOfferedContract()).isEqualTo(offeredContract);

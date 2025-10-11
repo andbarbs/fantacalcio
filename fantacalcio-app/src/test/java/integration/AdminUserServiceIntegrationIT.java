@@ -191,7 +191,7 @@ class AdminUserServiceIntegrationIT {
 			Optional<Match> match = matchRepository.getMatchBy(matchDay, team1);
 
 			assertThat(match.get().getMatchDaySerieA()).isEqualTo(matchDay);
-			assertThat(match.get().equals(team1) || match.get().getTeam2().equals(team1)).isTrue();
+			assertThat(match.get().getTeam1().equals(team1) || match.get().getTeam2().equals(team1)).isTrue();
 		}
 	}
 

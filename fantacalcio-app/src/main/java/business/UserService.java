@@ -98,9 +98,9 @@ public class UserService {
 
 	// Proposals
 
-	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
+	public Set<Proposal> getAllTeamProposals(League league, FantaTeam team) {
 		return transactionManager
-				.fromTransaction((context) -> context.getProposalRepository().getMyProposals(league, team));
+				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));
 	}
 
     //TODO ritesta
@@ -157,7 +157,7 @@ public class UserService {
 			if (requestedContract.isPresent() && offeredContract.isPresent()) {
 				Proposal newProposal = new Proposal(offeredContract.get(), requestedContract.get());
 
-				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get())
+				if (context.getProposalRepository().getProposalBy(offeredContract.get(), requestedContract.get())
 						.isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}

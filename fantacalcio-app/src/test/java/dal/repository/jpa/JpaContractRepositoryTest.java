@@ -139,10 +139,8 @@ class JpaContractRepositoryTest {
 		entityManager.clear();
 
 		// THEN no Contracts exist in the database
-		assertThat(sessionFactory.fromTransaction((Session em) -> em
-				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-						.setParameter("player", player).setParameter("team", team).getResultStream().findFirst()))
-				.isEmpty();
+		assertThat(sessionFactory.fromTransaction(
+				(Session em) -> em.createQuery("FROM Contract", Contract.class).getResultStream().toList())).isEmpty();
 	}
 
 	@Test
