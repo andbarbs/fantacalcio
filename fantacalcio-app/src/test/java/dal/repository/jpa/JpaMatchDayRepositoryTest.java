@@ -3,6 +3,7 @@ package dal.repository.jpa;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import domain.*;
@@ -75,26 +76,30 @@ class JpaMatchDayRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchDays() on an empty table")
 	public void testGetAllMatchDaysWhenNoMatchDaysExist() {
-		EntityManager repositorySession = sessionFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 		assertThat(matchDayRepository.getAllMatchDays(league)).isEmpty();
-		repositorySession.close();
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 
 	@Test
 	@DisplayName("getAllMatchDays() when two days have been persisted")
 	public void testGetAllMatchDaysWhenTwoMatchDaysExist() {
-		
+		MatchDay matchDay1 = new MatchDay("prima giornata", 1, MatchDay.Status.FUTURE, league);
+        MatchDay matchDay2 = new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE,league);
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDay("prima giornata", 1, MatchDay.Status.FUTURE, league));
-			session.persist(new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE,league));
+			session.persist(matchDay1);
+			session.persist(matchDay2);
 		});
 
-		EntityManager repositorySession = sessionFactory.createEntityManager();
-		assertThat(matchDayRepository.getAllMatchDays(league)).containsExactly(
-                new MatchDay("prima giornata", 1, MatchDay.Status.FUTURE, league),
-                new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE,league));
-		repositorySession.close();
+        entityManager.getTransaction().begin();
+        List<MatchDay> matchDays = matchDayRepository.getAllMatchDays(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(matchDays).containsExactly(
+                matchDay1,
+                matchDay2);
 	}
 
 
@@ -108,7 +113,11 @@ class JpaMatchDayRepositoryTest {
 			session.persist(new MatchDay("prima giornata", 1, MatchDay.Status.FUTURE, league));
 		});
 
-		assertThat(matchDayRepository.getPreviousMatchDay(league).isEmpty()).isTrue();
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> previousMatchDay = matchDayRepository.getPreviousMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(previousMatchDay.isEmpty()).isTrue();
 
 	}
 
@@ -116,13 +125,18 @@ class JpaMatchDayRepositoryTest {
 	@DisplayName("getPreviousMatchDay() when previous day exists")
 	public void testGetPreviousMatchDayWhenPreviousMatchDayExists() {
 
+        MatchDay pastMatchDay = new MatchDay("prima giornata", 1, MatchDay.Status.PAST, league);
 		sessionFactory.inTransaction(session -> {
-			session.persist(new MatchDay("prima giornata", 1, MatchDay.Status.PAST, league));
+			session.persist(pastMatchDay);
 			session.persist(new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE, league));
 		});
 
-		assertThat(matchDayRepository.getPreviousMatchDay(league).isPresent()).isTrue();
-
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> previousMatchDay = matchDayRepository.getPreviousMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+        assertThat(previousMatchDay.isPresent()).isTrue();
+        assertThat(previousMatchDay).hasValue(pastMatchDay);
 	}
 
 	@Test
@@ -137,7 +151,11 @@ class JpaMatchDayRepositoryTest {
 			session.persist(new MatchDay("terza giornata", 3, MatchDay.Status.FUTURE, league));
 		});
 
-		assertThat(matchDayRepository.getPreviousMatchDay(league).get()).isEqualTo(previousDay);
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> previousMatchDay = matchDayRepository.getPreviousMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(previousMatchDay).hasValue(previousDay);
 
 	}
 
@@ -149,7 +167,11 @@ class JpaMatchDayRepositoryTest {
 			session.persist(new MatchDay("ultima giornata", 20, MatchDay.Status.PAST, league));
 		});
 
-		assertThat(matchDayRepository.getNextMatchDay(league).isEmpty()).isTrue();
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> nextMatchDay = matchDayRepository.getNextMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(nextMatchDay.isEmpty()).isTrue();
 
 	}
 
@@ -157,12 +179,16 @@ class JpaMatchDayRepositoryTest {
 	@DisplayName("getNextMatchDay() when next day exists")
 	public void testGetNextMatchDayWhenNextMatchDayExists() {
 
+        MatchDay expected = new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE, league);
 		sessionFactory.inTransaction(session -> {
 			session.persist(new MatchDay("prima giornata", 1, MatchDay.Status.PAST, league));
-			session.persist(new MatchDay("seconda giornata", 2, MatchDay.Status.FUTURE, league));
+			session.persist(expected);
 		});
-
-		assertThat(matchDayRepository.getNextMatchDay(league).isPresent()).isTrue();
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> nextMatchDay = matchDayRepository.getNextMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+		assertThat(nextMatchDay).hasValue(expected);
 
 	}
 
@@ -177,8 +203,11 @@ class JpaMatchDayRepositoryTest {
 			session.persist(nextDay);
 			session.persist(new MatchDay("terza giornata", 3, MatchDay.Status.FUTURE, league ));
 		});
-
-		assertThat(matchDayRepository.getNextMatchDay(league).get()).isEqualTo(nextDay);
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> nextMatchDay = matchDayRepository.getNextMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+        assertThat(nextMatchDay).hasValue(nextDay);
 	}
 	
 	@Test
@@ -188,8 +217,10 @@ class JpaMatchDayRepositoryTest {
 	    sessionFactory.inTransaction(session -> {
 	        session.persist(new MatchDay("prima giornata", 1, MatchDay.Status.FUTURE, league));
 	    });
-
+        entityManager.getTransaction().begin();
 	    assertThat(matchDayRepository.getMatchDay(league)).isEmpty();
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 	@Test
@@ -201,10 +232,11 @@ class JpaMatchDayRepositoryTest {
 	        session.persist(expected);
 	    });
 
-	    assertThat(matchDayRepository.getMatchDay(league))
-	        .isPresent()
-	        .get()
-	        .isEqualTo(expected);
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> matchDay = matchDayRepository.getMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+	    assertThat(matchDay).hasValue(expected);
 	}
 
 	@Test
@@ -218,41 +250,26 @@ class JpaMatchDayRepositoryTest {
 	        session.persist(new MatchDay("terza giornata", 3,  MatchDay.Status.FUTURE, league));
 	    });
 
-	    assertThat(matchDayRepository.getMatchDay(league))
-	        .isPresent()
-	        .get()
-	        .isEqualTo(expected);
+        entityManager.getTransaction().begin();
+        Optional<MatchDay> matchDay = matchDayRepository.getMatchDay(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+        assertThat(matchDay).hasValue(expected);
 	}
 
 	@Test
-	@DisplayName("saveMatch() should persist a match")
-	void testSaveMatch() {
-		FantaUser user1 = new FantaUser("a@a.com", "pwd");
-		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());
-		FantaUser user2 = new FantaUser("b@b.com", "pwd");
-		FantaTeam t2 = new FantaTeam("Team B", league, 0, user2, Set.of());
+	@DisplayName("saveMatchDay() should persist a match")
+	void testSaveMatchDay() {
 
-		entityManager.getTransaction().begin();
-		entityManager.persist(league);
-		entityManager.persist(user1);
-		entityManager.persist(user2);
-		entityManager.persist(t1);
-		entityManager.persist(t2);
 
 		MatchDay matchDay = new MatchDay("MD1", 1, MatchDay.Status.FUTURE, league);
-		
+
+        entityManager.getTransaction().begin();
 		matchDayRepository.saveMatchDay(matchDay);
 		entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		sessionFactory.inTransaction((Session session) -> {
-			List<MatchDay> result = session.createQuery("from MatchDay", MatchDay.class).getResultList();
-			assertThat(result.size()).isEqualTo(1);
-			MatchDay resultMatch = result.get(0);
-			assertThat(resultMatch.getName()).isEqualTo("MD1");
-			assertThat(resultMatch.getNumber()).isEqualTo(1);
-            assertThat(resultMatch.getStatus()).isEqualTo(MatchDay.Status.FUTURE);
-            assertThat(resultMatch.getLeague()).isEqualTo(league);
-		});
+        assertThat(entityManager.createQuery("FROM MatchDay", MatchDay.class).getResultStream().findFirst()).hasValue(matchDay);
 	}
 	
 
