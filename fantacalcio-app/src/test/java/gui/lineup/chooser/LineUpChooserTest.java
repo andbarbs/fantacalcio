@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import domain.*;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,12 +38,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import business.UserService;
-import domain.FantaTeam;
-import domain.FantaTeamViewer;
-import domain.LineUp;
-import domain.Match;
-import domain.MatchDaySerieA;
-import domain.Player;
+import domain.MatchDay;
 import domain.Player.Defender;
 import domain.Player.Forward;
 import domain.Player.Goalkeeper;
@@ -798,7 +793,7 @@ public class LineUpChooserTest {
 			// GIVEN the SUT has been initialized with a Team and a Match
 			FantaTeam team = new FantaTeam("Dream Team", null, 30, null, new HashSet<>());			
 			Match match = new Match(
-					new MatchDaySerieA("Matchday 1", 1, MatchDaySerieA.Status.FUTURE, team.getLeague()),
+					new MatchDay("Matchday 1", 1, MatchDay.Status.FUTURE, team.getLeague()),
 					team, 
 					new FantaTeam("Challengers", null, 25, null, new HashSet<>()));
 			

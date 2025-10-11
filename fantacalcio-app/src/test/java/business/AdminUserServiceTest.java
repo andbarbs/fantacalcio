@@ -340,9 +340,9 @@ class AdminUserServiceTest {
 		List<FantaTeam> teams = List.of(team1, team2, team3, team4, team5, team6, team7, team8);
 
 		// 20 match days (real objects are okay)
-		List<MatchDaySerieA> matchDays = new ArrayList<>();
+		List<MatchDay> matchDays = new ArrayList<>();
 		for (int i = 0; i < 20; i++)
-			matchDays.add(new MatchDaySerieA("match", i, MatchDaySerieA.Status.FUTURE, league));
+			matchDays.add(new MatchDay("match", i, MatchDay.Status.FUTURE, league));
 
 		// Mock repositories
 		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);
@@ -600,7 +600,7 @@ class AdminUserServiceTest {
 		League league = new League(admin, "league", "12345");
 
 		// Create a previous match day so that the "season started" check passes
-		MatchDaySerieA previousMatchDay = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST,league);
+		MatchDay previousMatchDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST,league);
 		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
 
 		// Set up a match day to calculate with at least one match
@@ -715,7 +715,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(league))
-				.thenReturn(Optional.of(new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league)));
+				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO riscrivi non serve più la roba che fa e non so cosa fa
         /*
@@ -746,7 +746,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(league))
-				.thenReturn(Optional.of(new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league)));
+				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
         /*
@@ -776,7 +776,7 @@ class AdminUserServiceTest {
 		when(league.getAdmin()).thenReturn(admin);
 
 		when(matchDayRepository.getPreviousMatchDay(league))
-				.thenReturn(Optional.of(new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league)));
+				.thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
         /*
@@ -805,7 +805,7 @@ class AdminUserServiceTest {
 		FantaUser admin = mock(FantaUser.class);
 
 		when(league.getAdmin()).thenReturn(admin);
-		when(matchDayRepository.getPreviousMatchDay(league)).thenReturn(Optional.of(new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league)));
+		when(matchDayRepository.getPreviousMatchDay(league)).thenReturn(Optional.of(new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league)));
 
         //TODO uguale a sopra
         /*
@@ -832,8 +832,8 @@ class AdminUserServiceTest {
 		FantaUser admin = new FantaUser("admin@example.com", "pwd");
 		League league = new League(admin, "Serie A", "1234");
 
-		MatchDaySerieA prevDay = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league);
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("2 giornata", 2, MatchDaySerieA.Status.PAST, league);
+		MatchDay prevDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
+		MatchDay dayToCalc = new MatchDay("2 giornata", 2, MatchDay.Status.PAST, league);
 
 		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(prevDay));
 

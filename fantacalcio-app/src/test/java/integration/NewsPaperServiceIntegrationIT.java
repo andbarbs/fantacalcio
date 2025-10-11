@@ -1,9 +1,10 @@
 package integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.time.LocalDate;
+
 import java.util.Set;
 
+import domain.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -22,17 +23,7 @@ import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaMatchRepository;
 import dal.repository.jpa.JpaPlayerRepository;
 import dal.transaction.jpa.JpaTransactionManager;
-import domain.Contract;
-import domain.FantaTeam;
-import domain.FantaUser;
-import domain.Fielding;
-import domain.Grade;
-import domain.League;
-import domain.LineUp;
-import domain.Match;
-import domain.MatchDaySerieA;
-import domain.Player;
-import domain.Result;
+import domain.MatchDay;
 import domain.Player.Club;
 import jakarta.persistence.EntityManager;
 
@@ -68,7 +59,7 @@ public class NewsPaperServiceIntegrationIT {
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(LineUp.class)
@@ -121,9 +112,9 @@ public class NewsPaperServiceIntegrationIT {
 		playerRepository.addPlayer(player);
 		playerRepository.addPlayer(player2);
 
-		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata",1, MatchDaySerieA.Status.PAST, league);
-		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", 2, MatchDaySerieA.Status.PAST, league);
-		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", 3, MatchDaySerieA.Status.FUTURE, league);
+		MatchDay previousDay = new MatchDay("prima giornata",1, MatchDay.Status.PAST, league);
+		MatchDay matchDay = new MatchDay("seconda giornata", 2, MatchDay.Status.PAST, league);
+		MatchDay nextDay = new MatchDay("terza giornata", 3, MatchDay.Status.FUTURE, league);
 		entityManager.persist(previousDay);
 		entityManager.persist(matchDay);
 		entityManager.persist(nextDay);

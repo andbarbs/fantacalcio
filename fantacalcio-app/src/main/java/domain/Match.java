@@ -11,7 +11,7 @@ public class Match {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private MatchDaySerieA matchDaySerieA;
+    private MatchDay matchDay;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private FantaTeam team1;
@@ -21,8 +21,8 @@ public class Match {
 
     protected Match() {}
 
-    public Match(MatchDaySerieA matchDaySerieA, FantaTeam team1, FantaTeam team2) {
-        this.matchDaySerieA = matchDaySerieA;
+    public Match(MatchDay matchDay, FantaTeam team1, FantaTeam team2) {
+        this.matchDay = matchDay;
         this.team1 = team1;
         this.team2 = team2;
     }
@@ -37,20 +37,20 @@ public class Match {
         return team2;
     }
     
-    public MatchDaySerieA getMatchDaySerieA() {
-		return matchDaySerieA;
+    public MatchDay getMatchDaySerieA() {
+		return matchDay;
 	}
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Match match = (Match) o;
-        return Objects.equals(matchDaySerieA, match.matchDaySerieA) && Objects.equals(team1, match.team1) && Objects.equals(team2, match.team2);
+        return Objects.equals(matchDay, match.matchDay) && Objects.equals(team1, match.team1) && Objects.equals(team2, match.team2);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(matchDaySerieA, team1, team2);
+        return Objects.hash(matchDay, team1, team2);
     }
     
 }

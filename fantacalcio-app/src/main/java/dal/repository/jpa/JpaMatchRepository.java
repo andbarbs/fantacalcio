@@ -1,6 +1,6 @@
 package dal.repository.jpa;
 
-import domain.Match_;
+import domain.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -9,17 +9,14 @@ import jakarta.persistence.criteria.Root;
 import java.util.List;
 
 import business.ports.repository.MatchRepository;
-import domain.FantaTeam;
-import domain.League;
-import domain.Match;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 
 public class JpaMatchRepository extends BaseJpaRepository implements MatchRepository {
 
     public JpaMatchRepository(EntityManager em) {super(em);}
 
     @Override
-    public Match getMatchByMatchDay(MatchDaySerieA matchDaySerieA, League league, FantaTeam fantaTeam) {
+    public Match getMatchByMatchDay(MatchDay matchDay, League league, FantaTeam fantaTeam) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
@@ -27,7 +24,7 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
 
         query.select(root).where(
                 cb.and(
-                    cb.equal(root.get(Match_.matchDaySerieA), matchDaySerieA),
+                    cb.equal(root.get(Match_.MATCH_DAY), matchDay),
                     cb.or(
                         cb.equal(root.get(Match_.team1), fantaTeam),
                         cb.equal(root.get(Match_.team2), fantaTeam)))
@@ -37,7 +34,7 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
     }
 
     @Override
-    public List<Match> getAllMatchesByMatchDay(MatchDaySerieA matchDaySerieA, League league) {
+    public List<Match> getAllMatchesByMatchDay(MatchDay matchDay, League league) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
@@ -45,7 +42,7 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
 
         query.select(root).where(
                 cb.and(
-                    cb.equal(root.get(Match_.matchDaySerieA), matchDaySerieA))
+                    cb.equal(root.get(Match_.MATCH_DAY), matchDay))
         );
 
         return em.createQuery(query).getResultList();

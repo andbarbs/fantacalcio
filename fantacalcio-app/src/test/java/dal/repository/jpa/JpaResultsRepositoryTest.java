@@ -34,7 +34,7 @@ class JpaResultsRepositoryTest {
 					.configure("hibernate-test.cfg.xml").build();
 
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Result.class)
-					.addAnnotatedClass(Match.class).addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(Match.class).addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class).
@@ -58,7 +58,7 @@ class JpaResultsRepositoryTest {
 
 		FantaUser admin = new FantaUser("admin@l001.com", "pwd");
 		League league = new League(admin, "League L001", "L001");
-        MatchDaySerieA matchDay = new MatchDaySerieA("MD1", 1, MatchDaySerieA.Status.FUTURE, league);
+        MatchDay matchDay = new MatchDay("MD1", 1, MatchDay.Status.FUTURE, league);
 		FantaUser user1 = new FantaUser("a@a.com", "pwd");
 		FantaUser user2 = new FantaUser("b@b.com", "pwd");
 		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());

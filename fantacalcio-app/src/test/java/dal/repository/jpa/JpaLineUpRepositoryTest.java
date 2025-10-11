@@ -33,7 +33,7 @@ class JpaLineUpRepositoryTest {
 	
 	// references to setup entities managed in @BeforeEach
 	private League league;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private FantaTeam opponent;
 	private FantaUser manager;
 
@@ -45,7 +45,7 @@ class JpaLineUpRepositoryTest {
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
@@ -84,7 +84,7 @@ class JpaLineUpRepositoryTest {
 			em.persist(league);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			em.persist(opponent);
-            matchDay = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            matchDay = new MatchDay("1 giornata", 1, MatchDay.Status.FUTURE, league);
             em.persist(matchDay);
 		});
 	}

@@ -26,7 +26,7 @@ public class AdminUserService extends UserService {
 				League league = new League(admin, leagueName, leagueCode);
 				context.getLeagueRepository().saveLeague(league);
                 for(int i = 1; i < 21; i++){
-                    context.getMatchDayRepository().saveMatchDay(new MatchDaySerieA("MatchDay "+ i, i, MatchDaySerieA.Status.FUTURE, league));
+                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ i, i, MatchDay.Status.FUTURE, league));
                 }
 			} else {
 				throw new IllegalArgumentException("A league with the same league code already exists");
@@ -96,8 +96,8 @@ public class AdminUserService extends UserService {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = context.getTeamRepository().getAllTeams(league);
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 20);
-			List<MatchDaySerieA> matchDaySerieA = context.getMatchDayRepository().getAllMatchDays(league);
-			List<Match> matches = createMatches(schedule, matchDaySerieA);
+			List<MatchDay> matchDay = context.getMatchDayRepository().getAllMatchDays(league);
+			List<Match> matches = createMatches(schedule, matchDay);
 			for (Match match : matches) {
 				context.getMatchRepository().saveMatch(match);
 			}
@@ -178,7 +178,7 @@ public class AdminUserService extends UserService {
 	}
 
 	//TODO dovrebbe essere privato viene usato in generate calendar
-	private List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDaySerieA> matchDays) {
+	private List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDay> matchDays) {
 		List<Match> matches = new ArrayList<>();
 
 		if (schedule.size() != matchDays.size()) {
@@ -186,7 +186,7 @@ public class AdminUserService extends UserService {
 		}
 
 		for (int roundIndex = 0; roundIndex < schedule.size(); roundIndex++) {
-			MatchDaySerieA matchDay = matchDays.get(roundIndex);
+			MatchDay matchDay = matchDays.get(roundIndex);
 			List<FantaTeam[]> round = schedule.get(roundIndex);
 
 			for (FantaTeam[] pairing : round) {
@@ -204,7 +204,7 @@ public class AdminUserService extends UserService {
 			throw new IllegalArgumentException("You are not the admin of the league");
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
-			Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
 			if (previousMatchDay.isEmpty()) {
 				throw new RuntimeException("The season hasn't started yet");
 			}
@@ -260,7 +260,7 @@ public class AdminUserService extends UserService {
 		});
 	}
 
-    private boolean allMatchesHaveResult(MatchDaySerieA matchDay, TransactionContext context) {
+    private boolean allMatchesHaveResult(MatchDay matchDay, TransactionContext context) {
         // recupera tutti i match della giornata e della lega corrispondente
         List<Match> matches = context.getMatchRepository().getAllMatchesByMatchDay(matchDay, matchDay.getLeague());
 
@@ -339,15 +339,15 @@ public class AdminUserService extends UserService {
     //TODO testa
     public void startMatchDay(League league) {
         transactionManager.inTransaction((context)->{
-            Optional<MatchDaySerieA> matchDayToPlay = context.getMatchDayRepository().getNextMatchDay(league);
+            Optional<MatchDay> matchDayToPlay = context.getMatchDayRepository().getNextMatchDay(league);
             if (matchDayToPlay.isPresent()) {
-                Optional<MatchDaySerieA> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
+                Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(league);
                 if(previousMatchDay.isPresent()) {
                     if(!allMatchesHaveResult(previousMatchDay.get(), context)) {
                         throw new RuntimeException("You have to calculate the results before advancing the game state");
                     }
                 }
-                matchDayToPlay.get().setStatus(MatchDaySerieA.Status.PRESENT);
+                matchDayToPlay.get().setStatus(MatchDay.Status.PRESENT);
             } else{
                 throw new RuntimeException("The are no more matchdays to play");
             }
@@ -357,9 +357,9 @@ public class AdminUserService extends UserService {
     //TODO testa
     public void endMatchDay(League league) {
         transactionManager.inTransaction((context)->{
-            Optional<MatchDaySerieA> matchDayToEnd = context.getMatchDayRepository().getMatchDay(league);
+            Optional<MatchDay> matchDayToEnd = context.getMatchDayRepository().getMatchDay(league);
             if (matchDayToEnd.isPresent()) {
-                matchDayToEnd.get().setStatus(MatchDaySerieA.Status.PAST);
+                matchDayToEnd.get().setStatus(MatchDay.Status.PAST);
             }else {
                 throw new RuntimeException("The is no matchDay to end");
             }

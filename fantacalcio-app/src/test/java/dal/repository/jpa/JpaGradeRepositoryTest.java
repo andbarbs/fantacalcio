@@ -12,7 +12,6 @@ import domain.*;
 import domain.Player.Club;
 import jakarta.persistence.EntityManager;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +25,7 @@ class JpaGradeRepositoryTest {
 	private EntityManager entityManager;
 	private FantaUser manager;
 	private League league;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private FantaUser user1;
 	private FantaUser user2;
 	private FantaTeam team1;
@@ -46,7 +45,7 @@ class JpaGradeRepositoryTest {
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Player.Goalkeeper.class)
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(Contract.class)
@@ -75,7 +74,7 @@ class JpaGradeRepositoryTest {
 			t.persist(manager);
 			league = new League(manager, "Serie A", "code");
 			t.persist(league);
-            matchDay = new MatchDaySerieA("1 Giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            matchDay = new MatchDay("1 Giornata", 1, MatchDay.Status.FUTURE, league);
             t.persist(matchDay);
 			user1 = new FantaUser("mail1", "pswd1");
 			t.persist(user1);

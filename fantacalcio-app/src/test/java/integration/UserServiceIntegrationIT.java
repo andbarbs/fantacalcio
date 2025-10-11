@@ -1,12 +1,13 @@
 package integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.time.LocalDate;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import domain.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -39,18 +40,7 @@ import dal.repository.jpa.JpaPlayerRepository;
 import dal.repository.jpa.JpaProposalRepository;
 import dal.repository.jpa.JpaResultsRepository;
 import dal.transaction.jpa.JpaTransactionManager;
-import domain.Contract;
-import domain.FantaTeam;
-import domain.FantaUser;
-import domain.Fielding;
-import domain.Grade;
-import domain.League;
-import domain.LineUp;
-import domain.Match;
-import domain.MatchDaySerieA;
-import domain.Player;
-import domain.Proposal;
-import domain.Result;
+import domain.MatchDay;
 import domain.Player.Club;
 import domain.Player.Defender;
 import domain.Player.Forward;
@@ -95,7 +85,7 @@ class UserServiceIntegrationIT {
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(Fielding.StarterFielding.class)
@@ -184,7 +174,7 @@ class UserServiceIntegrationIT {
 		FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA day1 = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.PAST, league);
+		MatchDay day1 = new MatchDay("MD1",1, MatchDay.Status.PAST, league);
 		matchDayRepository.saveMatchDay(day1);
 
 		Match m1 = new Match(day1, team1, team2);
@@ -192,7 +182,7 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		Map<MatchDaySerieA, List<Match>> result = userService.getAllMatches(league);
+		Map<MatchDay, List<Match>> result = userService.getAllMatches(league);
 
 		assertThat(result.get(day1).size()).isEqualTo(1);
 		Match resultMatch = result.get(day1).get(0);
@@ -211,7 +201,7 @@ class UserServiceIntegrationIT {
 		League league = new League(user, "Test League", "L003");
 		leagueRepository.saveLeague(league);
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league); // Monday
+		MatchDay matchDay = new MatchDay("MD1",1, MatchDay.Status.FUTURE, league); // Monday
 		matchDayRepository.saveMatchDay(matchDay);		
 
 		// Players for LineUp
@@ -307,8 +297,8 @@ class UserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team);
 		fantaTeamRepository.saveTeam(team2);
 
-		MatchDaySerieA prevMatchDay = new MatchDaySerieA("MD1", 1, MatchDaySerieA.Status.PAST, league);
-		MatchDaySerieA nextMatchDay = new MatchDaySerieA("MD2",  2, MatchDaySerieA.Status.FUTURE, league);
+		MatchDay prevMatchDay = new MatchDay("MD1", 1, MatchDay.Status.PAST, league);
+		MatchDay nextMatchDay = new MatchDay("MD2",  2, MatchDay.Status.FUTURE, league);
 		matchDayRepository.saveMatchDay(prevMatchDay);
 		matchDayRepository.saveMatchDay(nextMatchDay);
 

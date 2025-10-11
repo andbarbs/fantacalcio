@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import business.ports.repository.MatchDayRepository;
 import domain.League;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 import domain.MatchDaySerieA_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -19,12 +19,12 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public List<MatchDaySerieA> getAllMatchDays(League league) {
+	public List<MatchDay> getAllMatchDays(League league) {
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
+        CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
-        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
+        Root<MatchDay> matchDay = cq.from(MatchDay.class);
 
         cq.select(matchDay)
                 .where(cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league))
@@ -35,23 +35,23 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 
 //TODO vanno aggiustate tutte rimuovendo la data e controllando number
 	@Override
-	public Optional<MatchDaySerieA> getPreviousMatchDay(League league) {
+	public Optional<MatchDay> getPreviousMatchDay(League league) {
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
+        CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
-        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
+        Root<MatchDay> matchDay = cq.from(MatchDay.class);
 
         cq.select(matchDay)
                 .where(
                         cb.and(
                                 cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PAST)
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.PAST)
                         )
                 )
                 .orderBy(cb.desc(matchDay.get(MatchDaySerieA_.NUMBER)));
 
-        List<MatchDaySerieA> result = em.createQuery(cq)
+        List<MatchDay> result = em.createQuery(cq)
                 .setMaxResults(1)
                 .getResultList();
 
@@ -59,23 +59,23 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getNextMatchDay(League league) {
+	public Optional<MatchDay> getNextMatchDay(League league) {
 		EntityManager em= getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
+        CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
-        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
+        Root<MatchDay> matchDay = cq.from(MatchDay.class);
 
         cq.select(matchDay)
                 .where(
                         cb.and(
                                 cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.FUTURE)
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.FUTURE)
                         )
                 )
                 .orderBy(cb.asc(matchDay.get(MatchDaySerieA_.NUMBER)));
 
-        List<MatchDaySerieA> result = em.createQuery(cq)
+        List<MatchDay> result = em.createQuery(cq)
                 .setMaxResults(1)
                 .getResultList();
 
@@ -83,22 +83,22 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public Optional<MatchDaySerieA> getMatchDay(League league) {
+	public Optional<MatchDay> getMatchDay(League league) {
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<MatchDaySerieA> cq = cb.createQuery(MatchDaySerieA.class);
+        CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
 
-        Root<MatchDaySerieA> matchDay = cq.from(MatchDaySerieA.class);
+        Root<MatchDay> matchDay = cq.from(MatchDay.class);
 
         cq.select(matchDay)
                 .where(
                         cb.and(
                                 cb.equal(matchDay.get(MatchDaySerieA_.LEAGUE), league),
-                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDaySerieA.Status.PRESENT)
+                                cb.equal(matchDay.get(MatchDaySerieA_.STATUS), MatchDay.Status.PRESENT)
                         )
                 );
 
-        List<MatchDaySerieA> result = em.createQuery(cq)
+        List<MatchDay> result = em.createQuery(cq)
                 .setMaxResults(1)
                 .getResultList();
 
@@ -106,7 +106,7 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	}
 
 	@Override
-	public void saveMatchDay(MatchDaySerieA matchDay) {
+	public void saveMatchDay(MatchDay matchDay) {
 		getEntityManager().persist(matchDay);
 	}
 

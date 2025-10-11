@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import domain.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -33,17 +34,7 @@ import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaMatchRepository;
 import dal.repository.jpa.JpaPlayerRepository;
 import dal.transaction.jpa.JpaTransactionManager;
-import domain.Contract;
-import domain.FantaTeam;
-import domain.FantaUser;
-import domain.Fielding;
-import domain.Grade;
-import domain.League;
-import domain.LineUp;
-import domain.Match;
-import domain.MatchDaySerieA;
-import domain.Player;
-import domain.Result;
+import domain.MatchDay;
 import domain.Player.Club;
 import domain.Player.Defender;
 import domain.Player.Forward;
@@ -84,7 +75,7 @@ class AdminUserServiceIntegrationIT {
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(League.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(Fielding.class)
 					.addAnnotatedClass(LineUp.class)
@@ -182,14 +173,14 @@ class AdminUserServiceIntegrationIT {
 		fantaTeamRepository.saveTeam(team1);
 		fantaTeamRepository.saveTeam(team2);
 
-		List<MatchDaySerieA> matchDays = new ArrayList<MatchDaySerieA>();
+		List<MatchDay> matchDays = new ArrayList<MatchDay>();
 		for (int i = 0; i < 20; i++) {
-			matchDays.add(new MatchDaySerieA("Match " + i, 1, MatchDaySerieA.Status.FUTURE, league));
+			matchDays.add(new MatchDay("Match " + i, 1, MatchDay.Status.FUTURE, league));
 		}
 
 		sessionFactory.inTransaction(t -> {
-			for (MatchDaySerieA matchDaySerieA : matchDays) {
-				t.persist(matchDaySerieA);
+			for (MatchDay matchDay : matchDays) {
+				t.persist(matchDay);
 			}
 		});
 
@@ -197,10 +188,10 @@ class AdminUserServiceIntegrationIT {
 
 		adminUserService.generateCalendar(league);
 
-		for (MatchDaySerieA matchDaySerieA : matchDays) {
-			Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
+		for (MatchDay matchDay : matchDays) {
+			Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDay, league, team1);
 
-			assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
+			assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDay);
 			assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
 		}
 	}
@@ -229,8 +220,8 @@ class AdminUserServiceIntegrationIT {
 
 		// MatchDays
 		//TODO che senso ha creare 2 matchday?
-		MatchDaySerieA prevDay = new MatchDaySerieA("Day1",1, MatchDaySerieA.Status.PAST,league);
-		MatchDaySerieA dayToCalc = new MatchDaySerieA("Day2", 2, MatchDaySerieA.Status.PAST, league);
+		MatchDay prevDay = new MatchDay("Day1",1, MatchDay.Status.PAST,league);
+		MatchDay dayToCalc = new MatchDay("Day2", 2, MatchDay.Status.PAST, league);
 
 		entityManager.persist(prevDay);
 		entityManager.persist(dayToCalc);

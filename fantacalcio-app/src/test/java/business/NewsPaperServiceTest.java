@@ -25,7 +25,7 @@ class NewsPaperServiceTest {
 	private NewsPaperService service;
 
 	private Grade grade;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private GradeRepository gradeRepository;
 	private PlayerRepository playerRepository;
 	private MatchDayRepository matchDayRepository;
@@ -53,7 +53,7 @@ class NewsPaperServiceTest {
 		service = new NewsPaperService(transactionManager);
 
 		grade = mock(Grade.class);
-		matchDay = mock(MatchDaySerieA.class);
+		matchDay = mock(MatchDay.class);
 
 		when(grade.getMatchDay()).thenReturn(matchDay);
 		when(grade.getMark()).thenReturn(10.0);
@@ -98,7 +98,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_WrongMatchDay() {
 		NewsPaperService spyService = spy(service);
-		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
+		MatchDay otherDay = mock(MatchDay.class);
         //TODO uguale a sopra non capisco spy
 		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 
@@ -196,7 +196,7 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_Error_WrongMatchDay_NoUnexpectedRepoCalls() {
 		NewsPaperService spyService = spy(service);
-		MatchDaySerieA otherDay = mock(MatchDaySerieA.class);
+		MatchDay otherDay = mock(MatchDay.class);
         //TODO uguale a sopra
 		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
 

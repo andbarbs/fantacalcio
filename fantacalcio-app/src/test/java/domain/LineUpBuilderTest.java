@@ -17,7 +17,7 @@ class LineUpBuilderTest {
 
 	@Test
 	void testBuilder() {
-		MatchDaySerieA matchDay = new MatchDaySerieA();
+		MatchDay matchDay = new MatchDay();
 		FantaTeam team = new FantaTeam();
 		FantaTeam opponent = new FantaTeam();
 		LineUp lineUp = LineUp.build()

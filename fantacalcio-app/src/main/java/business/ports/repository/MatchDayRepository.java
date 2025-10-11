@@ -4,18 +4,18 @@ import java.util.List;
 import java.util.Optional;
 
 import domain.League;
-import domain.MatchDaySerieA;
+import domain.MatchDay;
 
 public interface MatchDayRepository {
 	
-	List<MatchDaySerieA> getAllMatchDays(League league);
+	List<MatchDay> getAllMatchDays(League league);
 
-	Optional<MatchDaySerieA> getPreviousMatchDay(League league);
+	Optional<MatchDay> getPreviousMatchDay(League league);
 
-	Optional<MatchDaySerieA> getNextMatchDay(League league);
+	Optional<MatchDay> getNextMatchDay(League league);
 
-	Optional<MatchDaySerieA> getMatchDay(League league);
+	Optional<MatchDay> getMatchDay(League league);
 
-	void saveMatchDay(MatchDaySerieA matchDay);
+	void saveMatchDay(MatchDay matchDay);
 
 }

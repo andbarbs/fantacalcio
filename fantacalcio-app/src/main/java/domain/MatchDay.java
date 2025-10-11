@@ -1,12 +1,11 @@
 package domain;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
 import jakarta.persistence.*;
 
 @Entity
-public class MatchDaySerieA {
+public class MatchDay {
     public static final int matchDaysInLeague = 20;
     public enum Status {PAST, PRESENT, FUTURE}
 
@@ -26,10 +25,10 @@ public class MatchDaySerieA {
     @ManyToOne(optional = false, fetch=FetchType.LAZY)
     private League league;
 
-	protected MatchDaySerieA() {
+	protected MatchDay() {
 	}
 
-	public MatchDaySerieA(String name, int number, Status status, League league) {
+	public MatchDay(String name, int number, Status status, League league) {
         if(number < 0 || number > matchDaysInLeague)
             throw new IllegalArgumentException("number out of range");
 		this.name = name;
@@ -61,7 +60,7 @@ public class MatchDaySerieA {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        MatchDaySerieA that = (MatchDaySerieA) o;
+        MatchDay that = (MatchDay) o;
         return number == that.number && Objects.equals(name, that.name) && status == that.status && Objects.equals(league, that.league);
     }
 

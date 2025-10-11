@@ -1,11 +1,12 @@
 package dal.repository.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.time.LocalDate;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import domain.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -17,15 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import domain.Contract;
-import domain.FantaTeam;
-import domain.FantaUser;
-import domain.Fielding;
-import domain.League;
-import domain.LineUp;
-import domain.Match;
-import domain.MatchDaySerieA;
-import domain.Player;
+import domain.MatchDay;
 import domain.Player.Defender;
 import domain.Player.Forward;
 import domain.Player.Goalkeeper;
@@ -40,7 +33,7 @@ class JpaFieldingRepositoryTest {
 	private EntityManager entityManager;
 	private League league;
 	private FantaUser manager;
-	private MatchDaySerieA matchDay;
+	private MatchDay matchDay;
 	private FantaTeam opponent;
 
 	@BeforeAll
@@ -51,7 +44,7 @@ class JpaFieldingRepositoryTest {
 
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
-					.addAnnotatedClass(MatchDaySerieA.class)
+					.addAnnotatedClass(MatchDay.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
@@ -85,7 +78,7 @@ class JpaFieldingRepositoryTest {
 			t.persist(manager);
 			league = new League(manager, "Serie A", "code");
 			t.persist(league);
-            matchDay = new MatchDaySerieA("1 Giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            matchDay = new MatchDay("1 Giornata", 1, MatchDay.Status.FUTURE, league);
             t.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			t.persist(opponent);
