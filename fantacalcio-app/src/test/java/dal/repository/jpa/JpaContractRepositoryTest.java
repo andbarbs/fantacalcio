@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -43,11 +41,15 @@ class JpaContractRepositoryTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Contract.class)
-					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(Player.class)
-					.addAnnotatedClass(Player.Forward.class).addAnnotatedClass(Player.Defender.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(Player.Defender.class)
 					.addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(League.class).getMetadataBuilder().build();
+					.addAnnotatedClass(League.class)
+					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
 
@@ -84,27 +86,38 @@ class JpaContractRepositoryTest {
 	@DisplayName("getContract() when contract doesn't exist")
 	public void testGetContractWithNoContractExisting() {
 
-		assertThat(contractRepository.getContract(team, player)).isEmpty();
+		entityManager.getTransaction().begin();
+		assertThat(contractRepository.getContract(team, player)).isEmpty();		
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
 	}
 
 	@Test
 	@DisplayName("getContract() when contract exists")
 	public void testGetContractWithContractExisting() {
 
-		Player player2 = new Player.Defender("Giorgio", "Chiellini", Club.JUVENTUS);
+		// GIVEN two Contracts are instantiated
 		Contract contract1 = new Contract(team, player);
+		Player player2 = new Player.Defender("Giorgio", "Chiellini", Club.JUVENTUS);
 		Contract contract2 = new Contract(team, player2);
 
+		// AND are manually persisted
 		sessionFactory.inTransaction(session -> {
 			session.persist(player2);
 			session.persist(contract1);
 			session.persist(contract2);
 		});
-
-		team.setContracts(Set.of(contract1, contract2));
-
-		assertThat(contractRepository.getContract(team, player).get()).isEqualTo(contract1);
-		assertThat(contractRepository.getContract(team, player2).get()).isEqualTo(contract2);
+		
+		// WHEN the SUT is used to retrieve the Contracts
+		entityManager.getTransaction().begin();
+		Optional<Contract> retrieved1 = contractRepository.getContract(team, player);
+		Optional<Contract> retrieved2 = contractRepository.getContract(team, player2);
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
+		
+		// THEN Contracts are retrieved correctly
+	    assertThat(retrieved1).hasValue(contract1);
+	    assertThat(retrieved2).hasValue(contract2);	
 	}
 
 	@Test
