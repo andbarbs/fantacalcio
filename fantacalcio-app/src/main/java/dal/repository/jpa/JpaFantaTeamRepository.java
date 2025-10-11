@@ -4,6 +4,7 @@ import domain.FantaTeam_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import business.ports.repository.FantaTeamRepository;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
+import domain.League_;
 
 public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTeamRepository {
 	
@@ -26,6 +28,12 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<FantaTeam> criteriaQuery = criteriaBuilder.createQuery(FantaTeam.class);
 		Root<FantaTeam> root = criteriaQuery.from(FantaTeam.class);
+		
+		// Fetch the single-valued 'user' association
+		root.fetch(FantaTeam_.FANTA_MANAGER);
+		
+		// Deeply fetch the single-valued 'league' association
+        root.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN, JoinType.LEFT);        
 
 		criteriaQuery.select(root).where(criteriaBuilder.and(
 				criteriaBuilder.equal(root.get(FantaTeam_.league), league)));
@@ -44,6 +52,7 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<FantaTeam> query = cb.createQuery(FantaTeam.class);
         Root<FantaTeam> root = query.from(FantaTeam.class);
+        
 
         query.select(root).where(
                 cb.equal(root.get(FantaTeam_.league), league),
