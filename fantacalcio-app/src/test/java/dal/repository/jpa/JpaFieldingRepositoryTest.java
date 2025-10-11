@@ -85,6 +85,8 @@ class JpaFieldingRepositoryTest {
 			t.persist(manager);
 			league = new League(manager, "Serie A", "code");
 			t.persist(league);
+            matchDay = new MatchDaySerieA("1 Giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            t.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			t.persist(opponent);
 		});
@@ -152,7 +154,6 @@ class JpaFieldingRepositoryTest {
 		
 		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 		entityManager.persist(opponent);
-        //TODO controllare da dove prende matchDay
 		Match match = new Match(matchDay, team, opponent);
 		entityManager.persist(match);
 

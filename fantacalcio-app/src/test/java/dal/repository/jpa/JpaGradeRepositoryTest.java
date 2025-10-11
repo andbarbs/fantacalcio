@@ -75,6 +75,8 @@ class JpaGradeRepositoryTest {
 			t.persist(manager);
 			league = new League(manager, "Serie A", "code");
 			t.persist(league);
+            matchDay = new MatchDaySerieA("1 Giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            t.persist(matchDay);
 			user1 = new FantaUser("mail1", "pswd1");
 			t.persist(user1);
 			user2 = new FantaUser("mail2", "pswd2");
@@ -83,7 +85,6 @@ class JpaGradeRepositoryTest {
 			t.persist(team1);
 			team2 = new FantaTeam("Team2", league, 13, user2, new HashSet<Contract>());
 			t.persist(team2);
-            //TODO questo match day preso così non va bene vengono creati quando creo la lega i matchaday
 			match = new Match(matchDay, team1, team2);
 			t.persist(match);
 		});
@@ -97,7 +98,6 @@ class JpaGradeRepositoryTest {
 	@Test
 	@DisplayName("getAllMatchGrades() on an empty table")
 	public void testGetAllMatchGradesWhenNoGradesExist() {
-        //TODO prende Matchday ora
 		assertThat(gradeRepository.getAllMatchGrades(matchDay)).isEmpty();
 	}
 
@@ -120,7 +120,8 @@ class JpaGradeRepositoryTest {
 			session.persist(contract2);
 		});
 
-        //TODO get allMatchGrades funziona in maniera diversa ora
+        //TODO get allMatchGrades funziona in maniera diversa ora però dovrebbe andare bene lo stesso
+        //getAllMatchGrades ora prende i voti di tutti i match di quel matchday però come detto sopra dovrebbe andare bene lo stesso
 		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(matchDay);
 		assertThat(allMatchGrades.size()).isEqualTo(2);
 		assertThat(allMatchGrades.get(0).getMark() + allMatchGrades.get(1).getMark()).isEqualTo(6.0 + 8.0);

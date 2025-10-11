@@ -67,7 +67,6 @@ class JpaLineUpRepositoryTest {
 		}
 	}
 
-    //TODO anche qui matchday funziona in maniera diversa
 	@BeforeEach
 	void truncatorAndInstantiatorAndSetup() {
 		
@@ -86,6 +85,8 @@ class JpaLineUpRepositoryTest {
 			em.persist(league);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			em.persist(opponent);
+            matchDay = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.FUTURE, league);
+            em.persist(matchDay);
 		});
 	}
 
