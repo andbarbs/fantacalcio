@@ -10,9 +10,7 @@ import domain.League;
 import domain.FantaTeam_;
 import domain.League_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 
 public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepository {
 
@@ -25,6 +23,7 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
 		Root<League> root = criteriaQuery.from(League.class);
+        root.fetch(League_.ADMIN);
 
 		criteriaQuery.where(cb.and(cb.equal(root.get(League_.leagueCode), leagueCode)));
 
@@ -40,17 +39,22 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 
 	@Override
 	public List<League> getLeaguesByUser(FantaUser user) {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<League> cq = cb.createQuery(League.class);
 
-		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        Root<FantaTeam> teamRoot = cq.from(FantaTeam.class);
 
-		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
-		Root<FantaTeam> root = criteriaQuery.from(FantaTeam.class);
+        // Join to League
+        Join<FantaTeam, League> leagueJoin = teamRoot.join(FantaTeam_.league);
 
-		criteriaQuery.select(root.get(FantaTeam_.league)).distinct(true)
-				.where(cb.equal(root.get(FantaTeam_.fantaManager), user));
+        // Fetch the admin (FantaUser) field from League
+        leagueJoin.fetch(League_.admin, JoinType.LEFT);
 
-		return getEntityManager().createQuery(criteriaQuery).getResultList();
+        cq.select(leagueJoin)
+                .distinct(true)
+                .where(cb.equal(teamRoot.get(FantaTeam_.fantaManager), user));
 
+        return getEntityManager().createQuery(cq).getResultList();
 	}
 
 	@Override
@@ -64,6 +68,7 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    return getEntityManager().createQuery(query).getResultList();
 	}
 
+    //TODO testa
     @Override
     public List<League> getLeaguesByJournalist(FantaUser journalist) {
         return List.of();

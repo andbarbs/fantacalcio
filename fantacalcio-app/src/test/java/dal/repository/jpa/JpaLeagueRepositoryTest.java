@@ -2,7 +2,9 @@ package dal.repository.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.SessionFactory;
@@ -62,9 +64,10 @@ class JpaLeagueRepositoryTest {
 	@Test
 	@DisplayName("getLeagueByCode() when the league does not exist")
 	void testGetLeagueByCodeWithNoLeague() {
-
+        entityManager.getTransaction().begin();
 		assertThat(leagueRepository.getLeagueByCode("1234")).isEmpty();
-
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 	@Test
@@ -80,7 +83,10 @@ class JpaLeagueRepositoryTest {
 			session.persist(league);
 		});
 
+        entityManager.getTransaction().begin();
 		Optional<League> result = leagueRepository.getLeagueByCode(leagueCode);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 		assertThat(result).isPresent();
 		assertThat(result.get()).isEqualTo(league);
 
@@ -90,20 +96,22 @@ class JpaLeagueRepositoryTest {
 	@DisplayName("saveLeague() should persist the league correctly")
 	void testSaveLeague() {
 
-		entityManager.getTransaction().begin();
-
 		FantaUser admin = new FantaUser("user", "pswd");
 		String leagueCode = "1234";
 		League league = new League(admin, "lega", leagueCode);
 
-		entityManager.persist(admin);
+		sessionFactory.inTransaction(session -> {
+            session.persist(admin);
+        });
 
+        entityManager.getTransaction().begin();
 		leagueRepository.saveLeague(league);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
 		assertThat(entityManager.createQuery("FROM League l WHERE l.leagueCode = :leagueCode", League.class)
 				.setParameter("leagueCode", leagueCode).getSingleResult()).isEqualTo(league);
 
-		entityManager.close();
 
 	}
 
@@ -122,7 +130,10 @@ class JpaLeagueRepositoryTest {
 			session.persist(user);
 		});
 
+        entityManager.getTransaction().begin();
 		assertThat(leagueRepository.getLeaguesByUser(user)).isEmpty();
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 
 	}
 
@@ -150,8 +161,11 @@ class JpaLeagueRepositoryTest {
 			session.persist(fantaTeam2);
 		});
 
-		assertThat(leagueRepository.getLeaguesByUser(user)).containsExactlyInAnyOrder(league1, league2);
-
+        entityManager.getTransaction().begin();
+        List<League> leagues = leagueRepository.getLeaguesByUser(user);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
+        assertThat(leagues).containsExactlyInAnyOrder(league1, league2);
 	}
 	
 	@Test
@@ -185,9 +199,13 @@ class JpaLeagueRepositoryTest {
 	        session.persist(otherTeam);
 	    });
 
-	    assertThat(leagueRepository.getAllTeams(league))
+        List<FantaTeam> teams = leagueRepository.getAllTeams(league);
+        entityManager.getTransaction().begin();
+	    assertThat(teams)
 	        .containsExactlyInAnyOrder(team1, team2)
 	        .doesNotContain(otherTeam);
+        entityManager.getTransaction().commit();
+        entityManager.clear();
 	}
 
 }
