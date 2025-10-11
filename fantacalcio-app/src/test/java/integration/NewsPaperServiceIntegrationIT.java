@@ -49,7 +49,7 @@ public class NewsPaperServiceIntegrationIT {
 	private JpaFantaTeamRepository fantaTeamRepository;
 	private JpaLeagueRepository leagueRepository;
 	private JpaPlayerRepository playerRepository;
-	private JpaNewsPaperRepository newspaperRepository;
+
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -67,7 +67,6 @@ public class NewsPaperServiceIntegrationIT {
 					.addAnnotatedClass(Player.Midfielder.class)
 					.addAnnotatedClass(Player.Forward.class)
 					.addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(Match.class)
@@ -98,7 +97,6 @@ public class NewsPaperServiceIntegrationIT {
 		fantaTeamRepository = new JpaFantaTeamRepository(entityManager);
 		leagueRepository = new JpaLeagueRepository(entityManager);
 		playerRepository = new JpaPlayerRepository(entityManager);
-		newspaperRepository = new JpaNewsPaperRepository(entityManager);
 
 	}
 
@@ -114,24 +112,22 @@ public class NewsPaperServiceIntegrationIT {
 
 		FantaUser admin = new FantaUser("mail", "pswd");
 		fantaUserRepository.saveFantaUser(admin);
+        League league = new League(admin, "Lega", "codice");
+        leagueRepository.saveLeague(league);
 
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
-		newspaperRepository.saveNewsPaper(newsPaper);
 
 		Player player = new Player.Forward("player", "1", Club.ATALANTA);
 		Player player2 = new Player.Forward("player", "2", Club.ATALANTA);
 		playerRepository.addPlayer(player);
 		playerRepository.addPlayer(player2);
 
-		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata", LocalDate.of(2020, 1, 13), 1);
-		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", LocalDate.of(2025, 9, 20), 2);
-		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", LocalDate.of(2020, 1, 26), 3);
+		MatchDaySerieA previousDay = new MatchDaySerieA("prima giornata",1, MatchDaySerieA.Status.PAST, league);
+		MatchDaySerieA matchDay = new MatchDaySerieA("seconda giornata", 2, MatchDaySerieA.Status.PAST, league);
+		MatchDaySerieA nextDay = new MatchDaySerieA("terza giornata", 3, MatchDaySerieA.Status.FUTURE, league);
 		entityManager.persist(previousDay);
 		entityManager.persist(matchDay);
 		entityManager.persist(nextDay);
 
-		League league = new League(admin, "lega", newsPaper, "1234");
-		leagueRepository.saveLeague(league);
 
 		FantaTeam team1 = new FantaTeam("", league, 0, admin, Set.of());
 		FantaTeam team2 = new FantaTeam("", league, 0, admin, Set.of());
@@ -141,16 +137,12 @@ public class NewsPaperServiceIntegrationIT {
 		Match match = new Match(matchDay, team1, team2);
 		matchRepository.saveMatch(match);
 
-		Grade grade = new Grade(player, matchDay, 25.0, newsPaper);
-		Grade grade2 = new Grade(player2, matchDay, 20.0, newsPaper);
+		Grade grade = new Grade(player, matchDay, 25.0);
+		Grade grade2 = new Grade(player2, matchDay, 20.0);
 
 		entityManager.getTransaction().commit();
 
 		newspaperservice = new NewsPaperService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return LocalDate.of(2025, 9, 22); // after 21/09
-			}
 		};
 
 		Set<Player> players = newspaperservice.getPlayersToGrade(Player.Club.ATALANTA);
@@ -159,7 +151,7 @@ public class NewsPaperServiceIntegrationIT {
 		assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "2");
 
 		newspaperservice.setVoteToPlayers(Set.of(grade, grade2));
-		assertThat(gradeRepository.getAllMatchGrades(match, newsPaper));
+		assertThat(gradeRepository.getAllMatchGrades(matchDay));
 	}
 
 }
