@@ -14,7 +14,6 @@ import org.junit.jupiter.api.*;
 
 import domain.*;
 import jakarta.persistence.EntityManager;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -37,7 +36,7 @@ class JpaResultsRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Result.class)
 					.addAnnotatedClass(Match.class).addAnnotatedClass(MatchDaySerieA.class)
 					.addAnnotatedClass(FantaTeam.class).addAnnotatedClass(FantaUser.class)
-					.addAnnotatedClass(League.class).addAnnotatedClass(NewsPaper.class)
+					.addAnnotatedClass(League.class)
 					.addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class).
 					getMetadataBuilder().build();
 
@@ -57,10 +56,9 @@ class JpaResultsRepositoryTest {
 		// Minimal setup for a Match and related entities
 		entityManager.getTransaction().begin();
 
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.now(), 1);
 		FantaUser admin = new FantaUser("admin@l001.com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta L001");
-		League league = new League(admin, "League L001", np, "L001");
+		League league = new League(admin, "League L001", "L001");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD1", 1, MatchDaySerieA.Status.FUTURE, league);
 		FantaUser user1 = new FantaUser("a@a.com", "pwd");
 		FantaUser user2 = new FantaUser("b@b.com", "pwd");
 		FantaTeam t1 = new FantaTeam("Team A", league, 0, user1, Set.of());
@@ -68,7 +66,6 @@ class JpaResultsRepositoryTest {
 
 		entityManager.persist(matchDay);
 		entityManager.persist(admin);
-		entityManager.persist(np);
 		entityManager.persist(league);
 		entityManager.persist(user1);
 		entityManager.persist(user2);
