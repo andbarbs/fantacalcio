@@ -798,7 +798,7 @@ public class LineUpChooserTest {
 			// GIVEN the SUT has been initialized with a Team and a Match
 			FantaTeam team = new FantaTeam("Dream Team", null, 30, null, new HashSet<>());			
 			Match match = new Match(
-					new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1),
+					new MatchDaySerieA("Matchday 1", 1, MatchDaySerieA.Status.FUTURE, team.getLeague()),
 					team, 
 					new FantaTeam("Challengers", null, 25, null, new HashSet<>()));
 			
