@@ -312,8 +312,8 @@ class UserServiceIntegrationIT {
 
 		entityManager.getTransaction().commit();
 
-		Match result = userService.getNextMatch(league, team);
-		assertThat(result.getMatchDaySerieA().getName()).isEqualTo("MD2");
+		Optional<Match> result = userService.getNextMatch(league, team);
+		assertThat(result.get().getMatchDaySerieA().getName()).isEqualTo("MD2");
 	}
 
 	@Test

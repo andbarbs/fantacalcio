@@ -608,7 +608,7 @@ class AdminUserServiceTest {
 		FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
 		Match match = new Match(previousMatchDay, team1, team2);
 		List<Match> matches = List.of(match);
-		when(matchRepository.getAllMatchesByMatchDay(any(), eq(league))).thenReturn(matches);
+		when(matchRepository.getAllMatchesIn(any())).thenReturn(matches);
 
 		// Set up grades, lineups, and results so the calculation can proceed
 		Grade grade1 = new Grade(new Player.Goalkeeper(null, null, null), previousMatchDay, 6.0);
@@ -862,7 +862,7 @@ class AdminUserServiceTest {
 
 		// Match
 		Match match = new Match(dayToCalc, team1, team2);
-		when(matchRepository.getAllMatchesByMatchDay(dayToCalc, league))
+		when(matchRepository.getAllMatchesIn(dayToCalc))
 				.thenReturn(List.of(new Match(dayToCalc, team1, team2)));
 
 		// Players

@@ -432,7 +432,7 @@ public class UserServiceTest {
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(league))
 				.thenReturn(Optional.of(mock(MatchDay.class)));
-		when(context.getMatchRepository().getMatchByMatchDay(any(), eq(league), eq(team))).thenReturn(previousMatch);
+		when(context.getMatchRepository().getMatchBy(any(), eq(team))).thenReturn(Optional.of(previousMatch));
 		when(context.getResultsRepository().getResult(previousMatch)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> spyService.saveLineUp(lineUp)).isInstanceOf(UnsupportedOperationException.class)
@@ -548,7 +548,7 @@ public class UserServiceTest {
 		MatchDay day1 = new MatchDay("1 giornata", 1, MatchDay.Status.FUTURE, league);
 		Match m1 = new Match(day1, null, null);
 		when(context.getMatchDayRepository().getAllMatchDays(league)).thenReturn(List.of(day1));
-		when(context.getMatchRepository().getAllMatchesByMatchDay(day1, league)).thenReturn(List.of(m1));
+		when(context.getMatchRepository().getAllMatchesIn(day1)).thenReturn(List.of(m1));
 
 		Map<MatchDay, List<Match>> result = userService.getAllMatches(league);
 		assertThat(result.get(day1)).containsExactly(m1);
@@ -565,13 +565,13 @@ public class UserServiceTest {
 		Match nextMatch = new Match(next, team, team);
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.of(prev));
-		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
+		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
 		when(context.getMatchDayRepository().getNextMatchDay(any())).thenReturn(Optional.of(next));
-		when(context.getMatchRepository().getMatchByMatchDay(next, league, team)).thenReturn(nextMatch);
+		when(context.getMatchRepository().getMatchBy(next, team)).thenReturn(Optional.of(nextMatch));
 
-		Match result = userService.getNextMatch(league, team);
-		assertThat(result).isEqualTo(nextMatch);
+		Optional<Match> result = userService.getNextMatch(league, team);
+		assertThat(result).hasValue(nextMatch);
 	}
 
 	@Test
@@ -583,7 +583,7 @@ public class UserServiceTest {
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(league)).thenReturn(Optional.of(prev));
 		Match prevMatch = new Match(prev, team, team);
-		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
+		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)

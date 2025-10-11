@@ -7,20 +7,25 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
+import java.util.Optional;
 
 import business.ports.repository.MatchRepository;
-import domain.MatchDay;
 
 public class JpaMatchRepository extends BaseJpaRepository implements MatchRepository {
 
     public JpaMatchRepository(EntityManager em) {super(em);}
 
     @Override
-    public Match getMatchByMatchDay(MatchDay matchDay, League league, FantaTeam fantaTeam) {
+    public Optional<Match> getMatchBy(MatchDay matchDay, FantaTeam fantaTeam) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
         Root<Match> root = query.from(Match.class);
+        
+        // deep fetching
+        root.fetch(Match_.MATCH_DAY).fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN);
+        root.fetch(Match_.TEAM1).fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Match_.TEAM2).fetch(FantaTeam_.FANTA_MANAGER);
 
         query.select(root).where(
                 cb.and(
@@ -30,15 +35,19 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
                         cb.equal(root.get(Match_.team2), fantaTeam)))
         );
 
-        return em.createQuery(query).getResultList().getFirst();
+        return em.createQuery(query).getResultStream().findFirst();
     }
 
     @Override
-    public List<Match> getAllMatchesByMatchDay(MatchDay matchDay, League league) {
+    public List<Match> getAllMatchesIn(MatchDay matchDay) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
         Root<Match> root = query.from(Match.class);
+        
+        root.fetch(Match_.MATCH_DAY).fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN);
+        root.fetch(Match_.TEAM1).fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Match_.TEAM2).fetch(FantaTeam_.FANTA_MANAGER);
 
         query.select(root).where(
                 cb.and(

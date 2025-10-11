@@ -34,7 +34,6 @@ import dal.repository.jpa.JpaLeagueRepository;
 import dal.repository.jpa.JpaMatchRepository;
 import dal.repository.jpa.JpaPlayerRepository;
 import dal.transaction.jpa.JpaTransactionManager;
-import domain.MatchDay;
 import domain.Player.Club;
 import domain.Player.Defender;
 import domain.Player.Forward;
@@ -189,10 +188,10 @@ class AdminUserServiceIntegrationIT {
 		adminUserService.generateCalendar(league);
 
 		for (MatchDay matchDay : matchDays) {
-			Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDay, league, team1);
+			Optional<Match> match = matchRepository.getMatchBy(matchDay, team1);
 
-			assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDay);
-			assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
+			assertThat(match.get().getMatchDaySerieA()).isEqualTo(matchDay);
+			assertThat(match.get().equals(team1) || match.get().getTeam2().equals(team1)).isTrue();
 		}
 	}
 

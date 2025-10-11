@@ -214,7 +214,7 @@ public class AdminUserService extends UserService {
             }
 
 
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesByMatchDay(previousMatchDay.get(), league);
+			List<Match> allMatches = context.getMatchRepository().getAllMatchesIn(previousMatchDay.get());
             List<Grade> allGrades = context.getGradeRepository().getAllMatchGrades(previousMatchDay.get());
 			for (Match match : allMatches) {
 				
@@ -263,7 +263,7 @@ public class AdminUserService extends UserService {
 
     private boolean allMatchesHaveResult(MatchDay matchDay, TransactionContext context) {
         // recupera tutti i match della giornata e della lega corrispondente
-        List<Match> matches = context.getMatchRepository().getAllMatchesByMatchDay(matchDay, matchDay.getLeague());
+        List<Match> matches = context.getMatchRepository().getAllMatchesIn(matchDay);
 
         // controlla che per ogni match ci sia un result
         return matches.stream()
