@@ -2,7 +2,6 @@ package business;
 
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -98,10 +97,11 @@ public class UserServiceTest {
 		userService = new UserService(transactionManager);
 	}
 
+    //TODO ricontrolla tutta la logica che mi convince poco
 	@Test
 	void testJoinLeague() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L002");
+		League league = new League(user, "Test League", "L002");
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
 		when(leagueRepository.getLeaguesByUser(user)).thenReturn(Collections.emptyList());
@@ -114,7 +114,7 @@ public class UserServiceTest {
 	@Test
 	void testJoinLeague_TooManyTeams() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L002");
+		League league = new League(user, "Test League", "L002");
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
 		List<FantaTeam> teamList = new ArrayList<FantaTeam>();
@@ -131,7 +131,7 @@ public class UserServiceTest {
 	@Test
 	void testJoinLeague_UserAlreadyInLeague() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L002");
+		League league = new League(user, "Test League", "L002");
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
 		when(leagueRepository.getLeaguesByUser(user)).thenReturn(List.of(league));
@@ -145,8 +145,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15),1 ); // Monday
+		League league = new League(user, "Test League", "L003");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league);
 		
 		// Players for LineUp
 		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
@@ -213,12 +213,14 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Current Monday
+        //TODO posso eliminarlo tranquillamente giusto?
+		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Current Monday
 
 		// Stub repos
 		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.empty());
 		when(context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)).thenReturn(Optional.empty());
 
+        //TODO serve spy?
 		spyService.saveLineUp(lineUp);
 
 		verify(context.getLineUpRepository()).saveLineUp(lineUp);
@@ -227,8 +229,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp_AfterMatchDate() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15), 1); // Monday
+		League league = new League(user, "Test League", "L003");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.PAST, league); // Monday
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match match = new Match(matchDay, team, team);
 		LineUp lineUp = LineUp.build()
@@ -268,7 +270,8 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 16)).when(spyService).today(); // Current date after match
+        //TODO serve spy?
+		//doReturn(LocalDate.of(2025, 9, 16)).when(spyService).today(); // Current date after match
 
 		assertThatThrownBy(() -> spyService.saveLineUp(lineUp)).isInstanceOf(UnsupportedOperationException.class)
 				.hasMessageContaining("Can't modify the lineup after the match is over");
@@ -277,8 +280,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp_Weekend() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 20),1 ); // Monday match
+		League league = new League(user, "Test League", "L003");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league); // Monday match
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match match = new Match(matchDay, team, team);
 		LineUp lineUp = LineUp.build()
@@ -318,7 +321,8 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 20)).when(spyService).today(); // Saturday
+        //TODO stesso discorso
+		//doReturn(LocalDate.of(2025, 9, 20)).when(spyService).today(); // Saturday
 
 		assertThatThrownBy(() -> spyService.saveLineUp(lineUp)).isInstanceOf(UnsupportedOperationException.class)
 				.hasMessageContaining("Can't modify the lineup during Saturday and Sunday");
@@ -327,8 +331,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp_PlayerNotInTeam() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L003");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD1", LocalDate.of(2025, 9, 15), 1); // Monday
+		League league = new League(user, "Test League", "L003");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league);
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 
 		// Goalkeeper gk = new Goalkeeper("Gianluigi", "Buffon", Player.Club.JUVENTUS);
@@ -371,7 +375,8 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
+        //TODO same
+		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
 
 		assertThatThrownBy(() -> spyService.saveLineUp(lineUp)).isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("does not belong to FantaTeam");
@@ -380,8 +385,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp_PreviousMatchNotGraded() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L004");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD2", LocalDate.of(2025, 9, 15), 1); // Monday
+		League league = new League(user, "Test League", "L004");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD2",2, MatchDaySerieA.Status.FUTURE, league);
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, new HashSet<>());
 		Match previousMatch = mock(Match.class);
 		Match match = new Match(matchDay, team, team);
@@ -422,9 +427,10 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
+        //TODO same
+		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(matchDay.getDate()))
+		when(context.getMatchDayRepository().getPreviousMatchDay(league))
 				.thenReturn(Optional.of(mock(MatchDaySerieA.class)));
 		when(context.getMatchRepository().getMatchByMatchDay(any(), eq(league), eq(team))).thenReturn(previousMatch);
 		when(context.getResultsRepository().getResult(previousMatch)).thenReturn(Optional.empty());
@@ -436,8 +442,8 @@ public class UserServiceTest {
 	@Test
 	void testSaveLineUp_AlreadyExistsLineUp() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", new NewsPaper("Gazzetta"), "L005");
-		MatchDaySerieA matchDay = new MatchDaySerieA("MD3", LocalDate.of(2025, 9, 15), 1); // Monday
+		League league = new League(user, "Test League", "L005");
+		MatchDaySerieA matchDay = new MatchDaySerieA("MD3",3, MatchDaySerieA.Status.FUTURE, league); // Monday
 		
 		// Players for LineUp
 		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
@@ -483,7 +489,7 @@ public class UserServiceTest {
 		
 		HashSet<Contract> contracts = new HashSet<>();
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, contracts);
-		players.stream().map(player -> new Contract(team, player)).forEach(contracts::add);;
+		players.stream().map(player -> new Contract(team, player)).forEach(contracts::add);
 		Match match = new Match(matchDay, team, team);
 		
 		// LineUps
@@ -503,7 +509,8 @@ public class UserServiceTest {
 
 		UserService spyService = spy(userService);
 		doReturn(team).when(spyService).getFantaTeamByUserAndLeague(league, user);
-		doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
+        //TODO same
+		//doReturn(LocalDate.of(2025, 9, 15)).when(spyService).today(); // Monday
 
 		when(context.getMatchDayRepository().getPreviousMatchDay(any())).thenReturn(Optional.empty());
 		when(context.getLineUpRepository().getLineUpByMatchAndTeam(match, team)).thenReturn(Optional.of(oldLineUp));
@@ -536,10 +543,11 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllMatches() {
-		League league = new League(null, null, null, null);
-		MatchDaySerieA day1 = new MatchDaySerieA(null, null,1 );
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+		MatchDaySerieA day1 = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.FUTURE, league);
 		Match m1 = new Match(day1, null, null);
-		when(context.getMatchDayRepository().getAllMatchDays()).thenReturn(List.of(day1));
+		when(context.getMatchDayRepository().getAllMatchDays(league)).thenReturn(List.of(day1));
 		when(context.getMatchRepository().getAllMatchesByMatchDay(day1, league)).thenReturn(List.of(m1));
 
 		Map<MatchDaySerieA, List<Match>> result = userService.getAllMatches(league);
@@ -548,10 +556,11 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch() {
-		League league = new League(null, null, null, null);
-		FantaTeam team = new FantaTeam(null, league, 0, null, null);
-		MatchDaySerieA prev = new MatchDaySerieA(null, null, 1);
-		MatchDaySerieA next = new MatchDaySerieA(null, null, 1);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+		FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
+		MatchDaySerieA prev = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league);
+		MatchDaySerieA next = new MatchDaySerieA("2 giornata", 2, MatchDaySerieA.Status.FUTURE, league);
 		Match prevMatch = new Match(next, team, team);
 		Match nextMatch = new Match(next, team, team);
 
@@ -567,12 +576,12 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch_PreviousResultMissing() {
-		League league = new League(null, null, null, null);
-		FantaTeam team = new FantaTeam(null, league, 0, null, null);
-		LocalDate today = LocalDate.now();
-		MatchDaySerieA prev = new MatchDaySerieA(null, today, 1);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
+        MatchDaySerieA prev = new MatchDaySerieA("1 giornata", 1, MatchDaySerieA.Status.PAST, league);
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.of(prev));
+		when(context.getMatchDayRepository().getPreviousMatchDay(league)).thenReturn(Optional.of(prev));
 		Match prevMatch = new Match(prev, team, team);
 		when(context.getMatchRepository().getMatchByMatchDay(prev, league, team)).thenReturn(prevMatch);
 		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
@@ -583,12 +592,12 @@ public class UserServiceTest {
 
 	@Test
 	void testGetNextMatch_LeagueEnded() {
-		League league = new League(null, null, null, null);
-		FantaTeam team = new FantaTeam(null, league, 0, null, null);
-		LocalDate today = LocalDate.now();
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
 
-		when(context.getMatchDayRepository().getPreviousMatchDay(today)).thenReturn(Optional.empty());
-		when(context.getMatchDayRepository().getNextMatchDay(today)).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getPreviousMatchDay(league)).thenReturn(Optional.empty());
+		when(context.getMatchDayRepository().getNextMatchDay(league)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("The league ended");
@@ -596,13 +605,15 @@ public class UserServiceTest {
 
 	@Test
 	void testGetStandings() {
-		League league = new League(null, null, null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
 		FantaTeam t1 = mock(FantaTeam.class);
 		FantaTeam t2 = mock(FantaTeam.class);
 
 		when(t1.getPoints()).thenReturn(10);
 		when(t2.getPoints()).thenReturn(20);
 
+        //TODO ha senso spy?
 		UserService spyService = spy(userService);
 		doReturn(List.of(t1, t2)).when(spyService).getAllFantaTeams(league);
 
@@ -613,9 +624,9 @@ public class UserServiceTest {
 
 	@Test
 	void testGetFantaTeamByUserAndLeague() {
-		League league = new League(null, null, null, null);
-		FantaUser user = new FantaUser(null, null);
-		FantaTeam team = new FantaTeam(null, league, 0, user, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
 		when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(team);
 
 		FantaTeam result = userService.getFantaTeamByUserAndLeague(league, user);
@@ -624,9 +635,10 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllTeamProposals() {
-		League league = new League(null, null, null, null);
-		FantaTeam team = new FantaTeam(null, league, 0, null, null);
-		Proposal p = new Proposal.PendingProposal(null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
+		Proposal p = new Proposal(null, null);
 		when(context.getProposalRepository().getMyProposals(league, team)).thenReturn(List.of(p));
 
 		List<Proposal> result = userService.getAllTeamProposals(league, team);
@@ -665,7 +677,7 @@ public class UserServiceTest {
 		Contract offeredContract = mock(Contract.class);
 		when(offeredContract.getTeam()).thenReturn(mock(FantaTeam.class));
 
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		Proposal proposal = mock(Proposal.class);
 		when(proposal.getRequestedContract()).thenReturn(requestedContract);
 		when(proposal.getOfferedContract()).thenReturn(offeredContract);
 
@@ -695,7 +707,7 @@ public class UserServiceTest {
 		when(requestedContract.getPlayer()).thenReturn(requestedPlayer);
 
 		// Proposal
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		Proposal proposal = mock(Proposal.class);
 		when(proposal.getRequestedContract()).thenReturn(requestedContract);
 		when(proposal.getOfferedContract()).thenReturn(offeredContract);
 
@@ -732,7 +744,7 @@ public class UserServiceTest {
 		when(requestedContract.getTeam()).thenReturn(myTeam);
 		when(requestedContract.getPlayer()).thenReturn(requestedPlayer);
 
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		Proposal proposal = mock(Proposal.class);
 		when(proposal.getRequestedContract()).thenReturn(requestedContract);
 		when(proposal.getOfferedContract()).thenReturn(offeredContract);
 
@@ -772,7 +784,7 @@ public class UserServiceTest {
 		when(offeredContract.getTeam()).thenReturn(otherTeam); // other team is offering
 
 		// Create a mock proposal
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		Proposal proposal = mock(Proposal.class);
 		when(proposal.getRequestedContract()).thenReturn(requestedContract);
 		when(proposal.getOfferedContract()).thenReturn(offeredContract);
 
@@ -785,13 +797,14 @@ public class UserServiceTest {
 
 		// Verify repository interactions
 		verify(context.getProposalRepository()).deleteProposal(proposal);
-		verify(context.getProposalRepository()).saveProposal(any(Proposal.RejectedProposal.class));
+        //TODO perchè any?
+		verify(context.getProposalRepository()).saveProposal(any(Proposal.class));
 	}
 
 	@Test
 	void testRejectProposal_RequestedNotInvolved() {
 		FantaTeam myTeam = mock(FantaTeam.class);
-		Proposal.PendingProposal proposal = mock(Proposal.PendingProposal.class);
+		Proposal proposal = mock(Proposal.class);
 		FantaTeam reqTeam = mock(FantaTeam.class);
 		FantaTeam offTeam = mock(FantaTeam.class);
 		when(proposal.getRequestedContract()).thenReturn(mock(Contract.class));
@@ -852,8 +865,8 @@ public class UserServiceTest {
 
 	@Test
 	void testCreateProposal_AlreadyExists() {
-		League league = new League(null, null, null, null);
-		FantaUser user = new FantaUser(null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L003");
 		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
 		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
 		Player player = new Player.Midfielder(null, null, null);
@@ -863,8 +876,9 @@ public class UserServiceTest {
 		myTeam.getContracts().add(offeredContract);
 		opponentTeam.getContracts().add(requestedContract);
 
+        //TODO bo?
 		when(context.getProposalRepository().getProposal(offeredContract, requestedContract))
-				.thenReturn(Optional.of(new Proposal.PendingProposal()));
+				.thenReturn(Optional.of(new Proposal(offeredContract,requestedContract)));
 
 		assertThatThrownBy(() -> userService.createProposal(player, player, myTeam, opponentTeam))
 				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("The proposal already exists");
@@ -872,8 +886,8 @@ public class UserServiceTest {
 
 	@Test
 	void testCreateProposal_HappyPath() {
-		League league = new League(null, null, null, null);
-		FantaUser user = new FantaUser(null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L003");
 		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
 		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
 		Player offeredPlayer = new Player.Defender(null, null, null);
@@ -893,18 +907,20 @@ public class UserServiceTest {
 
 	@Test
 	void testGetAllMatchGrades() {
-		Match match = new Match(null, null, null);
-		Grade grade = new Grade(null, null, 0, null);
-		NewsPaper newsPaper = new NewsPaper("Gazzetta");
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L003");
+        MatchDaySerieA matchDay = new MatchDaySerieA("MD1",1, MatchDaySerieA.Status.FUTURE, league);
+		Match match = new Match(matchDay, null, null);
+		Grade grade = new Grade(null, null, 0);
 
-		when(context.getGradeRepository().getAllMatchGrades(match, newsPaper)).thenReturn(List.of(grade));
+		when(context.getGradeRepository().getAllMatchGrades(matchDay)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match);
 		assertThat(result).containsExactly(grade);
 	}
 
 	@Test
 	void testGetAllFantaTeams() {
-		League league = new League(null, "My League", new NewsPaper("Gazzetta"), "L999");
+		League league = new League(null, "My League", "L999");
 		FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
 		FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
 
