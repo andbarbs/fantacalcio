@@ -85,11 +85,17 @@ class JpaContractRepositoryTest {
 	@Test
 	@DisplayName("getContract() when contract doesn't exist")
 	public void testGetContractWithNoContractExisting() {
+		
+		// GIVEN no Contract for test Player under test Team was persisted
 
+		// WHEN the SUT is used to retrieve a Contract for test Player under test Team
 		entityManager.getTransaction().begin();
-		assertThat(contractRepository.getContract(team, player)).isEmpty();		
+		Optional<Contract> retrieved = contractRepository.getContract(team, player);
 		entityManager.getTransaction().commit();
 	    entityManager.clear();
+	    
+	    // THEN an empty Optional is returned
+	    assertThat(retrieved).isEmpty();		
 	}
 
 	@Test
@@ -132,10 +138,10 @@ class JpaContractRepositoryTest {
 		entityManager.getTransaction().commit();
 		entityManager.clear();
 
-		// THEN no Contracts exist
-		assertThat(
-				entityManager.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-						.setParameter("player", player).setParameter("team", team).getResultStream().findFirst())
+		// THEN no Contracts exist in the database
+		assertThat(sessionFactory.fromTransaction((Session em) -> em
+				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+						.setParameter("player", player).setParameter("team", team).getResultStream().findFirst()))
 				.isEmpty();
 	}
 
@@ -154,33 +160,30 @@ class JpaContractRepositoryTest {
 	    entityManager.clear();
 
 	    // THEN the Contract is removed from the db
-		assertThat(entityManager
+		assertThat(sessionFactory.fromTransaction((Session em) -> em
 				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-				.setParameter("player", player).setParameter("team", team).getResultStream().toList()).isEmpty();
+				.setParameter("player", player).setParameter("team", team).getResultStream().toList())).isEmpty();
 	}
 
 	@Test
 	@DisplayName("saveContract should persist correctly")
 	void testSaveContractPersistsCorrectly() {
-		
+
 		// GIVEN a Contract is instantiated
 		Contract contract = new Contract(team, player);
 
 		// WHEN the SUT is used to save it
 		entityManager.getTransaction().begin();
-		contractRepository.saveContract(contract);		
+		contractRepository.saveContract(contract);
 		entityManager.getTransaction().commit();
 		entityManager.clear();
-		
-		// THEN the Contract is actually persisted
-		sessionFactory.inTransaction((Session em) -> {
-			Optional<Contract> result = em.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-			.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
-			
-			assertThat(result).isPresent().hasValueSatisfying(found -> {
-				assertThat(found.getTeam()).isEqualTo(team);
-				assertThat(found.getPlayer()).isEqualTo(player);
-			});			
-		});
+
+		// THEN the Contract is persisted to the db
+		assertThat(sessionFactory.fromTransaction((Session em) -> em
+				.createQuery("FROM Contract c " + "JOIN FETCH c.player "
+						+ "JOIN FETCH c.team ct JOIN FETCH ct.league ctl JOIN FETCH ctl.admin "
+						+ "WHERE c.player = :player AND c.team = :team", Contract.class)
+				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst()))
+				.hasValue(contract);
 	}
 }

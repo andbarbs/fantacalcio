@@ -83,7 +83,7 @@ class JpaFantaTeamRepositoryTest {
 		entityManager.getTransaction().commit();
 	    entityManager.clear();		
 		
-	    // THEN an empty Optional is returned
+	    // THEN an empty Set is returned
 		assertThat(retrieved).isEmpty();
 	}
 

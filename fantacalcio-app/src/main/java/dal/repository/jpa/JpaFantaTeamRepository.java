@@ -54,7 +54,6 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<FantaTeam> query = cb.createQuery(FantaTeam.class);
         Root<FantaTeam> root = query.from(FantaTeam.class);
-        
 
         query.select(root).where(
                 cb.equal(root.get(FantaTeam_.league), league),
