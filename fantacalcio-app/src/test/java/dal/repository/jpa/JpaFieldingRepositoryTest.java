@@ -41,7 +41,6 @@ class JpaFieldingRepositoryTest {
 	private League league;
 	private FantaUser manager;
 	private MatchDaySerieA matchDay;
-	private NewsPaper newsPaper;
 	private FantaTeam opponent;
 
 	@BeforeAll
@@ -53,7 +52,6 @@ class JpaFieldingRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
@@ -85,12 +83,8 @@ class JpaFieldingRepositoryTest {
 		sessionFactory.inTransaction(t -> {
 			manager = new FantaUser("manager@example.com", "securePass");
 			t.persist(manager);
-			newsPaper = new NewsPaper("Gazzetta");
-			t.persist(newsPaper);
-			league = new League(manager, "Serie A", newsPaper, "code");
+			league = new League(manager, "Serie A", "code");
 			t.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
-			t.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			t.persist(opponent);
 		});
@@ -158,7 +152,7 @@ class JpaFieldingRepositoryTest {
 		
 		FantaTeam opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 		entityManager.persist(opponent);
-
+        //TODO controllare da dove prende matchDay
 		Match match = new Match(matchDay, team, opponent);
 		entityManager.persist(match);
 
@@ -180,6 +174,7 @@ class JpaFieldingRepositoryTest {
 		entityManager.clear(); // the Session is not closed! SUT instance is still used for verifications
 		
 		List<Fielding> result = fieldingRepository.getAllFieldings(lineUp);
+        //TODO è meglio controllare che le 2 lineup siano uguali?
         assertThat(result).hasSize(players.size());
 	}
 
