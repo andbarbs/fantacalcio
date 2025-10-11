@@ -47,7 +47,6 @@ class JpaLineUpRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
 					.addAnnotatedClass(MatchDaySerieA.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
@@ -68,6 +67,7 @@ class JpaLineUpRepositoryTest {
 		}
 	}
 
+    //TODO anche qui matchday funziona in maniera diversa
 	@BeforeEach
 	void truncatorAndInstantiatorAndSetup() {
 		
@@ -80,14 +80,10 @@ class JpaLineUpRepositoryTest {
 
 		// AND common setup entities are assembled and persisted
 		sessionFactory.inTransaction(em -> {
-			NewsPaper newsPaper = new NewsPaper("Gazzetta");
-			em.persist(newsPaper);
 			manager = new FantaUser("manager@example.com", "securePass");
 			em.persist(manager);
-			league = new League(manager, "Serie A", newsPaper, "code");
+			league = new League(manager, "Serie A", "code");
 			em.persist(league);
-			matchDay = new MatchDaySerieA("Matchday 1", LocalDate.of(2025, 6, 19), 1);
-			em.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			em.persist(opponent);
 		});
