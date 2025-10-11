@@ -128,56 +128,45 @@ class JpaContractRepositoryTest {
 	@Test
 	@DisplayName("deleteContract() when contract exists")
 	public void testDeleteContractWithContractExisting() {
-
-		entityManager.getTransaction().begin();
-
-		Contract contract = new Contract(team, player);
-
-		entityManager.persist(contract);
-
-		team.setContracts(Set.of(contract));
 		
-		entityManager.getTransaction().commit();
-	    entityManager.clear();
+		// GIVEN a Contract is persisted
+		Contract contract = new Contract(team, player);		
+		sessionFactory.inTransaction(em -> entityManager.persist(contract));
 
+		// WHEN the SUT is used to delete the Contract
 	    entityManager.getTransaction().begin();
 		contractRepository.deleteContract(contract);
 		entityManager.getTransaction().commit();
 	    entityManager.clear();
 
-		Optional<Contract> result = entityManager
+	    // THEN the Contract is removed from the db
+		assertThat(entityManager
 				.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-				.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
-
-		assertThat(result).isEmpty();
-
-		entityManager.close();
-
+				.setParameter("player", player).setParameter("team", team).getResultStream().toList()).isEmpty();
 	}
 
 	@Test
 	@DisplayName("saveContract should persist correctly")
 	void testSaveContractPersistsCorrectly() {
-
-		entityManager.getTransaction().begin();
 		
+		// GIVEN a Contract is instantiated
 		Contract contract = new Contract(team, player);
 
-		contractRepository.saveContract(contract);
-		
+		// WHEN the SUT is used to save it
+		entityManager.getTransaction().begin();
+		contractRepository.saveContract(contract);		
 		entityManager.getTransaction().commit();
 		entityManager.clear();
 		
+		// THEN the Contract is actually persisted
 		sessionFactory.inTransaction((Session em) -> {
-			Optional<Contract> result = em
-					.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
-					.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
-
-			assertThat(result).isPresent();
-			Contract found = result.get();
-			assertThat(found.getTeam()).isEqualTo(team);
-			assertThat(found.getPlayer()).isEqualTo(player);
+			Optional<Contract> result = em.createQuery("FROM Contract l WHERE l.player = :player AND l.team = :team", Contract.class)
+			.setParameter("player", player).setParameter("team", team).getResultStream().findFirst();
+			
+			assertThat(result).isPresent().hasValueSatisfying(found -> {
+				assertThat(found.getTeam()).isEqualTo(team);
+				assertThat(found.getPlayer()).isEqualTo(player);
+			});			
 		});
 	}
-
 }
