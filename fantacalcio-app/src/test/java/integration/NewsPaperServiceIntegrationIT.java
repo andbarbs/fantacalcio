@@ -136,12 +136,13 @@ public class NewsPaperServiceIntegrationIT {
 		newspaperservice = new NewsPaperService(transactionManager) {
 		};
 
-		Set<Player> players = newspaperservice.getPlayersToGrade(Player.Club.ATALANTA);
+		// TODO aggiustare PlayerRepository
+		Set<Player> players = newspaperservice.getPlayersToGrade(league);
 		assertThat(players.size()).isEqualTo(2);
 		assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "1");
 		assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "2");
 
-		newspaperservice.setVoteToPlayers(Set.of(grade, grade2));
+		newspaperservice.save(Set.of(grade, grade2));
 		assertThat(gradeRepository.getAllMatchGrades(matchDay));
 	}
 

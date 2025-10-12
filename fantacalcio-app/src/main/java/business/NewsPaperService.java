@@ -5,6 +5,7 @@ import java.util.Set;
 
 import business.ports.transaction.TransactionManager;
 import domain.Grade;
+import domain.League;
 import domain.MatchDay;
 import domain.Player;
 
@@ -16,7 +17,7 @@ public class NewsPaperService {
 		this.transactionManager = transactionManager;
 	}
 
-	public void setVoteToPlayers(Set<Grade> grades) {
+	public void save(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
             Grade anyGrade = grades.stream().findAny().orElseThrow(() -> new RuntimeException("No grades found"));
 			Optional<MatchDay> matchDaySerieA = context.getMatchDayRepository().getOngoingMatchDay(anyGrade.getMatchDay().getLeague());
@@ -27,7 +28,7 @@ public class NewsPaperService {
 				if (!(grade.getMatchDay().equals(matchDaySerieA.get()))) {
 					throw new RuntimeException("The matchDay is not the present one or is of another League");
 				}
-				if (grade.getMark() < -5 || grade.getMark() > 25) {
+				if (grade.getMark() <= -5 || grade.getMark() >= 25) {
 					throw new IllegalArgumentException("Marks must be between -5 and 25");
 				}
 			}
@@ -37,8 +38,8 @@ public class NewsPaperService {
 		});
 	}
 
-	public Set<Player> getPlayersToGrade(Player.Club club) {
-		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findByClub(club));
+	public Set<Player> getPlayersToGrade(League league) {
+		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().getAllInLeague(league));
 	}
 
 }

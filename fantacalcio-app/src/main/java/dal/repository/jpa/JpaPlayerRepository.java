@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import business.ports.repository.PlayerRepository;
+import domain.League;
 import domain.Player;
 import domain.Player_;
 import jakarta.persistence.EntityManager;
@@ -73,5 +74,11 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 				criteriaBuilder.equal(root.get(Player_.club), team)));
 
 		return Set.copyOf(entityManager.createQuery(criteriaQuery).getResultList());
+	}
+
+	@Override
+	public Set<Player> getAllInLeague(League league) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

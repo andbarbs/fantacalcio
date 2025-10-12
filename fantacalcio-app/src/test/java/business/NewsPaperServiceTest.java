@@ -1,5 +1,6 @@
 package business;
 
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import business.ports.repository.PlayerRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.*;
+import domain.Player.Club;
+import domain.Player.Forward;
 
 import java.util.*;
 
@@ -24,8 +27,6 @@ class NewsPaperServiceTest {
 	private TransactionContext context;
 	private NewsPaperService service;
 
-	private Grade grade;
-	private MatchDay matchDay;
 	private GradeRepository gradeRepository;
 	private PlayerRepository playerRepository;
 	private MatchDayRepository matchDayRepository;
@@ -52,11 +53,7 @@ class NewsPaperServiceTest {
 
 		service = new NewsPaperService(transactionManager);
 
-		grade = mock(Grade.class);
-		matchDay = mock(MatchDay.class);
-
-		when(grade.getMatchDay()).thenReturn(matchDay);
-		when(grade.getMark()).thenReturn(10.0);
+		
 
 		gradeRepository = mock(GradeRepository.class);
 		playerRepository = mock(PlayerRepository.class);
@@ -71,161 +68,184 @@ class NewsPaperServiceTest {
     //TODO ricontrollare logica
 	@Test
 	void testSetVoteToPlayers_NoMatchDay() {
-		NewsPaperService spyService = spy(service);
-        //TODO penso inutile non esiste più il metodo get matchDay
-		//doReturn(Optional.empty()).when(spyService).getMatchDay();
-
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
+		
+		// GIVEN no ongoing MatchDay exists for the League refd by Grades
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay futureMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.FUTURE, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		
+		// AND the LeagueRepository 
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.empty());
+		
+		// WHEN the SUT us used to save grades whose League has no ongoing MatchDay
+		Grade incorrect = new Grade(player, futureMatchDay, 10);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
+		
+		// THEN an exception  is thrown
+		assertThatThrownBy(shouldThrow).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("Now you can't assign the votes");
 	}
 
 	@Test
 	void testSetVoteToPlayers_MultipleGrades() {
-		Grade grades = mock(Grade.class);
-		when(grades.getMatchDay()).thenReturn(matchDay);
-		when(grades.getMark()).thenReturn(15.0);
-
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
-
-		spyService.setVoteToPlayers(Set.of(grade, grades));
-
-		verify(gradeRepository).saveGrade(grade);
-		verify(gradeRepository).saveGrade(grades);
+		
+		// GIVEN 
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player1 = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		Player player2 = new Player.Midfielder("Kevin", "De Bruyne", Club.NAPOLI);
+		
+		// AND
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
+		
+		// WHEN the SUT is used to sav ethem
+		Grade grade1 = new Grade(player1, ongoingMatchDay, 10);
+		Grade grade2 = new Grade(player2, ongoingMatchDay, 7);
+		service.save(Set.of(grade1, grade2));
+		
+		// THEN they are persisted
+		verify(gradeRepository).saveGrade(grade1);
+		verify(gradeRepository).saveGrade(grade2);
+		verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_WrongMatchDay() {
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra non capisco spy
-		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
-
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The match date is not correct");
+		
+		// GIVEN Grades reference a MatchDay that is not the League's ongoing
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay pastMatchDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		
+		// AND the LeagueRepository 
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
+		
+		// WHEN the SUT us used to save grades that reference a past Matchday
+		Grade incorrect = new Grade(player, pastMatchDay, 10);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
+		
+		// THEN an exception  is thrown
+		assertThatThrownBy(shouldThrow).isInstanceOf(RuntimeException.class)
+		.hasMessageContaining("matchDay is not the present one");
+		
+		// ADN
+		verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooLow() {
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
-		when(grade.getMatchDay()).thenReturn(matchDay);
-		when(grade.getMark()).thenReturn(-10.0); // invalid
 
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade)))
-				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Marks must be between -5 and 25");
+		// GIVEN
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
+
+		// AND the LeagueRepository
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
+
+		// WHEN the SUT is used to save a Grade that has too low mark
+		Grade incorrect = new Grade(player, ongoingMatchDay, -10);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
+
+		// THEN
+		assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Marks must be between -5 and 25");
+		
+		// ADN
+		verifyNoMoreInteractions(gradeRepository);
 	}
 	
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooHigh() {
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
-		when(grade.getMatchDay()).thenReturn(matchDay);
-		when(grade.getMark()).thenReturn(30.0); // invalid
+		
+		// GIVEN
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
 
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade)))
-				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Marks must be between -5 and 25");
+		// AND the LeagueRepository
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
+
+		// WHEN the SUT is used to save a Grade that has too high mark
+		Grade incorrect = new Grade(player, ongoingMatchDay, 30);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
+
+		// THEN
+		assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Marks must be between -5 and 25");
+		
+		// ADN
+				verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_BoundaryMarks_Min() {
-		Grade minGrade = mock(Grade.class);
-		when(minGrade.getMatchDay()).thenReturn(matchDay);
-		when(minGrade.getMark()).thenReturn(-5.0);
+		
+		// GIVEN
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
 
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+		// AND the LeagueRepository
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
 
-		spyService.setVoteToPlayers(Set.of(minGrade));
+		// WHEN the SUT is used to save a Grade that has too low mark
+		Grade incorrect = new Grade(player, ongoingMatchDay, -5);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
 
-		// Verify save is called once
-		verify(gradeRepository).saveGrade(minGrade);
+		// THEN
+		assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Marks must be between -5 and 25");
+		
+		// ADN
+				verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_BoundaryMarks_Max() {
-		Grade maxGrade = mock(Grade.class);
-		when(maxGrade.getMatchDay()).thenReturn(matchDay);
-		when(maxGrade.getMark()).thenReturn(25.0);
+		// GIVEN
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
 
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
+		// AND the LeagueRepository
+		when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
 
-		spyService.setVoteToPlayers(Set.of(maxGrade));
+		// WHEN the SUT is used to save a Grade that has too high mark
+		Grade incorrect = new Grade(player, ongoingMatchDay, 25);
+		ThrowingCallable shouldThrow = () -> service.save(Set.of(incorrect));
 
-		// Verify save is called once
-		verify(gradeRepository).saveGrade(maxGrade);
-	}
-
-	@Test
-	void testSetVoteToPlayers_HappyPath() {
-		// Spy the service to mock getMatchDay
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
-
-		// Mock the grade
-		when(grade.getMatchDay()).thenReturn(matchDay);
-		when(grade.getMark()).thenReturn(10.0);
-
-		// Run the method
-		spyService.setVoteToPlayers(Set.of(grade));
-
-		// Verify the save was called
-		verify(gradeRepository).saveGrade(grade);
-	}
-
-	@Test
-	void testSetVoteToPlayers_Error_NoUnexpectedRepoCalls() {
-        //TODO uguale a sopra
-		NewsPaperService spyService = spy(service);
-		//doReturn(Optional.empty()).when(spyService).getMatchDay();
-
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("Now you can't assign the votes");
-
-		// Verify no grade was saved
-		verifyNoInteractions(gradeRepository);
-	}
-
-	@Test
-	void testSetVoteToPlayers_Error_WrongMatchDay_NoUnexpectedRepoCalls() {
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(otherDay)).when(spyService).getMatchDay();
-
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade))).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The match date is not correct");
-
-		// Verify no grade was saved
-		verifyNoInteractions(gradeRepository);
-	}
-
-	@Test
-	void testSetVoteToPlayers_Error_InvalidMark_NoUnexpectedRepoCalls() {
-		NewsPaperService spyService = spy(service);
-        //TODO uguale a sopra
-		//doReturn(Optional.of(matchDay)).when(spyService).getMatchDay();
-		when(grade.getMark()).thenReturn(30.0); // invalid
-
-		assertThatThrownBy(() -> spyService.setVoteToPlayers(Set.of(grade)))
-				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Marks must be between -5 and 25");
-
-		// Verify no grade was saved
-		verifyNoInteractions(gradeRepository);
+		// THEN
+		assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Marks must be between -5 and 25");
+		
+		// ADN
+				verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testGetPlayersToGrade() {
-		Player player = mock(Player.class);
-		when(context.getPlayerRepository().findByClub(Player.Club.JUVENTUS)).thenReturn(Set.of(player));
+		
+		// GIVEN
+		FantaUser manager = new FantaUser("manager@example.com", "securePass");
+		League league = new League(manager, "Serie A", "code");
+		
+		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
+		
+		when(context.getPlayerRepository().getAllInLeague(league)).thenReturn(Set.of(player));
 
-		Set<Player> players = service.getPlayersToGrade(Player.Club.JUVENTUS);
+		// WHEN
+		Set<Player> players = service.getPlayersToGrade(league);
 
+		// THEN
 		assertThat(players).containsExactly(player);
 	}
 }
