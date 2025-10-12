@@ -65,6 +65,7 @@ public class UserService {
 		});
 	}
 
+    //TODO mi sa non serve a niente
 	public Optional<Match> getNextMatch(League league, FantaTeam fantaTeam) {
 		// TODO molto da vedere
 		return transactionManager.fromTransaction((context) -> {
@@ -98,6 +99,7 @@ public class UserService {
 
 	// Proposals
 
+    //TODO league non serve
 	public Set<Proposal> getAllTeamProposals(League league, FantaTeam team) {
 		return transactionManager
 				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));
