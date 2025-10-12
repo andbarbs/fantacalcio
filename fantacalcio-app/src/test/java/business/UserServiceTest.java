@@ -107,7 +107,7 @@ public class UserServiceTest {
 		// League code does not exist yet
 		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.empty());
 
-		adminUserService.createLeague("My League", admin, leagueCode);
+		userService.createLeague("My League", admin, leagueCode);
 
 		// Verify that saveLeague was called
 		verify(leagueRepository, times(1)).saveLeague(any(League.class));
