@@ -50,20 +50,20 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
         Root<Proposal> root = query.from(Proposal.class);
 
         // joining, for query logic
-        Join<Proposal, Contract> offeredJoin = root.join(Proposal_.OFFERED_CONTRACT);
-        Join<Proposal, Contract> requestedJoin = root.join(Proposal_.REQUESTED_CONTRACT);
-        Join<Contract, FantaTeam> offeredTeam = offeredJoin.join(Contract_.TEAM);
-        Join<Contract, FantaTeam> requestedTeam = requestedJoin.join(Contract_.TEAM);
+        Join<Proposal, Contract> offeredJoin = root.join(Proposal_.offeredContract);
+        Join<Proposal, Contract> requestedJoin = root.join(Proposal_.requestedContract);
+        Join<Contract, FantaTeam> offeredTeam = offeredJoin.join(Contract_.team);
+        Join<Contract, FantaTeam> requestedTeam = requestedJoin.join(Contract_.team);
         
         // deep fetching
-        var offeredTeamFetch = root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.TEAM);
-		offeredTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
-		offeredTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.PLAYER);
-        var requestedTeamFetch = root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.TEAM);
-		requestedTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
-		requestedTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.PLAYER);
+        var offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
+		offeredTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
+		offeredTeamFetch.fetch(FantaTeam_.fantaManager);
+        root.fetch(Proposal_.offeredContract).fetch(Contract_.player);
+        var requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
+		requestedTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
+		requestedTeamFetch.fetch(FantaTeam_.fantaManager);
+        root.fetch(Proposal_.requestedContract).fetch(Contract_.player);
 
         query.select(root).where(
             cb.and(
@@ -91,14 +91,14 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
         Root<Proposal> root = criteriaQuery.from(Proposal.class);
         
         // deep fetching
-        var offeredTeamFetch = root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.TEAM);
-		offeredTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
-		offeredTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Proposal_.OFFERED_CONTRACT).fetch(Contract_.PLAYER);
-        var requestedTeamFetch = root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.TEAM);
-		requestedTeamFetch.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
-		requestedTeamFetch.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Proposal_.REQUESTED_CONTRACT).fetch(Contract_.PLAYER);
+        var offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
+		offeredTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
+		offeredTeamFetch.fetch(FantaTeam_.fantaManager);
+        root.fetch(Proposal_.offeredContract).fetch(Contract_.player);
+        var requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
+		requestedTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
+		requestedTeamFetch.fetch(FantaTeam_.fantaManager);
+        root.fetch(Proposal_.requestedContract).fetch(Contract_.player);
 
         criteriaQuery.where(
                 cb.and(

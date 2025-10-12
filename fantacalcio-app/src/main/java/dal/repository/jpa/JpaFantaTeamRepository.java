@@ -31,8 +31,8 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
 		Root<FantaTeam> root = criteriaQuery.from(FantaTeam.class);
 		
 		// deep fetching
-		root.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);        
+		root.fetch(FantaTeam_.fantaManager);
+        root.fetch(FantaTeam_.league).fetch(League_.admin);        
 
 		criteriaQuery.select(root).where(criteriaBuilder.and(
 				criteriaBuilder.equal(root.get(FantaTeam_.league), league)));
@@ -53,8 +53,8 @@ public class JpaFantaTeamRepository extends BaseJpaRepository implements FantaTe
         Root<FantaTeam> root = query.from(FantaTeam.class);
         
         // deep fetching
- 		root.fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);  
+ 		root.fetch(FantaTeam_.fantaManager);
+        root.fetch(FantaTeam_.league).fetch(League_.admin);  
 
         query.select(root).where(
                 cb.equal(root.get(FantaTeam_.league), league),

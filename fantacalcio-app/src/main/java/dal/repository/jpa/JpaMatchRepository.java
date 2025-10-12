@@ -23,13 +23,13 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
         Root<Match> root = query.from(Match.class);
         
         // deep fetching
-        root.fetch(Match_.MATCH_DAY).fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN);
-        root.fetch(Match_.TEAM1).fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Match_.TEAM2).fetch(FantaTeam_.FANTA_MANAGER);
+        root.fetch(Match_.matchDay).fetch(MatchDay_.league).fetch(League_.admin);
+        root.fetch(Match_.team1).fetch(FantaTeam_.fantaManager);
+        root.fetch(Match_.team2).fetch(FantaTeam_.fantaManager);
 
         query.select(root).where(
                 cb.and(
-                    cb.equal(root.get(Match_.MATCH_DAY), matchDay),
+                    cb.equal(root.get(Match_.matchDay), matchDay),
                     cb.or(
                         cb.equal(root.get(Match_.team1), fantaTeam),
                         cb.equal(root.get(Match_.team2), fantaTeam)))
@@ -45,13 +45,14 @@ public class JpaMatchRepository extends BaseJpaRepository implements MatchReposi
         CriteriaQuery<Match> query = cb.createQuery(Match.class);
         Root<Match> root = query.from(Match.class);
         
-        root.fetch(Match_.MATCH_DAY).fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN);
-        root.fetch(Match_.TEAM1).fetch(FantaTeam_.FANTA_MANAGER);
-        root.fetch(Match_.TEAM2).fetch(FantaTeam_.FANTA_MANAGER);
+        // deep fetching
+        root.fetch(Match_.matchDay).fetch(MatchDay_.league).fetch(League_.admin);
+        root.fetch(Match_.team1).fetch(FantaTeam_.fantaManager);
+        root.fetch(Match_.team2).fetch(FantaTeam_.fantaManager);
 
         query.select(root).where(
                 cb.and(
-                    cb.equal(root.get(Match_.MATCH_DAY), matchDay))
+                    cb.equal(root.get(Match_.matchDay), matchDay))
         );
 
         return em.createQuery(query).getResultList();

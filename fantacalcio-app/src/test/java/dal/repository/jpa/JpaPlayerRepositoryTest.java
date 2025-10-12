@@ -82,7 +82,6 @@ class JpaPlayerRepositoryTest {
 			entityManager.clear();
 			
 			// THEN an empty Set is returned
-			// TODO change sig
 			assertThat(players).isEmpty();
 		}
 		
@@ -106,7 +105,7 @@ class JpaPlayerRepositoryTest {
 			entityManager.clear();
 			
 			// THEN all Players are returned
-			assertThat(players).containsExactly(buffon, messi);
+			assertThat(players).containsExactlyInAnyOrder(buffon, messi);
 		}
 	}
 

@@ -13,7 +13,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Fetch;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
 public class JpaContractRepository extends BaseJpaRepository implements ContractRepository {
@@ -29,13 +28,11 @@ public class JpaContractRepository extends BaseJpaRepository implements Contract
         CriteriaQuery<Contract> query = cb.createQuery(Contract.class);
         Root<Contract> root = query.from(Contract.class);
         
-        // Fetch the single-valued 'match' association
-        Fetch<Contract, FantaTeam> teamFetch = root.fetch(Contract_.team);        
-        teamFetch.fetch(FantaTeam_.LEAGUE, JoinType.LEFT);
-        teamFetch.fetch(FantaTeam_.FANTA_MANAGER, JoinType.LEFT);
-        
-        // Fetch the single-valued 'player' association
+        // deep fetching
         root.fetch(Contract_.player);
+        Fetch<Contract, FantaTeam> teamFetch = root.fetch(Contract_.team);        
+        teamFetch.fetch(FantaTeam_.league);
+        teamFetch.fetch(FantaTeam_.fantaManager);
 
         query.select(root).where(
                 cb.equal(root.get(Contract_.team), team),

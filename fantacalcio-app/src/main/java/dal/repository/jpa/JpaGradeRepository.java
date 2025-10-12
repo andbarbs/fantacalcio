@@ -24,10 +24,10 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
         Root<Grade> root = cq.from(Grade.class);
         
         // deep fetching
-        root.fetch(Grade_.PLAYER);
-        root.fetch(Grade_.MATCH_DAY).fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN);
+        root.fetch(Grade_.player);
+        root.fetch(Grade_.matchDay).fetch(MatchDay_.league).fetch(League_.admin);
         
-		cq.select(root).where(cb.equal(root.get(Grade_.MATCH_DAY), matchDay));
+		cq.select(root).where(cb.equal(root.get(Grade_.matchDay), matchDay));
 
         return em.createQuery(cq).getResultList();
 	}

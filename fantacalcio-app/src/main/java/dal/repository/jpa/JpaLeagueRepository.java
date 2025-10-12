@@ -25,7 +25,8 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
 		Root<League> root = criteriaQuery.from(League.class);
-        root.fetch(League_.ADMIN);
+		
+        root.fetch(League_.admin);
 
 		criteriaQuery.where(cb.and(cb.equal(root.get(League_.leagueCode), leagueCode)));
 
@@ -50,7 +51,7 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
         Join<FantaTeam, League> leagueJoin = teamRoot.join(FantaTeam_.league);
 
         // deep fetching
-        leagueJoin.fetch(League_.ADMIN);
+        leagueJoin.fetch(League_.admin);
 
         cq.select(leagueJoin)
                 .distinct(true)
@@ -66,8 +67,8 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    Root<FantaTeam> root = query.from(FantaTeam.class);
 	    
 	    // deep fetching
-	    root.fetch(FantaTeam_.FANTA_MANAGER);
-	    root.fetch(FantaTeam_.LEAGUE).fetch(League_.ADMIN);
+	    root.fetch(FantaTeam_.fantaManager);
+	    root.fetch(FantaTeam_.league).fetch(League_.admin);
 
 	    query.select(root).where(cb.equal(root.get(FantaTeam_.league), league));
 

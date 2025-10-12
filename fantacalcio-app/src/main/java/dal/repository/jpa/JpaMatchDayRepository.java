@@ -25,13 +25,13 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
+        Root<MatchDay> root = cq.from(MatchDay.class);
 
-        Root<MatchDay> matchDay = cq.from(MatchDay.class);
-        matchDay.fetch(MatchDay_.league).fetch(League_.ADMIN, JoinType.LEFT);
+        root.fetch(MatchDay_.league).fetch(League_.admin, JoinType.LEFT);
 
-        cq.select(matchDay)
-                .where(cb.equal(matchDay.get(MatchDay_.LEAGUE), league))
-                .orderBy(cb.asc(matchDay.get(MatchDay_.NUMBER)));
+        cq.select(root)
+                .where(cb.equal(root.get(MatchDay_.league), league))
+                .orderBy(cb.asc(root.get(MatchDay_.number)));
 
         return em.createQuery(cq).getResultList();
 	}
@@ -40,9 +40,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	public Optional<MatchDay> getLatestEndedMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
-
         Root<MatchDay> root = cq.from(MatchDay.class);
-        root.fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN, JoinType.LEFT);
+
+        root.fetch(MatchDay_.league).fetch(League_.admin);
 
         cq.select(root)
                 .where(
@@ -65,9 +65,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	public Optional<MatchDay> getEarliestUpcomingMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
-
         Root<MatchDay> root = cq.from(MatchDay.class);
-        root.fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN, JoinType.LEFT);
+
+        root.fetch(MatchDay_.league).fetch(League_.admin);
 
         cq.select(root)
                 .where(
@@ -90,9 +90,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 	public Optional<MatchDay> getOngoingMatchDay(League league) {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<MatchDay> cq = cb.createQuery(MatchDay.class);
-
         Root<MatchDay> root = cq.from(MatchDay.class);
-        root.fetch(MatchDay_.LEAGUE).fetch(League_.ADMIN, JoinType.LEFT);
+
+        root.fetch(MatchDay_.league).fetch(League_.admin);
 
         cq.select(root)
                 .where(
