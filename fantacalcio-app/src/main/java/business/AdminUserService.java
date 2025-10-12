@@ -19,21 +19,6 @@ public class AdminUserService extends UserService {
 		super(transactionManager);
 	}
 
-    //TODO ritesta da Spostare nell'UserService
-	public void createLeague(String leagueName, FantaUser admin, String leagueCode) {
-		transactionManager.inTransaction((context) -> {
-			if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
-				League league = new League(admin, leagueName, leagueCode);
-				context.getLeagueRepository().saveLeague(league);
-                for(int i = 1; i < 21; i++){
-                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ i, i, MatchDay.Status.FUTURE, league));
-                }
-			} else {
-				throw new IllegalArgumentException("A league with the same league code already exists");
-			}
-		});
-	}
-
 	public void setPlayerToTeam(FantaTeam team, Player player) {
 		transactionManager.inTransaction((context) -> {
 

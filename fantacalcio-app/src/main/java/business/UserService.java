@@ -16,7 +16,19 @@ public class UserService {
 	}
 
 	// League
-	
+    public void createLeague(String leagueName, FantaUser admin, String leagueCode) {
+        transactionManager.inTransaction((context) -> {
+            if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
+                League league = new League(admin, leagueName, leagueCode);
+                context.getLeagueRepository().saveLeague(league);
+                for(int i = 1; i < 21; i++){
+                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ i, i, MatchDay.Status.FUTURE, league));
+                }
+            } else {
+                throw new IllegalArgumentException("A league with the same league code already exists");
+            }
+        });
+    }
 	
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
