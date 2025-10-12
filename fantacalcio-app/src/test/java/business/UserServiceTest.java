@@ -1,5 +1,6 @@
 package business;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.*;
@@ -95,6 +96,35 @@ public class UserServiceTest {
 		});
 
 		userService = new UserService(transactionManager);
+	}
+	
+
+	@Test
+	void testCreateLeague() {
+		FantaUser admin = new FantaUser("admin@test.com", "pwd");
+		String leagueCode = "L001";
+
+		// League code does not exist yet
+		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.empty());
+
+		adminUserService.createLeague("My League", admin, leagueCode);
+
+		// Verify that saveLeague was called
+		verify(leagueRepository, times(1)).saveLeague(any(League.class));
+        //TODO controlla che vengano generati i matchday correttamente
+	}
+
+	@Test
+	void testCreateLeague_LeagueCodeExists() {
+		FantaUser admin = new FantaUser("admin@test.com", "pwd");
+		String leagueCode = "L001";
+
+		League existingLeague = new League(admin, "Existing League", leagueCode);
+		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
+
+		assertThatThrownBy(() -> adminUserService.createLeague("New League", admin, leagueCode))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("A league with the same league code already exists");
 	}
 
     //TODO ricontrolla tutta la logica che mi convince poco
@@ -433,7 +463,7 @@ public class UserServiceTest {
 		when(context.getMatchDayRepository().getLatestEndedMatchDay(league))
 				.thenReturn(Optional.of(mock(MatchDay.class)));
 		when(context.getMatchRepository().getMatchBy(any(), eq(team))).thenReturn(Optional.of(previousMatch));
-		when(context.getResultsRepository().getResult(previousMatch)).thenReturn(Optional.empty());
+		when(context.getResultsRepository().getResultFor(previousMatch)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> spyService.saveLineUp(lineUp)).isInstanceOf(UnsupportedOperationException.class)
 				.hasMessageContaining("The grades for the previous match were not calculated");
@@ -566,7 +596,7 @@ public class UserServiceTest {
 
 		when(context.getMatchDayRepository().getLatestEndedMatchDay(any())).thenReturn(Optional.of(prev));
 		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
-		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
+		when(resultRepository.getResultFor(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
 		when(context.getMatchDayRepository().getEarliestUpcomingMatchDay(any())).thenReturn(Optional.of(next));
 		when(context.getMatchRepository().getMatchBy(next, team)).thenReturn(Optional.of(nextMatch));
 
@@ -584,7 +614,7 @@ public class UserServiceTest {
 		when(context.getMatchDayRepository().getLatestEndedMatchDay(league)).thenReturn(Optional.of(prev));
 		Match prevMatch = new Match(prev, team, team);
 		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
-		when(resultRepository.getResult(prevMatch)).thenReturn(Optional.empty());
+		when(resultRepository.getResultFor(prevMatch)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining("results for the previous match have not been calculated yet");
@@ -649,7 +679,7 @@ public class UserServiceTest {
 	void testGetResultByMatch() {
 		Match match = new Match(null, null, null);
 		Result res = new Result(0, 0, 0, 0, match);
-		when(resultRepository.getResult(match)).thenReturn(Optional.of(res));
+		when(resultRepository.getResultFor(match)).thenReturn(Optional.of(res));
 
 		Optional<Result> result = userService.getResultByMatch(match);
 		assertThat(result).contains(res);
@@ -913,7 +943,7 @@ public class UserServiceTest {
 		Match match = new Match(matchDay, null, null);
 		Grade grade = new Grade(null, null, 0);
 
-		when(context.getGradeRepository().getAllMatchGrades(matchDay)).thenReturn(List.of(grade));
+		when(context.getGradeRepository().getAllGrades(matchDay)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match);
 		assertThat(result).containsExactly(grade);
 	}

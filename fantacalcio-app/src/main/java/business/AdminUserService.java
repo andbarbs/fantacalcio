@@ -199,65 +199,65 @@ public class AdminUserService extends UserService {
 		return matches;
 	}
 
-	public void calculateGrades(FantaUser user, League league) {
-		// check if the user is the admin of the league
-		if (!(league.getAdmin().equals(user)))
-			throw new IllegalArgumentException("You are not the admin of the league");
+	public void calculateResults(League league) {
+		// TODO rimuovere le stampe!!
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
-			if (previousMatchDay.isEmpty()) {
+			context.getMatchDayRepository().getLatestEndedMatchDay(league).ifPresentOrElse(latestEnded -> {
+				
+	            if(allMatchesHaveResult(latestEnded, context)){
+	                throw new RuntimeException("The results have already been calculated");
+	            }
+
+				List<Match> allMatches = context.getMatchRepository().getAllMatchesIn(latestEnded);
+	            List<Grade> allGrades = context.getGradeRepository().getAllGrades(latestEnded);
+	            
+				for (Match match : allMatches) {
+					
+					System.out.println("Considering match: " + match.getMatchDay().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
+					
+					List<Grade> allMatchGrades = findGradesForMatch(match, allGrades);
+					Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
+							match.getTeam1());
+					Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
+							match.getTeam2());
+					Map<Player, Grade> gradesByPlayer = allMatchGrades.stream()
+							.collect(Collectors.toMap(Grade::getPlayer, g -> g));
+					double resultTeam1 = 0;
+					double resultTeam2 = 0;
+					
+					System.out.println("Check if lineups exist");
+					if (lineUp1.isPresent()) {
+						
+						System.out.println("lineUp1 OK");
+						resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
+						
+					}
+					if (lineUp2.isPresent()) {
+						
+						System.out.println("lineUp2 OK");
+						resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
+						
+					}
+					int goalTeam1 = goals(resultTeam1);
+					int goalTeam2 = goals(resultTeam2);
+					if (goalTeam1 > goalTeam2) {
+						match.getTeam1().setPoints(match.getTeam1().getPoints() + 3);
+					} else if (goalTeam1 < goalTeam2) {
+						match.getTeam2().setPoints(match.getTeam2().getPoints() + 3);
+					} else if (goalTeam1 == goalTeam2) {
+						match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
+						match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
+					}
+					
+					System.out.println("Result saved with: " + resultTeam1 + ", " + resultTeam2);
+					context.getResultsRepository()
+							.saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
+				}
+			}, () -> {
 				throw new RuntimeException("The season hasn't started yet");
-			}
-            if(allMatchesHaveResult(previousMatchDay.get(), context)){
-                throw new RuntimeException("The results have already been calculated");
-            }
-
-
-			List<Match> allMatches = context.getMatchRepository().getAllMatchesIn(previousMatchDay.get());
-            List<Grade> allGrades = context.getGradeRepository().getAllMatchGrades(previousMatchDay.get());
-			for (Match match : allMatches) {
-				
-				System.out.println("Considering match: " + match.getMatchDaySerieA().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
-				
-				List<Grade> allMatchGrades = findGradesForMatch(match, allGrades);
-				Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
-						match.getTeam1());
-				Optional<LineUp> lineUp2 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
-						match.getTeam2());
-				Map<Player, Grade> gradesByPlayer = allMatchGrades.stream()
-						.collect(Collectors.toMap(Grade::getPlayer, g -> g));
-				double resultTeam1 = 0;
-				double resultTeam2 = 0;
-				
-				System.out.println("Check if lineups exist");
-				if (lineUp1.isPresent()) {
-					
-					System.out.println("lineUp1 OK");
-					resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
-					
-				}
-				if (lineUp2.isPresent()) {
-					
-					System.out.println("lineUp2 OK");
-					resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
-					
-				}
-				int goalTeam1 = goals(resultTeam1);
-				int goalTeam2 = goals(resultTeam2);
-				if (goalTeam1 > goalTeam2) {
-					match.getTeam1().setPoints(match.getTeam1().getPoints() + 3);
-				} else if (goalTeam1 < goalTeam2) {
-					match.getTeam2().setPoints(match.getTeam2().getPoints() + 3);
-				} else if (goalTeam1 == goalTeam2) {
-					match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
-					match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
-				}
-				
-				System.out.println("Result saved with: " + resultTeam1 + ", " + resultTeam2);
-				context.getResultsRepository()
-						.saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
-			}
+			});
+			
 		});
 	}
 
@@ -267,7 +267,7 @@ public class AdminUserService extends UserService {
 
         // controlla che per ogni match ci sia un result
         return matches.stream()
-                .allMatch(match -> context.getResultsRepository().getResult(match).isPresent());
+                .allMatch(match -> context.getResultsRepository().getResultFor(match).isPresent());
     }
 
     private List<Grade> findGradesForMatch(Match match, List<Grade> allGrades) {
@@ -337,35 +337,33 @@ public class AdminUserService extends UserService {
 		return 1 + (int) Math.floor((points - 66.0) / 6.0);
 	}
 
-    //TODO testa
-    public void startMatchDay(League league) {
-        transactionManager.inTransaction((context)->{
-            Optional<MatchDay> matchDayToPlay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(league);
-            if (matchDayToPlay.isPresent()) {
-                Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
-                if(previousMatchDay.isPresent()) {
-                    if(!allMatchesHaveResult(previousMatchDay.get(), context)) {
-                        throw new RuntimeException("You have to calculate the results before advancing the game state");
-                    }
-                }
-                matchDayToPlay.get().setStatus(MatchDay.Status.PRESENT);
-            } else{
-                throw new RuntimeException("The are no more matchdays to play");
-            }
-        });
-    }
+	public void startMatchDay(League league) {
+		transactionManager.inTransaction((context) -> {
+			context.getMatchDayRepository().getEarliestUpcomingMatchDay(league).ifPresentOrElse(earliestUpcoming -> {
+				context.getMatchDayRepository().getLatestEndedMatchDay(league).ifPresent(latestEnded -> {
 
-    //TODO testa
-    public void endMatchDay(League league) {
-        transactionManager.inTransaction((context)->{
-            Optional<MatchDay> matchDayToEnd = context.getMatchDayRepository().getOngoingMatchDay(league);
-            if (matchDayToEnd.isPresent()) {
-                matchDayToEnd.get().setStatus(MatchDay.Status.PAST);
-            }else {
-                throw new RuntimeException("The is no matchDay to end");
-            }
-        });
-    }
+					if (!allMatchesHaveResult(latestEnded, context)) {
+						throw new IllegalArgumentException("You have to calculate the results before advancing the game state");
+					}
+				});
+				earliestUpcoming.setStatus(MatchDay.Status.PRESENT);
+				context.getMatchDayRepository().updateMatchDay(earliestUpcoming);
+			}, () -> {
+				throw new IllegalArgumentException("The are no more MatchDays to play");
+			});
+		});
+	}
+
+	public void endMatchDay(League league) {
+		transactionManager.inTransaction((context) -> {
+			context.getMatchDayRepository().getOngoingMatchDay(league).ifPresentOrElse(matchDayToEnd -> {
+				matchDayToEnd.setStatus(MatchDay.Status.PAST);
+				context.getMatchDayRepository().updateMatchDay(matchDayToEnd);
+			}, () -> {
+				throw new IllegalArgumentException("The is no MatchDay to end");				
+			});
+		});
+	}
 
 
 }

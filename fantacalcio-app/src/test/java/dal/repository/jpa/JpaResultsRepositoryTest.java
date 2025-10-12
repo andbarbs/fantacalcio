@@ -128,7 +128,7 @@ class JpaResultsRepositoryTest {
 			
 			// WHEN the SUT is used to retrieve Results for a given Match
 			entityManager.getTransaction().begin();
-			Optional<Result> retrieved = resultsRepository.getResult(match);
+			Optional<Result> retrieved = resultsRepository.getResultFor(match);
 			entityManager.getTransaction().commit();
 			entityManager.clear();
 			
@@ -152,7 +152,7 @@ class JpaResultsRepositoryTest {
 			
 			// WHEN the SUT is used to retrieve a non-exixtent Result
 			entityManager.getTransaction().begin();
-			Optional<Result> retrieved = resultsRepository.getResult(match2);
+			Optional<Result> retrieved = resultsRepository.getResultFor(match2);
 			entityManager.getTransaction().commit();
 			entityManager.clear();
 			

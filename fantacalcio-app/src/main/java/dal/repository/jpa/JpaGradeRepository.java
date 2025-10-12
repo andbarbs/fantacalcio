@@ -17,7 +17,7 @@ public class JpaGradeRepository extends BaseJpaRepository implements GradeReposi
 	}
 
 	@Override
-	public List<Grade> getAllMatchGrades(MatchDay matchDay) {
+	public List<Grade> getAllGrades(MatchDay matchDay) {
 		EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Grade> cq = cb.createQuery(Grade.class);

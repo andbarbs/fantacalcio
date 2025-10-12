@@ -7,7 +7,7 @@ import domain.MatchDay;
 
 public interface GradeRepository {
 
-	List<Grade> getAllMatchGrades(MatchDay matchDay);
+	List<Grade> getAllGrades(MatchDay matchDay);
 	
 	void saveGrade(Grade grade);
 

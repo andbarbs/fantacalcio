@@ -18,7 +18,7 @@ public class JpaResultsRepository extends BaseJpaRepository implements ResultsRe
 	}
 
 	@Override
-	public Optional<Result> getResult(Match match) {
+	public Optional<Result> getResultFor(Match match) {
     	EntityManager em = getEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Result> query = cb.createQuery(Result.class);

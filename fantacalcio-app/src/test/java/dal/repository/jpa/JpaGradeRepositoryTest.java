@@ -98,7 +98,7 @@ class JpaGradeRepositoryTest {
 			
 			// WHEN the SUT is used to retrieve Grades for that MatchDay
 			entityManager.getTransaction().begin();
-			List<Grade> retrieved = gradeRepository.getAllMatchGrades(gradeless);
+			List<Grade> retrieved = gradeRepository.getAllGrades(gradeless);
 			entityManager.getTransaction().commit();
 			entityManager.clear();
 			
@@ -128,7 +128,7 @@ class JpaGradeRepositoryTest {
 			
 			// WHEN the SUT is used to retrieve Grades for that MatchDay
 			entityManager.getTransaction().begin();
-			List<Grade> retrieved = gradeRepository.getAllMatchGrades(matchDay);
+			List<Grade> retrieved = gradeRepository.getAllGrades(matchDay);
 			entityManager.getTransaction().commit();
 			entityManager.clear();
 			

@@ -18,4 +18,6 @@ public interface MatchDayRepository {
 
 	void saveMatchDay(MatchDay matchDay);
 
+	void updateMatchDay(MatchDay detached);
+
 }

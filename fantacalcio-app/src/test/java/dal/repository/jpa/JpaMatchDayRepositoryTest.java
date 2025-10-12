@@ -329,7 +329,6 @@ class JpaMatchDayRepositoryTest {
 	void testSaveMatchDay() {
 
 		// GIVEN a MatchDay instance exists
-
 		MatchDay matchDay = new MatchDay("MD1", 1, MatchDay.Status.FUTURE, league);
 
 		// WHEN the SUT is used to persist that MatchDay to the database
@@ -339,6 +338,30 @@ class JpaMatchDayRepositoryTest {
         entityManager.clear();
 
         // THEN the MatchDay is present in the database
+		assertThat(sessionFactory.fromTransaction(
+				(Session em) -> em.createQuery("FROM MatchDay md "
+						+ "JOIN FETCH md.league l JOIN FETCH l.admin", MatchDay.class).getResultStream().toList()))
+				.containsExactly(matchDay);
+	}
+	
+	@Test
+	@DisplayName("can update a MatchDay instance in the database")
+	void testUpdateMatchDay() {
+
+		// GIVEN a MatchDay instance is manually persisted to the database
+		MatchDay matchDay = new MatchDay("MD1", 1, MatchDay.Status.FUTURE, league);
+		sessionFactory.inTransaction(em -> em.persist(matchDay));
+		
+		// AND that MatchDay is mutated
+		matchDay.setStatus(MatchDay.Status.PRESENT);
+
+		// WHEN the SUT is used to update the MatchDay in the database
+        entityManager.getTransaction().begin();
+		matchDayRepository.updateMatchDay(matchDay);
+		entityManager.getTransaction().commit();
+        entityManager.clear();
+
+        // THEN the MatchDay is updated in the database
 		assertThat(sessionFactory.fromTransaction(
 				(Session em) -> em.createQuery("FROM MatchDay md "
 						+ "JOIN FETCH md.league l JOIN FETCH l.admin", MatchDay.class).getResultStream().toList()))

@@ -37,7 +37,7 @@ public class Match {
         return team2;
     }
     
-    public MatchDay getMatchDaySerieA() {
+    public MatchDay getMatchDay() {
 		return matchDay;
 	}
 

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class MatchDay {
-    public static final int matchDaysInLeague = 20;
+    public static final int MATCH_DAYS_IN_LEAGUE = 20;
     public enum Status {PAST, PRESENT, FUTURE}
 
 	@Id
@@ -29,7 +29,7 @@ public class MatchDay {
 	}
 
 	public MatchDay(String name, int number, Status status, League league) {
-        if(number < 0 || number > matchDaysInLeague)
+        if(number < 0 || number > MATCH_DAYS_IN_LEAGUE)
             throw new IllegalArgumentException("number out of range");
 		this.name = name;
 		this.number = number;

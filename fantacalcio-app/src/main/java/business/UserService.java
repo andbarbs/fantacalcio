@@ -16,6 +16,8 @@ public class UserService {
 	}
 
 	// League
+	
+	
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
 		transactionManager.inTransaction((context) -> {
@@ -73,7 +75,7 @@ public class UserService {
 			if (previousMatchDay.isPresent()) {
 				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(),
 						fantaTeam);
-				Optional<Result> result = context.getResultsRepository().getResult(previousMatch.get());
+				Optional<Result> result = context.getResultsRepository().getResultFor(previousMatch.get());
 				if (result.isEmpty()) {
 					throw new RuntimeException("The results for the previous match have not been calculated yet");
 				}
@@ -195,13 +197,13 @@ public class UserService {
 
 	public List<Grade> getAllMatchGrades(Match match) {
 		return transactionManager
-				.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match.getMatchDaySerieA()));
+				.fromTransaction((context) -> context.getGradeRepository().getAllGrades(match.getMatchDay()));
 	}
 
 	// Results
 
 	public Optional<Result> getResultByMatch(Match match) {
-		return transactionManager.fromTransaction((context) -> context.getResultsRepository().getResult(match));
+		return transactionManager.fromTransaction((context) -> context.getResultsRepository().getResultFor(match));
 
 	}
 
@@ -214,26 +216,26 @@ public class UserService {
 		transactionManager.inTransaction((context) -> {
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
-            if(match.getMatchDaySerieA().getStatus() == MatchDay.Status.PAST ||
-                    match.getMatchDaySerieA().getStatus() == MatchDay.Status.PRESENT){
+            if(match.getMatchDay().getStatus() == MatchDay.Status.PAST ||
+                    match.getMatchDay().getStatus() == MatchDay.Status.PRESENT){
                 throw new UnsupportedOperationException("Can't modify the lineup after the match is over or is being played");
             }
             Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(lineUp.getTeam().getLeague());
             if (nextMatchDay.isEmpty()) {
                 throw new RuntimeException("The league ended");
             }
-            if(!nextMatchDay.get().equals(match.getMatchDaySerieA())) {
+            if(!nextMatchDay.get().equals(match.getMatchDay())) {
                 throw new RuntimeException("The matchDay of the lineUp is incorrect");
             }
 
 			FantaTeam team = lineUp.getTeam();
 
 			// Check if is legal to save the lineUP
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(match.getMatchDaySerieA().getLeague());
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(match.getMatchDay().getLeague());
 			if (previousMatchDay.isPresent()) {
 				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(), 
 						team);
-				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch.get());
+				Optional<Result> previousMatchResult = context.getResultsRepository().getResultFor(previousMatch.get());
 
 				if (previousMatchResult.isEmpty()) {
 					throw new UnsupportedOperationException("The grades for the previous match were not calculated");

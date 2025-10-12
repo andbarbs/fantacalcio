@@ -187,7 +187,7 @@ class UserServiceIntegrationIT {
 		assertThat(result.get(day1).size()).isEqualTo(1);
 		Match resultMatch = result.get(day1).get(0);
 
-		assertThat(resultMatch.getMatchDaySerieA().getName()).isEqualTo("MD1");
+		assertThat(resultMatch.getMatchDay().getName()).isEqualTo("MD1");
 	}
 
 	@Test
@@ -313,7 +313,7 @@ class UserServiceIntegrationIT {
 		entityManager.getTransaction().commit();
 
 		Optional<Match> result = userService.getNextMatch(league, team);
-		assertThat(result.get().getMatchDaySerieA().getName()).isEqualTo("MD2");
+		assertThat(result.get().getMatchDay().getName()).isEqualTo("MD2");
 	}
 
 	@Test

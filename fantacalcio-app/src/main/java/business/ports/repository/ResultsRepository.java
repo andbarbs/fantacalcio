@@ -7,7 +7,7 @@ import domain.Result;
 
 public interface ResultsRepository {
 	
-	Optional<Result> getResult(Match match);
+	Optional<Result> getResultFor(Match match);
 
 	void saveResult(Result result);
 

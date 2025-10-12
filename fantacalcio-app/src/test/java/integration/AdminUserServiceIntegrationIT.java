@@ -190,7 +190,7 @@ class AdminUserServiceIntegrationIT {
 		for (MatchDay matchDay : matchDays) {
 			Optional<Match> match = matchRepository.getMatchBy(matchDay, team1);
 
-			assertThat(match.get().getMatchDaySerieA()).isEqualTo(matchDay);
+			assertThat(match.get().getMatchDay()).isEqualTo(matchDay);
 			assertThat(match.get().getTeam1().equals(team1) || match.get().getTeam2().equals(team1)).isTrue();
 		}
 	}
@@ -327,9 +327,9 @@ class AdminUserServiceIntegrationIT {
 
 		};
 
-		service.calculateGrades(admin, league);
+		service.calculateResults(league);
 
-		List<Grade> allMatchGrades = gradeRepository.getAllMatchGrades(dayToCalc);
+		List<Grade> allMatchGrades = gradeRepository.getAllGrades(dayToCalc);
 		assertThat(allMatchGrades.size()).isEqualTo(2);
 		assertThat(allMatchGrades.get(0)).isEqualTo(grade1);
 		assertThat(allMatchGrades.get(1)).isEqualTo(grade2);

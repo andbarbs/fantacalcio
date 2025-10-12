@@ -143,7 +143,7 @@ public class NewsPaperServiceIntegrationIT {
 		assertThat(players).anyMatch(t -> t.getName() == "player" && t.getSurname() == "2");
 
 		newspaperservice.save(Set.of(grade, grade2));
-		assertThat(gradeRepository.getAllMatchGrades(matchDay));
+		assertThat(gradeRepository.getAllGrades(matchDay));
 	}
 
 }

@@ -115,4 +115,9 @@ public class JpaMatchDayRepository extends BaseJpaRepository implements MatchDay
 		getEntityManager().persist(matchDay);
 	}
 
+	@Override
+	public void updateMatchDay(MatchDay detached) {
+		getEntityManager().merge(detached);
+	}
+
 }
