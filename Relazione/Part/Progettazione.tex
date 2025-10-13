@@ -2,18 +2,77 @@
 \todo{Aggiungere UML, UseCases diagram e template, MockUps, Navigation Diagram ed ER? meglio dire come gestiamo il database in memoria e jpa/hibernate}
 \todo[color=blue]{Andre scrivi il paragrafo 3 sul database ovvero parla di hibernate,transaction manager e come hai annotato le clsse e del
     database in memoria}
-La scelta di usare JPA nella modellazione del dominio ci è sembrata particolarmente vantaggiosa
-dal momento che la nostra applicazione non doveva interfacciarsi con un database esistente autonomamente,
-ovvero l'app e lo schema del database sarebbero stati sviluppati insieme. 
-Le annotazioni JPA nelle classi di dominio
-sono servite quindi non soltanto come specifica per l'object-relational mapping, ma grazie alla property
-di bootstrap \texttt{hibernate.hbm2ddl.auto = create-drop}, anche per definire univocamente lo schema del database.
-In questo modo 
+
+vantaggi nell'uso di JPA:
 \begin{itemize}
-    \item non si pongono problemi di allineamento fra schema db e ORM, in quanto il primo
-        è automaticamente desunto dal secondo
-    \item la modellazione del dominio può essere rivista e modificata a piacere, incoraggiando
-        la ricerca di soluzioni efficaci anche quando scomode da mappare manualmente
+    \item Possesso della persistenza nel codice
+          Come è noto, le annotazioni JPA definiscono lo schema logico della persistence unit
+          assunto dall'applicazione, nel contesto più generale in cui la persistence unit ha
+          esistenza autonoma ed è condivisa con una pluralità di attori.
+          Di conseguenza, non è richiesto che tali assunzioni rispecchino le reali proprietà
+          della persistence unit, ma soltanto che siano covarianti rispetto ad esse:
+          ad esempio, contemplando un sottoinsieme delle tabelle o l'esistenza di vincoli più stringenti.
+
+          Nel nostro caso tuttavia la persistence unit non era preesistente e autonoma
+          rispetto all'applicazione, anzi avremmo dovuto progettarla insieme all'applicazione stessa:
+          in questo contesto, utilizzare JPA ci è sembrato particolarmente utile in quanto ci consentiva,
+          attraverso opzioni di bootstrap vendor-specific - per Hibernate, la bootstrap property
+          \texttt{hibernate.hbm2ddl.auto = create-drop} - di imporre al database esattamente
+          lo schema fisico determinato dalle annotazioni JPA.
+
+          Questo però non garantiva pienamente l'inversione della dipendenza, in quanto
+          restavano dipendenti dallo schema fisico alcune porzioni critiche di codice: ad esempio,
+          le annotazioni @UniqueConstraint() che definisce vincoli di unicità, @MappedBy() che stabilisce
+          la owning side di un attributo collettivo, e soprattutto la logica di query.
+          Per garantire la code ownership ci siamo serviti di un ulteriore strumento JPA,
+          il JPA Metamodel Generator: un annotation processor che produce automaticamente
+          in fase di compilazione classi contenenti i dettagli fisici delle tabelle desunte
+          dalle annotazioni.
+
+          In questo modo, abbiamo finalmente raggiunto l'obettivo della dependency inversion
+          fra codice e persistenza: non è la persistenza ad obbligare il codice a conformarsi
+          ad essa, ma il codice che possiede la specifica delle proprietà della persistenza.
+
+          Questa inversione porta:
+          \begin{itemize}
+              \item lo schema fisico non è minimamente di intralcio all'evoluzione della
+                    modellazione del dominio, in quanto è interamente desunto da questa in
+                    fase di esecuzione
+              \item la modellazione del dominio può essere quindi rivista e modificata con la
+                    velocità di evoluzone di un tipo Java, incoraggiando quindi la ricerca di
+                    soluzioni efficaci per il gli attori del sistema
+          \end{itemize}
+    \item Object-relational mapping
+          JPA ci ha permesso di non dover gestire il flusso di informazione dalla JVM al database e viceversa,
+          che altrimenti andrebbe implementato manualmente in JDBC. Sono sufficienti le mapping annotations
+          e le convenzioni.
+    \item Transazionalità
+          Un ulteriore vantaggio derivato dall'uso di JPA è la possibilità di rendere una unit of work
+          transazionale
+\end{itemize}
+
+
+Aspetti notevoli dell'uso di JPA
+Principi di gestione della persistenza:
+\begin{itemize}
+    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
+    \item transazioni(?)
+    \item qualità delle astrazioni: entità applicative vs entità relazionali (cascading)
+    \item informazione di tipo: inheritance vs type mapping
+    \item lazy fetching nelle entità vs deep fetching nel DAL
+    \item criteria queries
+          l'utilizzo della Criteria Queries API congiuntamente al metamodello Jpa consente di
+          formulare queries type-safe e corrette rispetto allo schema fisico. L'obiettivo è
+          rimuovere tutte le circostanze di errore che possono essere individuate prima dell'esecuzione.
+\end{itemize}
+
+Principi di design della GUI:
+\begin{itemize}
+    \item MVP
+    \item MVP, modularità e Dependency Injection (disegno)
+    \item private vs public design-time logic
+    \item instantiation vs configuration
+    \item limiti di AssertJSwing, limiti di WB
 \end{itemize}
 
 
