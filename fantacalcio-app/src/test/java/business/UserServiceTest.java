@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import domain.scheme.Scheme433;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ import domain.Player.Defender;
 import domain.Player.Forward;
 import domain.Player.Goalkeeper;
 import domain.Player.Midfielder;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -110,8 +112,18 @@ public class UserServiceTest {
 		userService.createLeague("My League", admin, leagueCode);
 
 		// Verify that saveLeague was called
-		verify(leagueRepository, times(1)).saveLeague(any(League.class));
-        //TODO controlla che vengano generati i matchday correttamente
+        League myLeague = new League(admin, "My League", leagueCode);
+        verify(leagueRepository, times(1)).saveLeague(myLeague);
+        ArgumentCaptor<MatchDay> captor = ArgumentCaptor.forClass(MatchDay.class);
+        verify(matchDayRepository, times(MatchDay.MATCH_DAYS_IN_LEAGUE)).saveMatchDay(captor.capture());
+        List<MatchDay> allValues = captor.getAllValues();
+        allValues.forEach(matchDay -> {
+            assertThat(matchDay.getLeague()).isEqualTo(myLeague);
+            assertThat(matchDay.getStatus()).isEqualTo(MatchDay.Status.FUTURE);
+        });
+        assertThat(allValues.stream().map(MatchDay::getNumber).toList()).containsExactlyInAnyOrderElementsOf(IntStream.range(1, MatchDay.MATCH_DAYS_IN_LEAGUE+1).boxed().toList());
+        assertThat(allValues.stream().map(MatchDay::getName).toList()).containsExactlyInAnyOrderElementsOf(IntStream.range(1, MatchDay.MATCH_DAYS_IN_LEAGUE+1).mapToObj(value ->
+                "MatchDay " + value).toList());
 	}
 
 	@Test
@@ -122,7 +134,7 @@ public class UserServiceTest {
 		League existingLeague = new League(admin, "Existing League", leagueCode);
 		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
 
-		assertThatThrownBy(() -> adminUserService.createLeague("New League", admin, leagueCode))
+		assertThatThrownBy(() -> userService.createLeague("New League", admin, leagueCode))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("A league with the same league code already exists");
 	}
@@ -137,7 +149,6 @@ public class UserServiceTest {
 		when(leagueRepository.getLeaguesByMember(user)).thenReturn(Set.of());
 
 		userService.joinLeague(team, league);
-
 		verify(teamRepository, times(1)).saveTeam(team);
 	}
 
@@ -582,55 +593,6 @@ public class UserServiceTest {
 
 		Map<MatchDay, List<Match>> result = userService.getAllMatches(league);
 		assertThat(result.get(day1)).containsExactly(m1);
-	}
-
-	@Test
-	void testGetNextMatch() {
-        FantaUser user = new FantaUser("user@test.com", "pwd");
-        League league = new League(user, "Test League", "L005");
-		FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
-		MatchDay prev = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
-		MatchDay next = new MatchDay("2 giornata", 2, MatchDay.Status.FUTURE, league);
-		Match prevMatch = new Match(next, team, team);
-		Match nextMatch = new Match(next, team, team);
-
-		when(context.getMatchDayRepository().getLatestEndedMatchDay(any())).thenReturn(Optional.of(prev));
-		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
-		when(resultRepository.getResultFor(prevMatch)).thenReturn(Optional.of(mock(Result.class)));
-		when(context.getMatchDayRepository().getEarliestUpcomingMatchDay(any())).thenReturn(Optional.of(next));
-		when(context.getMatchRepository().getMatchBy(next, team)).thenReturn(Optional.of(nextMatch));
-
-		Optional<Match> result = userService.getNextMatch(league, team);
-		assertThat(result).hasValue(nextMatch);
-	}
-
-	@Test
-	void testGetNextMatch_PreviousResultMissing() {
-        FantaUser user = new FantaUser("user@test.com", "pwd");
-        League league = new League(user, "Test League", "L005");
-        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
-        MatchDay prev = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
-
-		when(context.getMatchDayRepository().getLatestEndedMatchDay(league)).thenReturn(Optional.of(prev));
-		Match prevMatch = new Match(prev, team, team);
-		when(context.getMatchRepository().getMatchBy(prev, team)).thenReturn(Optional.of(prevMatch));
-		when(resultRepository.getResultFor(prevMatch)).thenReturn(Optional.empty());
-
-		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("results for the previous match have not been calculated yet");
-	}
-
-	@Test
-	void testGetNextMatch_LeagueEnded() {
-        FantaUser user = new FantaUser("user@test.com", "pwd");
-        League league = new League(user, "Test League", "L005");
-        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, new HashSet<>());
-
-		when(context.getMatchDayRepository().getLatestEndedMatchDay(league)).thenReturn(Optional.empty());
-		when(context.getMatchDayRepository().getEarliestUpcomingMatchDay(league)).thenReturn(Optional.empty());
-
-		assertThatThrownBy(() -> userService.getNextMatch(league, team)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The league ended");
 	}
 
 	@Test

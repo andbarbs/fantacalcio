@@ -21,8 +21,8 @@ public class UserService {
             if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
                 League league = new League(admin, leagueName, leagueCode);
                 context.getLeagueRepository().saveLeague(league);
-                for(int i = 1; i < 21; i++){
-                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ i, i, MatchDay.Status.FUTURE, league));
+                for(int i = 0; i < MatchDay.MATCH_DAYS_IN_LEAGUE; i++){
+                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ (i+1), (i+1), MatchDay.Status.FUTURE, league));
                 }
             } else {
                 throw new IllegalArgumentException("A league with the same league code already exists");
@@ -76,28 +76,6 @@ public class UserService {
 
 			return map;
 
-		});
-	}
-
-    //TODO mi sa non serve a niente
-	public Optional<Match> getNextMatch(League league, FantaTeam fantaTeam) {
-		// TODO molto da vedere
-		return transactionManager.fromTransaction((context) -> {
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(league);
-			if (previousMatchDay.isPresent()) {
-				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(),
-						fantaTeam);
-				Optional<Result> result = context.getResultsRepository().getResultFor(previousMatch.get());
-				if (result.isEmpty()) {
-					throw new RuntimeException("The results for the previous match have not been calculated yet");
-				}
-			}
-			Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(league);
-			if (nextMatchDay.isEmpty()) {
-				throw new RuntimeException("The league ended");
-			} else {
-				return context.getMatchRepository().getMatchBy(nextMatchDay.get(), fantaTeam);
-			}
 		});
 	}
 
