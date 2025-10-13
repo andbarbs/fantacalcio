@@ -128,6 +128,28 @@ class UserServiceIntegrationIT {
 	static void tearDown() {
 		sessionFactory.close();
 	}
+	
+	@Test
+	void createLeague() {
+
+		entityManager.getTransaction().begin();
+
+		FantaUser admin = new FantaUser("mail", "pswd");
+		fantaUserRepository.saveFantaUser(admin);
+
+		entityManager.getTransaction().commit();
+
+		userService.createLeague("lega", admin, "1234");
+
+		Optional<League> result = leagueRepository.getLeagueByCode("1234");
+
+		assertThat(result).isPresent();
+		League league = result.get();
+
+		assertThat(league.getName()).isEqualTo("lega");
+		assertThat(league.getAdmin()).isEqualTo(admin);
+		assertThat(league.getLeagueCode()).isEqualTo("1234");
+	}
 
 	@Test
 	void joinLeague() {

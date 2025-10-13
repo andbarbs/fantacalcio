@@ -102,7 +102,9 @@ class JpaResultsRepositoryTest {
 
         // THEN the Result is present in the database
 		assertThat(sessionFactory
-				.fromTransaction((Session session) -> session.createQuery("FROM Result", Result.class).getResultList()))
+				.fromTransaction((Session session) -> session.createQuery("FROM Result r JOIN FETCH r.match m "
+						+ "JOIN FETCH m.team1 t1 JOIN FETCH m.team2 t2 JOIN FETCH t1.fantaManager JOIN FETCH t2.fantaManager "
+						+ "JOIN FETCH m.matchDay day JOIN FETCH day.league league JOIN FETCH league.admin", Result.class).getResultList()))
 				.containsExactly(result);
 	}
 	
