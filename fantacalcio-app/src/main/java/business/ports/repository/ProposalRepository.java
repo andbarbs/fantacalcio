@@ -16,6 +16,6 @@ public interface ProposalRepository {
 
 	Optional<Proposal> getProposalBy(Contract offeredContract, Contract requestedContract);
 
-	boolean saveProposal(Proposal proposal);
+	void saveProposal(Proposal proposal);
 
 }

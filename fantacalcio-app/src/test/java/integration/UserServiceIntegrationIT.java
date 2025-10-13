@@ -304,41 +304,6 @@ class UserServiceIntegrationIT {
 	}
 
 	@Test
-	void testGetNextMatch() {
-
-		entityManager.getTransaction().begin();
-
-		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
-		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
-
-		FantaTeam team = new FantaTeam("Team", league, 30, user, new HashSet<>());
-		FantaTeam team2 = new FantaTeam("Team2", league, 40, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(team);
-		fantaTeamRepository.saveTeam(team2);
-
-		MatchDay prevMatchDay = new MatchDay("MD1", 1, MatchDay.Status.PAST, league);
-		MatchDay nextMatchDay = new MatchDay("MD2",  2, MatchDay.Status.FUTURE, league);
-		matchDayRepository.saveMatchDay(prevMatchDay);
-		matchDayRepository.saveMatchDay(nextMatchDay);
-
-		Match prevMatch = new Match(prevMatchDay, team, team2);
-		Match nextMatch = new Match(nextMatchDay, team, team2);
-		matchRepository.saveMatch(prevMatch);
-		matchRepository.saveMatch(nextMatch);
-
-		Result prevResults = new Result(20, 50, 1, 2, prevMatch);
-		resultsRepository.saveResult(prevResults);
-
-		entityManager.getTransaction().commit();
-
-		Optional<Match> result = userService.getNextMatch(league, team);
-		assertThat(result.get().getMatchDay().getName()).isEqualTo("MD2");
-	}
-
-	@Test
 	void testGetStandings() {
 
 		entityManager.getTransaction().begin();

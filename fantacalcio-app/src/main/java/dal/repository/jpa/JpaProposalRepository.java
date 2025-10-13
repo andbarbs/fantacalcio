@@ -79,9 +79,9 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
 
 
     @Override
-    public boolean saveProposal(Proposal proposal) {
+    public void saveProposal(Proposal proposal) {
        getEntityManager().persist(proposal);
-       return true;
+
     }
 
 	@Override

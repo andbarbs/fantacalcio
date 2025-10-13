@@ -104,6 +104,10 @@ public class UserService {
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
 			Player offeredPlayer = proposal.getOfferedContract().getPlayer();
 			Player requestedPlayer = proposal.getRequestedContract().getPlayer();
+            Optional<Proposal> repoProposal = context.getProposalRepository().getProposalBy(proposal.getOfferedContract(), proposal.getRequestedContract());
+            if (repoProposal.isEmpty()) {
+                throw new RuntimeException("Proposal does not exists");
+            }
 			if (!requestingTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
@@ -130,6 +134,10 @@ public class UserService {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
+            Optional<Proposal> repoProposal = context.getProposalRepository().getProposalBy(proposal.getOfferedContract(), proposal.getRequestedContract());
+            if (repoProposal.isEmpty()) {
+                throw new RuntimeException("Proposal does not exists");
+            }
 
 			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
@@ -145,6 +153,9 @@ public class UserService {
 		}
 
 		return transactionManager.fromTransaction((context) -> {
+            Optional<FantaTeam> repoMyTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), myTeam.getFantaManager());
+            Optional<FantaTeam> repoOpponentTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), opponentTeam.getFantaManager());
+            if (repoMyTeam.isEmpty() || repoOpponentTeam.isEmpty()) {}
 			Optional<Contract> requestedContract = searchContract(opponentTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
 
@@ -155,7 +166,8 @@ public class UserService {
 						.isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
-				return context.getProposalRepository().saveProposal(newProposal);
+				context.getProposalRepository().saveProposal(newProposal);
+                return true;
 			} else {
 				return false;
 			}
@@ -165,7 +177,6 @@ public class UserService {
 	// Standings
 
 	public List<FantaTeam> getStandings(League league) {
-		// TODO what if no Teams exist?
 		return getAllFantaTeams(league)
 				.stream()
 				.sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
@@ -206,16 +217,24 @@ public class UserService {
 		transactionManager.inTransaction((context) -> {
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
-            if(match.getMatchDay().getStatus() == MatchDay.Status.PAST ||
-                    match.getMatchDay().getStatus() == MatchDay.Status.PRESENT){
-                throw new UnsupportedOperationException("Can't modify the lineup after the match is over or is being played");
+            FantaTeam fantaTeam = lineUp.getTeam();
+            if(!match.getTeam1().equals(fantaTeam) && !match.getTeam2().equals(fantaTeam)) {
+                throw new IllegalArgumentException("The fantaTeam in the lineUp is not correct");
             }
+
             Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(lineUp.getTeam().getLeague());
             if (nextMatchDay.isEmpty()) {
                 throw new RuntimeException("The league ended");
             }
             if(!nextMatchDay.get().equals(match.getMatchDay())) {
                 throw new RuntimeException("The matchDay of the lineUp is incorrect");
+            }
+            Optional<Match> repositoryMatch = context.getMatchRepository().getMatchBy(nextMatchDay.get(), lineUp.getTeam());
+            if (repositoryMatch.isEmpty()) {
+                throw new IllegalArgumentException("The match does not exists");
+            }
+            if(!repositoryMatch.get().equals(match)) {
+                throw  new IllegalArgumentException("The match is not correct");
             }
 
 			FantaTeam team = lineUp.getTeam();
