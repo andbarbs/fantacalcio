@@ -151,11 +151,20 @@ public class UserService {
 		if (!requestedPlayer.getClass().equals(offeredPlayer.getClass())) {
 			throw new IllegalArgumentException("The players don't have the same role");
 		}
+        if(myTeam.equals(opponentTeam)) {
+            throw new IllegalArgumentException("You can't exchange a player with yourself");
+        }
 
 		return transactionManager.fromTransaction((context) -> {
             Optional<FantaTeam> repoMyTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), myTeam.getFantaManager());
             Optional<FantaTeam> repoOpponentTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), opponentTeam.getFantaManager());
-            if (repoMyTeam.isEmpty() || repoOpponentTeam.isEmpty()) {}
+            if(repoMyTeam.isEmpty() || repoOpponentTeam.isEmpty()) {
+                throw new RuntimeException("One or both teams do not exists in the league");
+            }
+            if (!repoMyTeam.get().equals(myTeam)|| !repoOpponentTeam.get().equals(opponentTeam)) {
+                throw new IllegalArgumentException("One or both teams are incorrect");
+            }
+
 			Optional<Contract> requestedContract = searchContract(opponentTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
 

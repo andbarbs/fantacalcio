@@ -159,13 +159,13 @@ public class UserServiceTest {
 		FantaTeam team = new FantaTeam("Team A", league, 0, user, Set.of());
 
 		List<FantaTeam> teamList = new ArrayList<FantaTeam>();
-		for (int i = 0; i < 30; i++) {
+		for (int i = 0; i < 8; i++) {
 			teamList.add(new FantaTeam(null, league, i, user, null));
 		}
 		when(leagueRepository.getAllTeams(league)).thenReturn(teamList);
 
 		assertThatThrownBy(() -> userService.joinLeague(team, league)).isInstanceOf(UnsupportedOperationException.class)
-				.hasMessageContaining("Maximum 12 teams per league");
+				.hasMessageContaining("Maximum 8 teams per league");
 
 	}
 
@@ -948,7 +948,7 @@ public class UserServiceTest {
         contracts.add(offeredContract);
         contracts1.add(requestedContract);
 
-
+        when(proposalRepository.getProposalBy(offeredContract, requestedContract)).thenReturn(Optional.of(proposal));
 		assertThatThrownBy(() -> userService.acceptProposal(proposal, team2))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("You are not involved in this proposal");
@@ -1032,9 +1032,6 @@ public class UserServiceTest {
         Proposal proposal = new Proposal(offeredContract, requestedContract);
         contracts.add(offeredContract);
         contracts1.add(requestedContract);
-
-        // Create a simple subclass of UserService for testing that overrides
-        // searchContract
 
         when(proposalRepository.getProposalBy(proposal.getOfferedContract(), proposal.getRequestedContract())).thenReturn(Optional.empty());
 
@@ -1139,6 +1136,7 @@ public class UserServiceTest {
 		assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("The players don't have the same role");
+        verifyNoMoreInteractions(proposalRepository);
 	}
 
 	@Test
@@ -1152,101 +1150,309 @@ public class UserServiceTest {
         FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
         Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
         Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
 
-		assertThat(userService.createProposal(p2, p1, team, team1)).isFalse();
+        boolean proposal = userService.createProposal(p2, p1, team, team1);
+        assertThat(proposal).isFalse();
+        verifyNoMoreInteractions(proposalRepository);
 	}
 
 	@Test
 	void testCreateProposal_RequestedContractMissing() {
-		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
-		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
-		Player myPlayer = new Player.Forward(null, null, null);
-		Player oppPlayer = new Player.Forward(null, null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
 
-		myTeam.setContracts(Set.of(new Contract(myTeam, myPlayer)));
 
-		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
+
+		assertThat(userService.createProposal(p2, p1, team, team1)).isFalse();
+        verifyNoMoreInteractions(proposalRepository);
 	}
 
 	@Test
 	void testCreateProposal_OfferedContractMissing() {
-		FantaTeam myTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
-		FantaTeam opponentTeam = new FantaTeam(null, null, 0, null, new HashSet<Contract>());
-		Player myPlayer = new Player.Forward(null, null, null);
-		Player oppPlayer = new Player.Forward(null, null, null);
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
 
-		opponentTeam.setContracts(Set.of(new Contract(opponentTeam, oppPlayer)));
 
-		assertThat(userService.createProposal(myPlayer, oppPlayer, myTeam, opponentTeam)).isFalse();
+        assertThat(userService.createProposal(p2, p1, team, team1)).isFalse();
+        verifyNoMoreInteractions(proposalRepository);
 	}
 
 	@Test
 	void testCreateProposal_AlreadyExists() {
         FantaUser user = new FantaUser("user@test.com", "pwd");
-        League league = new League(user, "Test League", "L003");
-		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
-		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
-		Player player = new Player.Midfielder(null, null, null);
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
 
-		Contract offeredContract = new Contract(myTeam, player);
-		Contract requestedContract = new Contract(opponentTeam, player);
-		myTeam.getContracts().add(offeredContract);
-		opponentTeam.getContracts().add(requestedContract);
-
-        //TODO bo?
 		when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
 				.thenReturn(Optional.of(new Proposal(offeredContract,requestedContract)));
 
-		assertThatThrownBy(() -> userService.createProposal(player, player, myTeam, opponentTeam))
+		assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
 				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("The proposal already exists");
+        verify(proposalRepository).getProposalBy(offeredContract, requestedContract);
 	}
 
 	@Test
 	void testCreateProposal_HappyPath() {
         FantaUser user = new FantaUser("user@test.com", "pwd");
-        League league = new League(user, "Test League", "L003");
-		FantaTeam myTeam = spy(new FantaTeam("My Team", league, 0, user, new HashSet<>()));
-		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
-		Player offeredPlayer = new Player.Defender(null, null, null);
-		Player requestedPlayer = new Player.Defender(null, null, null);
-
-		Contract offeredContract = new Contract(myTeam, offeredPlayer);
-		Contract requestedContract = new Contract(opponentTeam, requestedPlayer);
-		myTeam.getContracts().add(offeredContract);
-		opponentTeam.getContracts().add(requestedContract);
-
-		when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
 				.thenReturn(Optional.empty());
-		//when(context.getProposalRepository().saveProposal(any())).thenReturn(true);
 
-		assertThat(userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam)).isTrue();
+		assertThat(userService.createProposal(p2, p1, team, team1)).isTrue();
 	}
+
+    @Test
+    void testCreateProposal_SameTeams() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("You can't exchange a player with yourself");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_MyTeamNotExisting() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.empty());
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(RuntimeException.class).hasMessageContaining("One or both teams do not exists in the league");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_OpponentTeamNotExisting() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.empty());
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(RuntimeException.class).hasMessageContaining("One or both teams do not exists in the league");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_BothTeamNotExisting() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.empty());
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.empty());
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(RuntimeException.class).hasMessageContaining("One or both teams do not exists in the league");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_MyTeamIncorrect() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        FantaUser user2 = new FantaUser("mail2", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        FantaTeam team2 = new FantaTeam("FantaTeam2", league, 0, user2, null);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team2));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team1));
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("One or both teams are incorrect");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_OpponentTeamIncorrect() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        FantaUser user2 = new FantaUser("mail2", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        FantaTeam team2 = new FantaTeam("FantaTeam2", league, 0, user2, null);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team2));
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("One or both teams are incorrect");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+    @Test
+    void testCreateProposal_BothTeamIncorrect() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
+        FantaUser user2 = new FantaUser("mail2", "psw");
+        League league = new League(user, "Test League", "L005");
+        HashSet<Contract> contracts = new HashSet<>();
+        HashSet<Contract> contracts1 = new HashSet<>();
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, contracts);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, contracts1);
+        FantaTeam team2 = new FantaTeam("FantaTeam2", league, 0, user2, null);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+        Player p2 = new Player.Midfielder("Nico", "Paz", Player.Club.COMO);
+        Contract requestedContract = new Contract(team1, p2);
+        Contract offeredContract = new Contract(team, p1);
+        contracts.add(offeredContract);
+        contracts1.add(requestedContract);
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user)).thenReturn(Optional.of(team2));
+        when(teamRepository.getFantaTeamByUserAndLeague(league, user1)).thenReturn(Optional.of(team2));
+        when(context.getProposalRepository().getProposalBy(offeredContract, requestedContract))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.createProposal(p2, p1, team, team1))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("One or both teams are incorrect");
+        verifyNoMoreInteractions(proposalRepository);
+    }
+
+
 
 	@Test
 	void testGetAllMatchGrades() {
         FantaUser user = new FantaUser("user@test.com", "pwd");
+        FantaUser user1 = new FantaUser("mail", "psw");
         League league = new League(user, "Test League", "L003");
         MatchDay matchDay = new MatchDay("MD1",1, MatchDay.Status.FUTURE, league);
-		Match match = new Match(matchDay, null, null);
-		Grade grade = new Grade(null, null, 0);
+        FantaTeam team = new FantaTeam("FantaTeam", league, 0, user, null);
+        FantaTeam team1 = new FantaTeam("FantaTeam1", league, 0, user1, null);
+		Match match = new Match(matchDay, team, team1);
+        Player p1 = new Player.Midfielder("Christian", "Pulisic", Player.Club.MILAN);
+		Grade grade = new Grade(p1, matchDay, 10);
 
 		when(context.getGradeRepository().getAllGrades(matchDay)).thenReturn(List.of(grade));
 		List<Grade> result = userService.getAllMatchGrades(match);
 		assertThat(result).containsExactly(grade);
+        verify(gradeRepository).getAllGrades(matchDay);
 	}
 
 	@Test
 	void testGetAllFantaTeams() {
-		League league = new League(null, "My League", "L999");
-		FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), Set.of());
-		FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), Set.of());
+        FantaUser admin = new FantaUser("admin@mail", "psw");
+		League league = new League(admin, "My League", "L999");
+		FantaTeam t1 = new FantaTeam("Team 1", league, 0, new FantaUser("u1", "pwd"), null);
+		FantaTeam t2 = new FantaTeam("Team 2", league, 0, new FantaUser("u2", "pwd"), null);
 
 		when(context.getTeamRepository().getAllTeams(league)).thenReturn(Set.of(t1, t2));
 
 		Set<FantaTeam> result = userService.getAllFantaTeams(league);
 
 		assertThat(result).containsExactlyInAnyOrder(t1, t2);
-		verify(context.getTeamRepository(), times(1)).getAllTeams(league);
+		verify(teamRepository).getAllTeams(league);
 	}
 
 }
