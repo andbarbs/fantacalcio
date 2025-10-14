@@ -17,29 +17,11 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import business.UserService;
-import business.ports.repository.ContractRepository;
-import business.ports.repository.FantaTeamRepository;
-import business.ports.repository.FantaUserRepository;
-import business.ports.repository.LeagueRepository;
-import business.ports.repository.LineUpRepository;
-import business.ports.repository.MatchDayRepository;
-import business.ports.repository.MatchRepository;
-import business.ports.repository.PlayerRepository;
-import business.ports.repository.ProposalRepository;
-import business.ports.repository.ResultsRepository;
-import dal.repository.jpa.JpaContractRepository;
-import dal.repository.jpa.JpaFantaTeamRepository;
-import dal.repository.jpa.JpaFantaUserRepository;
-import dal.repository.jpa.JpaLeagueRepository;
-import dal.repository.jpa.JpaLineUpRepository;
-import dal.repository.jpa.JpaMatchDayRepository;
-import dal.repository.jpa.JpaMatchRepository;
-import dal.repository.jpa.JpaPlayerRepository;
-import dal.repository.jpa.JpaProposalRepository;
-import dal.repository.jpa.JpaResultsRepository;
+import business.ports.transaction.TransactionManager.TransactionContext;
 import dal.transaction.jpa.JpaTransactionManager;
 import domain.Player.Club;
 import domain.Player.Defender;
@@ -47,26 +29,12 @@ import domain.Player.Forward;
 import domain.Player.Goalkeeper;
 import domain.Player.Midfielder;
 import domain.scheme.Scheme433;
-import jakarta.persistence.EntityManager;
 
 class UserServiceIntegrationIT {
 
 	private static SessionFactory sessionFactory;
 	private UserService userService;
 	private JpaTransactionManager transactionManager;
-	private EntityManager entityManager;
-
-	private MatchRepository matchRepository;
-	private MatchDayRepository matchDayRepository;
-	// private GradeRepository gradeRepository;
-	private LineUpRepository lineUpRepository;
-	private FantaTeamRepository fantaTeamRepository;
-	private LeagueRepository leagueRepository;
-	private PlayerRepository playerRepository;
-	private ContractRepository contractRepository;
-	private FantaUserRepository fantaUserRepository;
-	private ResultsRepository resultsRepository;
-	private ProposalRepository proposalRepository;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -105,23 +73,12 @@ class UserServiceIntegrationIT {
 
 	@BeforeEach
 	void setup() {
-
+		// empties out database tables
 		sessionFactory.getSchemaManager().truncateMappedObjects();
+		
+		// instantiates SUT
 		transactionManager = new JpaTransactionManager(sessionFactory);
 		userService = new UserService(transactionManager);
-		entityManager = sessionFactory.createEntityManager();
-
-		fantaUserRepository = new JpaFantaUserRepository(entityManager);
-		matchRepository = new JpaMatchRepository(entityManager);
-		matchDayRepository = new JpaMatchDayRepository(entityManager);
-		// gradeRepository = new JpaGradeRepository(entityManager);
-		lineUpRepository = new JpaLineUpRepository(entityManager);
-		fantaTeamRepository = new JpaFantaTeamRepository(entityManager);
-		leagueRepository = new JpaLeagueRepository(entityManager);
-		playerRepository = new JpaPlayerRepository(entityManager);
-		contractRepository = new JpaContractRepository(entityManager);
-		resultsRepository = new JpaResultsRepository(entityManager);
-		proposalRepository = new JpaProposalRepository(entityManager);
 	}
 
 	@AfterAll
@@ -130,134 +87,117 @@ class UserServiceIntegrationIT {
 	}
 	
 	@Test
+	@DisplayName("can create a new League in the system")
 	void createLeague() {
-
-		entityManager.getTransaction().begin();
-
+		
+		// GIVEN
 		FantaUser admin = new FantaUser("mail", "pswd");
-		fantaUserRepository.saveFantaUser(admin);
+		transactionManager.inTransaction(context -> context.getFantaUserRepository().saveFantaUser(admin));
 
-		entityManager.getTransaction().commit();
-
+		// WHEN
 		userService.createLeague("lega", admin, "1234");
 
-		Optional<League> result = leagueRepository.getLeagueByCode("1234");
+		// THEN
+		Optional<League> persisted = transactionManager
+				.fromTransaction(context -> context.getLeagueRepository().getLeagueByCode("1234"));
 
-		assertThat(result).isPresent();
-		League league = result.get();
-
-		assertThat(league.getName()).isEqualTo("lega");
-		assertThat(league.getAdmin()).isEqualTo(admin);
-		assertThat(league.getLeagueCode()).isEqualTo("1234");
+		assertThat(persisted).hasValue(new League(admin, "lega", "1234"));
 	}
 
 	@Test
+	@DisplayName("can make a Team join a League (?)")
 	void joinLeague() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
 		League league = new League(user, "Test League", "1234");
-		leagueRepository.saveLeague(league);
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+		});
 
-		FantaTeam team = new FantaTeam("Team A", league, 0, user, new HashSet<Contract>());
-
-		entityManager.getTransaction().commit();
-
+		// WHEN
+		FantaTeam team = new FantaTeam("Team A", league, 0, user, null);
 		userService.joinLeague(team, league);
 
-		Optional<League> result = leagueRepository.getLeagueByCode("1234");
-		assertThat(result).isPresent();
-
-		League resultLeague = result.get();
-		assertThat(resultLeague.getAdmin()).isEqualTo(user);
-		assertThat(resultLeague.getLeagueCode()).isEqualTo("1234");
-		assertThat(resultLeague.getName()).isEqualTo("Test League");
-
+		// THEN
+		// TODO non capisco perche viene asserito questo
+		Optional<League> result = transactionManager
+				.fromTransaction(context -> context.getLeagueRepository().getLeagueByCode("1234"));
+		assertThat(result).hasValue(new League(user, "Test League", "1234"));
 	}
 
 	@Test
+	@DisplayName("can retrieve all Matches on a League's MatchDays")
 	void testGetAllMatches() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN
 		FantaUser user1 = new FantaUser("user1@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user1);
 		FantaUser user2 = new FantaUser("user2@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user2);
-
 		League league = new League(user1, "Test League", "1234");
-		leagueRepository.saveLeague(league);
-
 		FantaTeam team1 = new FantaTeam("Team A", league, 0, user1, new HashSet<Contract>());
-		fantaTeamRepository.saveTeam(team1);
 		FantaTeam team2 = new FantaTeam("Team B", league, 0, user2, new HashSet<Contract>());
-		fantaTeamRepository.saveTeam(team2);
-
 		MatchDay day1 = new MatchDay("MD1",1, MatchDay.Status.PAST, league);
-		matchDayRepository.saveMatchDay(day1);
-
 		Match m1 = new Match(day1, team1, team2);
-		matchRepository.saveMatch(m1);
+		
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user1);
+			context.getFantaUserRepository().saveFantaUser(user2);
+			context.getLeagueRepository().saveLeague(league);
+			context.getTeamRepository().saveTeam(team1);
+			context.getTeamRepository().saveTeam(team2);
+			context.getMatchDayRepository().saveMatchDay(day1);
+			context.getMatchRepository().saveMatch(m1);
+		});
 
-		entityManager.getTransaction().commit();
+		// WHEN 
+		Map<MatchDay, List<Match>> matchDayToMatches = userService.getAllMatches(league);
 
-		Map<MatchDay, List<Match>> result = userService.getAllMatches(league);
-
-		assertThat(result.get(day1).size()).isEqualTo(1);
-		Match resultMatch = result.get(day1).get(0);
-
-		assertThat(resultMatch.getMatchDay().getName()).isEqualTo("MD1");
+		// THEN
+		assertThat(matchDayToMatches).containsExactlyEntriesOf(Map.of(day1, List.of(m1)));
 	}
 
 	@Test
+	@DisplayName("can save a legitimate LineUp")
 	void testSaveLineUp() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
 		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
-
 		MatchDay matchDay = new MatchDay("MD1",1, MatchDay.Status.FUTURE, league); // Monday
-		matchDayRepository.saveMatchDay(matchDay);		
-
+		
 		// Players for LineUp
 		Goalkeeper gk1 = new Goalkeeper("portiere", "titolare", Player.Club.ATALANTA);
-
+		
 		Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
 		Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
 		Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
 		Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
-
+		
 		Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
 		Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
 		Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
-
+		
 		Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
 		Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
 		Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
-
+		
 		Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
 		Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
 		Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
-
+		
 		Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
 		Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
 		Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
-
+		
 		Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
 		Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
 		Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
-
+		
 		Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
 		Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
 		Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
-
+		
 		List<Player> players = List.of(
 				gk1, 
 				d1, d2, d3, d4, 
@@ -268,22 +208,21 @@ class UserServiceIntegrationIT {
 				sm1, sm2, sm3,
 				sf1, sf2, sf3);
 		
-		players.forEach(playerRepository::addPlayer);
-		
-		// team & contracts
 		HashSet<Contract> contracts = new HashSet<>();
 		FantaTeam team = new FantaTeam("Dream Team", league, 30, user, contracts);
 		players.forEach(player -> contracts.add(new Contract(team, player)));
-		fantaTeamRepository.saveTeam(team);  // relies on cascading for contracts
-
-		// match
 		Match match = new Match(matchDay, team, team);
-		matchRepository.saveMatch(match);		
-		
-		entityManager.getTransaction().commit();
-		entityManager.clear();
 
-		// LineUp
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+			context.getMatchDayRepository().saveMatchDay(matchDay);		
+			players.forEach(context.getPlayerRepository()::addPlayer);
+			context.getTeamRepository().saveTeam(team);  // relies on cascading for contracts
+			context.getMatchRepository().saveMatch(match);
+		});
+
+		// WHEN
 		LineUp lineUp = LineUp.build()
 				.forTeam(team)
 				.inMatch(match)
@@ -299,154 +238,156 @@ class UserServiceIntegrationIT {
 
 		userService.saveLineUp(lineUp);
 
-		assertThat(lineUpRepository.getLineUpByMatchAndTeam(match, team)).isPresent()
-				.hasValueSatisfying(lineUp::recursiveEquals);
+		// THEN
+		Optional<LineUp> persisted = transactionManager.fromTransaction(context -> context.getLineUpRepository().getLineUpByMatchAndTeam(match, team));
+		assertThat(persisted).hasValueSatisfying(lineUp::recursiveEquals);
 	}
 
 	@Test
+	@DisplayName("can get a League's standings")
 	void testGetStandings() {
 
-		entityManager.getTransaction().begin();
-
+		// WHEN
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
 		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
+		FantaTeam team1 = new FantaTeam("Team1", league, 10, user, null);
+		FantaTeam team2 = new FantaTeam("Team2", league, 70, user, null);
 
-		FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
-		FantaTeam team2 = new FantaTeam("Team2", league, 70, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(team1);
-		fantaTeamRepository.saveTeam(team2);
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+			context.getTeamRepository().saveTeam(team1);
+			context.getTeamRepository().saveTeam(team2);
+		});		
 
-		entityManager.getTransaction().commit();
-
+		// WHEN
 		List<FantaTeam> standings = userService.getStandings(league);
 
-		assertThat(standings.get(0).getName()).isEqualTo("Team2");
-		assertThat(standings.get(1).getName()).isEqualTo("Team1");
+		// THEN
+		assertThat(standings).containsExactly(team2, team1);
 	}
 
 	@Test
+	@DisplayName("can create a legitimate Proposal")
 	void testCreateProposal() {
 
-		entityManager.getTransaction().begin();
+		// GIVEN
 
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
-
 		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
-
 		FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
 		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(myTeam);
-		fantaTeamRepository.saveTeam(opponentTeam);
-
 		Player offeredPlayer = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
 		Player requestedPlayer = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
-		playerRepository.addPlayer(offeredPlayer);
-		playerRepository.addPlayer(requestedPlayer);
-
 		Contract offeredContract = new Contract(myTeam, offeredPlayer);
 		Contract requestedContract = new Contract(opponentTeam, requestedPlayer);
 		myTeam.getContracts().add(offeredContract);
 		opponentTeam.getContracts().add(requestedContract);
-		contractRepository.saveContract(offeredContract);
-		contractRepository.saveContract(requestedContract);
 
-		entityManager.getTransaction().commit();
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+			context.getPlayerRepository().addPlayer(offeredPlayer);
+			context.getPlayerRepository().addPlayer(requestedPlayer);
+			context.getTeamRepository().saveTeam(myTeam);
+			context.getTeamRepository().saveTeam(opponentTeam);
+		});
 
-		assertThat(userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam)).isTrue();
+		// WHEN
+		boolean returned = userService.createProposal(requestedPlayer, offeredPlayer, myTeam, opponentTeam);
 
-		Optional<Proposal> result = proposalRepository.getProposalBy(offeredContract, requestedContract);
-		assertThat(result).isPresent();
-		Proposal resultProposal = result.get();
-		assertThat(resultProposal.getOfferedContract()).isEqualTo(offeredContract);
-		assertThat(resultProposal.getRequestedContract()).isEqualTo(requestedContract);
+		// THEN
+		assertThat(returned).isTrue();
+		Optional<Proposal> result = transactionManager.fromTransaction(
+				context -> context.getProposalRepository().getProposalBy(offeredContract, requestedContract));
+		assertThat(result).hasValue(new Proposal(offeredContract, requestedContract));
 	}
 
 	@Test
+	@DisplayName("can accept a legitimate Proposal")
 	void testAcceptProposal() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
 		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
-
 		FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
 		FantaTeam offeringTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(myTeam);
-		fantaTeamRepository.saveTeam(offeringTeam);
-
 		Player requestedPlayer = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
 		Player offeredPlayer = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
-		playerRepository.addPlayer(requestedPlayer);
-		playerRepository.addPlayer(offeredPlayer);
-
 		Contract offeredContract = new Contract(offeringTeam, offeredPlayer);
 		Contract requestedContract = new Contract(myTeam, requestedPlayer);
 		offeringTeam.getContracts().add(offeredContract);
 		myTeam.getContracts().add(requestedContract);
-		contractRepository.saveContract(offeredContract);
-		contractRepository.saveContract(requestedContract);
-
 		Proposal proposal = new Proposal(offeredContract, requestedContract);
-		proposalRepository.saveProposal(proposal);
 
-		entityManager.getTransaction().commit();
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+			context.getPlayerRepository().addPlayer(requestedPlayer);
+			context.getPlayerRepository().addPlayer(offeredPlayer);
+			context.getTeamRepository().saveTeam(myTeam);
+			context.getTeamRepository().saveTeam(offeringTeam);
+			context.getProposalRepository().saveProposal(proposal);
+		});
 
+		// WHEN
 		userService.acceptProposal(proposal, myTeam);
 
-		assertThat(contractRepository.getContract(offeringTeam, offeredPlayer)).isEmpty();
-		assertThat(contractRepository.getContract(offeringTeam, requestedPlayer)).isPresent();
+		// THEN
+		assertThat(transactionManager.fromTransaction(
+				(TransactionContext c) -> c.getContractRepository().getContract(offeringTeam, offeredPlayer)))
+				.isEmpty();
+		assertThat(transactionManager.fromTransaction(
+				(TransactionContext c) -> c.getContractRepository().getContract(offeringTeam, requestedPlayer)))
+				.isPresent();
 
-		assertThat(contractRepository.getContract(myTeam, requestedPlayer)).isEmpty();
-		assertThat(contractRepository.getContract(myTeam, offeredPlayer)).isPresent();
+		assertThat(transactionManager.fromTransaction(
+				(TransactionContext c) -> c.getContractRepository().getContract(myTeam, requestedPlayer))).isEmpty();
+		assertThat(transactionManager.fromTransaction(
+				(TransactionContext c) -> c.getContractRepository().getContract(myTeam, offeredPlayer))).isPresent();
 	}
 
 	@Test
+	@DisplayName("can get all Teams in a League")
 	void testGetAllFantaTeams() {
 
-		entityManager.getTransaction().begin();
-
+		// GIVEN
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		fantaUserRepository.saveFantaUser(user);
-
 		League league = new League(user, "Test League", "L003");
-		leagueRepository.saveLeague(league);
-
 		FantaTeam team1 = new FantaTeam("Team1", league, 10, user, new HashSet<>());
 		FantaTeam team2 = new FantaTeam("Team2", league, 70, user, new HashSet<>());
-		fantaTeamRepository.saveTeam(team1);
-		fantaTeamRepository.saveTeam(team2);
 
-		entityManager.getTransaction().commit();
+		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(user);
+			context.getLeagueRepository().saveLeague(league);
+			context.getTeamRepository().saveTeam(team1);
+			context.getTeamRepository().saveTeam(team2);
+		});
 
+		// WHEN
 		Set<FantaTeam> result = userService.getAllFantaTeams(league);
-
-		assertThat(result.size()).isEqualTo(2);
+		
+		// THEN
 		assertThat(result).containsExactlyInAnyOrder(team1, team2);
 	}
 
 	@Test
+	@DisplayName("can get all Players in the system")
 	void testGetAllPlayers() {
-
-		entityManager.getTransaction().begin();
-
+		
+		// GIVEN
 		Player p1 = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
 		Player p2 = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
-		playerRepository.addPlayer(p1);
-		playerRepository.addPlayer(p2);
+		
+		transactionManager.inTransaction(context -> {
+			context.getPlayerRepository().addPlayer(p1);
+			context.getPlayerRepository().addPlayer(p2);
+		});
 
-		entityManager.getTransaction().commit();
-
+		// WHEN
 		Set<Player> result = userService.getAllPlayers();
+		
+		// THEN
 		assertThat(result).containsExactlyInAnyOrder(p1, p2);
 	}
-
 }
