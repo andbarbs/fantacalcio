@@ -90,7 +90,7 @@ public class UserService {
 	}
 
 	// Proposals
-
+    //TODO testa
 	public Set<Proposal> getAllTeamProposals(FantaTeam team) {
 		return transactionManager
 				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));
