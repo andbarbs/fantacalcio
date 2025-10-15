@@ -7,6 +7,7 @@ import java.util.Set;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
+import domain.Player;
 
 public interface LeagueRepository {
 
@@ -20,5 +21,6 @@ public interface LeagueRepository {
 
     //TODO implementa
     List<League> getLeaguesByJournalist(FantaUser journalist);
-	
+    
+	public Set<Player> getAllInLeague(League league);
 }

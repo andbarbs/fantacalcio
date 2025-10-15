@@ -33,8 +33,12 @@ import domain.Player.Goalkeeper;
 import domain.Player.Midfielder;
 import domain.scheme.Scheme433;
 
+/**
+ * integrates {@link AdminUserService} with {@link JpaTransactionManager} and,
+ * consequently, JPA Entity Repositories
+ */
 @DisplayName("An AdminUserService")
-class AdminUserServiceIntegrationIT {
+class AdminUserServiceIT {
 
 	private static SessionFactory sessionFactory;
 	private AdminUserService adminUserService;

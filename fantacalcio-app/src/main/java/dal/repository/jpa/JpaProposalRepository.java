@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 
@@ -56,11 +57,11 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
         Join<Contract, FantaTeam> requestedTeam = requestedJoin.join(Contract_.team);
         
         // deep fetching
-        var offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
+        Fetch<Contract, FantaTeam> offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
 		offeredTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
 		offeredTeamFetch.fetch(FantaTeam_.fantaManager);
         root.fetch(Proposal_.offeredContract).fetch(Contract_.player);
-        var requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
+        Fetch<Contract, FantaTeam> requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
 		requestedTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
 		requestedTeamFetch.fetch(FantaTeam_.fantaManager);
         root.fetch(Proposal_.requestedContract).fetch(Contract_.player);
@@ -91,11 +92,11 @@ public class JpaProposalRepository extends BaseJpaRepository implements Proposal
         Root<Proposal> root = criteriaQuery.from(Proposal.class);
         
         // deep fetching
-        var offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
+        Fetch<Contract, FantaTeam> offeredTeamFetch = root.fetch(Proposal_.offeredContract).fetch(Contract_.team);
 		offeredTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
 		offeredTeamFetch.fetch(FantaTeam_.fantaManager);
         root.fetch(Proposal_.offeredContract).fetch(Contract_.player);
-        var requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
+        Fetch<Contract, FantaTeam> requestedTeamFetch = root.fetch(Proposal_.requestedContract).fetch(Contract_.team);
 		requestedTeamFetch.fetch(FantaTeam_.league).fetch(League_.admin);
 		requestedTeamFetch.fetch(FantaTeam_.fantaManager);
         root.fetch(Proposal_.requestedContract).fetch(Contract_.player);

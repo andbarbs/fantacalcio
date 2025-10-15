@@ -293,7 +293,7 @@ public class UserService {
 		});
 	}
 
-	protected Optional<Contract> searchContract(FantaTeam team, Player player) {
+	private Optional<Contract> searchContract(FantaTeam team, Player player) {
 		return team.getContracts().stream().filter(c -> c.getTeam().equals(team) && c.getPlayer().equals(player))
 				.findFirst();
 	}

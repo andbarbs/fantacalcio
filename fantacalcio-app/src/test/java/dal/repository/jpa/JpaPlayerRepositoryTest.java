@@ -65,52 +65,10 @@ class JpaPlayerRepositoryTest {
 		sessionFactory.close();
 	}
 	
-	@Nested
-	@DisplayName("can look up all Players from the database")
-	class UnspecializedRetrieval {		
-		
-		@Test
-		@DisplayName("when no Players have been persisted")
-		public void testFindAllWhenNoPlayersExist() {
-			
-			// GIVEN no Player has been persisted to the database
-			
-			// WHEN the SUT is used to retrieve all Players from the database
-			entityManager.getTransaction().begin();
-			Set<Player> players = playerRepository.findAll();
-			entityManager.getTransaction().commit();
-			entityManager.clear();
-			
-			// THEN an empty Set is returned
-			assertThat(players).isEmpty();
-		}
-		
-		@Test
-		@DisplayName("when some Players have been persisted")
-		public void testFindAllTwoPlayersExist() {
-			
-			// GIVEN some Players have been persisted to the database
-			Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-			Player messi = new Forward("Lionel", "Messi", Club.PISA);
-			
-			sessionFactory.inTransaction(session -> {
-				session.persist(buffon);
-				session.persist(messi);
-			});
-			
-			// WHEN the SUT is used to retrieve all Players from the database
-			entityManager.getTransaction().begin();
-			Set<Player> players = playerRepository.findAll();
-			entityManager.getTransaction().commit();
-			entityManager.clear();
-			
-			// THEN all Players are returned
-			assertThat(players).containsExactlyInAnyOrder(buffon, messi);
-		}
-	}
+	
 
 	@Nested
-	@DisplayName("can persist a Player instance to the database")
+	@DisplayName("can add a Player to the system")
 	class Persisting {	
 		
 		@Test
@@ -157,8 +115,52 @@ class JpaPlayerRepositoryTest {
 	}
 	
 	@Nested
-	@DisplayName("can look up Players from the database")
-	class SpecializedRetrieval {	
+	@DisplayName("can look up all Players in the system")
+	class SpecializedRetrieval {
+		
+		@Nested
+		@DisplayName("all Players")
+		class UnspecializedRetrieval {		
+			
+			@Test
+			@DisplayName("when no Players have been persisted")
+			public void testFindAllWhenNoPlayersExist() {
+				
+				// GIVEN no Player has been persisted to the database
+				
+				// WHEN the SUT is used to retrieve all Players from the database
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findAll();
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN an empty Set is returned
+				assertThat(players).isEmpty();
+			}
+			
+			@Test
+			@DisplayName("when some Players have been persisted")
+			public void testFindAllTwoPlayersExist() {
+				
+				// GIVEN some Players have been persisted to the database
+				Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+				Player messi = new Forward("Lionel", "Messi", Club.PISA);
+				
+				sessionFactory.inTransaction(session -> {
+					session.persist(buffon);
+					session.persist(messi);
+				});
+				
+				// WHEN the SUT is used to retrieve all Players from the database
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findAll();
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN all Players are returned
+				assertThat(players).containsExactlyInAnyOrder(buffon, messi);
+			}
+		}
 		
 		@Nested
 		@DisplayName("by surname")

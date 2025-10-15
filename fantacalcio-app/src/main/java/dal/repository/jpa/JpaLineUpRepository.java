@@ -47,10 +47,10 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
         root.fetch(LineUp_.fieldings) // tolto JoinType.LEFT
         	.fetch(Fielding_.player); 
 
-        query.select(root).where(
-                cb.equal(root.get(LineUp_.match), match),
-                cb.equal(root.get(LineUp_.team), fantaTeam)
-        ).distinct(true);
+		query.select(root).where(
+				cb.equal(root.get(LineUp_.match), match), 
+				cb.equal(root.get(LineUp_.team), fantaTeam))
+			.distinct(true);
 
         List<LineUp> result = em.createQuery(query).getResultList();
         return result.stream().findFirst();

@@ -30,7 +30,12 @@ import domain.Player.Goalkeeper;
 import domain.Player.Midfielder;
 import domain.scheme.Scheme433;
 
-class UserServiceIntegrationIT {
+/**
+ * integrates {@link UserService} with {@link JpaTransactionManager} and,
+ * consequently, JPA Entity Repositories
+ */
+@DisplayName("a UserService")
+class UserServiceIT {
 
 	private static SessionFactory sessionFactory;
 	private UserService userService;
@@ -272,10 +277,10 @@ class UserServiceIntegrationIT {
 	void testCreateProposal() {
 
 		// GIVEN
-
+		FantaUser admin = new FantaUser("admin@test.com", "pwd");
 		FantaUser user = new FantaUser("user@test.com", "pwd");
-		League league = new League(user, "Test League", "L003");
-		FantaTeam myTeam = new FantaTeam("My Team", league, 0, user, new HashSet<>());
+		League league = new League(admin, "Test League", "L003");
+		FantaTeam myTeam = new FantaTeam("My Team", league, 0, admin, new HashSet<>());
 		FantaTeam opponentTeam = new FantaTeam("Opponent", league, 0, user, new HashSet<>());
 		Player offeredPlayer = new Player.Defender("Mario", "Rossi", Club.ATALANTA);
 		Player requestedPlayer = new Player.Defender("Luigi", "Verdi", Club.BOLOGNA);
@@ -285,6 +290,7 @@ class UserServiceIntegrationIT {
 		opponentTeam.getContracts().add(requestedContract);
 
 		transactionManager.inTransaction(context -> {
+			context.getFantaUserRepository().saveFantaUser(admin);
 			context.getFantaUserRepository().saveFantaUser(user);
 			context.getLeagueRepository().saveLeague(league);
 			context.getPlayerRepository().addPlayer(offeredPlayer);

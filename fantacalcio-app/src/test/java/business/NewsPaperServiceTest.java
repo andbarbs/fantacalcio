@@ -4,8 +4,12 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import business.ports.repository.GradeRepository;
+import business.ports.repository.LeagueRepository;
 import business.ports.repository.MatchDayRepository;
 import business.ports.repository.PlayerRepository;
 import business.ports.transaction.TransactionManager;
@@ -15,59 +19,55 @@ import domain.Player.Club;
 import domain.Player.Forward;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @Tag("mockito-agent")
+@ExtendWith(MockitoExtension.class)
 class NewsPaperServiceTest {
 
-	private TransactionManager transactionManager;
-	private TransactionContext context;
+	private @Mock TransactionManager transactionManager;
+	private @Mock TransactionContext context;
+	
 	private NewsPaperService service;
 
-	private GradeRepository gradeRepository;
-	private PlayerRepository playerRepository;
-	private MatchDayRepository matchDayRepository;
+	// Repositories	
+	private @Mock GradeRepository gradeRepository;
+	private @Mock MatchDayRepository matchDayRepository;
+	private @Mock PlayerRepository playerRepository;
+	private @Mock LeagueRepository leagueRepository;
 	
 	@BeforeEach
 	void setUp() {
-		transactionManager = mock(TransactionManager.class);
-		context = mock(TransactionContext.class);
-
-		doAnswer(invocation -> {
-			@SuppressWarnings("unchecked")
-			java.util.function.Consumer<TransactionContext> code = (java.util.function.Consumer<TransactionContext>) invocation
-					.getArgument(0);
-			code.accept(context);
-			return null;
-		}).when(transactionManager).inTransaction(any());
-
-		when(transactionManager.fromTransaction(any())).thenAnswer(invocation -> {
-			@SuppressWarnings("unchecked")
-			java.util.function.Function<TransactionContext, Object> code = (java.util.function.Function<TransactionContext, Object>) invocation
-					.getArgument(0);
-			return code.apply(context);
-		});
-
-		service = new NewsPaperService(transactionManager);
-
 		
+		// fake TransactionManager that processes lambdas on mock Context
+		transactionManager = new TransactionManager() {
+			
+			@Override
+			public void inTransaction(Consumer<TransactionContext> code) {
+				code.accept(context);
+			}
+			
+			@Override
+			public <T> T fromTransaction(Function<TransactionContext, T> code) {
+				return code.apply(context);
+			}
+		};
 
-		gradeRepository = mock(GradeRepository.class);
-		playerRepository = mock(PlayerRepository.class);
-		matchDayRepository = mock(MatchDayRepository.class);
-
-		when(context.getGradeRepository()).thenReturn(gradeRepository);
-		when(context.getPlayerRepository()).thenReturn(playerRepository);
-		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
-
+		// instantiates SUT
+		service = new NewsPaperService(transactionManager);
 	}
 
     //TODO ricontrollare logica
 	@Test
 	void testSetVoteToPlayers_NoMatchDay() {
+		
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
 		
 		// GIVEN no ongoing MatchDay exists for the League refd by Grades
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
@@ -90,7 +90,11 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_MultipleGrades() {
 		
-		// GIVEN 
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		when(context.getGradeRepository()).thenReturn(gradeRepository);
+		
+		// AND 
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
@@ -114,7 +118,10 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_WrongMatchDay() {
 		
-		// GIVEN Grades reference a MatchDay that is not the League's ongoing
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		
+		// AND Grades reference a MatchDay that is not the League's ongoing
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay pastMatchDay = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
@@ -138,8 +145,11 @@ class NewsPaperServiceTest {
 
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooLow() {
+		
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
 
-		// GIVEN
+		// AND
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
@@ -163,7 +173,10 @@ class NewsPaperServiceTest {
 	@Test
 	void testSetVoteToPlayers_InvalidMarkTooHigh() {
 		
-		// GIVEN
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		
+		// AND
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
@@ -181,13 +194,16 @@ class NewsPaperServiceTest {
 				.hasMessageContaining("Marks must be between -5 and 25");
 		
 		// ADN
-				verifyNoMoreInteractions(gradeRepository);
+		verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_BoundaryMarks_Min() {
 		
-		// GIVEN
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		
+		// AND
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
@@ -205,12 +221,16 @@ class NewsPaperServiceTest {
 				.hasMessageContaining("Marks must be between -5 and 25");
 		
 		// ADN
-				verifyNoMoreInteractions(gradeRepository);
+		verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testSetVoteToPlayers_BoundaryMarks_Max() {
-		// GIVEN
+		
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		
+		// AND
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
 		League league = new League(manager, "Serie A", "code");
 		MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
@@ -228,11 +248,14 @@ class NewsPaperServiceTest {
 				.hasMessageContaining("Marks must be between -5 and 25");
 		
 		// ADN
-				verifyNoMoreInteractions(gradeRepository);
+		verifyNoMoreInteractions(gradeRepository);
 	}
 
 	@Test
 	void testGetPlayersToGrade() {
+		
+		// GIVEN the necessary Repositories are made available by the TransactionContext
+		when(context.getLeagueRepository()).thenReturn(leagueRepository);
 		
 		// GIVEN
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
@@ -240,7 +263,7 @@ class NewsPaperServiceTest {
 		
 		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
 		
-		when(context.getPlayerRepository().getAllInLeague(league)).thenReturn(Set.of(player));
+		when(context.getLeagueRepository().getAllInLeague(league)).thenReturn(Set.of(player));
 
 		// WHEN
 		Set<Player> players = service.getPlayersToGrade(league);

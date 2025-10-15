@@ -20,12 +20,12 @@ public class NewsPaperService {
 	public void save(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
             Grade anyGrade = grades.stream().findAny().orElseThrow(() -> new RuntimeException("No grades found"));
-			Optional<MatchDay> matchDaySerieA = context.getMatchDayRepository().getOngoingMatchDay(anyGrade.getMatchDay().getLeague());
-			if (matchDaySerieA.isEmpty()) {
+			Optional<MatchDay> matchDay = context.getMatchDayRepository().getOngoingMatchDay(anyGrade.getMatchDay().getLeague());
+			if (matchDay.isEmpty()) {
 				throw new RuntimeException("Now you can't assign the votes");
 			}
 			for (Grade grade : grades) {
-				if (!(grade.getMatchDay().equals(matchDaySerieA.get()))) {
+				if (!(grade.getMatchDay().equals(matchDay.get()))) {
 					throw new RuntimeException("The matchDay is not the present one or is of another League");
 				}
 				if (grade.getMark() <= -5 || grade.getMark() >= 25) {
@@ -39,7 +39,7 @@ public class NewsPaperService {
 	}
 
 	public Set<Player> getPlayersToGrade(League league) {
-		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().getAllInLeague(league));
+		return transactionManager.fromTransaction((context) -> context.getLeagueRepository().getAllInLeague(league));
 	}
 
 }

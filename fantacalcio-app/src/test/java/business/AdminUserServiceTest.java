@@ -82,7 +82,7 @@ class AdminUserServiceTest {
 		@Test
 		void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 
-			// GIVEN the necessary Repositories are returned by the TransactionContext
+			// GIVEN the necessary Repositories are made available by the TransactionContext
 			when(context.getContractRepository()).thenReturn(contractRepository);
 
 			// AND
