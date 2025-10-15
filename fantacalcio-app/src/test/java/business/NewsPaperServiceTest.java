@@ -62,7 +62,7 @@ class NewsPaperServiceTest {
 		service = new NewsPaperService(transactionManager);
 	}
 
-    //TODO ricontrollare logica
+    //TODO ricontrollare logica dovrebbe essere tutta corretta l'ha rivista andre
 	@Test
 	void testSetVoteToPlayers_NoMatchDay() {
 		

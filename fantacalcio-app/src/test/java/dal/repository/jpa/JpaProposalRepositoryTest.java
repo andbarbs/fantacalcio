@@ -193,8 +193,7 @@ class JpaProposalRepositoryTest {
 				session.persist(proposal12);
 				session.persist(proposal21);
 			});
-			
-			// TODO change return to Set, or add Proposal ordering!
+
 			// WHEN the SUT is used to retrieve proposals for team3		
 			entityManager.getTransaction().begin();
 			Set<Proposal> retrieved = proposalRepository.getProposalsFor(team3);

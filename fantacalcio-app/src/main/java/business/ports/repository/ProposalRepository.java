@@ -11,7 +11,6 @@ public interface ProposalRepository {
 
 	boolean deleteProposal(Proposal proposal);
 
-	// TODO if you want a List, introduce Proposal ordering!
 	Set<Proposal> getProposalsFor(FantaTeam myTeam);
 
 	Optional<Proposal> getProposalBy(Contract offeredContract, Contract requestedContract);
