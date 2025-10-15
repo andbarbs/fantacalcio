@@ -3,7 +3,6 @@ package business;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import business.ports.repository.ContractRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.*;
@@ -70,10 +69,9 @@ public class AdminUserService extends UserService {
 
 	public void removePlayerFromTeam(FantaTeam team, Player player) {
 		transactionManager.inTransaction((context) -> {
-			ContractRepository contractRepository = context.getContractRepository();
-			Optional<Contract> contract = contractRepository.getContract(team, player);
+			Optional<Contract> contract = context.getContractRepository().getContract(team, player);
 			if (contract.isPresent())
-				contractRepository.deleteContract(contract.get());
+                context.getContractRepository().deleteContract(contract.get());
 		});
 	}
 
@@ -163,7 +161,6 @@ public class AdminUserService extends UserService {
 		return full;
 	}
 
-	//TODO dovrebbe essere privato viene usato in generate calendar
 	private List<Match> createMatches(List<List<FantaTeam[]>> schedule, List<MatchDay> matchDays) {
 		List<Match> matches = new ArrayList<>();
 

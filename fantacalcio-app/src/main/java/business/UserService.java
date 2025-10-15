@@ -91,13 +91,11 @@ public class UserService {
 
 	// Proposals
 
-    //TODO league non serve
-	public Set<Proposal> getAllTeamProposals(League league, FantaTeam team) {
+	public Set<Proposal> getAllTeamProposals(FantaTeam team) {
 		return transactionManager
 				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));
 	}
 
-    //TODO ritesta
 	public void acceptProposal(Proposal proposal, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();

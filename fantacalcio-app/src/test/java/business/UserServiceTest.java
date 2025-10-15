@@ -139,7 +139,6 @@ public class UserServiceTest {
 				.hasMessageContaining("A league with the same league code already exists");
 	}
 
-    //TODO ricontrolla tutta la logica che mi convince poco
 	@Test
 	void testJoinLeague() {
 		FantaUser user = new FantaUser("user@test.com", "pwd");
@@ -904,7 +903,7 @@ public class UserServiceTest {
         contracts1.add(contract1);
 		when(context.getProposalRepository().getProposalsFor(team)).thenReturn(Set.of(p));
 
-		Set<Proposal> result = userService.getAllTeamProposals(league, team);
+		Set<Proposal> result = userService.getAllTeamProposals(team);
 		assertThat(result).containsExactly(p);
 	}
 

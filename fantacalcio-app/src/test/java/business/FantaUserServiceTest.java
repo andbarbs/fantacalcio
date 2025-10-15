@@ -70,7 +70,7 @@ public class FantaUserServiceTest {
 //        				matchDay, 
 //        				new FantaTeam("TeamA", league, 10, fantaUser, contractsA),
 //        				new FantaTeam("TeamB", league, 10, fantaUser, contractsB)))));
-//        //TODO controlla che un user ha due team
+//
 //
 //        // Stub the repository call
 //        when(matchRepository.getAllMatches(eq(league))).thenReturn(expectedMatches);
