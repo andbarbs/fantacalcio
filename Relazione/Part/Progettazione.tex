@@ -3,9 +3,10 @@
 \todo[color=blue]{Andre scrivi il paragrafo 3 sul database ovvero parla di hibernate,transaction manager e come hai annotato le clsse e del
     database in memoria}
 
+\subsection{JPA}
 vantaggi nell'uso di JPA:
-\begin{itemize}
-    \item Possesso della persistenza nel codice
+\begin{enumerate}
+    \item \textbf{Possesso della persistenza nel codice} \newline
           Come è noto, le annotazioni JPA definiscono lo schema logico della persistence unit
           assunto dall'applicazione, nel contesto più generale in cui la persistence unit ha
           esistenza autonoma ed è condivisa con una pluralità di attori.
@@ -33,50 +34,112 @@ vantaggi nell'uso di JPA:
           fra codice e persistenza: non è la persistenza ad obbligare il codice a conformarsi
           ad essa, ma il codice che possiede la specifica delle proprietà della persistenza.
 
-          Questa inversione porta:
+          Questa inversione porta i seguenti vantaggi:
           \begin{itemize}
-              \item lo schema fisico non è minimamente di intralcio all'evoluzione della
-                    modellazione del dominio, in quanto è interamente desunto da questa in
-                    fase di esecuzione
+              \item lo schema fisico della persistence unit non è minimamente di intralcio 
+                    all'evoluzione della modellazione del dominio, in quanto è automaticamente 
+                    inferito da questa in fase di esecuzione
               \item la modellazione del dominio può essere quindi rivista e modificata con la
-                    velocità di evoluzone di un tipo Java, incoraggiando quindi la ricerca di
+                    velocità di evoluzone di un tipo Java, incoraggiando la ricerca di
                     soluzioni efficaci per il gli attori del sistema
           \end{itemize}
-    \item Object-relational mapping
+
+    \item \textbf{Object-relational mapping} \newline
           JPA ci ha permesso di non dover gestire il flusso di informazione dalla JVM al database e viceversa,
           che altrimenti andrebbe implementato manualmente in JDBC. Sono sufficienti le mapping annotations
-          e le convenzioni.
-    \item Transazionalità
+          e le convenzioni JPA
+    \item \textbf{Transazionalità} \newline
           Un ulteriore vantaggio derivato dall'uso di JPA è la possibilità di rendere una unit of work
           transazionale
-\end{itemize}
+\end{enumerate}
 
+Di seguito descriviamo alcuni aspetti notevoli del nostro uso di JPA.
 
-Aspetti notevoli dell'uso di JPA
-Principi di gestione della persistenza:
 \begin{itemize}
-    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
-    \item transazioni(?)
-    \item qualità delle astrazioni: entità applicative vs entità relazionali (cascading)
-    \item informazione di tipo: inheritance vs type mapping
-    \item lazy fetching nelle entità vs deep fetching nel DAL
-    \item criteria queries
-          l'utilizzo della Criteria Queries API congiuntamente al metamodello Jpa consente di
-          formulare queries type-safe e corrette rispetto allo schema fisico. L'obiettivo è
-          rimuovere tutte le circostanze di errore che possono essere individuate prima dell'esecuzione.
+    \item \textbf{rispetto del layering} \newline
+        Per quanto JPA sia una tecnologia robusta e sicura, ci è comunque sembrato opportuno
+        progettare i core layers in maniera da non dipendere da alcun dettaglio implementativo: 
+        l'uso di una dterminata tecnologia di gestione della persistenza come JPA, di uno specifico 
+        vendor JPA come Hibernate, o peggio ancora di uno specifico DBMS come Postgres. 
+
+        \textit{JPA-agnosticism nella Business Logic} \newline
+        i Services che compongono la Business Logic non dipendono dalla presenza di JPA, in quanto
+        \begin{itemize}
+              \item definiscono interfacce per le "collezioni di entità di un certo tipo presenti
+                    nel sistema", ovvero vari EntityRepository, ed una denominata TransactionManager
+                    che espone API per l'esecuzione transazionale di una unit-of-work sui Repositories
+              \item vengono istanziati su una istanza di TransactionManager e si servono delle sue API
+                    per eseguire operazioni sui dati presenti nel sistema in maniera transazionale
+        \end{itemize}
+        A runtime, i Services riceveranno un implementatore concreto di TransactionManager: 
+        tuttavia, il codice dei Services è del tutto privo di assunzioni sulla tecnologia 
+        effettivamente utilizzata per implementarlo.
+
+        \textit{Hibernate-agnosticism nel Data-Access Layer} \newline
+        i Repositories e TransactionManager concreti dipendono solo da JPA, in quanto
+        \begin{itemize}
+              \item i JpaEntityRepositories richiedono di essere istanziati su un EntityManager JPA,
+                    e di esso si servono per eseguire operazioni sulla collezione
+                    delle entità di cui sono responsabili o di entità associate. Tuttavia, tali
+                    queries sono formulate in un DDL vendor-agnostic (Jpa Criteria Queries) 
+                    e non uno vendor-specific come Hibernate Query Language
+              \item JpaTransactionManager implementa TransactionManager in termini di 
+                    EntityManager.beginTransaction() etc. e istanziando i JpaEntityRepositories
+        \end{itemize}
+        In questo modo, i JpaEntityRepositories e JpaTransactionManager non fanno assunzioni 
+        sul vendor JPA effettivamente utilizzato, e sono quindi riusabili in presenza di 
+        un qualsiasi vendor JPA diverso da Hibernate.
+
+    \item \textbf{qualità delle astrazioni nel domain modelling} \newline
+        Nel fare modellazione del dominio ci siamo spesso chiesti se la forma naturalmente suggerita 
+        dal modello relazionale ad un dato ambito del dominio fosse realmente la più intuitiva 
+        per i componenti applicativi del sistema. Ad esempio, il modello relazionale impone che 
+        la relazione molti-a-molti fra Team e Player venga reificata, attraverso una ulteriore 
+        entità che potremmo chiamare "Contract". Tuttavia, il codice applicativo non ha beneficio 
+        nel rapportarsi con il tipo Contract; semmai, vorrebbe vedere un Team come l'insieme dei 
+        suoi Player, ovvero accedere alla composizione di un Team tramite una API simile a 
+        Team.getGoalkeepers().
+        Le soluzioni che abbiamo adottato, basate @MappedBy con attributi collettivi e l'uso 
+        di fluent APIs, cercano di fornire al codice applicativo una visione del dominio 
+        idiomatica e libera dalle imposizioni della persistenza relazionale.
+
+    \item \textbf{rappresentazione dell'informazione di tipo} \newline
+        Nel modellare il dominio, ci siamo posti il problema di come rappresentare l'informazione
+        di tipo nelle entità: ad esempio, il fatto che un Player ha un ruolo, o che una LineUp
+        contiene un determinato modulo. Le soluzioni che abbiamo adottato sono state due:
+         \begin{itemize}
+              \item Entity Inheritance quando l'informazione di tipo è connaturata all'entità, 
+                    ovvero non muta durante il ciclo di vita di una occorrenza di tale entità:
+                    è il caso del ruolo di un giocatore, per cui Goalkeeper e Defender sono
+                    entity-subtypes di Player. Ci siamo poi dovuti avvalere del pattern Visitor
+                    per implementare logica che discrimina sul tipo runtime, a causa di una
+                    limitazione imposta da Hibernate per cui le entità non possono essere
+                    classi sealed
+              \item type-mapping quando l'informazione di tipo è mutevole nel ciclo di vita
+                    di una occorrenza. In questo caso, ci siamo serviti degli Enum con controllo
+                    di esaustività presenti in Java 14+ come nel caso di MatchDay, 
+                    oppure di soluzioni ibride come per LineUp: il tipo Scheme, che rappresenta 
+                    il modulo calcistico
+                    utilizzato nella formazione, è un tipo Java ma realizza di fatto la semantica di
+                    un Enum. I suoi sottotipi concreti, come gli schemi "4-3-3" e "3-4-3", vengono generati
+                    automaticamente da un annotation processor. Un vantaggio di questa soluzione 
+                    apparentemente scomoda è
+                    che i componenti dipendenti da Scheme non sono costretti a cononscere
+                    le varianti concrete di schema effettivamente presenti nel sistema
+        \end{itemize}
+
+    \item \textbf{lazy fetching nelle entità, deep fetching nel DAL} \newline
+        Dal momento che la nostra logica di accesso al dato non si avvantaggiava mai 
+        del lazy fetching offerto da EntityManager, avremmo potuto forzare il fetching 
+        a eager direttamente dalle annotazioni di associazione nelle entità. Invece, 
+        abbiamo preferito seguire il suggerimento del manuale Hibernate e non imporre una 
+        fetching policy a livello di associazione, in modo da lasciare libertà alla 
+        data access logic di specificare la propria. In questo modo, le nostre entità 
+        risultano riusabili anche in presenza di un Data Access layer radicalmente diverso
+
 \end{itemize}
 
-Principi di design della GUI:
-\begin{itemize}
-    \item MVP
-    \item MVP, modularità e Dependency Injection (disegno)
-    \item private vs public design-time logic
-    \item instantiation vs configuration
-    \item limiti di AssertJSwing, limiti di WB
-\end{itemize}
 
-
-\todo[color=blue]{Se vuoi scrivi della gui in generale}
 \todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}
 
 \subsection{Use Case Templates}
