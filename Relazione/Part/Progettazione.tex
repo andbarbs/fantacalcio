@@ -1,44 +1,26 @@
 \section{Progettazione}
-\todo{Aggiungere UML, UseCases diagram e template, MockUps, Navigation Diagram ed ER? meglio dire come gestiamo il database in memoria e jpa/hibernate}
+\subsection{Introduzione}
+In questa sezione verrà approfondita tutto ciò che riguarda la progettazione ed
+il design del sistema.
+\subsection{Use Case Diagrams}
+Tra le prime cose di cui ci siamo occupati per lo sviluppo di questa applicazione
+ci sono gli use case diagrams. La realizzazione di questi diagrammi ci hanno permesso
+di individuare e dividere le operazioni che ogni utente dell'applicazione sarebbe stato
+in grado di compiere Figura \ref{fig:Use case diagrams}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Resources/graficiUML/UseCaseDiagram.png}        
+    \caption{Use case diagrams degli attori dell'applicazione.}
+    \label{fig:Use case diagrams}
+\end{figure}
 \todo[color=blue]{Andre scrivi il paragrafo 3 sul database ovvero parla di hibernate,transaction manager e come hai annotato le clsse e del
     database in memoria}
-La scelta di usare JPA nella modellazione del dominio ci è sembrata particolarmente vantaggiosa
-dal momento che la nostra applicazione non doveva interfacciarsi con un database esistente autonomamente,
-ovvero l'app e lo schema del database sarebbero stati sviluppati insieme. 
-Le annotazioni JPA nelle classi di dominio
-sono servite quindi non soltanto come specifica per l'object-relational mapping, ma grazie alla property
-di bootstrap \texttt{hibernate.hbm2ddl.auto = create-drop}, anche per definire univocamente lo schema del database.
-In questo modo 
-\begin{itemize}
-    \item non si pongono problemi di allineamento fra schema db e ORM, in quanto il primo
-        è automaticamente desunto dal secondo
-    \item la modellazione del dominio può essere rivista e modificata a piacere, incoraggiando
-        la ricerca di soluzioni efficaci anche quando scomode da mappare manualmente
-\end{itemize}
-
-Principi di gestione della persistenza:
-\begin{itemize}
-    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
-    \item entità applicative vs entità relazionali (cascading)
-    \item inheritance vs type mapping
-    \item lazy fetching nelle entità vs deep fetching nel DAL
-\end{itemize}
-
-Principi di design della GUI:
-\begin{itemize}
-    \item MVP
-    \item MVP, modularità e Dependency Injection (disegno)
-    \item private vs public design-time logic
-    \item instantiation vs configuration
-    \item limiti di AssertJSwing, limiti di WB
-\end{itemize}
-
-
 \todo[color=blue]{Se vuoi scrivi della gui in generale}
 \todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}
 
 \subsection{Use Case Templates}
 
+\subsection{Creazione lega}
 \begin{table}[H]
 \caption{Crea fantalega}
 \label{UC-01}
@@ -73,18 +55,18 @@ Principi di design della GUI:
 \end{table}
 
 
-
+\subsubsection{Assegna giocatori ai teams}
 \begin{table}[H]
-\caption{Assegna giocatori alle rose}
+\caption{Assegna giocatori ai teams}
 \label{UC-02}
 
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
-\textbf{Id} & UC-02 (Assegna giocatori alle rose) \\
+\textbf{Id} & UC-02 (Assegna giocatori ai teams) \\
 \hline
 \textbf{Scope} & user goal \\
 \hline
-\textbf{Descrizione} & L'admin vuole assegnare i giocatori corretti alle rose presenti nella lega. \\
+\textbf{Descrizione} & L'admin vuole assegnare i giocatori corretti ai teams presenti nella lega. \\
 \hline
 \textbf{Attori} & Admin \\
 \hline
@@ -115,7 +97,7 @@ Principi di design della GUI:
 \end{table}
 
 
-
+\subsubsection{Inserisci formazione}
 \begin{table}[H]
 \caption{Inserisci formazione}
 \label{UC-03}
@@ -171,7 +153,7 @@ Principi di design della GUI:
 \end{table}
 
 
-
+\subsubsection{Crea proposta di scambio}
 \begin{table}[H]
 \caption{Scambia giocatori - Invia proposta}
 \label{UC-04}
@@ -217,7 +199,7 @@ Principi di design della GUI:
 \end{table}
 
 
-
+\subsubsection{Accetta proposta di scambio}
 \begin{table}[H]
 \caption{Scambia giocatori - Accetta proposta}
 \label{UC-05}
@@ -403,10 +385,63 @@ Principi di design della GUI:
 \end{figure}
 
 Abbiamo iniziato anche a progettare una gui utilizzando Java Swing al momento
-abbiamo realizzato solamente la pagina per l'inserimento della formazione.
+abbiamo realizzato solamente la pagina per l'inserimento della formazione Figura \ref{fig:pagina_inserisci_formazione}.
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{Resources/Mockups/InserisciFormazione.png}        
     \caption{Pagina per l'inserimento della formazione.}
     \label{fig:pagina_inserisci_formazione}
 \end{figure}
+\subsection{ClassDiagram}
+In questa sottosezione viene riportato il calss diagram dell'applicazione. Per chiarezza visiva
+è sato diviso in più parti.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Resources/graficiUML/BusinessClassDiagram.png}        
+    \caption{BusinessClassDiagram.}
+    \label{fig:business_class_diagram}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Resources/graficiUML/DALClassDiagram.png}        
+    \caption{DAL class diagram.}
+    \label{fig:dal_class_diagram}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Resources/graficiUML/ClassDiagram.png}        
+    \caption{Domain class diagram.}
+    \label{fig:domain_class_diagram}
+\end{figure}
+
+\subsection{Database}
+La scelta di usare JPA nella modellazione del dominio ci è sembrata particolarmente vantaggiosa
+dal momento che la nostra applicazione non doveva interfacciarsi con un database esistente autonomamente,
+ovvero l'app e lo schema del database sarebbero stati sviluppati insieme. 
+Le annotazioni JPA nelle classi di dominio
+sono servite quindi non soltanto come specifica per l'object-relational mapping, ma grazie alla property
+di bootstrap \texttt{hibernate.hbm2ddl.auto = create-drop}, anche per definire univocamente lo schema del database.
+In questo modo 
+\begin{itemize}
+    \item non si pongono problemi di allineamento fra schema db e ORM, in quanto il primo
+        è automaticamente desunto dal secondo
+    \item la modellazione del dominio può essere rivista e modificata a piacere, incoraggiando
+        la ricerca di soluzioni efficaci anche quando scomode da mappare manualmente
+\end{itemize}
+
+Principi di gestione della persistenza:
+\begin{itemize}
+    \item rispetto dei layer: JPA agnosticism nella BL (TransactionManager), Hibernate agnosticism nel DAL
+    \item entità applicative vs entità relazionali (cascading)
+    \item inheritance vs type mapping
+    \item lazy fetching nelle entità vs deep fetching nel DAL
+\end{itemize}
+
+Principi di design della GUI:
+\begin{itemize}
+    \item MVP
+    \item MVP, modularità e Dependency Injection (disegno)
+    \item private vs public design-time logic
+    \item instantiation vs configuration
+    \item limiti di AssertJSwing, limiti di WB
+\end{itemize}
