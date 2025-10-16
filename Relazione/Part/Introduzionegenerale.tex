@@ -14,7 +14,26 @@ Il sistema prevede tre tipi di utenti distinti, ciascuno con capacità diverse:
     competere con gli altri giocatori schierando la formazione migliore in ogni giornata
     \item \textbf{Admin}: è un utente base che è anche admin di una lega. Si occupa di generare il calendario,  
     assegnare o rimuovere i calciatori dai team e di calcolare i risultati delle partite alla fine della giornata
-    \item \textbf{Newspaper}: è la testata giornalistica che si occupa di assegnare i voti ai calciatori ad ogni giornata del campionato
+    \item \textbf{Journalist}: è l'utente della lega che si occupa di assegnare i voti ai calciatori ad ogni giornata del campionato
+\end{itemize}
+\subsection{Requisiti Funzionali}
+L'applicazione supporta le principali operazioni del gioco del fantacalcio, divise in base al ruolo
+che l'utente ricopre nelle leghe in cui partecipa.
+\begin{itemize}
+    \item \textbf{Crea lega}: qualsiasi utente può creare una nuova lega, di cui diventa admin,
+     per giocare con i propri amici.
+    \item \textbf{Unirsi ad una lega come fanta manager}: qualsiasi utente può unirsi
+    ad una lega a patto di conoscere il suo nome ed il suo codice. Una voltra dentro la
+    lega l'utente potrà vederne i dettagli e potrà gestire il proprio team.
+    \item \textbf{Unirsi alla lega come giornalista}: un utente può entrare in una lega non come manager
+    ma come giornalista, il cui compito è quello di assegnare i voti ai calciatori.
+    \item \textbf{Inserire la formazione}: prima di ogni giornata ogni utente che non è
+    giornalista può schierare la propria formazione per quella giornata e lega.
+    \item \textbf{Gestire la lega}: l'admin di una lega deve essere in grado di gestirla,
+    ciò comporta l'assegnare i calciatori ai team, generare il calendario, calcolare i risultati
+    delle partite e scandire l'avanzamento del gioco.
+    \item \textbf{Assegnare voti ai calciatori}: gli utenti di tipo giornalista devono essere in grado di assegnare
+    dei voti ai calciatori per la giornata in corso della lega in cui l'utente partecipa.
 \end{itemize}
 
 \subsection{Architettura}
