@@ -1,3 +1,31 @@
 \section{Implementazione}
 \todo{Parlare del domain model, delle annotazioni, dei repository, dei service forse è più adatto qui parlare approfonditamente del databse ed in progettazione fare un introduzione}
 \todo[color=blue]{Qui parla di come hai implementato il transaction manager, E Gui approfondita}
+In questa sezione verrà descritta l'implementazione dell'applicazione analizzandone tutti
+i componenti.
+\subsection{Domain Model}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Resources/graficiUML/ClassDiagram.png}        
+    \caption{Domain class diagram.}
+    \label{fig:domain_class_diagram2}
+\end{figure}
+Il domainn model rappresnta le entità di dominio del sistema e le loro relazioni.
+Tutte le classi presenti sono state annotate con \textbf{Jpa}.
+La classe \textbf{League} rappresenta la lega. Essa ha un nome un codice ed un riferimento
+a due user l'admin e il journalist. La classe \textbf{fantaUser} rappresenta l'utente che può
+svolgere varie azioni in base al ruolo che ricopre nella lega. La classe \textbf{FantaTeam}
+rappresenta il team di un utente all'interno di una lega. È interessante riportare
+che la classe \textbf{FantaTeam} ha una relazione bidirezionale con la classe \textbf{Contract},
+ciò è sato implementato con la relazione \textbf{Jpa MappedBy}.Nella sezione su \textbf{Jpa}
+verranno approfonditi i motivi di questa scelta.Inoltre è presente la classe \textbf{FantateamViewer}
+che non è nient'altro che un visitor per estrarre il calciatori di un team per ruolo. La classe \textbf{Contract} rappresenta l'assegnazione di un
+calciatore ad un determinato team. La classe \textbf{Proposal} rappresenta la proposta di scambio
+di due calciatori appartenenti a due team della stessa lega. La classe \textbf{Player} rappresenta il calciatore. Il
+campo \textit{club} del calciatore rappresenta la squadra reale ed è realizzata con un enum.
+Per distinguere tra i vari ruoli di un calciatore abbiamo deciso di creare delle sottoclassi per ogni ruolo,
+in questo modo si possono aggiungere ulteriori ruoli per rendere più realistico il gioco.
+Per rappresentare le giornate da giocare di una specifica lega è presente la classe \textbf{Matchday}. Ogni giornata è numerata
+ed ha uno status rappresentato tramite un enum, in questo modo è possibile stabilire lo stato di avanzamento del gioco
+per quella determinata lega.
+
