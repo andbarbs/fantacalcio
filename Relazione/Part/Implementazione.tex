@@ -12,20 +12,32 @@ i componenti.
 \end{figure}
 Il domainn model rappresnta le entità di dominio del sistema e le loro relazioni.
 Tutte le classi presenti sono state annotate con \textbf{Jpa}.
-La classe \textbf{League} rappresenta la lega. Essa ha un nome un codice ed un riferimento
+La classe \textbf{League} rappresenta la lega. Essa ha un nome, un codice ed un riferimento
 a due user l'admin e il journalist. La classe \textbf{fantaUser} rappresenta l'utente che può
 svolgere varie azioni in base al ruolo che ricopre nella lega. La classe \textbf{FantaTeam}
 rappresenta il team di un utente all'interno di una lega. È interessante riportare
 che la classe \textbf{FantaTeam} ha una relazione bidirezionale con la classe \textbf{Contract},
-ciò è sato implementato con la relazione \textbf{Jpa MappedBy}.Nella sezione su \textbf{Jpa}
+ciò è sato implementato con la relazione \textbf{Jpa MappedBy}, nella sezione su \textbf{Jpa}
 verranno approfonditi i motivi di questa scelta.Inoltre è presente la classe \textbf{FantateamViewer}
-che non è nient'altro che un visitor per estrarre il calciatori di un team per ruolo. La classe \textbf{Contract} rappresenta l'assegnazione di un
+che non è nient'altro che un visitor per estrarre il calciatori di un team in base al ruolo. La classe \textbf{Contract} rappresenta l'assegnazione di un
 calciatore ad un determinato team. La classe \textbf{Proposal} rappresenta la proposta di scambio
 di due calciatori appartenenti a due team della stessa lega. La classe \textbf{Player} rappresenta il calciatore. Il
 campo \textit{club} del calciatore rappresenta la squadra reale ed è realizzata con un enum.
-Per distinguere tra i vari ruoli di un calciatore abbiamo deciso di creare delle sottoclassi per ogni ruolo,
+Per distinguere tra i vari ruoli di un calciatore abbiamo deciso di creare delle sottoclassi per ognuno di essi,
 in questo modo si possono aggiungere ulteriori ruoli per rendere più realistico il gioco.
 Per rappresentare le giornate da giocare di una specifica lega è presente la classe \textbf{Matchday}. Ogni giornata è numerata
 ed ha uno status rappresentato tramite un enum, in questo modo è possibile stabilire lo stato di avanzamento del gioco
-per quella determinata lega.
+per quella determinata lega. Ad ogni match day sono associati i voti dei calciatori
+assegnati dal giornalista, la classe che rappresenta ciò è \textbf{Grade}.
+In ogni giornata sono presenti più match ognuno dei quali è rappresentato 
+dalla classe \textbf{Match}. Ogni match ha il riferimento ai due team coinvolti
+ed una volta concluso ha un riferimento alla classe \textbf{Result}, ovvero il suo risultato.
+La classe \textbf{LineUp} rappresenta la formazione schierata da un team per un match.
+La classe \textbf{Scheme}, che rappresenta il modulo, è utilizzata per fare type mapping di \textbf{LineUp}, ciò
+verrà approfondito in seguito. Anche per \textbf{LineUp} è presente una relazione mapppata
+con \textbf{Jpa MappedBy} ed è quella con \textbf{Fielding}, che rappresenta lo schiaremento di un giocatore.
+Infine è presente una classe \textbf{LineUpViewer} che implementa un'api sequenziabilizzabile e sicura
+per instanziare una \textbf{LineUp}.
+
+
 
