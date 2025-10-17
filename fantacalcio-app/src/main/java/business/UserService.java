@@ -50,12 +50,13 @@ public class UserService {
 		});
 	}
 
-    //TODO Testa
-    //Mi fido che la lista sia stata passata bene
     public void joinLeagueAsJournalist(League league, FantaUser journalist) {
         transactionManager.inTransaction((context) -> {
             if (league.getNewsPaper() != null) {
-                throw new IllegalStateException("La lega ha già un giornale associato!");
+                throw new IllegalStateException("La lega ha già un giornalista associato!");
+            }
+            if(league.getAdmin().equals(journalist)){
+                throw new IllegalStateException("l'admin non può essere il giornalista");
             }
             league.setNewsPaper(journalist);
         });
@@ -90,7 +91,6 @@ public class UserService {
 	}
 
 	// Proposals
-    //TODO testa
 	public Set<Proposal> getAllTeamProposals(FantaTeam team) {
 		return transactionManager
 				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));

@@ -78,12 +78,18 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    return getEntityManager().createQuery(query).getResultList();
 	}
 
-    //TODO testa
     @Override
-    public List<League> getLeaguesByJournalist(FantaUser journalist) {
-        return List.of();
+    public Set<League> getLeaguesByJournalist(FantaUser journalist) {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<League> cq = cb.createQuery(League.class);
+        Root<League> leagueRoot = cq.from(League.class);
+        cq.select(leagueRoot)
+                .where(cb.equal(leagueRoot.get(League_.newsPaper), journalist));
+
+        return getEntityManager().createQuery(cq).getResultStream().collect(Collectors.toSet());
     }
 
+    //TODO Andre non dovrebbe stare nel repository dei players
 	@Override
 	public Set<Player> getAllInLeague(League league) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();

@@ -226,6 +226,82 @@ class JpaLeagueRepositoryTest {
 			// THEN only the expected Leagues are retrieved
 			assertThat(leagues).containsExactlyInAnyOrder(league1, league2);
 		}
+
+        @Test
+        @DisplayName("when no League with the given member exists in the database")
+        void testGetLeaguesByJournalistWhenNoLeagueExists() {
+
+            // GIVEN the database contains no League for a given User
+            FantaUser admin = new FantaUser("admin1", "adminPswd1");
+            League league1 = new League(admin, "lega1", "1234");
+            League league2 = new League(admin, "lega2", "5678");
+
+            FantaUser user = new FantaUser("user", "userPswd");
+            FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
+            FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
+
+            FantaUser journalist = new FantaUser("journalist2", "journalistPswd2");
+
+            sessionFactory.inTransaction(session -> {
+                session.persist(admin);
+                session.persist(league1);
+                session.persist(league2);
+                session.persist(user);
+                session.persist(fantaTeam1);
+                session.persist(fantaTeam2);
+                session.persist(journalist);
+            });
+
+            // WHEN the SUT is used to look up Leagues where the user is admin
+            entityManager.getTransaction().begin();
+            Set<League> retrieved = leagueRepository.getLeaguesByJournalist(journalist);
+            entityManager.getTransaction().commit();
+            entityManager.clear();
+
+            // THEN an empty Set is returned
+            assertThat(retrieved).isEmpty();
+        }
+
+        @Test
+        @DisplayName("when a League with the given member exists in the database")
+        void testGetLeaguesByJournalistWhenSomeLeaguesExist() {
+
+            // GIVEN some Leagues with a given User as member exist in the database
+            FantaUser admin = new FantaUser("admin1", "adminPswd1");
+            League league1 = new League(admin, "lega1", "1234");
+            League league2 = new League(admin, "lega2", "5678");
+
+            FantaUser otherAdmin = new FantaUser("admin2", "adminPswd2");
+            League otherLeague = new League(otherAdmin, "lega2", "5678");
+
+            FantaUser user = new FantaUser("user", "userPswd");
+            FantaTeam fantaTeam1 = new FantaTeam("team1", league1, 0, user, new HashSet<Contract>());
+            FantaTeam fantaTeam2 = new FantaTeam("team2", league2, 0, user, new HashSet<Contract>());
+            FantaUser journalist = new FantaUser("journalist2", "journalistPswd2");
+            league1.setNewsPaper(journalist);
+            league2.setNewsPaper(journalist);
+
+            sessionFactory.inTransaction(session -> {
+                session.persist(journalist);
+                session.persist(admin);
+                session.persist(league1);
+                session.persist(league2);
+                session.persist(otherAdmin);
+                session.persist(otherLeague);
+                session.persist(user);
+                session.persist(fantaTeam1);
+                session.persist(fantaTeam2);
+            });
+
+            // WHEN the SUT is used to look up all Leagues the user is a member of
+            entityManager.getTransaction().begin();
+            Set<League> leagues = leagueRepository.getLeaguesByJournalist(journalist);
+            entityManager.getTransaction().commit();
+            entityManager.clear();
+
+            // THEN only the expected Leagues are retrieved
+            assertThat(leagues).containsExactlyInAnyOrder(league1, league2);
+        }
 	}
 
 	@Nested

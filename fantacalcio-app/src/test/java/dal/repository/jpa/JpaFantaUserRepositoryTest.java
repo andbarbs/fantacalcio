@@ -22,7 +22,6 @@ class JpaFantaUserRepositoryTest {
     private EntityManager entityManager;
     private JpaFantaUserRepository fantaUserRepository;
 
-    //TODO è corretto?
     @BeforeAll
     static void setUpAll() {
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()

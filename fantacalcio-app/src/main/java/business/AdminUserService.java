@@ -78,7 +78,6 @@ public class AdminUserService extends UserService {
 	public void generateCalendar(League league) {
 		transactionManager.inTransaction((context) -> {
 			List<FantaTeam> teams = List.copyOf(context.getTeamRepository().getAllTeams(league));
-			// TODO what if there are no Teams? Aggiungere controllo e testare se non già fatto
 			List<List<FantaTeam[]>> schedule = generateFixedRounds(teams, 20);
 			List<MatchDay> matchDay = context.getMatchDayRepository().getAllMatchDays(league);
 			List<Match> matches = createMatches(schedule, matchDay);
@@ -182,7 +181,6 @@ public class AdminUserService extends UserService {
 	}
 
 	public void calculateResults(League league) {
-		// TODO rimuovere le stampe!!
 		transactionManager.inTransaction((context) -> {
 			// find the oldest match with no result
 			context.getMatchDayRepository().getLatestEndedMatchDay(league).ifPresentOrElse(latestEnded -> {
@@ -196,8 +194,6 @@ public class AdminUserService extends UserService {
 	            
 				for (Match match : allMatches) {
 					
-					System.out.println("Considering match: " + match.getMatchDay().getName() + ", " + match.getTeam1().getName() + ", " + match.getTeam2().getName());
-					
 					List<Grade> allMatchGrades = findGradesForMatch(match, allGrades);
 					Optional<LineUp> lineUp1 = context.getLineUpRepository().getLineUpByMatchAndTeam(match,
 							match.getTeam1());
@@ -207,17 +203,16 @@ public class AdminUserService extends UserService {
 							.collect(Collectors.toMap(Grade::getPlayer, g -> g));
 					double resultTeam1 = 0;
 					double resultTeam2 = 0;
-					
-					System.out.println("Check if lineups exist");
+
+					//Check if lineups exist
 					if (lineUp1.isPresent()) {
 						
-						System.out.println("lineUp1 OK");
+						//lineUp1 OK
 						resultTeam1 = getTeamResult(lineUp1.get(), gradesByPlayer);
 						
 					}
 					if (lineUp2.isPresent()) {
-						
-						System.out.println("lineUp2 OK");
+                        //lineUp2 OK
 						resultTeam2 = getTeamResult(lineUp2.get(), gradesByPlayer);
 						
 					}
@@ -231,8 +226,7 @@ public class AdminUserService extends UserService {
 						match.getTeam1().setPoints(match.getTeam1().getPoints() + 1);
 						match.getTeam2().setPoints(match.getTeam2().getPoints() + 1);
 					}
-					
-					System.out.println("Result saved with: " + resultTeam1 + ", " + resultTeam2);
+
 					context.getResultsRepository()
 							.saveResult(new Result(resultTeam1, resultTeam2, goalTeam1, goalTeam2, match));
 				}

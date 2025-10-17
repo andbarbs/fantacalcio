@@ -1,5 +1,6 @@
 package business;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -167,6 +168,39 @@ public class UserServiceTest {
 				.hasMessageContaining("Maximum 8 teams per league");
 
 	}
+
+    @Test
+    void testJoinLeagueAsJournalist_AdminTriesToJoin(){
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L002");
+
+        assertThatThrownBy(() -> userService.joinLeagueAsJournalist(league,user)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("l'admin non può essere il giornalista");
+    }
+
+    @Test
+    void testJoinLeagueAsJournalist_JournalistPresent(){
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L002");
+        FantaUser journalist = new FantaUser("j@mail", "psw");
+        FantaUser otherJournalist = new FantaUser("o@mail", "psw");
+        league.setNewsPaper(journalist);
+
+        assertThatThrownBy(() -> userService.joinLeagueAsJournalist(league,journalist)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("La lega ha già un giornalista associato!");
+    }
+
+    @Test
+    void testJoinLeagueAsJournalist() {
+        FantaUser user = new FantaUser("user@test.com", "pwd");
+        League league = new League(user, "Test League", "L002");
+        FantaUser journalist = new FantaUser("j@mail", "psw");
+
+        when(leagueRepository.getLeaguesByMember(user)).thenReturn(Set.of());
+
+        userService.joinLeagueAsJournalist(league,journalist);
+        assertTrue(league.getNewsPaper().equals(journalist));
+    }
 
 	@Test
 	void testJoinLeague_UserAlreadyInLeague() {

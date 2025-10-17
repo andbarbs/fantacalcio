@@ -29,7 +29,7 @@ class JpaPlayerRepositoryTest {
 	private JpaPlayerRepository playerRepository;
 	private EntityManager entityManager;
 
-//TODO aggiornare bootstrap di tutti i test hibernate
+//TODO aggiornare bootstrap di tutti i test hibernate non è necessario si può lasciare così
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
