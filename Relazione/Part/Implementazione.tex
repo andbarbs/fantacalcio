@@ -58,7 +58,7 @@ In particolare vengono utilizzati i due metodi \textit{inTransaction} e \textit{
     \centering
     \includegraphics[width=\textwidth]{Resources/graficiUML/BusinessClassDiagram.png}        
     \caption{Business class diagram.}
-    \label{fig:business_class_diagram}
+    \label{fig:business_class_diagram2}
 \end{figure}
 
 Di seguito l'implementazione di \textit{inTransaction} e \textit{fromTransaction}:
@@ -105,7 +105,35 @@ Di seguito l'implementazione di \textit{inTransaction} e \textit{fromTransaction
 	}
 }
 \end{lstlisting}
+\newpage
 
 \subsection{Repositories}
+I repository concreti estendono tutti il \textbf{BaseJpaRepository} ed implementano la relativa interfaccia.
+Le query sono state implementate con le \textit{CriteriaQuery}, ciò ha permesso insieme
+all'utilizzo del metamodello di avere un controllo a compile time sulle entità utilizzate nella query.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Resources/graficiUML/DALClassDiagram.png}        
+    \caption{Dal class diagram.}
+    \label{fig:Dal_class_diagram2}
+\end{figure}
 
+Esempio di query effettuata tramite le \textit{CriteriaQuery}:
+\begin{lstlisting}[language=Java]
+@Override
+	public Optional<FantaUser> getUser(String email, String password) {
+    	EntityManager em = getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FantaUser> query = cb.createQuery(FantaUser.class);
+        Root<FantaUser> root = query.from(FantaUser.class);
+
+        query.select(root).where(
+                cb.equal(root.get(FantaUser_.email), email),
+                cb.equal(root.get(FantaUser_.password), password)
+        );
+
+        return em.createQuery(query).getResultList().stream().findFirst();
+	}
+}
+\end{lstlisting}
