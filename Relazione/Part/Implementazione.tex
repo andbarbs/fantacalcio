@@ -18,7 +18,7 @@ svolgere varie azioni in base al ruolo che ricopre nella lega. La classe \textbf
 rappresenta il team di un utente all'interno di una lega. È interessante riportare
 che la classe \textbf{FantaTeam} ha una relazione bidirezionale con la classe \textbf{Contract},
 ciò è sato implementato con la relazione \textbf{Jpa MappedBy}, nella sezione su \textbf{Jpa}
-verranno approfonditi i motivi di questa scelta.Inoltre è presente la classe \textbf{FantateamViewer}
+sono stati approfonditi i motivi di questa scelta.Inoltre è presente la classe \textbf{FantateamViewer}
 che non è nient'altro che un visitor per estrarre il calciatori di un team in base al ruolo. La classe \textbf{Contract} rappresenta l'assegnazione di un
 calciatore ad un determinato team. La classe \textbf{Proposal} rappresenta la proposta di scambio
 di due calciatori appartenenti a due team della stessa lega. La classe \textbf{Player} rappresenta il calciatore. Il
@@ -33,8 +33,7 @@ In ogni giornata sono presenti più match ognuno dei quali è rappresentato
 dalla classe \textbf{Match}. Ogni match ha il riferimento ai due team coinvolti
 ed una volta concluso ha un riferimento alla classe \textbf{Result}, ovvero il suo risultato.
 La classe \textbf{LineUp} rappresenta la formazione schierata da un team per un match.
-La classe \textbf{Scheme}, che rappresenta il modulo, è utilizzata per fare type mapping di \textbf{LineUp}, ciò
-verrà approfondito in seguito. Anche per \textbf{LineUp} è presente una relazione mapppata
+La classe \textbf{Scheme}, che rappresenta il modulo, è utilizzata per fare type mapping di \textbf{LineUp}. Anche per \textbf{LineUp} è presente una relazione mapppata
 con \textbf{Jpa MappedBy} ed è quella con \textbf{Fielding}, che rappresenta lo schiaremento di un giocatore.
 Infine è presente una classe \textbf{LineUpViewer} che implementa un'api sequenziabilizzabile e sicura
 per instanziare una \textbf{LineUp}.
