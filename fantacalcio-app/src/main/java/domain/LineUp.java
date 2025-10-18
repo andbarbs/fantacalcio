@@ -3,8 +3,11 @@ package domain;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import domain.LineUp.LineUpBuilderSteps.ReadyForStarterLineUp;
@@ -128,23 +131,26 @@ public class LineUp {
 					Set<Defender> starterDefenders,
 					Set<Midfielder> starterMidfielders, 
 					Set<Forward> starterForwards) {
-				this.scheme = scheme;
-				this.starterGoalie = starterGoalie;
+				this.scheme = Objects.requireNonNull(scheme,
+						"LineUpBuilder: cannot instantiate on a null Scheme");;
+				
+				this.starterGoalie = Objects.requireNonNull(starterGoalie,
+						"LineUpBuilder: cannot instantiate on null Starter Goalkeeper");
 
-				if (scheme.getNumDefenders() != 
-						starterDefenders.stream().map(Objects::requireNonNull).distinct().count())
-					throw new IllegalArgumentException("");
-				this.starterDefenders = starterDefenders;
+				if (scheme.getNumDefenders() != starterDefenders.size())
+					throw new IllegalArgumentException("not enough Starter Defenders");
+				this.starterDefenders = starterDefenders.stream().map(def -> Objects.requireNonNull(def,
+						"LineUpBuilder: cannot instantiate on null Starter Defender")).collect(Collectors.toSet());
 				
-				if (scheme.getNumMidfielders() != 
-						starterMidfielders.stream().map(Objects::requireNonNull).distinct().count())
-					throw new IllegalArgumentException("");
-				this.starterMidfielders = starterMidfielders;
+				if (scheme.getNumMidfielders() != starterMidfielders.size())
+					throw new IllegalArgumentException("not enough Starter Midfielders");
+				this.starterMidfielders = starterMidfielders.stream().map(def -> Objects.requireNonNull(def,
+						"LineUpBuilder: cannot instantiate on null Starter Midfielder")).collect(Collectors.toSet());
 				
-				if (scheme.getNumForwards() != 
-						starterForwards.stream().map(Objects::requireNonNull).distinct().count())
-					throw new IllegalArgumentException("");
-				this.starterForwards = starterForwards;
+				if (scheme.getNumForwards() != starterForwards.size())
+					throw new IllegalArgumentException("not enough Starter Forwards");
+				this.starterForwards = starterForwards.stream().map(def -> Objects.requireNonNull(def,
+						"LineUpBuilder: cannot instantiate on null Starter Forward")).collect(Collectors.toSet());
 			}
 
 			@Override
@@ -228,40 +234,56 @@ public class LineUp {
 			return this;
 		}
 		
-		private void addSubstituteFieldings(Player player1, Player player2, Player player3) {
-			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player1), lineUp, 1));
-			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player2), lineUp, 2));
-			this.lineUp.fieldings.add(new Fielding.SubstituteFielding(Objects.requireNonNull(player3), lineUp, 3));
+		private void addSubstituteFieldings(List<Player> substitutes) {
+			IntStream.range(0, 3).forEach(i -> this.lineUp.fieldings
+					.add(new Fielding.SubstituteFielding(Objects.requireNonNull(substitutes.get(i)), lineUp, i + 1)));
 		}
 
 		@Override
 		public ReadyForSubstituteDefenders withSubstituteGoalkeepers(Goalkeeper goalie1, Goalkeeper goalie2,
 				Goalkeeper goalie3) {
-			// TODO add duplicate checks
-			addSubstituteFieldings(goalie1, goalie2, goalie3);
+			if (3 != Stream.of(goalie1, goalie2, goalie3).distinct().count())
+				throw new IllegalArgumentException(
+						"LineUpBuilder: unable to instantiate on duplicate Substitute Goalkeeper");
+			addSubstituteFieldings(Stream.of(goalie1, goalie2, goalie3)
+					.map(def -> Objects.requireNonNull(def,
+							"LineUpBuilder: cannot instantiate on null Substitute Goalkeeper"))
+					.collect(Collectors.toList()));
 			return this;
 		}
 
 		@Override
 		public ReadyForSubstituteMidfielders withSubstituteDefenders(Defender defender1, Defender defender2,
 				Defender defender3) {
-			// TODO add duplicate checks
-			addSubstituteFieldings(defender1, defender2, defender3);
+			if (3 != Stream.of(defender1, defender2, defender3).distinct().count())
+				throw new IllegalArgumentException("LineUpBuilder: unable to instantiate on duplicate Substitute Defender");
+			addSubstituteFieldings(Stream.of(defender1, defender2, defender3)
+					.map(def -> Objects.requireNonNull(def,
+							"LineUpBuilder: cannot instantiate on null Substitute Defender"))
+					.collect(Collectors.toList()));
 			return this;
 		}
 
 		@Override
 		public ReadyForSubstituteForwards withSubstituteMidfielders(Midfielder midfielder1, Midfielder midfielder2,
 				Midfielder midfielder3) {
-			// TODO add duplicate checks
-			addSubstituteFieldings(midfielder1, midfielder2, midfielder3);
+			if (3 != Stream.of(midfielder1, midfielder2, midfielder3).distinct().count())
+				throw new IllegalArgumentException("LineUpBuilder: unable to instantiate on duplicate Substitute Midfielder");
+			addSubstituteFieldings(Stream.of(midfielder1, midfielder2, midfielder3)
+					.map(def -> Objects.requireNonNull(def,
+							"LineUpBuilder: cannot instantiate on null Substitute Midfielder"))
+					.collect(Collectors.toList()));			
 			return this;
 		}
 
 		@Override
 		public LineUp withSubstituteForwards(Forward forward1, Forward forward2, Forward forward3) {
-			// TODO add duplicate checks
-			addSubstituteFieldings(forward1, forward2, forward3);
+			if (3 != Stream.of(forward1, forward2, forward3).distinct().count())
+				throw new IllegalArgumentException("LineUpBuilder: unable to instantiate on duplicate Substitute Forward");
+			addSubstituteFieldings(Stream.of(forward1, forward2, forward3)
+					.map(def -> Objects.requireNonNull(def,
+							"LineUpBuilder: cannot instantiate on null Substitute Forward"))
+					.collect(Collectors.toList()));	
 			return lineUp;
 		}
 	}

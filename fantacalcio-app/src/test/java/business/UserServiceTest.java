@@ -183,7 +183,6 @@ public class UserServiceTest {
         FantaUser user = new FantaUser("user@test.com", "pwd");
         League league = new League(user, "Test League", "L002");
         FantaUser journalist = new FantaUser("j@mail", "psw");
-        FantaUser otherJournalist = new FantaUser("o@mail", "psw");
         league.setNewsPaper(journalist);
 
         assertThatThrownBy(() -> userService.joinLeagueAsJournalist(league,journalist)).isInstanceOf(IllegalStateException.class)
