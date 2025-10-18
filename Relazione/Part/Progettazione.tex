@@ -35,7 +35,6 @@ Principi di design della GUI:
 
 
 \todo[color=blue]{Se vuoi scrivi della gui in generale}
-\todo[color=green]{Nicco crea gli use case template scegline qualcuno che ritieni significativo NON login e register}
 
 \subsection{Use Case Templates}
 
@@ -258,6 +257,56 @@ Principi di design della GUI:
 \end{tabularx}
 
 \end{table}
+
+
+\begin{table}[H]
+\caption{Calcola risultati della giornata}
+\label{UC-06}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Id} & UC-06 (Calcola risultati della giornata) \\
+\hline
+\textbf{Scope} & user goal (è giusto????????????) \\
+\hline
+\textbf{Descrizione} & L'admin vuole calcolare i risultati della giornata corrente una volta terminata. \\
+\hline
+\textbf{Attori} & Admin \\
+\hline
+\textbf{Flusso base} &
+\begin{enumerate}[leftmargin=*]
+    \item L'admin seleziona la sua lega per calcolare i risultati dell'ultima giornata.
+    \item Il sistema recupera l'ultima giornata terminata.
+    \item Il sistema verifica che non siano già stati calcolati i risultati per tale giornata.
+    \item Il sistema recupera tutti i voti e le partite relative a tale giornata, recuperando 
+        anche le formazioni dei team che vi hanno partecipato.
+    \item Viene calcolato il punteggio per ogni team, sommando i voti dei giocatori presenti nella formazione.
+    \item In base al punteggio ottenuto, il sistema assegna i punti in classifica ai team coinvolti.
+    \item Il sistema salva il risultato della giornata.
+
+    \item I risultati vengono salvati nel database.
+\end{enumerate} \\
+\hline
+\textbf{Flusso alternativo} &
+\begin{enumerate}[leftmargin=*,label=1.\arabic*]
+    \item La stagione non è ancora iniziata.
+    \item Il sistema mostra a schermo un messaggio di errore, in quanto non ci sono partite da elaborare.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=3.\arabic*]
+    \item I risultati dell'ultima giornata sono già stati calcolati.
+    \item Il sistema mostra a schermo un messaggio di errore, specificando la causa del problema.
+\end{enumerate}
+\begin{enumerate}[leftmargin=*,label=4.\arabic*]
+    \item La formazione di almeno uno dei due team coinvolti non è stata inserita dall'utente.
+    \item Il numero di punti assegnati a tale formazione rimane uguale a zero.
+\end{enumerate} \\
+\hline
+\textbf{Test} & \hyperref[IT6]{IT6} \\
+\hline
+\end{tabularx}
+
+\end{table}
+
 
 
 

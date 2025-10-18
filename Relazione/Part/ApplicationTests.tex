@@ -4,6 +4,7 @@
 
 I seguenti test verificano il corretto funzionamento delle singole unità di codice.
 
+\begin{comment}
 \subsubsection{Test UT1: Registrazione di un FantaUser} \label{UT1}
 \todo{Va tenuto qui?}
 
@@ -43,8 +44,9 @@ void testLoginFantaUser_ReturnsTrueWhenPresent() {
 
 Similmente sono stati anche prodotti dei test per il login di un NewsPaper.
 
+\end{comment}
 
-\subsubsection{Test UT3: Crea fantalega} \label{UT3}
+\subsubsection{Test UT1: Crea fantalega} \label{UT1}
 
 Questo unit test verifica il corretto funzionamento del sistema di creazione di una nuova League,
 tramite mock dei repository.
@@ -68,7 +70,7 @@ void testCreateLeague() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT4: Genera calendario} \label{UT4}
+\subsubsection{Test UT2: Genera calendario} \label{UT2}
 
 Questo unit test verifica il corretto funzionamento del sistema di generazione del calendario della League,
 tramite mock dei repository.
@@ -102,7 +104,7 @@ void testGenerateCalendar_SavesMatches() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT5: Assegna giocatori alle rose} \label{UT5}
+\subsubsection{Test UT3: Assegna giocatori alle rose} \label{UT3}
 
 Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei Player ai FantaTeam che li hanno acquistati,
 tramite mock dei repository.
@@ -120,7 +122,7 @@ void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT6: Calcola voti della giornata} \label{UT6}
+\subsubsection{Test UT4: Calcola voti della giornata} \label{UT4}
 
 Questo unit test verifica il corretto funzionamento del sistema di calcolo dei voti della giornata una volta terminata,
 tramite mock dei repository.
@@ -190,7 +192,7 @@ void testCalculateGrades_SavesResultsAndUpdatesPoints() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT7: Unisciti alla lega} \label{UT7}
+\subsubsection{Test UT5: Unisciti alla lega} \label{UT5}
 
 Questo unit test verifica il corretto funzionamento del sistema di ingresso in una League,
 tramite mock dei repository.
@@ -212,7 +214,7 @@ void testJoinLeague() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT8: Visualizza calendario} \label{UT8}
+\subsubsection{Test UT6: Visualizza calendario} \label{UT6}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del calendario,
 tramite mock dei repository.
@@ -234,7 +236,7 @@ void testGetAllMatches() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT9: Inserisci formazione} \label{UT9}
+\subsubsection{Test UT7: Inserisci formazione} \label{UT7}
 
 Questo unit test verifica il corretto funzionamento del sistema di salvataggio della LineUp,
 tramite mock dei repository.
@@ -266,7 +268,7 @@ void testSaveLineUp() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT10: Visualizza prossimo Match} \label{UT10}
+\subsubsection{Test UT8: Visualizza prossimo Match} \label{UT8}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del prossimo Match,
 tramite mock dei repository.
@@ -297,8 +299,7 @@ void testGetNextMatch() {
 }
 \end{lstlisting}
 
-
-\subsubsection{Test UT11: Visualizza classifica} \label{UT11}
+\subsubsection{Test UT9: Visualizza classifica} \label{UT9}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione della classifica,
 tramite mock dei repository.
@@ -323,7 +324,7 @@ void testGetStandings() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT12: Scambia giocatori - Invia proposta} \label{UT12}
+\subsubsection{Test UT10: Scambia giocatori - Invia proposta} \label{UT10}
 
 Questo unit test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam
 tramite mock dei repository.
@@ -353,7 +354,7 @@ void testCreateProposal_HappyPath() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT13: Scambia giocatori - Accetta proposta} \label{UT13}
+\subsubsection{Test UT11: Scambia giocatori - Accetta proposta} \label{UT11}
 
 Questo unit test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player 
 tramite mock dei repository.
@@ -405,7 +406,7 @@ void testAcceptProposal() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT14: Visualizza squadre} \label{UT14}
+\subsubsection{Test UT12: Visualizza squadre} \label{UT12}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam 
 tramite mock dei repository.
@@ -428,7 +429,7 @@ void testGetAllFantaTeams() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT15: Visualizza listone giocatori} \label{UT15}
+\subsubsection{Test UT13: Visualizza listone giocatori} \label{UT13}
 
 Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori 
 tramite mock dei repository.
@@ -446,7 +447,7 @@ void testGetAllPlayers() {
 \end{lstlisting}
 
 
-\subsubsection{Test UT16: Assegna voti ai giocatori} \label{UT16}
+\subsubsection{Test UT14: Assegna voti ai giocatori} \label{UT14}
 
 Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player tramite mock dei repository.
 
@@ -546,7 +547,7 @@ I seguenti test verificano che le varie componenti cooperino correttamente per l
 
 \subsubsection{Test IT1: Crea fantalega} \label{IT1}
 
-Questo unit test verifica il corretto funzionamento del sistema di creazione di una nuova League,
+Questo integration test verifica il corretto funzionamento del sistema di creazione di una nuova League,
 implementando il template \hyperref[UC-01]{UC-01}.
 
 \begin{lstlisting}[language=Java]
@@ -580,7 +581,7 @@ void createLeague() {
 \begin{comment}
 \subsubsection{Test IT4: Genera calendario} \label{IT4}
 
-Questo unit test verifica il corretto funzionamento del sistema di generazione del calendario della League,
+Questo integration test verifica il corretto funzionamento del sistema di generazione del calendario della League,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -634,7 +635,7 @@ void generateCalendar() {
 
 \subsubsection{Test IT2: Assegna giocatori alle rose} \label{IT2}
 
-Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei Player ai FantaTeam che li hanno acquistati,
+Questo integration test verifica il corretto funzionamento del sistema di assegnazione dei Player ai FantaTeam che li hanno acquistati,
 implementando il template \hyperref[UC-02]{UC-02}.
 
 \begin{lstlisting}[language=Java]
@@ -684,7 +685,7 @@ void setPlayersToTeam() {
 \begin{comment}
 \subsubsection{Test IT6: Calcola voti della giornata} \label{IT6}
 
-Questo unit test verifica il corretto funzionamento del sistema di calcolo dei voti della giornata una volta terminata,
+Questo integration test verifica il corretto funzionamento del sistema di calcolo dei voti della giornata una volta terminata,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -799,7 +800,7 @@ void calculateGrades() {
 
 \subsubsection{Test IT7: Unisciti alla lega} \label{IT7}
 
-Questo unit test verifica il corretto funzionamento del sistema di ingresso in una League,
+Questo integration test verifica il corretto funzionamento del sistema di ingresso in una League,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -837,7 +838,7 @@ void joinLeague() {
 
 \subsubsection{Test IT8: Visualizza calendario} \label{IT8}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del calendario, cioè della lista dei Match,
+Questo integration test verifica il corretto funzionamento del sistema di visualizzazione del calendario, cioè della lista dei Match,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -883,7 +884,7 @@ void testGetAllMatches() {
 
 \subsubsection{Test IT3: Inserisci formazione} \label{IT3}
 
-Questo unit test verifica il corretto funzionamento del sistema di salvataggio della LineUp,
+Questo integration test verifica il corretto funzionamento del sistema di salvataggio della LineUp,
 implementando il template \hyperref[UC-03]{UC-03}.
 
 \begin{lstlisting}[language=Java]
@@ -930,7 +931,7 @@ void testSaveLineUp() {
 
 \subsubsection{Test IT10: Visualizza prossimo Match} \label{IT10}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione del prossimo Match,
+Questo integration test verifica il corretto funzionamento del sistema di visualizzazione del prossimo Match,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -976,7 +977,7 @@ void testGetNextMatch() {
 
 \subsubsection{Test IT11: Visualizza classifica} \label{IT11}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione della classifica,
+Questo integration test verifica il corretto funzionamento del sistema di visualizzazione della classifica,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -1012,7 +1013,7 @@ void testGetStandings() {
 
 \subsubsection{Test IT4: Scambia giocatori - Invia proposta} \label{IT4}
 
-Questo unit test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam,
+Questo integration test verifica il corretto funzionamento del sistema di invio di proposte di scambio di Player tra due FantaTeam,
 implementando il template \hyperref[UC-04]{UC-04}.
 
 \begin{lstlisting}[language=Java]
@@ -1062,7 +1063,7 @@ void testCreateProposal_HappyPath() {
 
 \subsubsection{Test IT5: Scambia giocatori - Accetta proposta} \label{IT5}
 
-Questo unit test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player,
+Questo integration test verifica il corretto funzionamento del sistema di accettazione di una proposta di scambio di Player,
 implementando il template \hyperref[UC-05]{UC-05}.
 
 \begin{lstlisting}[language=Java]
@@ -1112,11 +1113,160 @@ void testAcceptProposal() {
 }
 \end{lstlisting}
 
+
+\subsubsection{Test IT6: Calcola risultati della giornata} \label{IT6}
+
+Questo integration test verifica il corretto funzionamento del sistema di calcolo dei risultati della giornata corrente,
+implementando il template \hyperref[UC-06]{UC-06}.
+
+\begin{lstlisting}[language=Java]
+@Test
+@DisplayName("can calculate Results for a Match")
+void calculateResults() {
+		
+	// TODO fa salvare un solo Result, un po' ingenuo
+
+	// GIVEN the database contains LineUps for a Match and Grades for those Players
+	FantaUser admin = new FantaUser("mail", "pswd");
+	FantaUser user = new FantaUser("mail2", "pswd2");
+	League league = new League(admin, "lega", "0000");
+	FantaTeam team1 = new FantaTeam("teamA", league, 0, admin, new HashSet<Contract>());
+	FantaTeam team2 = new FantaTeam("teamB", league, 0, user, new HashSet<Contract>());
+	MatchDay prevDay = new MatchDay("Day1",1, MatchDay.Status.PAST,league);
+	MatchDay dayToCalc = new MatchDay("Day2", 2, MatchDay.Status.PAST, league);
+	Match prevMatch = new Match(prevDay, team1, team2);
+	Match match = new Match(dayToCalc, team1, team2);
+
+	// only players that will be given nonzero Grades
+	Goalkeeper gkOnly1 = new Goalkeeper("portiere1", "titolare", Player.Club.ATALANTA);		
+	Goalkeeper gkOnly2 = new Goalkeeper("portiere2", "titolare", Player.Club.ATALANTA);
+
+	// placeholder players, just for instantiating LineUp
+	Defender d1 = new Defender("difensore1", "titolare", Player.Club.ATALANTA);
+	Defender d2 = new Defender("difensore2", "titolare", Player.Club.ATALANTA);
+	Defender d3 = new Defender("difensore3", "titolare", Player.Club.ATALANTA);
+	Defender d4 = new Defender("difensore4", "titolare", Player.Club.ATALANTA);
+
+	Midfielder m1 = new Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA);
+	Midfielder m2 = new Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA);
+	Midfielder m3 = new Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA);
+
+	Forward f1 = new Forward("attaccante1", "titolare", Player.Club.ATALANTA);
+	Forward f2 = new Forward("attaccante2", "titolare", Player.Club.ATALANTA);
+	Forward f3 = new Forward("attaccante3", "titolare", Player.Club.ATALANTA);
+
+	Goalkeeper sgk1 = new Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA);
+	Goalkeeper sgk2 = new Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA);
+	Goalkeeper sgk3 = new Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA);
+
+	Defender sd1 = new Defender("difensore1", "panchina", Player.Club.ATALANTA);
+	Defender sd2 = new Defender("difensore2", "panchina", Player.Club.ATALANTA);
+	Defender sd3 = new Defender("difensore3", "panchina", Player.Club.ATALANTA);
+
+	Midfielder sm1 = new Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA);
+	Midfielder sm2 = new Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA);
+	Midfielder sm3 = new Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA);
+
+	Forward sf1 = new Forward("attaccante1", "panchina", Player.Club.ATALANTA);
+	Forward sf2 = new Forward("attaccante2", "panchina", Player.Club.ATALANTA);
+	Forward sf3 = new Forward("attaccante3", "panchina", Player.Club.ATALANTA);
+
+	List<Player> placeholderPlayers = List.of(
+			d1, d2, d3, d4, 
+			m1, m2, m3, 
+			f1, f2, f3, 
+			sgk1, sgk2, sgk3, 
+			sd1, sd2, sd3,
+			sm1, sm2, sm3,
+			sf1, sf2, sf3);		
+
+	Grade grade1 = new Grade(gkOnly1, dayToCalc, 70.0);
+	Grade grade2 = new Grade(gkOnly2, dayToCalc, 60.0);
+		
+	LineUp lineup1 = LineUp.build()
+			.forTeam(team1)
+			.inMatch(match)
+			.withStarterLineUp(Scheme433.starterLineUp()
+					.withGoalkeeper(gkOnly1)
+					.withDefenders(d1, d2, d3, d4)
+					.withMidfielders(m1, m2, m3)
+					.withForwards(f1, f2, f3))
+			.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+			.withSubstituteDefenders(sd1, sd2, sd3)
+			.withSubstituteMidfielders(sm1, sm2, sm3)
+			.withSubstituteForwards(sf1, sf2, sf3);
+		
+	LineUp lineup2 = LineUp.build()
+			.forTeam(team2)
+			.inMatch(match)
+			.withStarterLineUp(Scheme433.starterLineUp()
+					.withGoalkeeper(gkOnly2)
+					.withDefenders(d1, d2, d3, d4)
+					.withMidfielders(m1, m2, m3)
+					.withForwards(f1, f2, f3))
+			.withSubstituteGoalkeepers(sgk1, sgk2, sgk3)
+			.withSubstituteDefenders(sd1, sd2, sd3)
+			.withSubstituteMidfielders(sm1, sm2, sm3)
+			.withSubstituteForwards(sf1, sf2, sf3);
+		
+	transactionManager.inTransaction(context -> {
+		context.getFantaUserRepository().saveFantaUser(admin);
+		context.getFantaUserRepository().saveFantaUser(user);
+		context.getLeagueRepository().saveLeague(league);
+		context.getTeamRepository().saveTeam(team1);
+		context.getTeamRepository().saveTeam(team2);
+		context.getMatchDayRepository().saveMatchDay(prevDay);
+		context.getMatchDayRepository().saveMatchDay(dayToCalc);
+		context.getMatchRepository().saveMatch(prevMatch);
+		context.getMatchRepository().saveMatch(match);
+			
+		// Contracts and Grades are persisted for special players
+		context.getPlayerRepository().addPlayer(gkOnly1);
+		context.getContractRepository().saveContract(new Contract(team1, gkOnly1));			
+		context.getPlayerRepository().addPlayer(gkOnly2);
+		context.getContractRepository().saveContract(new Contract(team2, gkOnly2));
+		context.getGradeRepository().saveGrade(grade1);
+		context.getGradeRepository().saveGrade(grade2);
+			
+		// Contracts and Grades are persisted for placeholder Players
+		placeholderPlayers.forEach(player -> {
+			context.getPlayerRepository().addPlayer(player);
+			context.getContractRepository().saveContract(new Contract(team1, player));
+			context.getContractRepository().saveContract(new Contract(team2, player));
+			context.getGradeRepository().saveGrade(new Grade(player, dayToCalc, 0));
+		});
+			
+		// LineUps are persisted
+		context.getLineUpRepository().saveLineUp(lineup1);
+		context.getLineUpRepository().saveLineUp(lineup2);
+	});
+
+	// WHEN the SUT is used to calculate the League's results
+	adminUserService.calculateResults(league);
+
+	// THEN Teams' points have been updated in the database
+	List<FantaTeam> teamsInDb = transactionManager
+			.fromTransaction(context -> context.getTeamRepository().getAllTeams(league).stream()
+					.filter(team -> List.of("teamA", "teamB").contains(team.getName())))
+					.sorted(Comparator.comparing(FantaTeam::getName))
+					.collect(Collectors.toList());
+	assertThat(teamsInDb.stream().sorted(Comparator.comparing(FantaTeam::getPoints)).map(FantaTeam::getPoints)
+			.toList()).containsExactly(0, 3);
+
+	// AND the correct Result is persisted to the database
+	Optional<Result> persistedResult = transactionManager
+			.fromTransaction(context -> context.getResultsRepository().getResultFor(match));
+	assertThat(persistedResult.get())
+			.isEqualTo(new Result(70, 60, 1, 0, new Match(dayToCalc, teamsInDb.get(0), teamsInDb.get(1))));
+}
+\end{lstlisting}
+
+
 \begin{comment}
 
 \subsubsection{Test IT14: Visualizza squadre} \label{IT14}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam,
+Questo integration test verifica il corretto funzionamento del sistema di visualizzazione di tutti i FantaTeam,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -1155,7 +1305,7 @@ void testGetAllFantaTeams() {
 
 \subsubsection{Test IT15: Visualizza listone giocatori} \label{IT15}
 
-Questo unit test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori,
+Questo integration test verifica il corretto funzionamento del sistema di visualizzazione di tutti i giocatori,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
@@ -1179,7 +1329,7 @@ void testGetAllPlayers() {
 
 \subsubsection{Test IT16: Assegna voti ai giocatori} \label{IT16}
 
-Questo unit test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player,
+Questo integration test verifica il corretto funzionamento del sistema di assegnazione dei voti ai Player,
 implementando il template XXXXXXXX \todo{collegare al template}.
 
 \begin{lstlisting}[language=Java]
