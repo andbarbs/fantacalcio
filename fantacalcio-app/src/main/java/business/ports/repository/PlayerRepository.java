@@ -3,16 +3,18 @@ package business.ports.repository;
 import java.util.List;
 import java.util.Set;
 
+import domain.League;
 import domain.Player;
 
 public interface PlayerRepository {
 
-	public Set<Player> findAll();
+	Set<Player> findAll();
 	
-	public boolean addPlayer(Player newPlayer);
+	boolean addPlayer(Player newPlayer);
 
-	public List<Player> findBySurname(String surname);
+	List<Player> findBySurname(String surname);
 	
-	public Set<Player> findByClub(Player.Club club);
-
+	Set<Player> findByClub(Player.Club club);
+	
+	Set<Player> getAllInLeague(League league);
 }

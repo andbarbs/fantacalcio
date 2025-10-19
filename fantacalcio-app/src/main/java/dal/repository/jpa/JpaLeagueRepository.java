@@ -6,14 +6,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import business.ports.repository.LeagueRepository;
-import domain.Contract;
-import domain.Contract_;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
 import domain.FantaTeam_;
 import domain.League_;
-import domain.Player;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 
@@ -88,23 +85,4 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 
         return getEntityManager().createQuery(cq).getResultStream().collect(Collectors.toSet());
     }
-
-    //TODO Andre non dovrebbe stare nel repository dei players
-	@Override
-	public Set<Player> getAllInLeague(League league) {
-		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-		CriteriaQuery<Player> criteriaQuery = cb.createQuery(Player.class);
-		Root<Contract> root = criteriaQuery.from(Contract.class);
-
-		// joins, for query logic
-		Join<Contract, FantaTeam> teamJoin = root.join(Contract_.team);
-		Join<FantaTeam, League> leagueJoin = teamJoin.join(FantaTeam_.league);
-
-		// deep fetching
-
-		criteriaQuery.select(root.get(Contract_.player)).where(cb.equal(leagueJoin, league)).distinct(true);
-
-		// 8. Create and execute the TypedQuery
-		return Set.copyOf(getEntityManager().createQuery(criteriaQuery).getResultList());
-	}
 }

@@ -6,11 +6,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import business.ports.repository.PlayerRepository;
+import domain.Contract;
+import domain.Contract_;
+import domain.FantaTeam;
+import domain.FantaTeam_;
+import domain.League;
 import domain.Player;
 import domain.Player_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 
 public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepository {
@@ -73,5 +79,23 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 				criteriaBuilder.equal(root.get(Player_.club), team)));
 
 		return Set.copyOf(entityManager.createQuery(criteriaQuery).getResultList());
+	}
+	
+	@Override
+	public Set<Player> getAllInLeague(League league) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Player> criteriaQuery = cb.createQuery(Player.class);
+		Root<Contract> root = criteriaQuery.from(Contract.class);
+
+		// joins, for query logic
+		Join<Contract, FantaTeam> teamJoin = root.join(Contract_.team);
+		Join<FantaTeam, League> leagueJoin = teamJoin.join(FantaTeam_.league);
+
+		// deep fetching
+
+		criteriaQuery.select(root.get(Contract_.player)).where(cb.equal(leagueJoin, league)).distinct(true);
+
+		// 8. Create and execute the TypedQuery
+		return Set.copyOf(getEntityManager().createQuery(criteriaQuery).getResultList());
 	}
 }

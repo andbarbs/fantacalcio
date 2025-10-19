@@ -255,7 +255,7 @@ class NewsPaperServiceTest {
 	void testGetPlayersToGrade() {
 		
 		// GIVEN the necessary Repositories are made available by the TransactionContext
-		when(context.getLeagueRepository()).thenReturn(leagueRepository);
+		when(context.getPlayerRepository()).thenReturn(playerRepository);
 		
 		// GIVEN
 		FantaUser manager = new FantaUser("manager@example.com", "securePass");
@@ -263,7 +263,7 @@ class NewsPaperServiceTest {
 		
 		Forward player = new Player.Forward("Francesco", "Totti", Club.ROMA);
 		
-		when(context.getLeagueRepository().getAllInLeague(league)).thenReturn(Set.of(player));
+		when(context.getPlayerRepository().getAllInLeague(league)).thenReturn(Set.of(player));
 
 		// WHEN
 		Set<Player> players = service.getPlayersToGrade(league);

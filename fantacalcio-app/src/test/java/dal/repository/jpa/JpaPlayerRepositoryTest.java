@@ -16,10 +16,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import domain.Contract;
+import domain.FantaTeam;
+import domain.FantaUser;
+import domain.League;
 import domain.Player;
 import domain.Player.*;
 import jakarta.persistence.EntityManager;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +46,10 @@ class JpaPlayerRepositoryTest {
 					.addAnnotatedClass(Player.Defender.class)
 					.addAnnotatedClass(Player.Midfielder.class)
 					.addAnnotatedClass(Player.Forward.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(Contract.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -265,6 +274,52 @@ class JpaPlayerRepositoryTest {
 				// THEN only the appropriate Players are returned
 				assertThat(players).containsExactlyInAnyOrder(messi, yamal);
 			}
+		}
+	}
+	
+	@Nested
+	@DisplayName("can retrieve Players competing in a League")
+	class LookupInLeague {	
+		
+		@Test
+		@DisplayName("when some Players compete in a League")
+		public void testGetAllInLeague() {
+			
+			// GIVEN Contracts are persisted for Players under two Leagues
+			Player player1 = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+			Player player2 = new Forward("Lionel", "Messi", Club.MILAN);
+			Player player3 = new Forward("Lamine", "Yamal", Club.MILAN);
+			
+			FantaUser admin = new FantaUser("mail", "pswd");
+			League league = new League(admin, "Lega", "codice");
+			League otherLeague = new League(admin, "Lega", "codice");
+			FantaTeam teamA = new FantaTeam("", league, 0, admin, new HashSet<>());
+			teamA.getContracts().add(new Contract(teamA, player1));
+			FantaTeam teamB = new FantaTeam("", league, 0, admin, new HashSet<>());
+			teamB.getContracts().add(new Contract(teamB, player2));
+			FantaTeam teamC = new FantaTeam("", otherLeague, 0, admin, new HashSet<>());
+			teamC.getContracts().add(new Contract(teamC, player3));
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(player1);
+				session.persist(player2);
+				session.persist(player3);
+				session.persist(admin);
+				session.persist(league);
+				session.persist(otherLeague);
+				session.persist(teamA);
+				session.persist(teamB);
+				session.persist(teamC);
+			});
+			
+			// WHEN the SUT is used to retrieve Players in the given League
+			entityManager.getTransaction().begin();
+			Set<Player> players = playerRepository.getAllInLeague(league);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN only the appropriate Players are returned
+			assertThat(players).containsExactlyInAnyOrder(player1, player2);
 		}
 	}
 }

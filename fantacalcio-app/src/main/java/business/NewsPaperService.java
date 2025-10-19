@@ -39,7 +39,7 @@ public class NewsPaperService {
 	}
 
 	public Set<Player> getPlayersToGrade(League league) {
-		return transactionManager.fromTransaction((context) -> context.getLeagueRepository().getAllInLeague(league));
+		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().getAllInLeague(league));
 	}
 
 }
