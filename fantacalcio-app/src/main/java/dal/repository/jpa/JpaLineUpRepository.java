@@ -3,8 +3,6 @@ package dal.repository.jpa;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Fetch;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
@@ -44,20 +42,15 @@ public class JpaLineUpRepository extends BaseJpaRepository implements LineUpRepo
         CriteriaQuery<LineUp> query = cb.createQuery(LineUp.class);
         Root<LineUp> root = query.from(LineUp.class);
 
-        // Fetch the single-valued 'match' association
+        // deep fetching
         root.fetch(LineUp_.match);
+        root.fetch(LineUp_.fieldings) // tolto JoinType.LEFT
+        	.fetch(Fielding_.player); 
 
-        // 1. Fetch the 'fieldings' collection from LineUp
-        // We use Fetch<LineUp, Fielding> to indicate the types in the join
-        Fetch<LineUp, Fielding> fieldingFetch = root.fetch(LineUp_.fieldings, JoinType.LEFT);
-
-        // 2. IMPORTANT: Fetch the 'player' association FROM the fieldingFetch
-        fieldingFetch.fetch(Fielding_.player, JoinType.LEFT);
-
-        query.select(root).where(
-                cb.equal(root.get(LineUp_.match), match),
-                cb.equal(root.get(LineUp_.team), fantaTeam)
-        ).distinct(true);
+		query.select(root).where(
+				cb.equal(root.get(LineUp_.match), match), 
+				cb.equal(root.get(LineUp_.team), fantaTeam))
+			.distinct(true);
 
         List<LineUp> result = em.createQuery(query).getResultList();
         return result.stream().findFirst();

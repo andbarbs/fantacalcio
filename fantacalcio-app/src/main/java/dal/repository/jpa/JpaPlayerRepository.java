@@ -1,7 +1,9 @@
 package dal.repository.jpa;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import business.ports.repository.PlayerRepository;
 import domain.Player;
@@ -18,14 +20,14 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 	}
 
 	@Override
-	public List<Player> findAll() {
+	public Set<Player> findAll() {
 		EntityManager entityManager = getEntityManager();
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 		criteriaQuery.select(root);
 
-		return entityManager.createQuery(criteriaQuery).getResultList();		
+		return entityManager.createQuery(criteriaQuery).getResultStream().collect(Collectors.toSet());		
 	}
 
 	@Override
@@ -53,10 +55,11 @@ public class JpaPlayerRepository extends BaseJpaRepository implements PlayerRepo
 		CriteriaQuery<Player> criteriaQuery = criteriaBuilder.createQuery(Player.class);
 		Root<Player> root = criteriaQuery.from(Player.class);
 
-		criteriaQuery.select(root).where(criteriaBuilder.and(
-				criteriaBuilder.equal(root.get(Player_.surname), surname)));
+		criteriaQuery.select(root)
+				.where(criteriaBuilder.and(criteriaBuilder.equal(root.get(Player_.surname), surname)));
 
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultStream().sorted(Comparator.comparing(Player::getName))
+				.toList();
 	}
 
 	@Override

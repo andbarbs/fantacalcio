@@ -13,7 +13,6 @@ import domain.*;
 import domain.Player.*;
 import domain.scheme.Scheme433;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +46,6 @@ class JpaLineUpRepositoryTest {
 			Metadata metadata = new MetadataSources(serviceRegistry)
 					.addAnnotatedClass(LineUp.class)
 					.addAnnotatedClass(MatchDay.class)
-					.addAnnotatedClass(NewsPaper.class)
 					.addAnnotatedClass(FantaUser.class)
 					.addAnnotatedClass(Match.class)
 					.addAnnotatedClass(FantaTeam.class)
@@ -80,16 +78,14 @@ class JpaLineUpRepositoryTest {
 
 		// AND common setup entities are assembled and persisted
 		sessionFactory.inTransaction(em -> {
-			NewsPaper newsPaper = new NewsPaper("Gazzetta");
-			em.persist(newsPaper);
 			manager = new FantaUser("manager@example.com", "securePass");
 			em.persist(manager);
-			league = new League(manager, "Serie A", newsPaper, "code");
+			league = new League(manager, "Serie A", "code");
 			em.persist(league);
-			matchDay = new MatchDay("Matchday 1", LocalDate.of(2025, 6, 19), 1);
-			em.persist(matchDay);
 			opponent = new FantaTeam("Challengers", league, 25, manager, new HashSet<>());
 			em.persist(opponent);
+            matchDay = new MatchDay("1 giornata", 1, MatchDay.Status.FUTURE, league);
+            em.persist(matchDay);
 		});
 	}
 
@@ -186,12 +182,6 @@ class JpaLineUpRepositoryTest {
 			// GIVEN a LineUp instance is persisted
 			sessionFactory.inTransaction(em -> em.persist(readyToBePersisted));
 			
-			// AND the LineUp is confirmed to have been persisted
-			sessionFactory.inTransaction(
-					em -> assertThat(em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
-							.setParameter("match", match).setParameter("team", team).getResultStream().findFirst())
-					.isPresent());
-			
 			// WHEN the SUT is used to delete the LineUp
 			entityManager.getTransaction().begin();
 			lineUpRepository.deleteLineUp(readyToBePersisted);
@@ -199,10 +189,14 @@ class JpaLineUpRepositoryTest {
 			entityManager.clear();
 			
 			// THEN the LineUp is removed from the persistence unit
-			assertThat(sessionFactory.fromTransaction(
-					(Session em) -> em.createQuery("FROM LineUp l WHERE l.match = :match AND l.team = :team", LineUp.class)
-					.setParameter("match", match).setParameter("team", team).getResultStream().findFirst()))
-			.isEmpty();
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM LineUp", LineUp.class).getResultList()))
+					.isEmpty();
+			
+			// AND Fieldings are removed via cascading
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM Fielding", Fielding.class).getResultList()))
+					.isEmpty();
 		}
 
 

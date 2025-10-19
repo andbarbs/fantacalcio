@@ -1,12 +1,11 @@
 package business;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
 import business.ports.transaction.TransactionManager;
 import domain.Grade;
+import domain.League;
 import domain.MatchDay;
 import domain.Player;
 
@@ -18,17 +17,18 @@ public class NewsPaperService {
 		this.transactionManager = transactionManager;
 	}
 
-	public void setVoteToPlayers(Set<Grade> grades) {
+	public void save(Set<Grade> grades) {
 		transactionManager.inTransaction((context) -> {
-			Optional<MatchDay> matchDaySerieA = getMatchDay();
-			if (matchDaySerieA.isEmpty()) {
+            Grade anyGrade = grades.stream().findAny().orElseThrow(() -> new RuntimeException("No grades found"));
+			Optional<MatchDay> matchDay = context.getMatchDayRepository().getOngoingMatchDay(anyGrade.getMatchDay().getLeague());
+			if (matchDay.isEmpty()) {
 				throw new RuntimeException("Now you can't assign the votes");
 			}
 			for (Grade grade : grades) {
-				if (!(grade.getMatchDay().equals(matchDaySerieA.get()))) {
-					throw new RuntimeException("The match date is not correct");
+				if (!(grade.getMatchDay().equals(matchDay.get()))) {
+					throw new RuntimeException("The matchDay is not the present one or is of another League");
 				}
-				if (grade.getMark() < -5 || grade.getMark() > 25) {
+				if (grade.getMark() <= -5 || grade.getMark() >= 25) {
 					throw new IllegalArgumentException("Marks must be between -5 and 25");
 				}
 			}
@@ -38,31 +38,8 @@ public class NewsPaperService {
 		});
 	}
 
-	public Set<Player> getPlayersToGrade(Player.Club club) {
-		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findByClub(club));
-	}
-
-	public Optional<MatchDay> getMatchDay() {
-	    return transactionManager.fromTransaction((context) -> {
-	        LocalDate now = today();
-	        DayOfWeek dayOfWeek = now.getDayOfWeek();
-	        Optional<MatchDay> matchDaySerieA = Optional.empty();
-	        if (dayOfWeek == DayOfWeek.SATURDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-	        } else if (dayOfWeek == DayOfWeek.SUNDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getNextMatchDay(now);
-	            if (matchDaySerieA.isEmpty()) {
-	                matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-	            }
-	        } else if (dayOfWeek == DayOfWeek.MONDAY) {
-	            matchDaySerieA = context.getMatchDayRepository().getPreviousMatchDay(now);
-	        }
-	        return matchDaySerieA;
-	    });
-	}
-
-	protected LocalDate today() {
-		return LocalDate.now();
+	public Set<Player> getPlayersToGrade(League league) {
+		return transactionManager.fromTransaction((context) -> context.getLeagueRepository().getAllInLeague(league));
 	}
 
 }

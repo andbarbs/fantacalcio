@@ -613,8 +613,8 @@ void generateCalendar() {
 	}
 
     sessionFactory.inTransaction(t -> {
-		for (MatchDaySerieA matchDaySerieA : matchDays) {
-			t.persist(matchDaySerieA);
+		for (MatchDaySerieA matchDay : matchDays) {
+			t.persist(matchDay);
 		}
 	});
 
@@ -622,10 +622,10 @@ void generateCalendar() {
 
     adminUserService.generateCalendar(league);
 
-	for (MatchDaySerieA matchDaySerieA : matchDays) {
-		Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDaySerieA, league, team1);
+	for (MatchDaySerieA matchDay : matchDays) {
+		Match matchByMatchDay = matchRepository.getMatchByMatchDay(matchDay, league, team1);
 
-		assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDaySerieA);
+		assertThat(matchByMatchDay.getMatchDaySerieA()).isEqualTo(matchDay);
 		assertThat(matchByMatchDay.getTeam1().equals(team1) || matchByMatchDay.getTeam2().equals(team1)).isTrue();
 	}
 }

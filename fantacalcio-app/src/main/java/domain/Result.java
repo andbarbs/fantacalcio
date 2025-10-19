@@ -50,16 +50,31 @@ public class Result {
     public int getTeam2Goals() {
         return team2Goals;
     }
+    
+    public Match getMatch() {
+		return match;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Result result = (Result) o;
-        return Double.compare(team1Points, result.team1Points) == 0 && Double.compare(team2Points, result.team2Points) == 0 && team1Goals == result.team1Goals && team2Goals == result.team2Goals;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Result result = (Result) o;
+		return Double.compare(team1Points, result.team1Points) == 0
+				&& Double.compare(team2Points, result.team2Points) == 0 
+				&& team1Goals == result.team1Goals
+				&& team2Goals == result.team2Goals
+				&& Objects.equals(match, result.match);
+	}
 
     @Override
     public int hashCode() {
         return Objects.hash(team1Points, team2Points, team1Goals, team2Goals);
     }
+
+	@Override
+	public String toString() {
+		return "Result [id=" + id + ", team1Points=" + team1Points + ", team2Points=" + team2Points + ", team1Goals="
+				+ team1Goals + ", team2Goals=" + team2Goals + ", match=" + match + "]";
+	}
 }

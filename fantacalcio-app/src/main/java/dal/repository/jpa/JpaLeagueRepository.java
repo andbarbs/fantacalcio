@@ -2,17 +2,20 @@ package dal.repository.jpa;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import business.ports.repository.LeagueRepository;
+import domain.Contract;
+import domain.Contract_;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
 import domain.FantaTeam_;
 import domain.League_;
+import domain.Player;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 
 public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepository {
 
@@ -25,6 +28,8 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
 		Root<League> root = criteriaQuery.from(League.class);
+		
+        root.fetch(League_.admin);
 
 		criteriaQuery.where(cb.and(cb.equal(root.get(League_.leagueCode), leagueCode)));
 
@@ -39,18 +44,23 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	}
 
 	@Override
-	public List<League> getLeaguesByUser(FantaUser user) {
+	public Set<League> getLeaguesByMember(FantaUser user) {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<League> cq = cb.createQuery(League.class);
 
-		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        Root<FantaTeam> teamRoot = cq.from(FantaTeam.class);
 
-		CriteriaQuery<League> criteriaQuery = cb.createQuery(League.class);
-		Root<FantaTeam> root = criteriaQuery.from(FantaTeam.class);
+        // join, for query logic
+        Join<FantaTeam, League> leagueJoin = teamRoot.join(FantaTeam_.league);
 
-		criteriaQuery.select(root.get(FantaTeam_.league)).distinct(true)
-				.where(cb.equal(root.get(FantaTeam_.fantaManager), user));
+        // deep fetching
+        leagueJoin.fetch(League_.admin);
 
-		return getEntityManager().createQuery(criteriaQuery).getResultList();
+        cq.select(leagueJoin)
+                .distinct(true)
+                .where(cb.equal(teamRoot.get(FantaTeam_.fantaManager), user));
 
+        return getEntityManager().createQuery(cq).getResultStream().collect(Collectors.toSet());
 	}
 
 	@Override
@@ -58,11 +68,43 @@ public class JpaLeagueRepository extends BaseJpaRepository implements LeagueRepo
 	    CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 	    CriteriaQuery<FantaTeam> query = cb.createQuery(FantaTeam.class);
 	    Root<FantaTeam> root = query.from(FantaTeam.class);
+	    
+	    // deep fetching
+	    root.fetch(FantaTeam_.fantaManager);
+	    root.fetch(FantaTeam_.league).fetch(League_.admin);
 
 	    query.select(root).where(cb.equal(root.get(FantaTeam_.league), league));
 
 	    return getEntityManager().createQuery(query).getResultList();
 	}
 
+    @Override
+    public Set<League> getLeaguesByJournalist(FantaUser journalist) {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<League> cq = cb.createQuery(League.class);
+        Root<League> leagueRoot = cq.from(League.class);
+        cq.select(leagueRoot)
+                .where(cb.equal(leagueRoot.get(League_.newsPaper), journalist));
 
+        return getEntityManager().createQuery(cq).getResultStream().collect(Collectors.toSet());
+    }
+
+    //TODO Andre non dovrebbe stare nel repository dei players
+	@Override
+	public Set<Player> getAllInLeague(League league) {
+		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+		CriteriaQuery<Player> criteriaQuery = cb.createQuery(Player.class);
+		Root<Contract> root = criteriaQuery.from(Contract.class);
+
+		// joins, for query logic
+		Join<Contract, FantaTeam> teamJoin = root.join(Contract_.team);
+		Join<FantaTeam, League> leagueJoin = teamJoin.join(FantaTeam_.league);
+
+		// deep fetching
+
+		criteriaQuery.select(root.get(Contract_.player)).where(cb.equal(leagueJoin, league)).distinct(true);
+
+		// 8. Create and execute the TypedQuery
+		return Set.copyOf(getEntityManager().createQuery(criteriaQuery).getResultList());
+	}
 }

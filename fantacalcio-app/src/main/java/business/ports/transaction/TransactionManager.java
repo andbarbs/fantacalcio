@@ -6,13 +6,11 @@ import java.util.function.Function;
 import business.ports.repository.ContractRepository;
 import business.ports.repository.FantaTeamRepository;
 import business.ports.repository.FantaUserRepository;
-import business.ports.repository.FieldingRepository;
 import business.ports.repository.GradeRepository;
 import business.ports.repository.LeagueRepository;
 import business.ports.repository.LineUpRepository;
 import business.ports.repository.MatchDayRepository;
 import business.ports.repository.MatchRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.repository.PlayerRepository;
 import business.ports.repository.ProposalRepository;
 import business.ports.repository.ResultsRepository;
@@ -32,19 +30,17 @@ public interface TransactionManager {
 		private final ProposalRepository proposalRepository;
 		private final ContractRepository contractRepository;
 		private final ResultsRepository resultsRepository;
-		private final FieldingRepository fieldingRepository;
 		private final LineUpRepository lineUpRepository;
 		private final MatchDayRepository matchDayRepository;
-		private final NewsPaperRepository newspaperRepository;
 		private final FantaUserRepository fantaUserRepository;
 
 		public TransactionContext(LeagueRepository leagueRepository,
 								  MatchRepository matchRepository, PlayerRepository playerRepository,
 								  FantaTeamRepository teamRepository, GradeRepository gradeRepository,
 								  ProposalRepository proposalRepository, ContractRepository contractRepository,
-								  ResultsRepository resultsRepository, FieldingRepository fieldingRepository,
-								  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository,
-								  NewsPaperRepository newspaperRepository, FantaUserRepository fantaUserRepository) {
+								  ResultsRepository resultsRepository,
+								  LineUpRepository lineUpRepository,  MatchDayRepository matchDayRepository
+								  , FantaUserRepository fantaUserRepository) {
 			this.leagueRepository = leagueRepository;
 			this.matchRepository = matchRepository;
 			this.playerRepository = playerRepository;
@@ -53,10 +49,8 @@ public interface TransactionManager {
 			this.proposalRepository = proposalRepository;
 			this.contractRepository = contractRepository;
 			this.resultsRepository = resultsRepository;
-			this.fieldingRepository = fieldingRepository;
 			this.lineUpRepository = lineUpRepository;
 			this.matchDayRepository = matchDayRepository;
-			this.newspaperRepository = newspaperRepository;
 			this.fantaUserRepository = fantaUserRepository;
 			
 		}
@@ -93,20 +87,12 @@ public interface TransactionManager {
 			return resultsRepository;
 		}
 
-		public FieldingRepository getFieldingRepository() {
-			return fieldingRepository;
-		}
-
 		public LineUpRepository getLineUpRepository() {
 			return lineUpRepository;
 		}
 
 		public MatchDayRepository getMatchDayRepository() {
 			return matchDayRepository;
-		}
-
-		public NewsPaperRepository getNewspaperRepository() {
-			return newspaperRepository;
 		}
 
 		public FantaUserRepository getFantaUserRepository() {

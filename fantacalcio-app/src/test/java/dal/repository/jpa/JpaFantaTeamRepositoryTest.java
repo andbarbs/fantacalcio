@@ -1,10 +1,10 @@
 package dal.repository.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
+import java.util.Set;
 
-import java.util.HashSet;
-
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -14,13 +14,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import domain.Contract;
 import domain.FantaTeam;
 import domain.FantaUser;
 import domain.League;
-import domain.NewsPaper;
 import domain.Player;
 import jakarta.persistence.EntityManager;
 
@@ -31,7 +31,6 @@ class JpaFantaTeamRepositoryTest {
 	private EntityManager entityManager;
 	private League league;
 	private FantaUser admin;
-	private NewsPaper newsPaper;
 
 	@BeforeAll
 	static void initializeSessionFactory() {
@@ -39,9 +38,12 @@ class JpaFantaTeamRepositoryTest {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(FantaTeam.class)
-					.addAnnotatedClass(FantaUser.class).addAnnotatedClass(NewsPaper.class)
-					.addAnnotatedClass(League.class).addAnnotatedClass(Contract.class).addAnnotatedClass(Player.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(FantaTeam.class)
+					.addAnnotatedClass(FantaUser.class)
+					.addAnnotatedClass(League.class)
+					.addAnnotatedClass(Contract.class)
+					.addAnnotatedClass(Player.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -60,9 +62,7 @@ class JpaFantaTeamRepositoryTest {
 		sessionFactory.inTransaction(t -> {
 			admin = new FantaUser("email", "pswd");
 			t.persist(admin);
-			newsPaper = new NewsPaper("gazzetta");
-			t.persist(newsPaper);
-			league = new League(admin, "league", newsPaper, "1234");
+			league = new League(admin, "league", "1234");
 			t.persist(league);
 		});
 	}
@@ -71,81 +71,126 @@ class JpaFantaTeamRepositoryTest {
 	static void tear() {
 		sessionFactory.close();
 	}
-
-	@Test
-	@DisplayName("getAllTeams() with no team in the league")
-	public void testGetAllTeamsWithNoTeam() {
-
-		assertThat(fantaTeamRepository.getAllTeams(league)).isEmpty();
-
+	
+	@Nested
+	@DisplayName("can look up all FantaTeams belonging to a League")
+	class Retrieval {	
+		
+		@Test
+		@DisplayName("when no FantaTeam associted with the League exists in the database")
+		public void testGetAllTeamsWithNoTeam() {
+			
+			// GIVEN no Teams are persisted for the test League
+			
+			// WHEN the SUT is used to retrieve Teams for the test League
+			entityManager.getTransaction().begin();
+			Set<FantaTeam> retrieved = fantaTeamRepository.getAllTeams(league);
+			entityManager.getTransaction().commit();
+			entityManager.clear();		
+			
+			// THEN an empty Set is returned
+			assertThat(retrieved).isEmpty();
+		}
+		
+		@Test
+		@DisplayName("when some FantaTeams associted with the League exist in the database")
+		public void testGetAllTeamsWithSomeTeams() {
+			
+			// GIVEN two Teams are instantiated on a League
+			FantaUser user1 = new FantaUser("mail1", "pswd1");
+			FantaUser user2 = new FantaUser("mail2", "pswd2");
+			
+			FantaTeam team1 = new FantaTeam("team1", league, 0, user1, null);
+			FantaTeam team2 = new FantaTeam("team2", league, 0, user2, null);
+			
+			// AND they are persisted manually
+			sessionFactory.inTransaction(session -> {
+				session.persist(user1);
+				session.persist(user2);
+				session.persist(team1);
+				session.persist(team2);
+			});
+			
+			// WHEN the SUT is used to retrieve all teams in the League
+			entityManager.getTransaction().begin();
+			Set<FantaTeam> allTeams = fantaTeamRepository.getAllTeams(league);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN exactly the supposed Teams are retrieved
+			assertThat(allTeams).containsExactlyInAnyOrder(team1, team2);
+		}
 	}
 
-	@Test
-	@DisplayName("getAllTeams() with some teams in the league")
-	public void testGetAllTeamsWithSomeTeams() {
-
-		FantaUser user1 = new FantaUser("mail1", "pswd1");
-		FantaUser user2 = new FantaUser("mail2", "pswd2");
-
-		FantaTeam team1 = new FantaTeam("team1", league, 0, user1, new HashSet<Contract>());
-		FantaTeam team2 = new FantaTeam("team2", league, 0, user2, new HashSet<Contract>());
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(user1);
-			session.persist(user2);
-			session.persist(team1);
-			session.persist(team2);
-		});
-
-		assertThat(fantaTeamRepository.getAllTeams(league)).containsExactlyInAnyOrder(team1, team2);
-
-	}
 
 	@Test
-	@DisplayName("saveTeam() should persist correctly")
+	@DisplayName("can persist a FantaTeam to the database")
 	public void testSaveTeam() {
-
-		entityManager.getTransaction().begin();
-
+		
+		//GIVEN a User is manually persisted
 		FantaUser user = new FantaUser("mail1", "pswd1");
-		FantaTeam team = new FantaTeam("team1", league, 0, user, new HashSet<Contract>());
+		sessionFactory.inTransaction(em -> em.persist(user));
 
-		entityManager.persist(user);
-
+		// GIVEN a Team exists for that user
+		FantaTeam team = new FantaTeam("team1", league, 0, user, null);
+		
+		// WHEN the SUT is used to persist that Team
+		entityManager.getTransaction().begin();
 		fantaTeamRepository.saveTeam(team);
+		entityManager.getTransaction().commit();
+	    entityManager.clear();
 
-		FantaTeam result = entityManager
-				.createQuery("FROM FantaTeam t WHERE t.league = :league AND t.fantaManager = :user", FantaTeam.class)
-				.setParameter("league", league).setParameter("user", user).getSingleResult();
+		// THEN the Team is actually persisted to the database
+	    FantaTeam result = sessionFactory.fromTransaction((Session em) -> em
+	            .createQuery("FROM FantaTeam t JOIN FETCH t.fantaManager tfm JOIN FETCH t.league tl JOIN FETCH tl.admin "
+	            		+ "WHERE t.league = :league AND t.fantaManager = :user", FantaTeam.class)
+	            .setParameter("league", league).setParameter("user", user).getSingleResult());
 
 		assertThat(result).isEqualTo(team);
-
-		entityManager.close();
 	}
 
-	@Test
-	@DisplayName("getFantaTeamByUserAndLeague() when that team does not exist")
-	public void testGetFantaTeamByUserAndLeagueWhenNotPresent() {
-
-		assertThrows(jakarta.persistence.NoResultException.class,
-				() -> fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin));
-
+	@Nested
+	@DisplayName("can look up the FantaTeam belonging to a Manager in a League")
+	class LookiupByOwnerAndLeague {	
+		
+		@Test
+		@DisplayName("when no Teams for a Manager in a League exist in the database")
+		public void testGetFantaTeamByUserAndLeagueWhenNotPresent() {
+			
+			// GIVEN no Team exists for the test user in the league
+			
+			// WHEN the SUT is used to retrieve a Team for test user in the league
+			entityManager.getTransaction().begin();
+			Optional<FantaTeam> retrieved = fantaTeamRepository.getFantaTeamByUserAndLeague(league, admin);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN an empty Optional is returned
+			assertThat(retrieved).isEmpty();
+		}
+		
+		@Test
+		@DisplayName("when a Team for a Manager in a League exist in the database")
+		public void testGetFantaTeamByUserAndLeagueWhenPresent() {
+			
+			// GIVEN a Team is persisted for test user under test League
+			FantaUser user = new FantaUser("mail", "pswd");
+			FantaTeam team = new FantaTeam("team", league, 0, user, null);
+			
+			sessionFactory.inTransaction(session -> {
+				session.persist(user);
+				session.persist(team);
+			});
+			
+			// WHEN the SUT is used to retrieve a Team for test user in the league
+			entityManager.getTransaction().begin();
+			Optional<FantaTeam> retrieved = fantaTeamRepository.getFantaTeamByUserAndLeague(league, user);		
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN the correct Team is returned
+			assertThat(retrieved).hasValue(team);
+		}
 	}
-
-	@Test
-	@DisplayName("getFantaTeamByUserAndLeague() when that team exists")
-	public void testGetFantaTeamByUserAndLeagueWhenPresent() {
-
-		FantaUser user = new FantaUser("mail", "pswd");
-		FantaTeam team = new FantaTeam("team", league, 0, user, new HashSet<Contract>());
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(user);
-			session.persist(team);
-		});
-
-		assertThat(fantaTeamRepository.getFantaTeamByUserAndLeague(league, user)).isEqualTo(team);
-
-	}
-
+	
 }

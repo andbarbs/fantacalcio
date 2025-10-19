@@ -1,10 +1,15 @@
 package business;
 
-import domain.scheme.Scheme433;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import business.ports.repository.ContractRepository;
 import business.ports.repository.FantaTeamRepository;
@@ -13,19 +18,20 @@ import business.ports.repository.LeagueRepository;
 import business.ports.repository.LineUpRepository;
 import business.ports.repository.MatchDayRepository;
 import business.ports.repository.MatchRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.repository.PlayerRepository;
 import business.ports.repository.ProposalRepository;
 import business.ports.repository.ResultsRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.*;
-
-import java.time.LocalDate;
+import domain.Player.Defender;
+import domain.Player.Forward;
+import domain.Player.Goalkeeper;
+import domain.Player.Midfielder;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
@@ -36,29 +42,28 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @Tag("mockito-agent")
+@ExtendWith(MockitoExtension.class)
 class AdminUserServiceTest {
 
-	private TransactionManager transactionManager;
-	private TransactionContext context;
+	private @Mock TransactionManager transactionManager;
+	private @Mock TransactionContext context;
+	
 	private AdminUserService adminUserService;
 
 	// Repositories
-	private MatchRepository matchRepository;
-	private GradeRepository gradeRepository;
-	private LineUpRepository lineUpRepository;
-	private ResultsRepository resultRepository;
-	private MatchDayRepository matchDayRepository;
-	private FantaTeamRepository fantaTeamRepository;
-	private LeagueRepository leagueRepository;
-	private PlayerRepository playerRepository;
-	private ProposalRepository proposalRepository;
-	private ContractRepository contractRepository;
-	private NewsPaperRepository newspaperRepository;
+	private @Mock MatchRepository matchRepository;
+	private @Mock GradeRepository gradeRepository;
+	private @Mock LineUpRepository lineUpRepository;
+	private @Mock ResultsRepository resultRepository;
+	private @Mock MatchDayRepository matchDayRepository;
+	private @Mock FantaTeamRepository fantaTeamRepository;
+	private @Mock LeagueRepository leagueRepository;
+	private @Mock PlayerRepository playerRepository;
+	private @Mock ProposalRepository proposalRepository;
+	private @Mock ContractRepository contractRepository;
 
 	@BeforeEach
 	void setUp() {
-		transactionManager = mock(TransactionManager.class);
-		context = mock(TransactionContext.class);
 
 		// Setup inTransaction
 		doAnswer(invocation -> {
@@ -67,804 +72,535 @@ class AdminUserServiceTest {
 			return null;
 		}).when(transactionManager).inTransaction(any());
 
-		// Setup fromTransaction
-		when(transactionManager.fromTransaction(any())).thenAnswer(invocation -> {
-			Function<TransactionContext, Object> code = invocation.getArgument(0);
-			return code.apply(context);
-		});
-
 		adminUserService = new AdminUserService(transactionManager);
-
-		// Create mocks for all repositories
-		matchRepository = mock(MatchRepository.class);
-		gradeRepository = mock(GradeRepository.class);
-		lineUpRepository = mock(LineUpRepository.class);
-		resultRepository = mock(ResultsRepository.class);
-		matchDayRepository = mock(MatchDayRepository.class);
-		fantaTeamRepository = mock(FantaTeamRepository.class);
-		leagueRepository = mock(LeagueRepository.class);
-		playerRepository = mock(PlayerRepository.class);
-		proposalRepository = mock(ProposalRepository.class);
-		contractRepository = mock(ContractRepository.class);
-		newspaperRepository = mock(NewsPaperRepository.class);
-
-		// Configure context to return all mocks
-		when(context.getMatchRepository()).thenReturn(matchRepository);
-		when(context.getGradeRepository()).thenReturn(gradeRepository);
-		when(context.getLineUpRepository()).thenReturn(lineUpRepository);
-		when(context.getResultsRepository()).thenReturn(resultRepository);
-		when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
-		when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
-		when(context.getLeagueRepository()).thenReturn(leagueRepository);
-		when(context.getPlayerRepository()).thenReturn(playerRepository);
-		when(context.getProposalRepository()).thenReturn(proposalRepository);
-		when(context.getContractRepository()).thenReturn(contractRepository);
-		when(context.getNewspaperRepository()).thenReturn(newspaperRepository);
 	}
 
-	@Test
-	void testCreateLeague() {
-		FantaUser admin = new FantaUser("admin@test.com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta");
-		String leagueCode = "L001";
+	@Nested
+	@DisplayName("can assign Players to Teams")
+	class AssignPlayers {
 
-		// League code does not exist yet
-		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.empty());
+		@Test
+		void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
 
-		adminUserService.createLeague("My League", admin, np, leagueCode);
+			// GIVEN the necessary Repositories are made available by the TransactionContext
+			when(context.getContractRepository()).thenReturn(contractRepository);
 
-		// Verify that saveLeague was called
-		verify(leagueRepository, times(1)).saveLeague(any(League.class));
-	}
+			// AND
+			FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+			Goalkeeper player = new Goalkeeper("Gigi", "Buffon", Player.Club.JUVENTUS);
 
-	@Test
-	void testCreateLeague_LeagueCodeExists() {
-		FantaUser admin = new FantaUser("admin@test.com", "pwd");
-		NewsPaper np = new NewsPaper("Gazzetta");
-		String leagueCode = "L001";
+			// WHEN the SUT is used to assign a Player to a Team
+			adminUserService.setPlayerToTeam(team, player);
 
-		League existingLeague = new League(admin, "Existing League", np, leagueCode);
-		when(leagueRepository.getLeagueByCode(leagueCode)).thenReturn(Optional.of(existingLeague));
+			// THEN the player is successfully assigned
+			ArgumentCaptor<Contract> contract = ArgumentCaptor.forClass(Contract.class);
+			verify(contractRepository).saveContract(contract.capture());
+			verifyNoMoreInteractions(contractRepository);
 
-		assertThatThrownBy(() -> adminUserService.createLeague("New League", admin, np, leagueCode))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("A league with the same league code already exists");
-	}
-	
-
-	@Test
-	void testSetPlayerToTeam_SavesContract_WhenBelowLimits() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-		Player.Goalkeeper gk = new Player.Goalkeeper("Gigi", "Buffon", Player.Club.JUVENTUS);
-
-		adminUserService.setPlayerToTeam(team, gk);
-
-		verify(contractRepository).saveContract(argThat(c -> c.getTeam().equals(team) && c.getPlayer().equals(gk)));
-	}
-
-	@Test
-	void testSetPlayerToTeam_Throws_WhenTeamHas25Players() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-		Set<Contract> contracts = new HashSet<Contract>();
-		for (int i = 0; i < 25; i++) {
-			Player p = new Player.Midfielder("Player" + i, "Test", Player.Club.ATALANTA);
-			contracts.add(new Contract(team, p));
+			//
+			assertThat(contract.getValue().getPlayer()).isEqualTo(player);
+			assertThat(contract.getValue().getTeam()).isEqualTo(team);
 		}
-		team.setContracts(contracts);
 
-		Player newPlayer = new Player.Defender("New", "Player", Player.Club.BOLOGNA);
+		@Nested
+		@DisplayName("error cases")
+		class AssignPlayerErrorCases {
 
-		assertThatThrownBy(() -> adminUserService.setPlayerToTeam(team, newPlayer))
-				.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("Maximum 25 players");
+			@Test
+			void testSetPlayerToTeam_Throws_WhenTeamHas25Players() {
+
+				// GIVEN a Team already has 25 Contracts
+				Set<Contract> contracts = new HashSet<Contract>();
+				FantaTeam team = new FantaTeam("Team", null, 0, null, contracts);
+				IntStream.range(0, 25).forEach(i -> {
+					Player p = new Midfielder("Player" + i, "Test", Player.Club.ATALANTA);
+					contracts.add(new Contract(team, p));
+				});
+
+				// WHEN the SUT is used to assign a Player to that Team
+				Player newPlayer = new Defender("New", "Player", Player.Club.BOLOGNA);
+				ThrowingCallable shouldThrow = () -> adminUserService.setPlayerToTeam(team, newPlayer);
+
+				// THEN an error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(UnsupportedOperationException.class)
+						.hasMessageContaining("Maximum 25 players");
+			}
+
+			@Test
+			void testSetPlayerToTeam_DoesNotSave_WhenGoalkeepersLimitReached() {
+
+				// GIVEN a Team already has max Goalkeepers
+				int maxNumGoalkeepers = 3;
+				Set<Contract> contracts = new HashSet<Contract>();
+				FantaTeam team = new FantaTeam("Team", null, 0, null, contracts);
+				IntStream.range(0, maxNumGoalkeepers).forEach(i -> contracts
+						.add(new Contract(team, new Goalkeeper("Goalkeeper" + i, "Test", Player.Club.ATALANTA))));
+
+				// WHEN the SUT is used to assign a further Goalkeeper to that Team
+				Goalkeeper newGk = new Goalkeeper("New", "Keeper", Player.Club.ROMA);
+				adminUserService.setPlayerToTeam(team, newGk);
+
+				// THEN no new Contract is saved
+				verify(contractRepository, never()).saveContract(any());
+			}
+
+			@Test
+			void testSetPlayerToTeam_DoesNotSave_WhenDefendersLimitReached() {
+
+				// GIVEN a Team already has max Defenders
+				int maxNumDefenders = 8;
+				Set<Contract> contracts = new HashSet<Contract>();
+				FantaTeam team = new FantaTeam("Team", null, 0, null, contracts);
+				IntStream.range(0, maxNumDefenders).forEach(i -> contracts
+						.add(new Contract(team, new Defender("Defender" + i, "Test", Player.Club.ATALANTA))));
+
+				// WHEN the SUT is used to assign a further Goalkeeper to that Team
+				Defender excessive = new Defender("New", "Defender", Player.Club.ROMA);
+				adminUserService.setPlayerToTeam(team, excessive);
+
+				// THEN no new Contract is saved
+				verify(contractRepository, never()).saveContract(any());
+			}
+
+			@Test
+			void testSetPlayerToTeam_DoesNotSave_WhenMidfieldersLimitReached() {
+
+				// GIVEN a Team already has max Midfielders
+				int maxNumMidfielders = 8;
+				Set<Contract> contracts = new HashSet<Contract>();
+				FantaTeam team = new FantaTeam("Team", null, 0, null, contracts);
+				IntStream.range(0, maxNumMidfielders).forEach(i -> contracts
+						.add(new Contract(team, new Midfielder("Midfielder" + i, "Test", Player.Club.ATALANTA))));
+
+				// WHEN the SUT is used to assign a further Goalkeeper to that Team
+				Midfielder excessive = new Midfielder("New", "Midfielder", Player.Club.ROMA);
+				adminUserService.setPlayerToTeam(team, excessive);
+
+				// THEN no new Contract is saved
+				verify(contractRepository, never()).saveContract(any());
+			}
+
+			@Test
+			void testSetPlayerToTeam_DoesNotSave_WhenForwardsLimitReached() {
+
+				// GIVEN a Team already has max Forwards
+				int maxNumForwards = 6;
+				Set<Contract> contracts = new HashSet<Contract>();
+				FantaTeam team = new FantaTeam("Team", null, 0, null, contracts);
+				IntStream.range(0, maxNumForwards).forEach(i -> contracts
+						.add(new Contract(team, new Forward("Forward" + i, "Test", Player.Club.ATALANTA))));
+
+				// WHEN the SUT is used to assign a further Goalkeeper to that Team
+				Forward excessive = new Forward("New", "Forward", Player.Club.ROMA);
+				adminUserService.setPlayerToTeam(team, excessive);
+
+				// THEN no new Contract is saved
+				verify(contractRepository, never()).saveContract(any());
+			}
+		}
+
 	}
 
-	@Test
-	void testSetPlayerToTeam_DoesNotSave_WhenGoalkeepersLimitReached() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+	@Nested
+	@DisplayName("can remove Players from Teams")
+	class RemovePlayers {
 
-		Set<Contract> contracts = new HashSet<Contract>();
+		@Test
+		void testRemovePlayerFromTeam_WhenContractExists() {
 
-		// Add 3 goalkeepers to reach the limit
-		contracts.add(new Contract(team, new Player.Goalkeeper("G1", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Goalkeeper("G2", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Goalkeeper("G3", "C", Player.Club.CAGLIARI)));
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getContractRepository()).thenReturn(contractRepository);
 
-		team.setContracts(contracts);
+			// AND a Contract is instantiated for a Player with a Team
+			FantaTeam team = new FantaTeam("Team", null, 0, null, null);
+			Player player = new Forward("Cristiano", "Ronaldo", Player.Club.JUVENTUS);
+			Contract contract = new Contract(team, player);
 
-		Player.Goalkeeper newGk = new Player.Goalkeeper("New", "Keeper", Player.Club.ROMA);
+			// AND the ContractRepository reports that Player as hired with the Team
+			when(contractRepository.getContract(team, player)).thenReturn(Optional.of(contract));
 
-		adminUserService.setPlayerToTeam(team, newGk);
+			// WHEN the SUT is used to remove a Contract for that Player with the Team
+			adminUserService.removePlayerFromTeam(team, player);
 
-		verify(contractRepository, never()).saveContract(any());
-	}
+			// THEN the ContractRepository is asked to delete that Contract
+			verify(contractRepository).deleteContract(contract);
+		}
 
-	@Test
-	void testSetPlayerToTeam_DoesNotSave_WhenDefendersLimitReached() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
+		@Test
+		void testRemovePlayerFromTeam_WhenContractDoesNotExist() {
 
-		Set<Contract> contracts = new HashSet<Contract>();
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getContractRepository()).thenReturn(contractRepository);
 
-		// Add 8 defenders to reach the limit
-		contracts.add(new Contract(team, new Player.Defender("G1", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Defender("G2", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Defender("G3", "C", Player.Club.CAGLIARI)));
-		contracts.add(new Contract(team, new Player.Defender("G4", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Defender("G5", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Defender("G6", "C", Player.Club.CAGLIARI)));
-		contracts.add(new Contract(team, new Player.Defender("G7", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Defender("G8", "C", Player.Club.CAGLIARI)));
+			// AND the ContractRepository reports a Player as not hired with a Team
+			FantaTeam team = new FantaTeam("Team", null, 0, null, null);
+			Player player = new Defender("Giorgio", "Chiellini", Player.Club.JUVENTUS);
+			when(contractRepository.getContract(team, player)).thenReturn(Optional.empty());
 
-		team.setContracts(contracts);
+			// WHEN the SUT is used to remove a Contract for that Player with the given Team
+			adminUserService.removePlayerFromTeam(team, player);
 
-		Player.Defender newDf = new Player.Defender("New", "Keeper", Player.Club.ROMA);
-
-		adminUserService.setPlayerToTeam(team, newDf);
-
-		verify(contractRepository, never()).saveContract(any());
-	}
-
-	@Test
-	void testSetPlayerToTeam_DoesNotSave_WhenMidfieldersLimitReached() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-
-		Set<Contract> contracts = new HashSet<Contract>();
-
-		// Add 8 defenders to reach the limit
-		contracts.add(new Contract(team, new Player.Midfielder("G1", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Midfielder("G2", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Midfielder("G3", "C", Player.Club.CAGLIARI)));
-		contracts.add(new Contract(team, new Player.Midfielder("G4", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Midfielder("G5", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Midfielder("G6", "C", Player.Club.CAGLIARI)));
-		contracts.add(new Contract(team, new Player.Midfielder("G7", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Midfielder("G8", "C", Player.Club.CAGLIARI)));
-
-		team.setContracts(contracts);
-
-		Player.Midfielder newMf = new Player.Midfielder("New", "Keeper", Player.Club.ROMA);
-
-		adminUserService.setPlayerToTeam(team, newMf);
-
-		verify(contractRepository, never()).saveContract(any());
-	}
-
-	@Test
-	void testSetPlayerToTeam_DoesNotSave_WhenForwardsLimitReached() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-
-		Set<Contract> contracts = new HashSet<Contract>();
-
-		// Add 8 defenders to reach the limit
-		contracts.add(new Contract(team, new Player.Forward("G1", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Forward("G2", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Forward("G3", "C", Player.Club.CAGLIARI)));
-		contracts.add(new Contract(team, new Player.Forward("G4", "A", Player.Club.ATALANTA)));
-		contracts.add(new Contract(team, new Player.Forward("G5", "B", Player.Club.BOLOGNA)));
-		contracts.add(new Contract(team, new Player.Forward("G6", "C", Player.Club.CAGLIARI)));
-
-		team.setContracts(contracts);
-
-		Player.Forward newFw = new Player.Forward("New", "Keeper", Player.Club.ROMA);
-
-		adminUserService.setPlayerToTeam(team, newFw);
-
-		verify(contractRepository, never()).saveContract(any());
-	}
-
-	@Test
-	void testRemovePlayerFromTeam_WhenContractExists() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-		Player player = new Player.Forward("Cristiano", "Ronaldo", Player.Club.JUVENTUS);
-		Contract contract = new Contract(team, player);
-		team.setContracts(Set.of(contract));
-
-		when(contractRepository.getContract(team, player)).thenReturn(Optional.of(contract));
-
-		adminUserService.removePlayerFromTeam(team, player);
-
-		verify(contractRepository).deleteContract(contract);
-	}
-
-	@Test
-	void testRemovePlayerFromTeam_WhenContractDoesNotExist() {
-		FantaTeam team = new FantaTeam("Team", null, 0, null, new HashSet<>());
-		Player player = new Player.Defender("Giorgio", "Chiellini", Player.Club.JUVENTUS);
-
-		when(contractRepository.getContract(team, player)).thenReturn(Optional.empty());
-
-		adminUserService.removePlayerFromTeam(team, player);
-
-		verify(contractRepository, never()).deleteContract(any());
-	}
-
-	@Test
-	void testGetAllNewspapers() {
-		NewsPaper np1 = new NewsPaper("Gazzetta");
-		NewsPaper np2 = new NewsPaper("Corriere");
-		when(newspaperRepository.getAllNewspapers()).thenReturn(List.of(np1, np2));
-
-		List<NewsPaper> result = adminUserService.getAllNewspapers();
-
-		assertThat(result).containsExactly(np1, np2);
-	}
-
-	@Test
-	void testGenerateCalendar_SavesMatches() {
-		FantaUser admin = new FantaUser(null, null);
-		League league = new League(admin, "Serie A", null, null);
-		
-		int numberOfTeams = 8;
-		int daysForRR = numberOfTeams - 1;
-
-		// GIVEN TeamRepository returns n teams as the league's
-		List<FantaTeam> teams = range(0, numberOfTeams)
-				.mapToObj(i -> new FantaTeam("Team" + (i + 1), null, 0, null, null))
-				.toList();
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(teams);	
-
-		// TODO 20 deve diventare una costante da qualche parte!
-		// AND GIVEN MatchDayRepository returns 20 MatchDay instances as the league's
-		when(matchDayRepository.getAllMatchDays()).thenReturn(range(0, 20)
-				.mapToObj(i -> new MatchDay("match", LocalDate.now().plusDays(i), i)).toList());
-
-		// WHEN the Service is asked to generate the league's calendar
-		adminUserService.generateCalendar(league);
-
-		// THEN MatchRepository is asked to persist the correct number of Match instances
-		ArgumentCaptor<Match> matchCaptor = ArgumentCaptor.forClass(Match.class);
-		verify(matchRepository, times(20 * (numberOfTeams / 2))).saveMatch(matchCaptor.capture());
-		verifyNoMoreInteractions(matchRepository);
-
-		// AND persisted Match instances are such that:
-		List<Match> allMatches = matchCaptor.getAllValues();
-
-		// 1. every FantaTeam plays on every MatchDay
-		allMatches.stream()
-				.collect(Collectors.groupingBy(Match::getMatchDay,
-						Collectors.flatMapping(match -> Stream.<FantaTeam>of(match.getTeam1(), match.getTeam2()),
-								Collectors.toSet())))
-				.values().stream()
-				.forEach(teamsInDay -> assertThat(teamsInDay).containsExactlyInAnyOrderElementsOf(teams));
-		
-		// 2. matches in the 'outward' round are round-robin couples
-		Set<Set<FantaTeam>> roundRobin = range(0, teams.size()).boxed()
-				.flatMap(i -> range(i + 1, teams.size()).mapToObj(j -> Set.of(teams.get(i), teams.get(j))))
-				.collect(Collectors.toSet());
-
-		Set<List<FantaTeam>> outwardPairings = allMatches.stream()
-				.filter(match -> range(0, daysForRR).boxed().toList().contains(match.getMatchDay().getNumber()))
-				.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
-
-		assertThat(outwardPairings.stream().map(Set::copyOf).collect(toSet()))
-				.containsExactlyInAnyOrderElementsOf(roundRobin);
-		
-		// 3. pairings in the 'return' round are reverses of those in 'outward'
-		Set<List<FantaTeam>> returnPairings = allMatches.stream()
-				.filter(match -> range(daysForRR, 2 * daysForRR).boxed().toList().contains(match.getMatchDay().getNumber()))
-				.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
-
-		assertThat(returnPairings).containsExactlyInAnyOrderElementsOf(
-				outwardPairings.stream().map(pair -> List.of(pair.get(1), pair.get(0))).collect(toSet()));
-		
-		// 4. 'second outward' pairings are taken form 'first outward'
-		Set<List<FantaTeam>> secondOutwardPairings = allMatches.stream()
-				.filter(match -> range(2 * daysForRR, 20).boxed().toList().contains(match.getMatchDay().getNumber()))
-				.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
-		
-		assertThat(secondOutwardPairings).isSubsetOf(outwardPairings);
-	}
-
-
-	@Test
-	void testGenerateCalendar_LessThanTwoTeams_Throws() {
-		FantaUser admin = new FantaUser(null, null);
-		League league = new League(admin, "Serie A", null, null);
-		FantaTeam onlyTeam = new FantaTeam("Solo", null, 0, null, new HashSet<>());
-
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(onlyTeam));
-
-		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("At least 2 teams are required");
-	}
-
-	@Test
-	void testGenerateCalendar_OddNumberOfTeams_Throws() {
-		FantaUser admin = new FantaUser(null, null);
-		League league = new League(admin, "Serie A", null, null);
-		FantaTeam t1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
-		FantaTeam t3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
-
-		when(fantaTeamRepository.getAllTeams(league)).thenReturn(List.of(t1, t2, t3));
-
-		assertThatThrownBy(() -> adminUserService.generateCalendar(league)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Number of teams must be even");
-	}
-
-	@Test
-	void testGenerateSchedule_EvenNumberOfTeams_Success() throws Exception {
-		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
-		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
-		FantaTeam t4 = new FantaTeam("T4", null, 0, null, new HashSet<>());
-
-		var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
-		method.setAccessible(true);
-
-		@SuppressWarnings("unchecked")
-		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(adminUserService, List.of(t1, t2, t3, t4));
-
-		int expectedRounds = (4 - 1) * 2; // double round robin
-		assertThat(schedule.size()).isEqualTo(expectedRounds);
-
-		for (List<FantaTeam[]> round : schedule) {
-			assertThat(round.size()).isEqualTo(2); // n/2 matches per round
+			// THEN the ContractRepository is not asked to delete any Contract
+			verify(contractRepository, never()).deleteContract(any());
 		}
 	}
 
-	@Test
-	void testGenerateSchedule_OddNumberOfTeams_Throws() throws Exception {
-		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
-		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
+	@Nested
+	@DisplayName("can generate a League's calendar")
+	class GenerateCalendar {
 
-		assertThatThrownBy(() -> {
-			var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
-			method.setAccessible(true);
-			method.invoke(adminUserService, List.of(t1, t2, t3));
-		}).hasCauseInstanceOf(IllegalArgumentException.class)
-				.satisfies(ex -> assertThat(ex.getCause().getMessage()).contains("Number of teams must be even"));
-	}
+		@Test
+		@DisplayName("when the League is made up of 8 Teams")
+		void testGenerateCalendar_SavesMatches() {
 
-	@Test
-	void testGenerateSchedule_DoubleRoundRobin_MirrorsCorrectly() throws Exception {
-		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
-		FantaTeam t3 = new FantaTeam("T3", null, 0, null, new HashSet<>());
-		FantaTeam t4 = new FantaTeam("T4", null, 0, null, new HashSet<>());
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getMatchRepository()).thenReturn(matchRepository);
+			when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+			when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
 
-		var method = AdminUserService.class.getDeclaredMethod("generateSchedule", List.class);
-		method.setAccessible(true);
-		@SuppressWarnings("unchecked")
-		List<List<FantaTeam[]>> schedule = (List<List<FantaTeam[]>>) method.invoke(adminUserService, List.of(t1, t2, t3, t4));
+			// GIVEN TeamRepository returns n teams as the league's
+			FantaUser admin = new FantaUser(null, null);
+			League league = new League(admin, "Serie A", null);
 
-		int firstLegRounds = schedule.size() / 2;
+			int numberOfTeams = 8;
+			int daysForRR = numberOfTeams - 1;
 
-		for (int i = 0; i < firstLegRounds; i++) {
-			List<FantaTeam[]> firstLeg = schedule.get(i);
-			List<FantaTeam[]> secondLeg = schedule.get(i + firstLegRounds);
-			for (int j = 0; j < firstLeg.size(); j++) {
-				assertThat(secondLeg.get(j)[0]).isEqualTo(firstLeg.get(j)[1]);
-				assertThat(secondLeg.get(j)[1]).isEqualTo(firstLeg.get(j)[0]);
+			List<FantaTeam> teams = range(0, numberOfTeams)
+					.mapToObj(i -> new FantaTeam("Team" + (i + 1), null, 0, null, null)).toList();
+			when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.copyOf(teams));
+
+			// AND GIVEN MatchDayRepository returns 20 MatchDay instances as the league's
+			when(matchDayRepository.getAllMatchDays(league)).thenReturn(range(0, MatchDay.MATCH_DAYS_IN_LEAGUE)
+					.mapToObj(i -> new MatchDay("MatchDay", i, MatchDay.Status.FUTURE, league)).toList());
+
+			// WHEN the Service is asked to generate the league's calendar
+			adminUserService.generateCalendar(league);
+
+			// THEN MatchRepository is asked to persist the correct number of Matches
+			ArgumentCaptor<Match> matchCaptor = ArgumentCaptor.forClass(Match.class);
+			verify(matchRepository, times(MatchDay.MATCH_DAYS_IN_LEAGUE * (numberOfTeams / 2)))
+					.saveMatch(matchCaptor.capture());
+			verifyNoMoreInteractions(matchRepository);
+
+			// AND persisted Match instances are such that:
+			List<Match> allMatches = matchCaptor.getAllValues();
+
+			// 1. every FantaTeam plays on every MatchDay
+			allMatches.stream()
+					.collect(Collectors.groupingBy(Match::getMatchDay,
+							Collectors.flatMapping(match -> Stream.<FantaTeam>of(match.getTeam1(), match.getTeam2()),
+									Collectors.toSet())))
+					.values().stream()
+					.forEach(teamsInDay -> assertThat(teamsInDay).containsExactlyInAnyOrderElementsOf(teams));
+
+			// 2. matches in the 'outward' round are round-robin couples
+			Set<Set<FantaTeam>> roundRobin = range(0, teams.size()).boxed()
+					.flatMap(i -> range(i + 1, teams.size()).mapToObj(j -> Set.of(teams.get(i), teams.get(j))))
+					.collect(Collectors.toSet());
+
+			Set<List<FantaTeam>> outwardPairings = allMatches.stream()
+					.filter(match -> range(0, daysForRR).boxed().toList().contains(match.getMatchDay().getNumber()))
+					.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
+
+			assertThat(outwardPairings.stream().map(Set::copyOf).collect(toSet()))
+					.containsExactlyInAnyOrderElementsOf(roundRobin);
+
+			// 3. pairings in the 'return' round are reverses of those in 'outward'
+			Set<List<FantaTeam>> returnPairings = allMatches.stream().filter(
+					match -> range(daysForRR, 2 * daysForRR).boxed().toList().contains(match.getMatchDay().getNumber()))
+					.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
+
+			assertThat(returnPairings).containsExactlyInAnyOrderElementsOf(
+					outwardPairings.stream().map(pair -> List.of(pair.get(1), pair.get(0))).collect(toSet()));
+
+			// 4. 'second outward' pairings are taken form 'first outward'
+			Set<List<FantaTeam>> secondOutwardPairings = allMatches.stream()
+					.filter(match -> range(2 * daysForRR, MatchDay.MATCH_DAYS_IN_LEAGUE).boxed().toList()
+							.contains(match.getMatchDay().getNumber()))
+					.map(match -> List.of(match.getTeam1(), match.getTeam2())).collect(toSet());
+
+			assertThat(secondOutwardPairings).isSubsetOf(outwardPairings);
+		}
+
+		@Nested
+		@DisplayName("error cases")
+		class GenerateCalendarError {
+
+			@Test
+			void testGenerateCalendar_LessThanTwoTeams_Throws() {
+
+				// GIVEN the necessary Repositories are returned by the TransactionContext
+				when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
+
+				// AND a League is reported as having strictly less than 2 Teams
+				FantaUser admin = new FantaUser(null, null);
+				League league = new League(admin, "Serie A", null);
+				FantaTeam onlyTeam = new FantaTeam("Solo", null, 0, null, null);
+				when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.of(onlyTeam));
+
+				// WHEN the SUT is used to generate the League's calendar
+				ThrowingCallable shouldThrow = () -> adminUserService.generateCalendar(league);
+
+				// THEN an Error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("At least 2 teams are required");
+
+				// AND no Match is saved
+				verify(matchRepository, never()).saveMatch(any());
+			}
+
+			@Test
+			void testGenerateCalendar_OddNumberOfTeams_Throws() {
+
+				// GIVEN the necessary Repositories are returned by the TransactionContext
+				when(context.getTeamRepository()).thenReturn(fantaTeamRepository);
+
+				// GIVEN a League is reported as having an odd number of Teams
+				FantaUser admin = new FantaUser(null, null);
+				League league = new League(admin, "Serie A", null);
+				FantaTeam t1 = new FantaTeam("Team1", null, 0, null, null);
+				FantaTeam t2 = new FantaTeam("Team2", null, 0, null, null);
+				FantaTeam t3 = new FantaTeam("Team3", null, 0, null, null);
+
+				when(fantaTeamRepository.getAllTeams(league)).thenReturn(Set.of(t1, t2, t3));
+
+				// WHEN the SUT is used to generate the League's calendar
+				ThrowingCallable shouldThrow = () -> adminUserService.generateCalendar(league);
+
+				// THEN an Error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("Number of teams must be even");
+
+				// AND no Match is saved
+				verify(matchRepository, never()).saveMatch(any());
 			}
 		}
 	}
 
-	@Test
-	void testCreateMatches_Success() {
-		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+	@Nested
+	@DisplayName("can compute and save the Results for a MatchDay")
+	class CalculateResults {
 
-		FantaTeam[] match = new FantaTeam[] { t1, t2 };
-		List<MatchDay> matchDays = List.of(new MatchDay(null, null, 1));
+		@Test
+		void testCalculateGrades_SeasonNotStarted_Throws() {
 
-		List<FantaTeam[]> round = new ArrayList<>();
-		round.add(match);
-		List<List<FantaTeam[]>> schedule = new ArrayList<>();
-		schedule.add(round);
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
 
-		List<Match> matches = adminUserService.createMatches(schedule, matchDays);
+			// AND a League has no ongoing MatchDay
+			FantaUser admin = new FantaUser(null, null);
+			League league = new League(admin, "Serie A", null);
 
-		assertThat(matches).hasSize(1);
-		assertThat(matches.get(0).getTeam1()).isEqualTo(t1);
-		assertThat(matches.get(0).getTeam2()).isEqualTo(t2);
-		assertThat(matches.get(0).getMatchDay()).isEqualTo(matchDays.get(0));
+			when(matchDayRepository.getLatestEndedMatchDay(league)).thenReturn(Optional.empty());
+
+			// WHEN the SUT is used to calculate the ongoing MatchDay's results
+			ThrowingCallable shouldThrow = () -> adminUserService.calculateResults(league);
+
+			// THEN an error is thrown
+			assertThatThrownBy(shouldThrow).isInstanceOf(RuntimeException.class)
+					.hasMessageContaining("The season hasn't started yet");
+
+			// AND no Result is saved
+			verify(resultRepository, never()).saveResult(any());
+		}
+
+		@Test
+		void testCalculateGrades_SavesResultsAndUpdatesPoints(@Mock LineUp lineUp1, @Mock LineUpViewer lineUpViewer1,
+				@Mock LineUp lineUp2, @Mock LineUpViewer lineUpViewer2) {
+
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getMatchRepository()).thenReturn(matchRepository);
+			when(context.getGradeRepository()).thenReturn(gradeRepository);
+			when(context.getLineUpRepository()).thenReturn(lineUpRepository);
+			when(context.getResultsRepository()).thenReturn(resultRepository);
+			when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+
+			// AND a given League is reported as having a latest-ended MatchDay
+			FantaUser admin = new FantaUser("admin@example.com", "pwd");
+			League league = new League(admin, "Serie A", "1234");
+			MatchDay latestEnded = new MatchDay("2 giornata", 2, MatchDay.Status.PAST, league);
+			when(matchDayRepository.getLatestEndedMatchDay(league)).thenReturn(Optional.of(latestEnded));
+
+			// AND one Match is reported as associated with the latest-ended MatchDay
+			HashSet<Contract> contracts1 = new HashSet<Contract>();
+			FantaTeam team1 = new FantaTeam("Team1", league, 0, admin, contracts1);
+			HashSet<Contract> contracts2 = new HashSet<Contract>();
+			FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, contracts2);
+			Match match = new Match(latestEnded, team1, team2);
+			when(matchRepository.getAllMatchesIn(latestEnded)).thenReturn(List.of(match));
+
+			// AND Matches associated with the latest-ended MatchDay have no associated
+			// Result
+			when(resultRepository.getResultFor(match)).thenReturn(Optional.empty());
+
+			// AND LineUps are reported for that Match which involve two given Players
+			Goalkeeper gk1 = new Goalkeeper("G1", "Alpha", Player.Club.ATALANTA);
+			when(lineUp1.extract()).thenReturn(lineUpViewer1);
+			when(lineUpViewer1.starterGoalkeepers()).thenReturn(Set.of(gk1));
+			when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineUp1));
+
+			Goalkeeper gk2 = new Goalkeeper("G2", "Beta", Player.Club.BOLOGNA);
+			when(lineUp2.extract()).thenReturn(lineUpViewer2);
+			when(lineUpViewer2.starterGoalkeepers()).thenReturn(Set.of(gk2));
+			when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineUp2));
+
+			// AND the two given Players are assigned to the two Teams
+			contracts1.add(new Contract(team1, gk1));
+			contracts2.add(new Contract(team2, gk2));
+
+			// AND two Grades are reported for the given Players in the latest-ended
+			// MatchDay
+			Grade grade1 = new Grade(gk1, latestEnded, 70.0);
+			Grade grade2 = new Grade(gk2, latestEnded, 60.0);
+			when(gradeRepository.getAllGrades(latestEnded)).thenReturn(List.of(grade1, grade2));
+
+			// WHEN the SUT is used to calculate the League's results
+			adminUserService.calculateResults(league);
+
+			// THEN ResultRepository is asked to save the correct Results
+			verify(resultRepository).saveResult(new Result(70, 60, 1, 0, match));
+
+			// AND the points for both Teams are correctly updated
+			assertThat(team1.getPoints()).isEqualTo(3);
+			assertThat(team2.getPoints()).isEqualTo(0);
+		}
 	}
 
-	@Test
-	void testCreateMatches_MismatchThrows() {
-		FantaTeam t1 = new FantaTeam("T1", null, 0, null, new HashSet<>());
-		FantaTeam t2 = new FantaTeam("T2", null, 0, null, new HashSet<>());
+	@Nested
+	@DisplayName("can advance game state for a League")
+	class MoveForwardMatchDays {
 
-		FantaTeam[] match = new FantaTeam[] { t1, t2 };
+		@BeforeEach
+		void stubContext() {
 
-		List<FantaTeam[]> round = new ArrayList<>();
-		round.add(match);
-		List<List<FantaTeam[]>> schedule = new ArrayList<>();
-		schedule.add(round);
+			// GIVEN the necessary Repositories are returned by the TransactionContext
+			when(context.getMatchDayRepository()).thenReturn(matchDayRepository);
+		}
 
-		List<MatchDay> matchDays = List.of(); // empty -> mismatch
+		@Nested
+		@DisplayName("starting the earliest-upcoming MatchDay")
+		class StartMatchDay {
 
-		assertThatThrownBy(() -> adminUserService.createMatches(schedule, matchDays))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Schedule rounds and matchDays must have the same size");
-	}
+			@Test
+			@DisplayName("happy case")
+			void testStartMatchDay() {
 
-	@Test
-	void testCreateMatches_MoreRoundsThanMatchDays_Throws() {
-		FantaTeam team1 = new FantaTeam("Team1", null, 0, null, new HashSet<>());
-		FantaTeam team2 = new FantaTeam("Team2", null, 0, null, new HashSet<>());
-		FantaTeam team3 = new FantaTeam("Team3", null, 0, null, new HashSet<>());
-		FantaTeam team4 = new FantaTeam("Team4", null, 0, null, new HashSet<>());
+				// GIVEN a League reports an earliest-upcoming MatchDay
+				FantaUser admin = new FantaUser("admin@example.com", "pwd");
+				League league = new League(admin, "Serie A", "1234");
+				MatchDay earliestUpcoming = new MatchDay("2 giornata", 2, MatchDay.Status.FUTURE, league);
+				when(matchDayRepository.getEarliestUpcomingMatchDay(league)).thenReturn(Optional.of(earliestUpcoming));
 
-		FantaTeam[] teamsArray1 = new FantaTeam[] { team1, team2 };
-		FantaTeam[] teamsArray2 = new FantaTeam[] { team3, team4 };
+				// WHEN the SUT is used to start the League's MatchDay
+				adminUserService.startMatchDay(league);
 
-		List<FantaTeam[]> round1 = new ArrayList<>();
-		round1.add(teamsArray1);
-		List<FantaTeam[]> round2 = new ArrayList<>();
-		round1.add(teamsArray2);
-		List<List<FantaTeam[]>> schedule = new ArrayList<>();
-		schedule.add(round1);
-		schedule.add(round2);
-
-		List<MatchDay> matchDays = List.of(mock(MatchDay.class)); // only 1 match day
-
-		assertThatThrownBy(() -> adminUserService.createMatches(schedule, matchDays))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Schedule rounds and matchDays must have the same size");
-	}
-
-	@Test
-	void testCreateMatches_EmptySchedule_ReturnsEmptyList() {
-		List<List<FantaTeam[]>> schedule = List.of();
-		List<MatchDay> matchDays = List.of();
-
-		List<Match> matches = adminUserService.createMatches(schedule, matchDays);
-
-		assertThat(matches).isEmpty();
-	}
-
-	@Test
-	void testCalculateGrades_UserNotAdmin_Throws() {
-		// The user who is NOT the league admin
-		FantaUser user = new FantaUser("user", "pswd");
-
-		// League with a different admin
-		FantaUser admin = new FantaUser("admin", "pswd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(admin, "league", newspaper, "12345");
-
-		// Create a previous match day so that the "season started" check passes
-		MatchDay previousMatchDay = new MatchDay(null, null, 1);
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(previousMatchDay));
-
-		// Set up a match day to calculate with at least one match
-		FantaTeam team1 = new FantaTeam("Team1", league, 0, user, Set.of());
-		FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
-		Match match = new Match(previousMatchDay, team1, team2);
-		List<Match> matches = List.of(match);
-		when(matchRepository.getAllMatchesByMatchDay(any(), eq(league))).thenReturn(matches);
-
-		// Set up grades, lineups, and results so the calculation can proceed
-		Grade grade1 = new Grade(new Player.Goalkeeper(null, null, null), previousMatchDay, 6.0, newspaper);
-		Grade grade2 = new Grade(new Player.Forward(null, null, null), previousMatchDay, 7.0, newspaper);
-		when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
-
-		LineUp lineup1 = LineUp.build()
-				.forTeam(team1)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
-		LineUp lineup2 = LineUp.build()
-				.forTeam(team2)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(new Player.Goalkeeper("portiere", "titolare", Player.Club.ATALANTA))
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
-		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
-		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
-
-		// Call the method; it should throw because `user` is not admin
-		assertThatThrownBy(() -> adminUserService.calculateGrades(user, league)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("You are not the admin of the league");
-
-		// Ensure that no results were saved
-		verify(context.getResultsRepository(), never()).saveResult(any());
-	}
-
-	@Test
-	void testCalculateGrades_SeasonNotStarted_Throws() {
-		FantaUser admin = new FantaUser(null, null);
-		NewsPaper newspaper = new NewsPaper(null);
-		League league = new League(admin, "Serie A", newspaper, null);
-
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.empty());
-
-		assertThatThrownBy(() -> adminUserService.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The season hasn't started yet");
-	}
-
-	@Test
-	void testCalculateGrades_NoResultsToCalculate_Throws() {
-
-		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
-		LocalDate saturday = LocalDate.of(2025, 9, 13);
-
-		League league = mock(League.class);
-		FantaUser admin = mock(FantaUser.class);
-		when(league.getAdmin()).thenReturn(admin);
-
-		when(matchDayRepository.getPreviousMatchDay(saturday))
-				.thenReturn(Optional.of(new MatchDay("", previousSaturday, 1)));
-
-		// Override today() to return the Saturday we want to test
-		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return saturday;
-			}
-		};
-
-		when(serviceWithSaturday.getNextMatchDayToCalculate(saturday, context, league, admin))
-				.thenReturn(Optional.empty());
-
-		assertThatThrownBy(() -> serviceWithSaturday.calculateGrades(admin, league))
-				.isInstanceOf(RuntimeException.class).hasMessageContaining("There are no results to calculate");
-	}
-
-	@Test
-	void testIsLegalToCalculateResults_Saturday() throws Exception {
-		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
-		LocalDate saturday = LocalDate.of(2025, 9, 13);
-
-		League league = mock(League.class);
-		FantaUser admin = mock(FantaUser.class);
-		when(league.getAdmin()).thenReturn(admin);
-
-		when(matchDayRepository.getPreviousMatchDay(saturday))
-				.thenReturn(Optional.of(new MatchDay("", previousSaturday, 1)));
-
-		// Override today() to return the Saturday we want to test
-		AdminUserService serviceWithSaturday = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return saturday;
-			}
-		};
-
-		when(serviceWithSaturday.getNextMatchDayToCalculate(saturday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDay(null, saturday, 1)));
-
-		assertThatThrownBy(() -> serviceWithSaturday.calculateGrades(admin, league))
-				.isInstanceOf(RuntimeException.class).hasMessageContaining("The matches are not finished yet");
-	}
-
-	@Test
-	void testCalculateGrades_IllegalOnSunday() {
-		LocalDate previousSaturday = LocalDate.of(2025, 9, 6);
-		LocalDate sunday = LocalDate.of(2025, 9, 14);
-
-		League league = mock(League.class);
-		FantaUser admin = mock(FantaUser.class);
-		when(league.getAdmin()).thenReturn(admin);
-
-		when(matchDayRepository.getPreviousMatchDay(sunday))
-				.thenReturn(Optional.of(new MatchDay("", previousSaturday, 1)));
-
-		AdminUserService serviceWithSunday = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return sunday;
-			}
-		};
-
-		when(serviceWithSunday.getNextMatchDayToCalculate(sunday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDay(null, sunday, 1)));
-
-		assertThatThrownBy(() -> serviceWithSunday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The matches are not finished yet");
-	}
-
-	@Test
-	void testCalculateGrades_IllegalOnWeekday() {
-		LocalDate sunday = LocalDate.of(2025, 9, 14);
-		LocalDate monday = LocalDate.of(2025, 9, 15);
-
-		League league = mock(League.class);
-		FantaUser admin = mock(FantaUser.class);
-
-		when(league.getAdmin()).thenReturn(admin);
-		when(matchDayRepository.getPreviousMatchDay(monday)).thenReturn(Optional.of(new MatchDay("", sunday, 1)));
-
-		AdminUserService serviceWithMonday = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return monday;
-			}
-		};
-
-		when(serviceWithMonday.getNextMatchDayToCalculate(monday, context, league, admin))
-				.thenReturn(Optional.of(new MatchDay(null, monday, 1)));
-
-		assertThatThrownBy(() -> serviceWithMonday.calculateGrades(admin, league)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("The matches are not finished yet");
-	}
-
-	@Test
-	void testCalculateGrades_SavesResultsAndUpdatesPoints() {
-
-		FantaUser admin = new FantaUser("admin@example.com", "pwd");
-		NewsPaper newspaper = new NewsPaper("Gazzetta");
-		League league = new League(admin, "Serie A", newspaper, "1234");
-
-		LocalDate matchDate = LocalDate.of(2025, 9, 21); // Sunday
-		MatchDay prevDay = new MatchDay("Day0", matchDate.minusWeeks(1), 1);
-		MatchDay dayToCalc = new MatchDay("Day1", matchDate,1 );
-
-		when(matchDayRepository.getPreviousMatchDay(any())).thenReturn(Optional.of(prevDay));
-
-		AdminUserService serviceWithFixedDate = new AdminUserService(transactionManager) {
-			@Override
-			protected LocalDate today() {
-				return matchDate.plusDays(5);
+				// THEN the MatchDay's status is updated correctly
+				ArgumentCaptor<MatchDay> matchDay = ArgumentCaptor.forClass(MatchDay.class);
+				verify(matchDayRepository).updateMatchDay(matchDay.capture());
+				assertThat(matchDay.getValue().getStatus()).isEqualTo(MatchDay.Status.PRESENT);
 			}
 
-			@Override
-			protected Optional<MatchDay> getNextMatchDayToCalculate(LocalDate d, TransactionContext c, League l,
-					FantaUser u) {
-				return Optional.of(dayToCalc);
+			@Test
+			@DisplayName("the League has no earliest-upcoming MatchDay")
+			void testStartMatchDay_error() {
+
+				// GIVEN a League reports no earliest-upcoming MatchDay
+				FantaUser admin = new FantaUser("admin@example.com", "pwd");
+				League league = new League(admin, "Serie A", "1234");
+				when(matchDayRepository.getEarliestUpcomingMatchDay(league)).thenReturn(Optional.empty());
+
+				// WHEN the SUT is used to start the League's MatchDay
+				ThrowingCallable shouldThrow = () -> adminUserService.startMatchDay(league);
+
+				// THEN an error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("no more MatchDays to play");
+
+				// AND MatchDayRepository is not contacted
+				verifyNoMoreInteractions(matchDayRepository);
 			}
-		};
 
-		// Teams
-		FantaTeam team1 = new FantaTeam("Team1", league, 0, admin, Set.of());
-		FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, Set.of());
+			@Test
+			@DisplayName("the League's latest-ended MatchDay has not been given all Results")
+			void testStartMatchDay_error2() {
 
-		// Match
-		Match match = new Match(dayToCalc, team1, team2);
-		when(matchRepository.getAllMatchesByMatchDay(dayToCalc, league))
-				.thenReturn(List.of(new Match(dayToCalc, team1, team2)));
+				// GIVEN the necessary Repositories are returned by the TransactionContext
+				when(context.getMatchRepository()).thenReturn(matchRepository);
+				when(context.getResultsRepository()).thenReturn(resultRepository);
 
-		// Players
-		Player.Goalkeeper gk1 = new Player.Goalkeeper("G1", "Alpha", Player.Club.ATALANTA);
-		Player.Goalkeeper gk2 = new Player.Goalkeeper("G2", "Beta", Player.Club.BOLOGNA);
+				// GIVEN a League's latest-ended MatchDay is reported as missing some Results
+				FantaUser admin = new FantaUser("admin@example.com", "pwd");
+				League league = new League(admin, "Serie A", "1234");
+				MatchDay latestEnded = new MatchDay("1 giornata", 1, MatchDay.Status.PAST, league);
+				when(matchDayRepository.getLatestEndedMatchDay(league)).thenReturn(Optional.of(latestEnded));
+				MatchDay earliestUpcoming = new MatchDay("2 giornata", 2, MatchDay.Status.FUTURE, league);
+				when(matchDayRepository.getEarliestUpcomingMatchDay(league)).thenReturn(Optional.of(earliestUpcoming));
 
-		LineUp lineup1 = LineUp.build()
-				.forTeam(team1)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk1)
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
-		
-		LineUp lineup2 = LineUp.build()
-				.forTeam(team2)
-				.inMatch(match)
-				.withStarterLineUp(Scheme433.starterLineUp()
-						.withGoalkeeper(gk2)
-						.withDefenders(
-								new Player.Defender("difensore1", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore2", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore3", "titolare", Player.Club.ATALANTA),
-								new Player.Defender("difensore4", "titolare", Player.Club.ATALANTA))
-						.withMidfielders(
-								new Player.Midfielder("centrocampista1", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista2", "titolare", Player.Club.ATALANTA),
-								new Player.Midfielder("centrocampista3", "titolare", Player.Club.ATALANTA))
-						.withForwards(
-								new Player.Forward("attaccante1", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante2", "titolare", Player.Club.ATALANTA),
-								new Player.Forward("attaccante3", "titolare", Player.Club.ATALANTA)))
-				.withSubstituteGoalkeepers(
-						new Player.Goalkeeper("portiere1", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere2", "panchina", Player.Club.ATALANTA),
-						new Player.Goalkeeper("portiere3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteDefenders(
-						new Player.Defender("difensore1", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore2", "panchina", Player.Club.ATALANTA),
-						new Player.Defender("difensore3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteMidfielders(
-						new Player.Midfielder("centrocampista1", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista2", "panchina", Player.Club.ATALANTA),
-						new Player.Midfielder("centrocampista3", "panchina", Player.Club.ATALANTA))
-				.withSubstituteForwards(
-						new Player.Forward("attaccante1", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante2", "panchina", Player.Club.ATALANTA),
-						new Player.Forward("attaccante3", "panchina", Player.Club.ATALANTA));
+				FantaTeam team1 = new FantaTeam("Team1", league, 0, admin, null);
+				FantaTeam team2 = new FantaTeam("Team2", league, 0, admin, null);
+				Match match12 = new Match(latestEnded, team1, team2);
+				FantaTeam team3 = new FantaTeam("Team1", league, 0, admin, null);
+				FantaTeam team4 = new FantaTeam("Team2", league, 0, admin, null);
+				Match match34 = new Match(latestEnded, team3, team4);
 
-		when(lineUpRepository.getLineUpByMatchAndTeam(match, team1)).thenReturn(Optional.of(lineup1));
-		when(lineUpRepository.getLineUpByMatchAndTeam(match, team2)).thenReturn(Optional.of(lineup2));
+				when(matchRepository.getAllMatchesIn(latestEnded)).thenReturn(List.of(match12, match34));
+				when(resultRepository.getResultFor(match12)).thenReturn(Optional.of(new Result(3, 0, 50, 50, match12)));
+				when(resultRepository.getResultFor(match34)).thenReturn(Optional.empty());
 
-		// Grades
-		Grade grade1 = new Grade(gk1, dayToCalc, 70.0, newspaper);
-		Grade grade2 = new Grade(gk2, dayToCalc, 60.0, newspaper);
-		when(gradeRepository.getAllMatchGrades(match, newspaper)).thenReturn(List.of(grade1, grade2));
+				// WHEN the SUT is used to start the League's MatchDay
+				ThrowingCallable shouldThrow = () -> adminUserService.startMatchDay(league);
 
-		// Act
-		serviceWithFixedDate.calculateGrades(admin, league);
+				// THEN an error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("calculate the results before advancing the game state");
 
-		// Assert: Result persisted
-		verify(resultRepository).saveResult(any());
+				// AND MatchDayRepository is not contacted
+				verifyNoMoreInteractions(matchDayRepository);
+			}
+		}
 
-		// Assert: team points updated
-		assertThat(team1.getPoints()).isEqualTo(3);
-		assertThat(team2.getPoints()).isEqualTo(0);
+		@Nested
+		@DisplayName("ending the ongoing MatchDay")
+		class EndMatchDay {
+
+			@Test
+			@DisplayName("happy case")
+			void testEndMatchDay() {
+
+				// GIVEN a League reports an ongoing MatchDay
+				FantaUser admin = new FantaUser("admin@example.com", "pwd");
+				League league = new League(admin, "Serie A", "1234");
+				MatchDay ongoingMatchDay = new MatchDay("2 giornata", 2, MatchDay.Status.PRESENT, league);
+				when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.of(ongoingMatchDay));
+
+				// WHEN the SUT is used to end the League's MatchDay
+				adminUserService.endMatchDay(league);
+
+				// THEN the MatchDay's status is updated correctly
+				ArgumentCaptor<MatchDay> matchDay = ArgumentCaptor.forClass(MatchDay.class);
+				verify(matchDayRepository).updateMatchDay(matchDay.capture());
+				assertThat(matchDay.getValue().getStatus()).isEqualTo(MatchDay.Status.PAST);
+			}
+
+			@Test
+			@DisplayName("the League has no ongoing MatchDay")
+			void testEndMatchDay_error() {
+
+				// GIVEN a League reports no ongoing MatchDay
+				FantaUser admin = new FantaUser("admin@example.com", "pwd");
+				League league = new League(admin, "Serie A", "1234");
+				when(matchDayRepository.getOngoingMatchDay(league)).thenReturn(Optional.empty());
+
+				// WHEN the SUT is used to start the League's MatchDay
+				ThrowingCallable shouldThrow = () -> adminUserService.endMatchDay(league);
+
+				// THEN an error is thrown
+				assertThatThrownBy(shouldThrow).isInstanceOf(IllegalArgumentException.class)
+						.hasMessageContaining("no MatchDay to end");
+
+				// AND MatchDayRepository is not contacted
+				verifyNoMoreInteractions(matchDayRepository);
+			}
+		}
 	}
-
 }
-// --- Helper methods ---

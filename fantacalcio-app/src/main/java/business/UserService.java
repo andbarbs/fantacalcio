@@ -1,7 +1,5 @@
 package business;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +16,20 @@ public class UserService {
 	}
 
 	// League
+    public void createLeague(String leagueName, FantaUser admin, String leagueCode) {
+        transactionManager.inTransaction((context) -> {
+            if (context.getLeagueRepository().getLeagueByCode(leagueCode).isEmpty()) {
+                League league = new League(admin, leagueName, leagueCode);
+                context.getLeagueRepository().saveLeague(league);
+                for(int i = 0; i < MatchDay.MATCH_DAYS_IN_LEAGUE; i++){
+                    context.getMatchDayRepository().saveMatchDay(new MatchDay("MatchDay "+ (i+1), (i+1), MatchDay.Status.FUTURE, league));
+                }
+            } else {
+                throw new IllegalArgumentException("A league with the same league code already exists");
+            }
+        });
+    }
+	
 
 	public void joinLeague(FantaTeam fantaTeam, League league) {
 		transactionManager.inTransaction((context) -> {
@@ -26,10 +38,10 @@ public class UserService {
 
 			final int maxFantaTeamsPerLeague = 8;
 			if (leagueRepository.getAllTeams(league).size() >= maxFantaTeamsPerLeague)
-				throw new UnsupportedOperationException("Maximum 12 teams per league");
+				throw new UnsupportedOperationException("Maximum 8 teams per league");
 
 			FantaUser user = fantaTeam.getFantaManager();
-			List<League> UserLeagues = leagueRepository.getLeaguesByUser(user);
+			Set<League> UserLeagues = leagueRepository.getLeaguesByMember(user);
 			if (UserLeagues.contains(league)) {
 				throw new IllegalArgumentException("You have already a team in this league");
 			} else {
@@ -38,17 +50,29 @@ public class UserService {
 		});
 	}
 
+    public void joinLeagueAsJournalist(League league, FantaUser journalist) {
+        transactionManager.inTransaction((context) -> {
+            if (league.getNewsPaper() != null) {
+                throw new IllegalStateException("La lega ha già un giornalista associato!");
+            }
+            if(league.getAdmin().equals(journalist)){
+                throw new IllegalStateException("l'admin non può essere il giornalista");
+            }
+            league.setNewsPaper(journalist);
+        });
+    }
+
 	// Matches
 
 	public Map<MatchDay, List<Match>> getAllMatches(League league) {
 
 		return transactionManager.fromTransaction((context) -> {
 
-			List<MatchDay> allMatchDays = context.getMatchDayRepository().getAllMatchDays();
-			Map<MatchDay, List<Match>> map = new HashMap<MatchDay, List<Match>>();
+			List<MatchDay> allMatchDays = context.getMatchDayRepository().getAllMatchDays(league);
+			Map<MatchDay, List<Match>> map = new HashMap<>();
 
 			for (MatchDay matchDay : allMatchDays) {
-				map.put(matchDay, context.getMatchRepository().getAllMatchesByMatchDay(matchDay, league));
+				map.put(matchDay, context.getMatchRepository().getAllMatchesIn(matchDay));
 			}
 
 			return map;
@@ -56,29 +80,9 @@ public class UserService {
 		});
 	}
 
-	public Match getNextMatch(League league, FantaTeam fantaTeam, LocalDate date) {
-		return transactionManager.fromTransaction((context) -> {
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(date);
-			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
-						fantaTeam);
-				Optional<Result> result = context.getResultsRepository().getResult(previousMatch);
-				if (result.isEmpty()) {
-					throw new RuntimeException("The results for the previous match have not been calculated yet");
-				}
-			}
-			Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getNextMatchDay(date);
-			if (nextMatchDay.isEmpty()) {
-				throw new RuntimeException("The league ended");
-			} else {
-				return context.getMatchRepository().getMatchByMatchDay(nextMatchDay.get(), league, fantaTeam);
-			}
-		});
-	}
-
 	// Players
 
-	public List<Player> getAllPlayers() {
+	public Set<Player> getAllPlayers() {
 		return transactionManager.fromTransaction((context) -> context.getPlayerRepository().findAll());
 	}
 
@@ -87,18 +91,21 @@ public class UserService {
 	}
 
 	// Proposals
-
-	public List<Proposal> getAllTeamProposals(League league, FantaTeam team) {
+	public Set<Proposal> getAllTeamProposals(FantaTeam team) {
 		return transactionManager
-				.fromTransaction((context) -> context.getProposalRepository().getMyProposals(league, team));
+				.fromTransaction((context) -> context.getProposalRepository().getProposalsFor(team));
 	}
 
-	public void acceptProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
+	public void acceptProposal(Proposal proposal, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
 			Player offeredPlayer = proposal.getOfferedContract().getPlayer();
 			Player requestedPlayer = proposal.getRequestedContract().getPlayer();
+            Optional<Proposal> repoProposal = context.getProposalRepository().getProposalBy(proposal.getOfferedContract(), proposal.getRequestedContract());
+            if (repoProposal.isEmpty()) {
+                throw new RuntimeException("Proposal does not exists");
+            }
 			if (!requestingTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
@@ -106,7 +113,7 @@ public class UserService {
 			Optional<Contract> offeredContract = searchContract(offeringTeam, offeredPlayer);
 
 			if (requestedContract.isEmpty() || offeredContract.isEmpty()) {
-				rejectProposal(proposal, fantaTeam);
+                context.getProposalRepository().deleteProposal(proposal);
 				throw new IllegalArgumentException("One or both players do not play anymore in the teams");
 			}
 			Contract receivedContract = new Contract(proposal.getOfferedContract().getTeam(),
@@ -121,18 +128,19 @@ public class UserService {
 		});
 	}
 
-	public void rejectProposal(Proposal.PendingProposal proposal, FantaTeam fantaTeam) {
+	public void rejectProposal(Proposal proposal, FantaTeam fantaTeam) {
 		transactionManager.inTransaction((context) -> {
 			FantaTeam requestingTeam = proposal.getRequestedContract().getTeam();
 			FantaTeam offeringTeam = proposal.getOfferedContract().getTeam();
+            Optional<Proposal> repoProposal = context.getProposalRepository().getProposalBy(proposal.getOfferedContract(), proposal.getRequestedContract());
+            if (repoProposal.isEmpty()) {
+                throw new RuntimeException("Proposal does not exists");
+            }
 
 			if (!requestingTeam.isSameTeam(fantaTeam) && !offeringTeam.isSameTeam(fantaTeam)) {
 				throw new IllegalArgumentException("You are not involved in this proposal");
 			}
-			Proposal.RejectedProposal rejectedProposal = new Proposal.RejectedProposal(proposal.getOfferedContract(),
-					proposal.getRequestedContract());
 			context.getProposalRepository().deleteProposal(proposal);
-			context.getProposalRepository().saveProposal(rejectedProposal);
 		});
 	}
 
@@ -141,19 +149,32 @@ public class UserService {
 		if (!requestedPlayer.getClass().equals(offeredPlayer.getClass())) {
 			throw new IllegalArgumentException("The players don't have the same role");
 		}
+        if(myTeam.equals(opponentTeam)) {
+            throw new IllegalArgumentException("You can't exchange a player with yourself");
+        }
 
 		return transactionManager.fromTransaction((context) -> {
+            Optional<FantaTeam> repoMyTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), myTeam.getFantaManager());
+            Optional<FantaTeam> repoOpponentTeam = context.getTeamRepository().getFantaTeamByUserAndLeague(myTeam.getLeague(), opponentTeam.getFantaManager());
+            if(repoMyTeam.isEmpty() || repoOpponentTeam.isEmpty()) {
+                throw new RuntimeException("One or both teams do not exists in the league");
+            }
+            if (!repoMyTeam.get().equals(myTeam)|| !repoOpponentTeam.get().equals(opponentTeam)) {
+                throw new IllegalArgumentException("One or both teams are incorrect");
+            }
+
 			Optional<Contract> requestedContract = searchContract(opponentTeam, requestedPlayer);
 			Optional<Contract> offeredContract = searchContract(myTeam, offeredPlayer);
 
 			if (requestedContract.isPresent() && offeredContract.isPresent()) {
-				Proposal newProposal = new Proposal.PendingProposal(offeredContract.get(), requestedContract.get());
+				Proposal newProposal = new Proposal(offeredContract.get(), requestedContract.get());
 
-				if (context.getProposalRepository().getProposal(offeredContract.get(), requestedContract.get())
+				if (context.getProposalRepository().getProposalBy(offeredContract.get(), requestedContract.get())
 						.isPresent()) {
 					throw new IllegalArgumentException("The proposal already exists");
 				}
-				return context.getProposalRepository().saveProposal(newProposal);
+				context.getProposalRepository().saveProposal(newProposal);
+                return true;
 			} else {
 				return false;
 			}
@@ -163,32 +184,34 @@ public class UserService {
 	// Standings
 
 	public List<FantaTeam> getStandings(League league) {
-		return getAllFantaTeams(league).stream().sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
+		return getAllFantaTeams(league)
+				.stream()
+				.sorted(Comparator.comparing(FantaTeam::getPoints).reversed())
 				.collect(Collectors.toList());
 	}
 
 	// Teams
 
-	public List<FantaTeam> getAllFantaTeams(League league) {
+	public Set<FantaTeam> getAllFantaTeams(League league) {
 		return transactionManager.fromTransaction((context) -> context.getTeamRepository().getAllTeams(league));
 	}
 
-	public FantaTeam getFantaTeamByUserAndLeague(League league, FantaUser user) {
+	public Optional<FantaTeam> getFantaTeamByUserAndLeague(League league, FantaUser user) {
 		return transactionManager
 				.fromTransaction((context) -> context.getTeamRepository().getFantaTeamByUserAndLeague(league, user));
 	}
 
 	// Grades
 
-	public List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper) {
+	public List<Grade> getAllMatchGrades(Match match) {
 		return transactionManager
-				.fromTransaction((context) -> context.getGradeRepository().getAllMatchGrades(match, newsPaper));
+				.fromTransaction((context) -> context.getGradeRepository().getAllGrades(match.getMatchDay()));
 	}
 
 	// Results
 
 	public Optional<Result> getResultByMatch(Match match) {
-		return transactionManager.fromTransaction((context) -> context.getResultsRepository().getResult(match));
+		return transactionManager.fromTransaction((context) -> context.getResultsRepository().getResultFor(match));
 
 	}
 
@@ -197,33 +220,38 @@ public class UserService {
 				.fromTransaction((context) -> context.getLineUpRepository().getLineUpByMatchAndTeam(match, fantaTeam));
 	}
 
-	protected LocalDate today() {
-		return LocalDate.now();
-	}
-
 	public void saveLineUp(LineUp lineUp) {
 		transactionManager.inTransaction((context) -> {
-			LocalDate today = today();
-			DayOfWeek day = today.getDayOfWeek();
-
 			// Check if is a valid date to save the lineUp
 			Match match = lineUp.getMatch();
-			LocalDate matchDate = match.getMatchDay().getDate();
-			if (today.isAfter(matchDate))
-				throw new UnsupportedOperationException("Can't modify the lineup after the match is over");
+            FantaTeam fantaTeam = lineUp.getTeam();
+            if(!match.getTeam1().equals(fantaTeam) && !match.getTeam2().equals(fantaTeam)) {
+                throw new IllegalArgumentException("The fantaTeam in the lineUp is not correct");
+            }
 
-			if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
-				throw new UnsupportedOperationException("Can't modify the lineup during Saturday and Sunday");
+            Optional<MatchDay> nextMatchDay = context.getMatchDayRepository().getEarliestUpcomingMatchDay(lineUp.getTeam().getLeague());
+            if (nextMatchDay.isEmpty()) {
+                throw new RuntimeException("The league ended");
+            }
+            if(!nextMatchDay.get().equals(match.getMatchDay())) {
+                throw new RuntimeException("The matchDay of the lineUp is incorrect");
+            }
+            Optional<Match> repositoryMatch = context.getMatchRepository().getMatchBy(nextMatchDay.get(), lineUp.getTeam());
+            if (repositoryMatch.isEmpty()) {
+                throw new IllegalArgumentException("The match does not exists");
+            }
+            if(!repositoryMatch.get().equals(match)) {
+                throw  new IllegalArgumentException("The match is not correct");
+            }
 
-			League league = lineUp.getTeam().getLeague();
 			FantaTeam team = lineUp.getTeam();
 
 			// Check if is legal to save the lineUP
-			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getPreviousMatchDay(matchDate);
+			Optional<MatchDay> previousMatchDay = context.getMatchDayRepository().getLatestEndedMatchDay(match.getMatchDay().getLeague());
 			if (previousMatchDay.isPresent()) {
-				Match previousMatch = context.getMatchRepository().getMatchByMatchDay(previousMatchDay.get(), league,
+				Optional<Match> previousMatch = context.getMatchRepository().getMatchBy(previousMatchDay.get(), 
 						team);
-				Optional<Result> previousMatchResult = context.getResultsRepository().getResult(previousMatch);
+				Optional<Result> previousMatchResult = context.getResultsRepository().getResultFor(previousMatch.get());
 
 				if (previousMatchResult.isEmpty()) {
 					throw new UnsupportedOperationException("The grades for the previous match were not calculated");
@@ -263,7 +291,7 @@ public class UserService {
 		});
 	}
 
-	protected Optional<Contract> searchContract(FantaTeam team, Player player) {
+	private Optional<Contract> searchContract(FantaTeam team, Player player) {
 		return team.getContracts().stream().filter(c -> c.getTeam().equals(team) && c.getPlayer().equals(player))
 				.findFirst();
 	}

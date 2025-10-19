@@ -26,16 +26,12 @@ public class Grade {
 	@Basic(optional=false)
 	private double mark;
 
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private NewsPaper newsPaper;
-
 	protected Grade() {}
 	
-	public Grade(Player player, MatchDay matchDay, double mark, NewsPaper newsPaper) {
+	public Grade(Player player, MatchDay matchDay, double mark) {
 		this.player = player;
 		this.matchDay = matchDay;
 		this.mark = mark;
-		this.newsPaper = newsPaper;
 	}
 
 	public double getMark() {
@@ -46,31 +42,20 @@ public class Grade {
 		return player;
 	}
 
-	public NewsPaper getNewsPaper() {
-		return newsPaper;
-	}
 
-	public MatchDay getMatchDay() {
+    public MatchDay getMatchDay() {
 		return matchDay;
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(player, mark, matchDay);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Grade grade = (Grade) o;
+        return Double.compare(mark, grade.mark) == 0 && Objects.equals(player, grade.player) && Objects.equals(matchDay, grade.matchDay);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Grade other = (Grade) obj;
-		return Objects.equals(player, other.player)
-				&& Double.doubleToLongBits(mark) == Double.doubleToLongBits(other.mark)
-				&& Objects.equals(matchDay, other.matchDay);
-	}	
-	
+    @Override
+    public int hashCode() {
+        return Objects.hash(player, matchDay, mark);
+    }
 }

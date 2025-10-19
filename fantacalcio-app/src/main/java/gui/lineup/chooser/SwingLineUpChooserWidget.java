@@ -403,7 +403,7 @@ public class SwingLineUpChooserWidget extends JPanel implements LineUpChooserWid
 			// initializes chooser
 	        Set<Contract> contracts = new HashSet<>();
 	        FantaUser user = new FantaUser("", "");
-	        League league = new League(user, "fakeLeague", null, "");
+	        League league = new League(user, "fakeLeague", "");
 			FantaTeam team = new FantaTeam("Elite Team", league, 0, user, contracts);
 			contracts.addAll(Stream.of(
     				// --- Goalkeepers (3) ---

@@ -7,7 +7,7 @@ import domain.Player;
 
 public interface PlayerRepository {
 
-	public List<Player> findAll();
+	public Set<Player> findAll();
 	
 	public boolean addPlayer(Player newPlayer);
 

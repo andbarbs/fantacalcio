@@ -5,11 +5,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import business.ports.repository.FantaUserRepository;
-import business.ports.repository.NewsPaperRepository;
 import business.ports.transaction.TransactionManager;
 import business.ports.transaction.TransactionManager.TransactionContext;
 import domain.FantaUser;
-import domain.NewsPaper;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -28,7 +26,6 @@ class LoginServiceTest {
     private LoginService service;
 
     private FantaUserRepository fantaUserRepository;
-    private NewsPaperRepository newsPaperRepository;
 
     @BeforeEach
     void setUp() {
@@ -50,10 +47,8 @@ class LoginServiceTest {
 
         // Mock repositories
         fantaUserRepository = mock(FantaUserRepository.class);
-        newsPaperRepository = mock(NewsPaperRepository.class);
 
         when(context.getFantaUserRepository()).thenReturn(fantaUserRepository);
-        when(context.getNewspaperRepository()).thenReturn(newsPaperRepository);
 
         service = new LoginService(transactionManager);
     }
@@ -80,26 +75,6 @@ class LoginServiceTest {
         verify(fantaUserRepository, never()).saveFantaUser(any());
     }
 
-    @Test
-    void testRegisterNewsPaper_SavesWhenNotExists() {
-        when(newsPaperRepository.getNewspaper("Gazzetta")).thenReturn(Optional.empty());
-
-        service.registerNewsPaper("Gazzetta");
-
-        verify(newsPaperRepository).saveNewsPaper(argThat(np -> np.getName().equals("Gazzetta")));
-    }
-
-    @Test
-    void testRegisterNewsPaper_DoesNothingWhenAlreadyExists() {
-        when(newsPaperRepository.getNewspaper("Gazzetta"))
-                .thenReturn(Optional.of(new NewsPaper("Gazzetta")));
-
-        assertThatThrownBy(() -> service.registerNewsPaper("Gazzetta"))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("already registered");
-        
-        verify(newsPaperRepository, never()).saveNewsPaper(any());
-    }
 
     @Test
     void testLoginFantaUser_ReturnsTrueWhenPresent() {
@@ -115,21 +90,5 @@ class LoginServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThat(service.loginFantaUser("mail", "pswd")).isFalse();
-    }
-
-    @Test
-    void testLoginNewsPaper_ReturnsTrueWhenPresent() {
-        when(newsPaperRepository.getNewspaper("Gazzetta"))
-                .thenReturn(Optional.of(new NewsPaper("Gazzetta")));
-
-        assertThat(service.loginNewsPaper("Gazzetta")).isTrue();
-    }
-
-    @Test
-    void testLoginNewsPaper_ReturnsFalseWhenNotPresent() {
-        when(newsPaperRepository.getNewspaper("Gazzetta"))
-                .thenReturn(Optional.empty());
-
-        assertThat(service.loginNewsPaper("Gazzetta")).isFalse();
     }
 }

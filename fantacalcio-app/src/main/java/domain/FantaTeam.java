@@ -75,22 +75,28 @@ public class FantaTeam {
     	return new FantaTeamViewer(this);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        FantaTeam fantaTeam = (FantaTeam) o;
-        return points == fantaTeam.points && Objects.equals(name, fantaTeam.name) && Objects.equals(league, fantaTeam.league) && Objects.equals(fantaManager, fantaTeam.fantaManager);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		FantaTeam fantaTeam = (FantaTeam) o;
+		return points == fantaTeam.points 
+				&& Objects.equals(name, fantaTeam.name)
+				&& Objects.equals(league, fantaTeam.league) 
+				&& Objects.equals(fantaManager, fantaTeam.fantaManager);
+	}
 
     @Override
     public int hashCode() {
         return Objects.hash(name, league, points, fantaManager);
     }
+	@Override
+	public String toString() {
+		return "FantaTeam [id=" + id + ", name=" + name + ", league=" + league + ", points=" + points
+				+ ", fantaManager=" + fantaManager + "";
+	}
     
-    @Override
-    public String toString() {
-    	return name;
-    }
+    
 	
 }
 

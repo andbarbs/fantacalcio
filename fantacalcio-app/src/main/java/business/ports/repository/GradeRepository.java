@@ -3,12 +3,11 @@ package business.ports.repository;
 import java.util.List;
 
 import domain.Grade;
-import domain.Match;
-import domain.NewsPaper;
+import domain.MatchDay;
 
 public interface GradeRepository {
 
-	List<Grade> getAllMatchGrades(Match match, NewsPaper newsPaper);
+	List<Grade> getAllGrades(MatchDay matchDay);
 	
 	void saveGrade(Grade grade);
 

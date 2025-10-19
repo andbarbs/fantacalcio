@@ -148,6 +148,10 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 			IntStream.range(0, schemePanels.size()).forEach(
 					i -> radios.get(i).addActionListener(e -> controller.switchToScheme(schemePanels.get(i).scheme())));
 		}
+		
+		// 8) at client design-time, demonstrates a scheme switch
+		if (isDesignTime)
+			switchTo(schemePanels.get(0).scheme());
 	}
 
 	private void ensureCompositionSupports(Function<Scheme, Integer> numExtractor, String role) {

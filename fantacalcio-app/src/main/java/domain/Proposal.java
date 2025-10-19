@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public abstract class Proposal {
+public class Proposal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +18,7 @@ public abstract class Proposal {
 
     protected Proposal() {}
 
-    protected Proposal(Contract offeredContract, Contract requestedContract) {
+    public Proposal(Contract offeredContract, Contract requestedContract) {
         this.offeredContract = offeredContract;
         this.requestedContract = requestedContract;
     }
@@ -43,20 +43,5 @@ public abstract class Proposal {
         return Objects.hash(offeredContract, requestedContract);
     }
 
-    @Entity
-    public static class PendingProposal extends Proposal {
-        public PendingProposal() {}
-        public PendingProposal(Contract offeredContract, Contract requestedContract) {
-            super(offeredContract, requestedContract);
-        }
-    }
-
-    @Entity
-    public static class RejectedProposal extends Proposal {
-        public RejectedProposal() {}
-        public RejectedProposal(Contract offeredContract, Contract requestedContract) {
-            super(offeredContract, requestedContract);
-        }
-    }
 }
 

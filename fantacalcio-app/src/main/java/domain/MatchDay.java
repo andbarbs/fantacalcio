@@ -1,67 +1,71 @@
 package domain;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
-import jakarta.persistence.Basic;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class MatchDay {
-
+	public static final int MATCH_DAYS_IN_LEAGUE = 20;
+	public enum Status {PAST, PRESENT, FUTURE}
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
+	
 	@Basic(optional = false)
 	private String name;
-
-	@Basic(optional = false)
-	private LocalDate date;
-
+	
 	@Basic(optional = false)
 	private int number;
-
+	
+	@Enumerated(EnumType.STRING)
+	private Status status;
+	
+	@ManyToOne(optional = false, fetch=FetchType.LAZY)
+	private League league;
+	
 	protected MatchDay() {
 	}
-
-	public MatchDay(String name, LocalDate date, int number) {
+	
+	public MatchDay(String name, int number, Status status, League league) {
+		if(number < 0 || number > MATCH_DAYS_IN_LEAGUE)
+			throw new IllegalArgumentException("number out of range");
 		this.name = name;
-		this.date = date;
 		this.number = number;
+		this.status = status;
+		this.league = league;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
-
-	public LocalDate getDate() {
-		return date;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(date, name);
-	}
-
+	
 	public int getNumber() {
 		return number;
 	}
-
-	//TODO aggiungere number nell'equals e aggiustare test se necessario
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MatchDay other = (MatchDay) obj;
-		return Objects.equals(date, other.date) && Objects.equals(name, other.name);
+	
+	public League getLeague() {
+		return league;
 	}
-
+	
+	public Status getStatus() {
+		return status;
+	}
+	
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		MatchDay that = (MatchDay) o;
+		return number == that.number && Objects.equals(name, that.name) && status == that.status && Objects.equals(league, that.league);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, number, status, league);
+	}
 }

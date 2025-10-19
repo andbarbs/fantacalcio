@@ -2,7 +2,6 @@ package dal.repository.jpa;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -14,11 +13,15 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import domain.Player;
 import domain.Player.*;
 import jakarta.persistence.EntityManager;
+
+import java.util.List;
+import java.util.Set;
 
 class JpaPlayerRepositoryTest {
 
@@ -26,16 +29,18 @@ class JpaPlayerRepositoryTest {
 	private JpaPlayerRepository playerRepository;
 	private EntityManager entityManager;
 
-//TODO aggiornare bootstrap di tutti i test hibernate
 	@BeforeAll
 	static void initializeSessionFactory() {
 		try {
 			StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
 					.configure("hibernate-test.cfg.xml").build();
 
-			Metadata metadata = new MetadataSources(serviceRegistry).addAnnotatedClass(Player.class)
-					.addAnnotatedClass(Player.Goalkeeper.class).addAnnotatedClass(Player.Defender.class)
-					.addAnnotatedClass(Player.Midfielder.class).addAnnotatedClass(Player.Forward.class)
+			Metadata metadata = new MetadataSources(serviceRegistry)
+					.addAnnotatedClass(Player.class)
+					.addAnnotatedClass(Player.Goalkeeper.class)
+					.addAnnotatedClass(Player.Defender.class)
+					.addAnnotatedClass(Player.Midfielder.class)
+					.addAnnotatedClass(Player.Forward.class)
 					.getMetadataBuilder().build();
 
 			sessionFactory = metadata.getSessionFactoryBuilder().build();
@@ -58,117 +63,208 @@ class JpaPlayerRepositoryTest {
 	static void tear() {
 		sessionFactory.close();
 	}
+	
+	
 
-	@Test
-	@DisplayName("findAll() on an empty table")
-	public void testFindAllWhenNoPlayersExist() {
-		assertThat(playerRepository.findAll()).isEmpty();
+	@Nested
+	@DisplayName("can add a Player to the system")
+	class Persisting {	
+		
+		@Test
+		@DisplayName("when the same Player has not been persisted yet")
+		public void testAddPlayerWithNonPersistedPlayer() {
+			
+			// GIVEN no Player instances have been persisted
+			
+			// WHEN the SUT is used to persist a Player
+			Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+			entityManager.getTransaction().begin();
+			playerRepository.addPlayer(buffon);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN that Player is present in the database
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM Player", Player.class).getResultList()))
+			.containsExactly(buffon);
+		}
+		
+		@Test
+		@DisplayName("when the same Player has already been persisted")
+		public void testAddPlayerWithAlreadyPersistedPlayer() {
+			
+			// GIVEN a Player has been manually persisted to the database
+			Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+			sessionFactory.inTransaction(session -> session.persist(buffon));
+			
+			// WHEN the SUT is used to persist the same Player
+			entityManager.getTransaction().begin();
+			Boolean result = playerRepository.addPlayer(buffon);
+			entityManager.getTransaction().commit();
+			entityManager.clear();
+			
+			// THEN false is returned
+			assertFalse(result);
+			
+			// AND the database contains only one Player
+			assertThat(sessionFactory
+					.fromTransaction((Session em) -> em.createQuery("FROM Player", Player.class).getResultList()))
+			.containsExactly(buffon);
+		}
 	}
-
-	@Test
-	@DisplayName("findAll() when two players have been persisted")
-	public void testFindAllTwoPlayersExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-		Player messi = new Forward("Lionel", "Messi", Club.PISA);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(buffon);
-			session.persist(messi);
-		});
-
-		assertThat(playerRepository.findAll()).containsExactly(buffon, messi);
+	
+	@Nested
+	@DisplayName("can look up all Players in the system")
+	class SpecializedRetrieval {
+		
+		@Nested
+		@DisplayName("all Players")
+		class UnspecializedRetrieval {		
+			
+			@Test
+			@DisplayName("when no Players have been persisted")
+			public void testFindAllWhenNoPlayersExist() {
+				
+				// GIVEN no Player has been persisted to the database
+				
+				// WHEN the SUT is used to retrieve all Players from the database
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findAll();
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN an empty Set is returned
+				assertThat(players).isEmpty();
+			}
+			
+			@Test
+			@DisplayName("when some Players have been persisted")
+			public void testFindAllTwoPlayersExist() {
+				
+				// GIVEN some Players have been persisted to the database
+				Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+				Player messi = new Forward("Lionel", "Messi", Club.PISA);
+				
+				sessionFactory.inTransaction(session -> {
+					session.persist(buffon);
+					session.persist(messi);
+				});
+				
+				// WHEN the SUT is used to retrieve all Players from the database
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findAll();
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN all Players are returned
+				assertThat(players).containsExactlyInAnyOrder(buffon, messi);
+			}
+		}
+		
+		@Nested
+		@DisplayName("by surname")
+		class BySurname {				
+			
+			@Test
+			@DisplayName("findBySurname when the player does not exist")
+			public void testFindBySurnameWhenPlayerDoesNotExist() {
+				
+				// GIVEN one Player with a given surname has been manually persisted to the database
+				Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+				Player messi = new Forward("Lionel", "Messi", Club.PISA);
+				
+				sessionFactory.inTransaction(session -> {
+					session.persist(buffon);
+					session.persist(messi);
+				});
+				
+				// WHEN the SUT is used to retrieve Players by surname
+				entityManager.getTransaction().begin();
+				List<Player> players = playerRepository.findBySurname("Thuram");
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN only the appropriate Players are returned
+				assertThat(players).isEmpty();
+			}
+			
+			@Test
+			@DisplayName("findBySurname when the players exists")
+			public void testFindBySurnameWhenPlayerExists() {
+				
+				// GIVEN some Players with a given surname has been manually persisted to the database
+				Player marcus = new Forward("Marcus", "Thuram", Club.INTER);
+				Player kephren = new Forward("Kephren", "Thuram", Club.JUVENTUS);
+				Player eljif = new Forward("Eljif", "Elmas", Club.NAPOLI);
+				
+				// WHEN the SUT is used to retrieve Players by surname
+				sessionFactory.inTransaction(session -> {
+					session.persist(marcus);
+					session.persist(kephren);
+					session.persist(eljif);
+				});
+				
+				entityManager.getTransaction().begin();
+				List<Player> players = playerRepository.findBySurname("Thuram");
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN only the appropriate Players are returned
+				assertThat(players).containsExactlyInAnyOrder(marcus, kephren);
+			}
+		}
+		
+		@Nested
+		@DisplayName("by Club")
+		class ByClub {	
+			
+			@Test
+			@DisplayName("findByTeam when the player does not exist")
+			public void testFindByTeamWhenPlayerDoesNotExist() {
+				
+				// GIVEN no Players have been persisted for a given Club
+				Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+				Player messi = new Forward("Lionel", "Messi", Club.PISA);
+				
+				sessionFactory.inTransaction(session -> {
+					session.persist(buffon);
+					session.persist(messi);
+				});
+				
+				// WHEN the SUT is used to retrieve Players for the given Club
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findByClub(Club.NAPOLI);
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN an empty Set is returned
+				assertThat(players).isEmpty();
+			}
+			
+			@Test
+			@DisplayName("findByTeam when the players exists")
+			public void testFindByTeamWhenPlayerExists() {
+				
+				// GIVEN some Players have been persisted for a given Club
+				Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
+				Player messi = new Forward("Lionel", "Messi", Club.MILAN);
+				Player yamal = new Forward("Lamine", "Yamal", Club.MILAN);
+				
+				sessionFactory.inTransaction(session -> {
+					session.persist(buffon);
+					session.persist(messi);
+					session.persist(yamal);
+				});
+				
+				// WHEN the SUT is used to retrieve Players for the given Club
+				entityManager.getTransaction().begin();
+				Set<Player> players = playerRepository.findByClub(Club.MILAN);
+				entityManager.getTransaction().commit();
+				entityManager.clear();
+				
+				// THEN only the appropriate Players are returned
+				assertThat(players).containsExactlyInAnyOrder(messi, yamal);
+			}
+		}
 	}
-
-	@Test
-	@DisplayName("addPlayer() with a non-persisted player")
-	public void testAddPlayerWithNonPersistedPlayer() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-
-		entityManager.getTransaction().begin(); // Start the transaction
-		assertTrue(playerRepository.addPlayer(buffon));
-		entityManager.getTransaction().commit(); // Commit the transaction to flush changes
-		entityManager.close();
-
-		assertThat(sessionFactory.fromTransaction(
-				(Session session) -> session.createSelectionQuery("from Player", Player.class).getResultList()))
-				.containsExactly(buffon);
-	}
-
-	@Test
-	@DisplayName("addPlayer() does not add an already persisted player")
-	public void testAddPlayerWithAlreadyPersistedPlayer() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-
-		sessionFactory.inTransaction(session -> session.persist(buffon));
-
-		assertFalse(playerRepository.addPlayer(buffon));
-		entityManager.close();
-	}
-
-	@Test
-	@DisplayName("findBySurname when the player does not exist")
-	public void testFindBySurnameWhenPlayerDoesNotExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-		Player messi = new Forward("Lionel", "Messi", Club.PISA);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(buffon);
-			session.persist(messi);
-		});
-
-		assertThat(playerRepository.findBySurname("Thuram")).isEmpty();
-		entityManager.close();
-
-	}
-
-	@Test
-	@DisplayName("findBySurname when the players exists")
-	public void testFindBySurnameWhenPlayerExists() {
-		Player marcus = new Forward("Marcus", "Thuram", Club.INTER);
-		Player kephren = new Forward("Kephren", "Thuram", Club.JUVENTUS);
-		Player eljif = new Forward("Eljif", "Elmas", Club.NAPOLI);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(marcus);
-			session.persist(kephren);
-			session.persist(eljif);
-		});
-
-		assertThat(playerRepository.findBySurname("Thuram")).containsExactlyInAnyOrder(marcus, kephren);
-		entityManager.close();
-	}
-
-	@Test
-	@DisplayName("findByTeam when the player does not exist")
-	public void testFindByTeamWhenPlayerDoesNotExist() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-		Player messi = new Forward("Lionel", "Messi", Club.PISA);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(buffon);
-			session.persist(messi);
-		});
-
-		assertThat(playerRepository.findByClub(Club.NAPOLI)).isEmpty();
-		entityManager.close();
-
-	}
-
-	@Test
-	@DisplayName("findByTeam when the players exists")
-	public void testFindByTeamWhenPlayerExists() {
-		Player buffon = new Goalkeeper("Gigi", "Buffon", Club.JUVENTUS);
-		Player messi = new Forward("Lionel", "Messi", Club.MILAN);
-		Player yamal = new Forward("Lamine", "Yamal", Club.MILAN);
-
-		sessionFactory.inTransaction(session -> {
-			session.persist(buffon);
-			session.persist(messi);
-			session.persist(yamal);
-		});
-
-		assertThat(playerRepository.findByClub(Club.MILAN)).containsExactlyInAnyOrder(messi, yamal);
-		entityManager.close();
-	}
-
 }

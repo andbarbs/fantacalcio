@@ -1,21 +1,23 @@
 package business.ports.repository;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import domain.League;
 import domain.MatchDay;
 
 public interface MatchDayRepository {
 	
-	List<MatchDay> getAllMatchDays();
+	List<MatchDay> getAllMatchDays(League league);
 
-	Optional<MatchDay> getPreviousMatchDay(LocalDate date);
+	Optional<MatchDay> getLatestEndedMatchDay(League league);
 
-	Optional<MatchDay> getNextMatchDay(LocalDate date);
+	Optional<MatchDay> getEarliestUpcomingMatchDay(League league);
 
-	Optional<MatchDay> getMatchDay(LocalDate date);
+	Optional<MatchDay> getOngoingMatchDay(League league);
 
 	void saveMatchDay(MatchDay matchDay);
+
+	void updateMatchDay(MatchDay detached);
 
 }
