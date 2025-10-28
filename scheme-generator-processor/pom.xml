@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.fantacalcio.app</groupId>
-		<artifactId>Fantacalcio</artifactId>
+		<artifactId>fantacalcio</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	
@@ -44,7 +44,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<!-- The configuration section is no longer needed here -->
 			</plugin>
 		</plugins>

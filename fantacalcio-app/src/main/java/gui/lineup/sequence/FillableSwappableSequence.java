@@ -251,7 +251,7 @@ public class FillableSwappableSequence<F extends FillableSwappable<F>> {
 			w.unwrap().attachDriver(driver);
 			w.unwrap().setFillingEnabled(false);
 		});
-		driver.sequence.getFirst().unwrap().setFillingEnabled(true);
+		driver.sequence.get(0).unwrap().setFillingEnabled(true);
 		driver.updateRightmostFillable(0);
 		return driver;
 	}
