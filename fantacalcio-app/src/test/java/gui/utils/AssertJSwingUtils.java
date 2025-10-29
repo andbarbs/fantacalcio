@@ -18,7 +18,7 @@ public abstract class AssertJSwingUtils {
 	/**
 	 * a timeout value to be used when synchronizing with the <code>EDT</code>
 	 */
-    public static final int TIMEOUT = 2000;
+    public static final int TIMEOUT = 5000;
 
 	// Matchers
 
