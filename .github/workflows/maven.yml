@@ -45,6 +45,16 @@ jobs:
         mkdir -p $HOME/.vnc
         # Copy our custom xstartup script to the VNC config directory
         cp .github/scripts/xstartup $HOME/.vnc/xstartup
+
+    - name: Set VNC Password
+      run: |
+        # Create the password file required by vncserver
+        mkdir -p $HOME/.vnc
+        # Set a dummy password non-interactively. The password itself doesn't matter
+        # as the server is restricted to localhost.
+        echo 'password' | vncpasswd -f > $HOME/.vnc/passwd
+        # Set the correct file permissions
+        chmod 600 $HOME/.vnc/passwd
     # --- END OF NEW STEPS ---
 
     - name: build with Maven using VNC
