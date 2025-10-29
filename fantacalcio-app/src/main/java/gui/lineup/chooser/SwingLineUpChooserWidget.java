@@ -230,9 +230,14 @@ public class SwingLineUpChooserWidget extends JPanel implements LineUpChooserWid
 		gbc_saveLineUpButton.gridx = 0;
 		gbc_saveLineUpButton.gridy = 4;
 		add(saveLineUpButton, gbc_saveLineUpButton);
+		
 		saveLineUpButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				System.out.println("******************* FLAKY TEST D *******************");
+				System.out.println("SwingLineUpChooserWidget's MouseAdapter:            ");
+				System.out.println("			   about to call controller.saveLineUp()");
+				System.out.println("****************************************************");
 				controller.saveLineUp();
 			}
 		});
