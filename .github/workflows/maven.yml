@@ -58,4 +58,4 @@ jobs:
       with:
         name: failed-gui-tests-jdk-${{ matrix.java }}
         # Failed gui tests are saved at <Maven module>/failed-gui-tests/
-        path: '**/failed-gui-tests'
+        path: 'fantacalcio-app/failed-gui-tests'
