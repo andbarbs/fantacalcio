@@ -156,6 +156,9 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		// WHEN user clicks the 'save' button
 		saveButton.click();
 		
+		// Store the start time
+		long startTime = System.currentTimeMillis();
+		
 		// THEN a request to save is sent to the Controller
 		pause(new Condition("LineUpChooserController.saveLineUp to be called") {
 	        @Override
@@ -168,5 +171,14 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	            }
 	        }
 	    }, AssertJSwingUtils.TIMEOUT);
+		
+		// Calculate the elapsed time *after* the pause successfully returns
+		long endTime = System.currentTimeMillis();
+		long elapsedTimeMs = endTime - startTime;
+		
+		// Print the elapsed time to the console
+		System.out.println("####################### FLAKY TEST D #####################");
+		System.out.println("LineUpChooserController.saveLineUp called in: " 
+				+ (elapsedTimeMs / 1000.0) + " s");
 	}
 }

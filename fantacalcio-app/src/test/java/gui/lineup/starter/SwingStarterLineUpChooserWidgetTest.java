@@ -342,6 +342,9 @@ class SwingStarterLineUpChooserWidgetTest {
 				// WHEN the user selects a scheme on the radios
 				window.radioButton(withText("1-2-3")).click();
 				
+				// Store the start time
+				long startTime = System.currentTimeMillis();
+
 				// THEN a corresponding request is sent to the Controller
 				pause(new Condition("StarterLineUpChooserController.switchToScheme to be called") {
 			        @Override
@@ -354,6 +357,15 @@ class SwingStarterLineUpChooserWidgetTest {
 			            }
 			        }
 			    }, AssertJSwingUtils.TIMEOUT);
+
+				// Calculate the elapsed time *after* the pause successfully returns
+				long endTime = System.currentTimeMillis();
+				long elapsedTimeMs = endTime - startTime;
+				
+				// Print the elapsed time to the console
+				System.out.println("####################### FLAKY TEST C #####################");
+				System.out.println("StarterLineUpChooserController.switchToScheme called in: " 
+						+ (elapsedTimeMs / 1000.0) + " s");
 			}
 			
 			@Nested

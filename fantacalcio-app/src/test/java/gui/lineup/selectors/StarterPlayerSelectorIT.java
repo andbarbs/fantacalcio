@@ -98,6 +98,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
             verify(listener, times(1)).selectionMadeOn(compPlayerSelector);
 
             // subsequent clearing of selection is notified to driver and listener
+            // TODO these are another flakiness point!!
             resetButtonFixture.click();
             
             verify(driver, times(1)).selectionClearedOn(compPlayerSelector, 0);

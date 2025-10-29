@@ -147,7 +147,7 @@ public class SwingStarterLineUpChooserWidget extends JPanel implements StarterLi
 		if (!isDesignTime) {
 			IntStream.range(0, schemePanels.size()).forEach(
 					i -> radios.get(i).addActionListener(e -> {
-						System.out.println("******************* FLAKY TEST C *******************");
+						System.out.println("**************** FLAKINESS POINT C *****************");
 						System.out.println("SwingStarterLineUpChooserWidget's ActionListener :  ");
 						System.out.println("             about to call controller.switchToScheme");
 						System.out.println("****************************************************");

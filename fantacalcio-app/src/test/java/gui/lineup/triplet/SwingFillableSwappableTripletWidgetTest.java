@@ -184,7 +184,10 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				AssertJSwingUtils.diagnosePreClickState(swap1_2, window);
 
 				// WHEN user clicks first swap button
-				swap1_2.click();				
+				swap1_2.click();	
+				
+				// Store the start time
+				long startTime = System.currentTimeMillis();
 				
 				// THEN the correct swap request is sent to the Controller
 				pause(new Condition("FillableSwappableTripletController.swapFirstPair to be called") {
@@ -198,6 +201,15 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			            }
 			        }
 			    }, TIMEOUT);
+				
+				// Calculate the elapsed time *after* the pause successfully returns
+				long endTime = System.currentTimeMillis();
+				long elapsedTimeMs = endTime - startTime;
+				
+				// Print the elapsed time to the console
+				System.out.println("####################### FLAKY TEST A #####################");
+				System.out.println("FillableSwappableTripletController.swapFirstPair called in: " 
+						+ (elapsedTimeMs / 1000.0) + " s");
 			}
 
 			@Test
@@ -212,7 +224,10 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				AssertJSwingUtils.diagnosePreClickState(swap2_3, window);
 
 				// WHEN user clicks second swap button
-				swap2_3.click();				
+				swap2_3.click();	
+				
+				// Store the start time
+				long startTime = System.currentTimeMillis();				
 				
 				// THEN the correct swap request is sent to the Controller
 				pause(new Condition("FillableSwappableTripletController.swapSecondPair to be called") {
@@ -226,6 +241,15 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			            }
 			        }
 			    }, TIMEOUT);
+				
+				// Calculate the elapsed time *after* the pause successfully returns
+				long endTime = System.currentTimeMillis();
+				long elapsedTimeMs = endTime - startTime;
+				
+				// Print the elapsed time to the console
+				System.out.println("####################### FLAKY TEST b #####################");
+				System.out.println("FillableSwappableTripletController.swapSecondPair called in: " 
+						+ (elapsedTimeMs / 1000.0) + " s");
 			}
 		}
 	}
