@@ -1,6 +1,7 @@
 package gui.lineup.chooser;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +15,7 @@ import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -150,5 +152,18 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		
 		// THEN a request to save is sent to the Controller
 		verify(mockController).saveLineUp();
+		
+		// THEN a request to save is sent to the Controller
+		pause(new Condition("LineUpChooserController.saveLineUp to be called") {
+	        @Override
+	        public boolean test() {
+	            try {
+	                verify(mockController).saveLineUp();
+	                return true; 
+	            } catch (Throwable e) {
+	                return false;
+	            }
+	        }
+	    }, 1000);
 	}
 }

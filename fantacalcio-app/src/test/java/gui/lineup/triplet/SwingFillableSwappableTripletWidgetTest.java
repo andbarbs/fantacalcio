@@ -1,6 +1,7 @@
 package gui.lineup.triplet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -13,6 +14,7 @@ import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -164,6 +166,8 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 		@DisplayName("when asked by user to")
 		class OnUserClickTo {
 
+			private final static int TIMEOUT = 1000;
+
 			@Test
 			@GUITest
 			@DisplayName("swap the first selector pair")
@@ -173,11 +177,20 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				});
 
 				// WHEN user clicks first swap button
-				swap1_2.click();
-				robot().waitForIdle();
-
-				// THEN the correct swap request is sent to the sequence
-				verify(mockController).swapFirstPair();
+				swap1_2.click();				
+				
+				// THEN the correct swap request is sent to the Controller
+				pause(new Condition("FillableSwappableTripletController.swapFirstPair to be called") {
+			        @Override
+			        public boolean test() {
+			            try {
+			            	verify(mockController).swapFirstPair();
+			                return true; 
+			            } catch (Throwable e) {
+			                return false;
+			            }
+			        }
+			    }, TIMEOUT);
 			}
 
 			@Test
@@ -189,11 +202,20 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				});
 
 				// WHEN user clicks second swap button
-				swap2_3.click();
-				robot().waitForIdle();
-
-				// THEN the correct swap request is sent to the sequence
-				verify(mockController).swapSecondPair();
+				swap2_3.click();				
+				
+				// THEN the correct swap request is sent to the Controller
+				pause(new Condition("FillableSwappableTripletController.swapSecondPair to be called") {
+			        @Override
+			        public boolean test() {
+			            try {
+			            	verify(mockController).swapSecondPair();
+			                return true; 
+			            } catch (Throwable e) {
+			                return false;
+			            }
+			        }
+			    }, TIMEOUT);
 			}
 		}
 	}
