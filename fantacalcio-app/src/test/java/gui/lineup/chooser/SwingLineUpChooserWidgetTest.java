@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.AssertJSwingUtils;
 
 @DisplayName("A SwingLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
@@ -135,8 +136,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		}
 	}
 	
-	private static final int TIMEOUT = 2000;
-
 	@Test
 	@GUITest
 	@DisplayName("forwards user save request to Controller")
@@ -152,9 +151,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		saveButton.click();
 		
 		// THEN a request to save is sent to the Controller
-		verify(mockController).saveLineUp();
-		
-		// THEN a request to save is sent to the Controller
 		pause(new Condition("LineUpChooserController.saveLineUp to be called") {
 	        @Override
 	        public boolean test() {
@@ -165,6 +161,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	                return false;
 	            }
 	        }
-	    }, TIMEOUT);
+	    }, AssertJSwingUtils.TIMEOUT);
 	}
 }
