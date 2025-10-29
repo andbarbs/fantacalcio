@@ -16,7 +16,7 @@ jobs:
       matrix:
         java: [17, 21]
 
-    name: Build with Java ${{ matrix.java }} on Linux
+    name: build with Java ${{ matrix.java }} on Linux
     steps:
     - uses: actions/checkout@v5
     - name: Set up JDK ${{ matrix.java }}
@@ -24,16 +24,16 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
-    - name: Cache Maven packages
+    - name: cache Maven packages
       uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', '**/*.yml') }}
         restore-keys: |
           ${{ runner.os }}-m2-
-    - name: Build with Maven
+    - name: build with Maven
       run: xvfb-run mvn -f pom.xml clean verify
-    - name: Generate Aggregated Report
+    - name: generate aggregated 'surefire' and 'failsafe' reports
       if: ${{ failure() }}
           # generates both 'surefire.html' and 'failsafe.html'
           # aggregates into one single report at <parent>/target/reports/
@@ -44,14 +44,14 @@ jobs:
           surefire-report:failsafe-report-only
           -Daggregate=true
           -DshowSuccess=false
-    - name: Archive Aggregated Report
+    - name: archive generated reports
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
         name: surefire-report-jdk-${{ matrix.java }}
         # The aggregated report is always in the root's target/reports directory
         path: 'target/reports'
-    - name: Archive Aggregated Report
+    - name: archive failed GUI test screenshots 
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
