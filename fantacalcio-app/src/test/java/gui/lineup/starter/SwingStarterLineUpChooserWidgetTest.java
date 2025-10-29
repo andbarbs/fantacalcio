@@ -3,6 +3,7 @@ package gui.lineup.starter;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 
 import java.awt.Color;
@@ -17,6 +18,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -314,6 +316,8 @@ class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 		@Nested
 		@DisplayName("as a StarterLineUpChooserWidget")
 		class AsAStarterLineUpChooserWidget {
+			
+			private static final int TIMEOUT = 2000;
 
 			@Test
 			@GUITest
@@ -325,10 +329,19 @@ class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 				
 				// WHEN the user selects a scheme on the radios
 				window.radioButton(withText("1-2-3")).click();
-				robot.waitForIdle();
 				
 				// THEN a corresponding request is sent to the Controller
-				verify(controller).switchToScheme(scheme123);
+				pause(new Condition("StarterLineUpChooserController.switchToScheme to be called") {
+			        @Override
+			        public boolean test() {
+			            try {
+			            	verify(controller).switchToScheme(scheme123);
+			                return true; 
+			            } catch (Throwable e) {
+			                return false;
+			            }
+			        }
+			    }, TIMEOUT);
 			}
 			
 			@Nested

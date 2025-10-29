@@ -150,7 +150,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		
 		// WHEN user clicks the 'save' button
 		saveButton.click();
-		robot().waitForIdle();
 		
 		// THEN a request to save is sent to the Controller
 		verify(mockController).saveLineUp();
