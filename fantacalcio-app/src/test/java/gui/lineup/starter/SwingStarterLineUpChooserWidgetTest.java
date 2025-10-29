@@ -33,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import domain.Scheme;
 import gui.utils.AssertJSwingJupiterTestCase;
 import gui.utils.AssertJSwingUtils;
+import gui.utils.GUITestExtension;
 import gui.utils.schemes.SpringSchemePanel;
 
 /**
@@ -258,6 +259,7 @@ class SwingStarterLineUpChooserWidgetTest {
 	}
 	
 	@Nested
+	@ExtendWith(GUITestExtension.class)
 	@DisplayName("once instantiated")
 	class JustInstantiated extends AssertJSwingJupiterTestCase {		
 		

@@ -25,9 +25,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingFillableSwappableTriplet")
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(GUITestExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
 class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCase {
@@ -219,5 +221,4 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			}
 		}
 	}
-
 }

@@ -49,5 +49,12 @@ jobs:
       if: ${{ failure() }}
       with:
         name: surefire-report-jdk-${{ matrix.java }}
-        # The aggregated report is always in the root's target/site directory
-        path: 'target/reports'    
+        # The aggregated report is always in the root's target/reports directory
+        path: 'target/reports'
+    - name: Archive Aggregated Report
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: failed-gui-tests-jdk-${{ matrix.java }}
+        # Failed gui tests are saved at <Maven module>/failed-gui-tests/
+        path: '**/failed-gui-tests'

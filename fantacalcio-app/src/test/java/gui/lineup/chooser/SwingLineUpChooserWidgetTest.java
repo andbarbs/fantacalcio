@@ -26,9 +26,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
 import gui.utils.AssertJSwingUtils;
+import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(GUITestExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
 public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
