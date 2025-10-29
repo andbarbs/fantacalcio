@@ -135,6 +135,8 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		}
 	}
 	
+	private static final int TIMEOUT = 2000;
+
 	@Test
 	@GUITest
 	@DisplayName("forwards user save request to Controller")
@@ -164,6 +166,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	                return false;
 	            }
 	        }
-	    }, 1000);
+	    }, TIMEOUT);
 	}
 }

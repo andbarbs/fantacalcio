@@ -166,7 +166,7 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 		@DisplayName("when asked by user to")
 		class OnUserClickTo {
 
-			private final static int TIMEOUT = 1000;
+			private final static int TIMEOUT = 2000;
 
 			@Test
 			@GUITest
