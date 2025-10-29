@@ -13,18 +13,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      # test against several Java versions:
       matrix:
         java: [17, 21]
 
     name: build with Java ${{ matrix.java }} on Linux
     steps:
     - uses: actions/checkout@v5
+
     - name: set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v5
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
+
     - name: cache Maven packages
       uses: actions/cache@v4
       with:
@@ -32,30 +33,20 @@ jobs:
         key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', '**/*.yml') }}
         restore-keys: |
           ${{ runner.os }}-m2-
-    - name: build with Maven
-      run: xvfb-run mvn -f pom.xml clean verify
-    - name: generate aggregated 'surefire' and 'failsafe' reports
-      if: ${{ failure() }}
-          # generates both 'surefire.html' and 'failsafe.html'
-          # aggregates into one single report at <parent>/target/reports/
-          # only reports test failures
-      run: >
-          mvn -f pom.xml
-          surefire-report:report-only
-          surefire-report:failsafe-report-only
-          -Daggregate=true
-          -DshowSuccess=false
-    - name: archive generated reports
-      uses: actions/upload-artifact@v4
-      if: ${{ failure() }}
-      with:
-        name: surefire-report-jdk-${{ matrix.java }}
-        # The aggregated report is always in the root's target/reports directory
-        path: 'target/reports'
-    - name: archive failed GUI test screenshots 
-      uses: actions/upload-artifact@v4
-      if: ${{ failure() }}
-      with:
-        name: failed-gui-tests-jdk-${{ matrix.java }}
-        # Failed gui tests are saved at <Maven module>/failed-gui-tests/
-        path: 'fantacalcio-app/failed-gui-tests'
+
+    # --- START OF NEW STEPS ---
+    - name: Install VNC and Openbox
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y tightvncserver openbox
+        
+    - name: Configure VNC
+      run: |
+        mkdir -p $HOME/.vnc
+        # Copy our custom xstartup script to the VNC config directory
+        cp .github/scripts/xstartup $HOME/.vnc/xstartup
+    # --- END OF NEW STEPS ---
+
+    - name: build with Maven using VNC
+      # Replace 'xvfb-run' with a call to our new script
+      run: .github/scripts/execute-on-vnc.sh mvn -f pom.xml clean verify
