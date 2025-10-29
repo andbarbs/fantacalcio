@@ -5,6 +5,10 @@ import java.awt.Component;
 import javax.swing.JRadioButton;
 
 import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.fixture.JButtonFixture;
+import org.assertj.swing.fixture.JRadioButtonFixture;
 
 /**
  * contains useful tools for writing tests using AssertJ Swing
@@ -19,6 +23,50 @@ public abstract class AssertJSwingUtils {
 	 * a timeout value to be used when synchronizing with the <code>EDT</code>
 	 */
     public static final int TIMEOUT = 5000;
+    
+    /**
+     * helps diagnose CI environment state before calls to ButtonFixture.click()
+     * @param buttonFixture
+     * @param window
+     */
+    public static void diagnosePreClickState(JButtonFixture buttonFixture, FrameFixture window) {
+		System.out.println("--- PRE-CLICK DIAGNOSTICS ---");
+		GuiActionRunner.execute(() -> {
+			System.out.println("Button isShowing: " + buttonFixture.target().isShowing());
+		    System.out.println("Button isEnabled: " + buttonFixture.target().isEnabled());
+			System.out.println("Window isActive: " + window.target().isActive());
+		    System.out.println("Window isFocused: " + window.target().isFocused());
+		    try {
+		        java.awt.Point location = buttonFixture.target().getLocationOnScreen();
+		        System.out.println("Button locationOnScreen: " + location);
+		    } catch (Exception e) {
+		        System.out.println("Button locationOnScreen: FAILED with " + e.getMessage());
+		    }
+		});
+		System.out.println("-----------------------------");
+	}
+    
+    /**
+     * helps diagnose CI environment state before calls to ButtonFixture.click()
+     * @param radioButtonFixture
+     * @param window
+     */
+    public static void diagnosePreClickState(JRadioButtonFixture radioButtonFixture, FrameFixture window) {
+		System.out.println("--- PRE-CLICK DIAGNOSTICS ---");
+		GuiActionRunner.execute(() -> {
+			System.out.println("Button isShowing: " + radioButtonFixture.target().isShowing());
+		    System.out.println("Button isEnabled: " + radioButtonFixture.target().isEnabled());
+			System.out.println("Window isActive: " + window.target().isActive());
+		    System.out.println("Window isFocused: " + window.target().isFocused());
+		    try {
+		        java.awt.Point location = radioButtonFixture.target().getLocationOnScreen();
+		        System.out.println("Button locationOnScreen: " + location);
+		    } catch (Exception e) {
+		        System.out.println("Button locationOnScreen: FAILED with " + e.getMessage());
+		    }
+		});
+		System.out.println("-----------------------------");
+	}
 
 	// Matchers
 

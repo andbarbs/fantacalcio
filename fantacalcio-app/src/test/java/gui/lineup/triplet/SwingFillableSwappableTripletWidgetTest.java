@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.AssertJSwingUtils;
 import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingFillableSwappableTriplet")
@@ -40,6 +41,7 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 	private SwingFillableSwappableTripletWidget triplet;	
 
 	private JButtonFixture swap1_2, swap2_3;
+	private FrameFixture window;
 
 	@Override
 	protected void onSetUp() throws Exception {
@@ -71,7 +73,7 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			return f;
 		});
 		
-		FrameFixture window = new FrameFixture(robot(), frame);
+		window = new FrameFixture(robot(), frame);
 		window.show();
 		
 		swap1_2 = window.button("swap1_2");
@@ -176,7 +178,10 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			public void swapSelectors1And2() {
 				GuiActionRunner.execute(() -> {
 					swap1_2.target().setEnabled(true);
-				});
+				});				
+
+				// added a diagnostic step
+				AssertJSwingUtils.diagnosePreClickState(swap1_2, window);
 
 				// WHEN user clicks first swap button
 				swap1_2.click();				
@@ -202,6 +207,9 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				GuiActionRunner.execute(() -> {
 					swap2_3.target().setEnabled(true);
 				});
+				
+				// added a diagnostic step
+				AssertJSwingUtils.diagnosePreClickState(swap2_3, window);
 
 				// WHEN user clicks second swap button
 				swap2_3.click();				

@@ -43,6 +43,7 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	private SwingLineUpChooserWidget widget;	
 
 	private JButtonFixture saveButton;
+	private FrameFixture window;
 
 	@Override
 	protected void onSetUp() throws Exception {
@@ -76,7 +77,7 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 			return f;
 		});
 		
-		FrameFixture window = new FrameFixture(robot(), frame);
+		window = new FrameFixture(robot(), frame);
 		window.show();
 		
 		// retrieves 'save' button fixture
@@ -148,6 +149,9 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		
 		// GIVEN the 'save' button is enabled
 		GuiActionRunner.execute(() -> saveButton.target().setEnabled(true));
+		
+		// added a diagnostic step
+		AssertJSwingUtils.diagnosePreClickState(saveButton, window);
 		
 		// WHEN user clicks the 'save' button
 		saveButton.click();

@@ -336,6 +336,9 @@ class SwingStarterLineUpChooserWidgetTest {
 				// GIVEN a mock Controller is set
 				widget.setController(controller);
 				
+				// added a diagnostic step
+				AssertJSwingUtils.diagnosePreClickState(window.radioButton(withText("1-2-3")), window);
+				
 				// WHEN the user selects a scheme on the radios
 				window.radioButton(withText("1-2-3")).click();
 				
