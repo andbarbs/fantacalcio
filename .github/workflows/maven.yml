@@ -38,7 +38,7 @@ jobs:
     - name: Install VNC and Openbox
       run: |
         sudo apt-get update
-        sudo apt-get install --no-install-recommends -y tightvncserver openbox
+        sudo apt-get install --no-install-recommends -y tightvncserver openbox xfonts-base
         
     - name: Configure VNC
       run: |
