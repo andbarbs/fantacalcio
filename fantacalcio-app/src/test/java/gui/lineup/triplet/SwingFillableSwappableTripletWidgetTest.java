@@ -1,7 +1,6 @@
 package gui.lineup.triplet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,7 +13,6 @@ import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
-import gui.utils.AssertJSwingUtils;
 import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingFillableSwappableTriplet")
@@ -41,7 +38,6 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 	private SwingFillableSwappableTripletWidget triplet;	
 
 	private JButtonFixture swap1_2, swap2_3;
-	private FrameFixture window;
 
 	@Override
 	protected void onSetUp() throws Exception {
@@ -73,7 +69,7 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 			return f;
 		});
 		
-		window = new FrameFixture(robot(), frame);
+		FrameFixture window = new FrameFixture(robot(), frame);
 		window.show();
 		
 		swap1_2 = window.button("swap1_2");
@@ -170,46 +166,20 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 		@DisplayName("when asked by user to")
 		class OnUserClickTo {
 
-			private final static int TIMEOUT = 2000;
-
 			@Test
 			@GUITest
 			@DisplayName("swap the first selector pair")
 			public void swapSelectors1And2() {
 				GuiActionRunner.execute(() -> {
 					swap1_2.target().setEnabled(true);
-				});				
+				});
 
-				// added a diagnostic step
-				AssertJSwingUtils.diagnosePreClickState(swap1_2, window);
-
-				// WHEN user clicks first swap button
-				swap1_2.click();	
-				
-				// Store the start time
-				long startTime = System.currentTimeMillis();
+				// WHEN user clicks first swap button, and EDT goes idle
+				swap1_2.click();
+				robot().waitForIdle();
 				
 				// THEN the correct swap request is sent to the Controller
-				pause(new Condition("FillableSwappableTripletController.swapFirstPair to be called") {
-			        @Override
-			        public boolean test() {
-			            try {
-			            	verify(mockController).swapFirstPair();
-			                return true; 
-			            } catch (Throwable e) {
-			                return false;
-			            }
-			        }
-			    }, TIMEOUT);
-				
-				// Calculate the elapsed time *after* the pause successfully returns
-				long endTime = System.currentTimeMillis();
-				long elapsedTimeMs = endTime - startTime;
-				
-				// Print the elapsed time to the console
-				System.out.println("####################### FLAKY TEST A #####################");
-				System.out.println("FillableSwappableTripletController.swapFirstPair called in: " 
-						+ (elapsedTimeMs / 1000.0) + " s");
+				verify(mockController).swapFirstPair();
 			}
 
 			@Test
@@ -219,37 +189,13 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCas
 				GuiActionRunner.execute(() -> {
 					swap2_3.target().setEnabled(true);
 				});
-				
-				// added a diagnostic step
-				AssertJSwingUtils.diagnosePreClickState(swap2_3, window);
 
-				// WHEN user clicks second swap button
-				swap2_3.click();	
-				
-				// Store the start time
-				long startTime = System.currentTimeMillis();				
+				// WHEN user clicks second swap button, and EDT goes idle
+				swap2_3.click();			
+				robot().waitForIdle();
 				
 				// THEN the correct swap request is sent to the Controller
-				pause(new Condition("FillableSwappableTripletController.swapSecondPair to be called") {
-			        @Override
-			        public boolean test() {
-			            try {
-			            	verify(mockController).swapSecondPair();
-			                return true; 
-			            } catch (Throwable e) {
-			                return false;
-			            }
-			        }
-			    }, TIMEOUT);
-				
-				// Calculate the elapsed time *after* the pause successfully returns
-				long endTime = System.currentTimeMillis();
-				long elapsedTimeMs = endTime - startTime;
-				
-				// Print the elapsed time to the console
-				System.out.println("####################### FLAKY TEST b #####################");
-				System.out.println("FillableSwappableTripletController.swapSecondPair called in: " 
-						+ (elapsedTimeMs / 1000.0) + " s");
+				verify(mockController).swapSecondPair();
 			}
 		}
 	}

@@ -5,7 +5,6 @@ import static gui.utils.AssertJSwingUtils.withText;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 
 import java.awt.Color;
@@ -20,7 +19,6 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.assertj.swing.annotation.GUITest;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
-import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Scheme;
 import gui.utils.AssertJSwingJupiterTestCase;
-import gui.utils.AssertJSwingUtils;
 import gui.utils.GUITestExtension;
 import gui.utils.schemes.SpringSchemePanel;
 
@@ -336,36 +333,12 @@ class SwingStarterLineUpChooserWidgetTest {
 				// GIVEN a mock Controller is set
 				widget.setController(controller);
 				
-				// added a diagnostic step
-				AssertJSwingUtils.diagnosePreClickState(window.radioButton(withText("1-2-3")), window);
-				
-				// WHEN the user selects a scheme on the radios
+				// WHEN the user selects a scheme on the radios, and EDT goes idle
 				window.radioButton(withText("1-2-3")).click();
-				
-				// Store the start time
-				long startTime = System.currentTimeMillis();
+				robot().waitForIdle();
 
 				// THEN a corresponding request is sent to the Controller
-				pause(new Condition("StarterLineUpChooserController.switchToScheme to be called") {
-			        @Override
-			        public boolean test() {
-			            try {
-			            	verify(controller).switchToScheme(scheme123);
-			                return true; 
-			            } catch (Throwable e) {
-			                return false;
-			            }
-			        }
-			    }, AssertJSwingUtils.TIMEOUT);
-
-				// Calculate the elapsed time *after* the pause successfully returns
-				long endTime = System.currentTimeMillis();
-				long elapsedTimeMs = endTime - startTime;
-				
-				// Print the elapsed time to the console
-				System.out.println("####################### FLAKY TEST C #####################");
-				System.out.println("StarterLineUpChooserController.switchToScheme called in: " 
-						+ (elapsedTimeMs / 1000.0) + " s");
+				verify(controller).switchToScheme(scheme123);
 			}
 			
 			@Nested

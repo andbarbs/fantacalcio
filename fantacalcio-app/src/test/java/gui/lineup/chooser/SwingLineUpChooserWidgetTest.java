@@ -1,7 +1,6 @@
 package gui.lineup.chooser;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.swing.timing.Pause.pause;
 import static org.mockito.Mockito.verify;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +14,6 @@ import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.assertj.swing.timing.Condition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -25,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import gui.utils.AssertJSwingJupiterTestCase;
-import gui.utils.AssertJSwingUtils;
 import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingLineUpChooserWidget")
@@ -43,7 +40,6 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	private SwingLineUpChooserWidget widget;	
 
 	private JButtonFixture saveButton;
-	private FrameFixture window;
 
 	@Override
 	protected void onSetUp() throws Exception {
@@ -77,7 +73,7 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 			return f;
 		});
 		
-		window = new FrameFixture(robot(), frame);
+		FrameFixture window = new FrameFixture(robot(), frame);
 		window.show();
 		
 		// retrieves 'save' button fixture
@@ -150,35 +146,11 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 		// GIVEN the 'save' button is enabled
 		GuiActionRunner.execute(() -> saveButton.target().setEnabled(true));
 		
-		// added a diagnostic step
-		AssertJSwingUtils.diagnosePreClickState(saveButton, window);
-		
-		// WHEN user clicks the 'save' button
+		// WHEN user clicks the 'save' button and EDT goes idle
 		saveButton.click();
-		
-		// Store the start time
-		long startTime = System.currentTimeMillis();
+		robot().waitForIdle();
 		
 		// THEN a request to save is sent to the Controller
-		pause(new Condition("LineUpChooserController.saveLineUp to be called") {
-	        @Override
-	        public boolean test() {
-	            try {
-	                verify(mockController).saveLineUp();
-	                return true; 
-	            } catch (Throwable e) {
-	                return false;
-	            }
-	        }
-	    }, AssertJSwingUtils.TIMEOUT);
-		
-		// Calculate the elapsed time *after* the pause successfully returns
-		long endTime = System.currentTimeMillis();
-		long elapsedTimeMs = endTime - startTime;
-		
-		// Print the elapsed time to the console
-		System.out.println("####################### FLAKY TEST D #####################");
-		System.out.println("LineUpChooserController.saveLineUp called in: " 
-				+ (elapsedTimeMs / 1000.0) + " s");
+		verify(mockController).saveLineUp();
 	}
 }
