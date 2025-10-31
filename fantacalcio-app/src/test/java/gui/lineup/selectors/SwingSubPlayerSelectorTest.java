@@ -21,20 +21,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Player;
 import domain.Player.Defender;
-import gui.utils.AssertJSwingJUnit5TestCase;
+import gui.utils.AssertJSwingJupiterTestCase;
 
 @DisplayName("SwingSubPlayerSelector: MVP-View unit test")
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
-class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
+class SwingSubPlayerSelectorTest extends AssertJSwingJupiterTestCase {
 
 	@Mock
     private OrderedDealerPresenter<Defender> selectorPresenter;
-
-	@BeforeEach
-	public void testCaseSpecificSetup() {
-		
+	
+	private FrameFixture window;
+	
+	@Override
+	protected void onSetUp() throws Exception {
 		JFrame frame = GuiActionRunner.execute(() -> {			
 			// Constructs a SwingSubPlayerSelector instance with a mocked Presenter
 			SwingSubPlayerSelector<Defender> selectorView = new SwingSubPlayerSelector<Defender>();
@@ -51,9 +52,12 @@ class SwingSubPlayerSelectorTest extends AssertJSwingJUnit5TestCase {
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			return f;
 		});
-        // Initialize the FrameFixture.
-        window = new FrameFixture(robot, frame);
-        window.show(); // displays the frame to test the UI.
+		window = new FrameFixture(robot(), frame);
+		window.show(); // displays the frame to test the UI.
+	}
+
+	@BeforeEach
+	public void testCaseSpecificSetup() {
     }
 
     @Test @GUITest

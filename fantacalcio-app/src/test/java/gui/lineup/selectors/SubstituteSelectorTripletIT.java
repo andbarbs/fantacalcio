@@ -1,6 +1,6 @@
 package gui.lineup.selectors;
 
-import static gui.utils.TypedJComboBoxFixtureAssert.assertThat;
+import static gui.utils.AssertJSwingUtils.TypedJComboBoxFixtureAssert.assertThat;
 
 import java.awt.Dimension;
 import java.util.List;
@@ -22,8 +22,8 @@ import domain.Player.Defender;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
 import gui.lineup.triplet.FillableSwappableTriplet;
 import gui.lineup.triplet.SwingFillableSwappableTripletWidget;
-import gui.utils.AssertJSwingJUnit5TestCase;
-import gui.utils.TypedJComboBoxFixture;
+import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.AssertJSwingUtils.TypedJComboBoxFixtureAssert.TypedJComboBoxFixture;
 
 // TODO: use DisplayName on tests
 
@@ -33,7 +33,7 @@ import gui.utils.TypedJComboBoxFixture;
  */
 @DisplayName("SubstituteSelectorTriplet: MVP View + Presenter IT")
 @Tag("non-JPMS-compliant")
-class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
+class SubstituteSelectorTripletIT extends AssertJSwingJupiterTestCase {
     
 	private TypedJComboBoxFixture<Defender> combo1, combo2, combo3;
 	private JButtonFixture reset1, reset2, reset3;
@@ -44,9 +44,9 @@ class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 	private static final Defender ramos = new Defender("Sergio", "Ramos", Club.ATALANTA);
 	private static final Defender silva = new Defender("Thiago", "Silva", Club.ATALANTA);
 	private static final Defender vanDijk = new Defender("Virgil", "van Dijk", Club.ATALANTA);
-
-	@BeforeEach
-	public void testCaseSpecificSetup() {
+	
+	@Override
+		protected void onSetUp() throws Exception {
 		Dimension selectorDims = new Dimension(120, 225);
 		
 		JFrame frame = GuiActionRunner.execute(() -> {
@@ -84,20 +84,24 @@ class SubstituteSelectorTripletIT extends AssertJSwingJUnit5TestCase {
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			return f;
 		});
-        
-        window = new FrameFixture(robot, frame);
-        window.show();
-        
-        combo1 = TypedJComboBoxFixture.of(window.panel("widget1").comboBox(), Defender.class);
-        combo2 = TypedJComboBoxFixture.of(window.panel("widget2").comboBox(), Defender.class);
-        combo3 = TypedJComboBoxFixture.of(window.panel("widget3").comboBox(), Defender.class);
-        
-        reset1 = window.panel("widget1").button(JButtonMatcher.withText("Reset"));
-        reset2 = window.panel("widget2").button(JButtonMatcher.withText("Reset"));
-        reset3 = window.panel("widget3").button(JButtonMatcher.withText("Reset"));
-        
-        swap1_2 = window.button("swap1_2");
-        swap2_3 = window.button("swap2_3");
+		
+		FrameFixture window = new FrameFixture(robot(), frame);
+		window.show();
+		
+		combo1 = TypedJComboBoxFixture.of(window.panel("widget1").comboBox(), Defender.class);
+		combo2 = TypedJComboBoxFixture.of(window.panel("widget2").comboBox(), Defender.class);
+		combo3 = TypedJComboBoxFixture.of(window.panel("widget3").comboBox(), Defender.class);
+		
+		reset1 = window.panel("widget1").button(JButtonMatcher.withText("Reset"));
+		reset2 = window.panel("widget2").button(JButtonMatcher.withText("Reset"));
+		reset3 = window.panel("widget3").button(JButtonMatcher.withText("Reset"));
+		
+		swap1_2 = window.button("swap1_2");
+		swap2_3 = window.button("swap2_3");
+		}
+
+	@BeforeEach
+	public void testCaseSpecificSetup() {
     }
 
     @Test @GUITest
