@@ -234,10 +234,6 @@ public class SwingLineUpChooserWidget extends JPanel implements LineUpChooserWid
 		saveLineUpButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.out.println("**************** FLAKINESS POINT D *****************");
-				System.out.println("SwingLineUpChooserWidget's MouseAdapter:            ");
-				System.out.println("			   about to call controller.saveLineUp()");
-				System.out.println("****************************************************");
 				controller.saveLineUp();
 			}
 		});

@@ -181,11 +181,6 @@ public class SwingFillableSwappableTripletWidget extends JPanel implements Filla
 		swapMembers1and2.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// System.out.println("asking driver to swap 1 and 2");
-				System.out.println("**************** FLAKINESS POINT A *****************");
-				System.out.println("SwingFillableSwappableTripletWidget's MouseAdapter: ");
-				System.out.println("              about to call controller.swapFirstPair");
-				System.out.println("****************************************************");
 				controller.swapFirstPair();
 			}
 		});
@@ -197,11 +192,6 @@ public class SwingFillableSwappableTripletWidget extends JPanel implements Filla
 		swapMembers2and3.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// System.out.println("asking driver to swap 2 and 3");
-				System.out.println("**************** FLAKINESS POINT B *****************");
-				System.out.println("SwingFillableSwappableTripletWidget's MouseAdapter: ");
-				System.out.println("             about to call controller.swapSecondPair");
-				System.out.println("****************************************************");
 				controller.swapSecondPair();
 			}
 		});
