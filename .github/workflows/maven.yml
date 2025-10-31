@@ -1,6 +1,8 @@
 # This workflow will 
 #     > build a push/PR with Maven
-#     > upload both surefire and failsafe reports in case of failure
+#     > in case of failure, upload 
+#          > surefire & failsafe reports 
+#          > failed GUI tests screenshots
 
 name: Java CI with Maven in Linux
 
@@ -14,38 +16,35 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [17, 21]
+        java: [17, 18, 19, 20, 21]
 
     name: build with Java ${{ matrix.java }} on Linux
     steps:
+
+    # checks out the triggering code (commit or PR head)
     - uses: actions/checkout@v5
 
+    # sets up the required JVM on runner
     - name: set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v5
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
 
-    - name: cache Maven packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', '**/*.yml') }}
-        restore-keys: |
-          ${{ runner.os }}-m2-
-
-    # --- START OF NEW STEPS ---
+    # installs a VNC server & window manager
     - name: Install VNC and Openbox
       run: |
         sudo apt-get update
         sudo apt-get install --no-install-recommends -y tightvncserver openbox xfonts-base
-        
+
+    # configures VNC to start Openbox
     - name: Configure VNC
       run: |
         mkdir -p $HOME/.vnc
         # Copy our custom xstartup script to the VNC config directory
         cp .github/scripts/xstartup $HOME/.vnc/xstartup
 
+    # sets a dummy password on the VNC server
     - name: Set VNC Password
       run: |
         # Create the password file required by vncserver
@@ -55,8 +54,45 @@ jobs:
         echo 'password' | vncpasswd -f > $HOME/.vnc/passwd
         # Set the correct file permissions
         chmod 600 $HOME/.vnc/passwd
-    # --- END OF NEW STEPS ---
 
+    # uses cache to optimize Maven dependency loading
+    - name: cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', '**/*.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-m2-
+
+    # runs the Maven build with a live VNC server
     - name: build with Maven using VNC
-      # Replace 'xvfb-run' with a call to our new script
       run: .github/scripts/execute-on-vnc.sh mvn -f pom.xml clean verify
+
+    # if build failed, generates aggregate reports
+    - name: generate aggregated 'surefire' and 'failsafe' reports
+      if: ${{ failure() }}
+      run: |
+        mvn -f pom.xml
+        # generates both 'surefire.html' and 'failsafe.html'
+        surefire-report:report-only surefire-report:failsafe-report-only
+        # aggregates into one single report at <parent>/target/reports/
+        -Daggregate=true
+        # only includes test failures
+        -DshowSuccess=false
+
+    # uploads the generated reports as artifacts 
+    - name: archive generated reports
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: surefire-report-jdk-${{ matrix.java }}
+        path: 'target/reports'
+
+    # uploads failed GUI tests screenshots
+    - name: archive failed GUI test screenshots 
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: failed-gui-tests-jdk-${{ matrix.java }}
+        # Failed gui tests are saved at <Maven module>/failed-gui-tests/
+        path: 'fantacalcio-app/failed-gui-tests'
