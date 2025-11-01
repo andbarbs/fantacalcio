@@ -22,13 +22,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import gui.utils.AssertJSwingJUnit5TestCase;
+import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingFillableSwappableTriplet")
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(GUITestExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
-class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase {
+class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJupiterTestCase {
 	
 	private JPanel fakeWidget1, fakeWidget2, fakeWidget3;
 
@@ -37,10 +39,10 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase
 
 	private JButtonFixture swap1_2, swap2_3;
 
-	@BeforeEach
-	public void testCaseSpecificSetup() {
+	@Override
+	protected void onSetUp() throws Exception {
 		JFrame frame = GuiActionRunner.execute(() -> {
-
+			
 			// appropriate dims for a widget
 			Dimension widgetDims = new Dimension(120, 225);
 			
@@ -57,7 +59,7 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase
 					fakeWidget1,
 					fakeWidget2,
 					fakeWidget3);
-
+			
 			// sets up the test Frame
 			JFrame f = new JFrame("Test Frame");
 			f.add(triplet);
@@ -66,10 +68,10 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			return f;
 		});
-
-		window = new FrameFixture(robot, frame);
+		
+		FrameFixture window = new FrameFixture(robot(), frame);
 		window.show();
-
+		
 		swap1_2 = window.button("swap1_2");
 		swap2_3 = window.button("swap2_3");
 	}
@@ -172,11 +174,11 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase
 					swap1_2.target().setEnabled(true);
 				});
 
-				// WHEN user clicks first swap button
+				// WHEN user clicks first swap button, and EDT goes idle
 				swap1_2.click();
-				robot.waitForIdle();
-
-				// THEN the correct swap request is sent to the sequence
+				robot().waitForIdle();
+				
+				// THEN the correct swap request is sent to the Controller
 				verify(mockController).swapFirstPair();
 			}
 
@@ -188,14 +190,13 @@ class SwingFillableSwappableTripletWidgetTest extends AssertJSwingJUnit5TestCase
 					swap2_3.target().setEnabled(true);
 				});
 
-				// WHEN user clicks second swap button
-				swap2_3.click();
-				robot.waitForIdle();
-
-				// THEN the correct swap request is sent to the sequence
+				// WHEN user clicks second swap button, and EDT goes idle
+				swap2_3.click();			
+				robot().waitForIdle();
+				
+				// THEN the correct swap request is sent to the Controller
 				verify(mockController).swapSecondPair();
 			}
 		}
 	}
-
 }

@@ -1,0 +1,90 @@
+package gui.utils;
+
+import org.assertj.swing.edt.FailOnThreadViolationRepaintManager;
+import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.assertj.swing.testing.AssertJSwingTestCaseTemplate;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
+/**
+ * A direct port of {@link AssertJSwingJUnitTestCase} for use with <b>JUnit 5</b>
+ */
+public abstract class AssertJSwingJupiterTestCase extends AssertJSwingTestCaseTemplate {
+
+    /**
+     * Installs a <code>{@link FailOnThreadViolationRepaintManager}</code> to catch violations of Swing threading rules.
+     * 
+     * @implNote ports a {@link BeforeClass} inside {@link AssertJSwingJUnitTestCase}
+     */
+    @BeforeAll
+    public static void setUpOnce() {
+        FailOnThreadViolationRepaintManager.install();
+    }
+    
+    /**
+     * Sets up this test's fixture, starting from creation of a new <code>{@link org.assertj.swing.core.Robot}</code>.
+     * 
+     * @implNote ports a {@link Before} inside {@link AssertJSwingJUnitTestCase}
+     *
+     * @see #setUpRobot()
+     * @see #onSetUp()
+     * @throws Exception when the set up of the test fails which results in the complete test fails
+     */
+    @BeforeEach
+    public final void setUp() throws Exception {
+      setUpRobot();
+      onSetUp();
+    }
+
+    /**
+     * Subclasses need set up their own test fixture in this method. This method is called <strong>after</strong>
+     * executing <code>{@link #setUp()}</code>.
+     *
+     * @throws Exception when the set up of the test fails which results in the complete test fails
+     */
+    protected abstract void onSetUp() throws Exception;
+
+    /**
+     * Removes the <code>{@link FailOnThreadViolationRepaintManager}</code> again to allow EDT violating and EDT safe
+     * tests in the same suite.
+     * 
+     * @implNote ports a {@link AfterClass} inside {@link AssertJSwingJUnitTestCase}
+     */
+    @AfterAll
+    public static final void tearDownOnce() {
+      FailOnThreadViolationRepaintManager.uninstall();
+    }
+    
+    /**
+     * Cleans up any resources used in this test. After calling <code>{@link #onTearDown()}</code>, this method cleans up
+     * resources used by this test's <code>{@link org.assertj.swing.core.Robot}</code>.
+     * 
+     * @implNote ports a {@link After} inside {@link AssertJSwingJUnitTestCase}
+     *
+     * @see #cleanUp()
+     * @see #onTearDown()
+     * @throws Exception when the tear down of the test fails which results in that the test will not be cleaned up properly
+     */
+    @AfterEach
+    public final void tearDown() throws Exception {
+      try {
+        onTearDown();
+      } finally {
+        cleanUp();
+      }
+    }
+    
+    /**
+     * Subclasses need to clean up resources in this method. This method is called <strong>before</strong> executing
+     * <code>{@link #tearDown()}</code>.
+     * 
+     * @throws Exception when the tear down of the test fails which results in that the test will not be cleaned up properly
+     */
+    protected void onTearDown() throws Exception {}
+}

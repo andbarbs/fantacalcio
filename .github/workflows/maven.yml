@@ -1,53 +1,98 @@
 # This workflow will 
 #     > build a push/PR with Maven
-#     > upload both surefire and failsafe reports in case of failure
+#     > in case of failure, upload 
+#          > surefire & failsafe reports 
+#          > failed GUI tests screenshots
 
 name: Java CI with Maven in Linux
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      # test against several Java versions:
       matrix:
         java: [17, 21]
 
-    name: Build with Java ${{ matrix.java }} on Linux
+    name: build with Java ${{ matrix.java }} on Linux
     steps:
+
+    # checks out the triggering code (commit or PR head)
     - uses: actions/checkout@v5
-    - name: Set up JDK ${{ matrix.java }}
+
+    # sets up the required JVM on runner
+    - name: set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v5
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
-    - name: Cache Maven packages
+
+    # installs a VNC server & window manager
+    - name: Install VNC and Openbox
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y tightvncserver openbox xfonts-base
+
+    # configures VNC to start Openbox
+    - name: Configure VNC
+      run: |
+        mkdir -p $HOME/.vnc
+        # Copy our custom xstartup script to the VNC config directory
+        cp .github/scripts/xstartup $HOME/.vnc/xstartup
+
+    # sets a dummy password on the VNC server
+    - name: Set VNC Password
+      run: |
+        # Create the password file required by vncserver
+        mkdir -p $HOME/.vnc
+        # Set a dummy password non-interactively. The password itself doesn't matter
+        # as the server is restricted to localhost.
+        echo 'password' | vncpasswd -f > $HOME/.vnc/passwd
+        # Set the correct file permissions
+        chmod 600 $HOME/.vnc/passwd
+
+    # uses cache to optimize Maven dependency loading
+    - name: cache Maven packages
       uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml', '**/*.yml') }}
         restore-keys: |
           ${{ runner.os }}-m2-
-    - name: Build with Maven
-      run: xvfb-run mvn -f pom.xml clean verify
-    - name: Generate Aggregated Report
+
+    # runs the Maven build with a live VNC server
+    - name: build with Maven using VNC
+      run: .github/scripts/execute-on-vnc.sh mvn -f pom.xml clean verify
+
+    # if build failed, generates aggregate reports
+    - name: generate aggregated 'surefire' and 'failsafe' reports
       if: ${{ failure() }}
-          # generates both 'surefire.html' and 'failsafe.html'
-          # aggregates into one single report at <parent>/target/reports/
-          # only reports test failures
-      run: >
-          mvn -f pom.xml
-          surefire-report:report-only
-          surefire-report:failsafe-report-only
-          -Daggregate=true
-          -DshowSuccess=false
-    - name: Archive Aggregated Report
+      run: |
+        mvn -f pom.xml
+        # generates both 'surefire.html' and 'failsafe.html'
+        surefire-report:report-only surefire-report:failsafe-report-only
+        # aggregates into one single report at <parent>/target/reports/
+        -Daggregate=true
+        # only includes test failures
+        -DshowSuccess=false
+
+    # uploads the generated reports as artifacts 
+    - name: archive generated reports
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
         name: surefire-report-jdk-${{ matrix.java }}
-        # The aggregated report is always in the root's target/site directory
-        path: 'target/reports'    
+        path: 'target/reports'
+
+    # uploads failed GUI tests screenshots
+    - name: archive failed GUI test screenshots 
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: failed-gui-tests-jdk-${{ matrix.java }}
+        # Failed gui tests are saved at <Maven module>/failed-gui-tests/
+        path: 'fantacalcio-app/failed-gui-tests'

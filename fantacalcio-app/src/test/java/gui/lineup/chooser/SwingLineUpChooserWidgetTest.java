@@ -14,7 +14,6 @@ import org.assertj.swing.core.matcher.JButtonMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -23,13 +22,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import gui.utils.AssertJSwingJUnit5TestCase;
+import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.GUITestExtension;
 
 @DisplayName("A SwingLineUpChooserWidget")
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(GUITestExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
-public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
+public class SwingLineUpChooserWidgetTest extends AssertJSwingJupiterTestCase {
 	
 	// injected Widget refs
 	private JPanel fakeStarterWidget, 
@@ -40,10 +41,10 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 
 	private JButtonFixture saveButton;
 
-	@BeforeEach
-	public void instantiator() {
+	@Override
+	protected void onSetUp() throws Exception {
 		JFrame frame = GuiActionRunner.execute(() -> {
-
+			
 			// instantiates fake widget dependencies
 			fakeStarterWidget = new JPanel();
 			fakeStarterWidget.setPreferredSize(new Dimension(300, 500));
@@ -54,15 +55,15 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 			fakeMidTripletWidget = new JPanel();
 			fakeForwTripletWidget = new JPanel();
 			List.of(fakeGoalieTripletWidget, fakeDefTripletWidget, fakeMidTripletWidget, fakeForwTripletWidget)
-					.forEach(fakeTriplet -> fakeTriplet.setPreferredSize(tripletDims));
-
+			.forEach(fakeTriplet -> fakeTriplet.setPreferredSize(tripletDims));
+			
 			List.of(fakeStarterWidget, fakeGoalieTripletWidget, fakeDefTripletWidget, fakeMidTripletWidget,
 					fakeForwTripletWidget).forEach(fake -> fake.setBackground(Color.ORANGE));
-
+			
 			// instantiates SUT
 			widget = new SwingLineUpChooserWidget(false, fakeStarterWidget, fakeGoalieTripletWidget,
 					fakeDefTripletWidget, fakeMidTripletWidget, fakeForwTripletWidget);
-
+			
 			// sets up the test Frame
 			JFrame f = new JFrame("Test Frame");
 			f.add(widget);
@@ -71,10 +72,10 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			return f;
 		});
-
-		window = new FrameFixture(robot, frame);
+		
+		FrameFixture window = new FrameFixture(robot(), frame);
 		window.show();
-
+		
 		// retrieves 'save' button fixture
 		saveButton = window.button(JButtonMatcher.withText("save"));
 	}
@@ -145,9 +146,9 @@ public class SwingLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 		// GIVEN the 'save' button is enabled
 		GuiActionRunner.execute(() -> saveButton.target().setEnabled(true));
 		
-		// WHEN user clicks the 'save' button
+		// WHEN user clicks the 'save' button and EDT goes idle
 		saveButton.click();
-		robot.waitForIdle();
+		robot().waitForIdle();
 		
 		// THEN a request to save is sent to the Controller
 		verify(mockController).saveLineUp();

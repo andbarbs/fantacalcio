@@ -27,7 +27,7 @@ import domain.Player.Defender;
 import gui.lineup.chooser.LineUpChooser.StarterSelectorDelegate;
 import gui.lineup.chooser.Selector.SelectorListener;
 import gui.lineup.dealing.CompetitiveOptionDealingGroup;
-import gui.utils.AssertJSwingJUnit5TestCase;
+import gui.utils.AssertJSwingJupiterTestCase;
 
 // TODO: are we doing IT at a higher level?
 
@@ -35,7 +35,7 @@ import gui.utils.AssertJSwingJUnit5TestCase;
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
-public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
+public class StarterPlayerSelectorIT {
 
     private static final Defender chiellini = new Defender("Giorgio", "Chiellini", Player.Club.ATALANTA);
     private static final Defender pique = new Defender("Gerard", "Piqué", Player.Club.ATALANTA);
@@ -54,25 +54,27 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
 
     @Nested
 	@DisplayName("notifications to driver and listeners")
-	class DriverAndListenerInteraction {
+	class DriverAndListenerInteraction extends AssertJSwingJupiterTestCase {
 
     	private StarterPlayerSelector<Defender> compPlayerSelector;    	
     	@Mock private CompetitiveOptionDealingGroup<StarterSelectorDelegate<Defender>, Defender> driver;    	
     	@Mock private SelectorListener<Defender> listener;
-
-    	@BeforeEach
-    	public void testCaseSpecificSetup() {    		
+    	
+		private FrameFixture window;
+    	
+    	@Override
+    	protected void onSetUp() throws Exception {
     		JFrame frame = GuiActionRunner.execute(() -> { // Wrap the panel in a frame.
     			SwingSubPlayerSelector<Defender> selView= new SwingSubPlayerSelector<Defender>();
     			compPlayerSelector = new StarterPlayerSelector<Defender>(selView);
     			selView.setController(compPlayerSelector);
-
+    			
     			// manually wires mock driver and options
     			compPlayerSelector.attachDriver(driver);
     			compPlayerSelector.attachOptions(
     					List.of(chiellini, pique, ramos, silva, vanDijk));
     			compPlayerSelector.attachListener(listener); // attaches the listener
-
+    			
     			JFrame f = new JFrame("Test Frame");
     			f.add(selView);
     			f.pack();
@@ -81,8 +83,13 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
     			return f;
     		});
     		
-    		window = new FrameFixture(robot, frame);
+    		window = new FrameFixture(robot(), frame);
     		window.show();
+    	}
+    	
+
+    	@BeforeEach
+    	public void testCaseSpecificSetup() {    		
     	}
 
         @Test @GUITest
@@ -98,6 +105,7 @@ public class StarterPlayerSelectorIT extends AssertJSwingJUnit5TestCase {
             verify(listener, times(1)).selectionMadeOn(compPlayerSelector);
 
             // subsequent clearing of selection is notified to driver and listener
+            // TODO these are another flakiness point!!
             resetButtonFixture.click();
             
             verify(driver, times(1)).selectionClearedOn(compPlayerSelector, 0);

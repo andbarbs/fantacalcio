@@ -1,0 +1,6 @@
+#!/bin/sh
+# This script is executed by the VNC server upon startup.
+# We start the Openbox window manager here.
+
+# Start openbox in the background
+openbox-session &

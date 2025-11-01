@@ -1,5 +1,7 @@
 package gui.lineup.starter;
 
+import static gui.utils.AssertJSwingUtils.sameAs;
+import static gui.utils.AssertJSwingUtils.withText;
 import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,7 +29,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Scheme;
-import gui.utils.AssertJSwingJUnit5TestCase;
+import gui.utils.AssertJSwingJupiterTestCase;
+import gui.utils.GUITestExtension;
 import gui.utils.schemes.SpringSchemePanel;
 
 /**
@@ -50,7 +53,7 @@ import gui.utils.schemes.SpringSchemePanel;
 @ExtendWith(MockitoExtension.class)
 @Tag("non-JPMS-compliant")
 @Tag("mockito-agent")
-class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
+class SwingStarterLineUpChooserWidgetTest {
 	
 	// private constants simulate Singletons
 	private static final Scheme scheme123 = new Scheme(1, 2, 3) {
@@ -253,12 +256,14 @@ class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 	}
 	
 	@Nested
+	@ExtendWith(GUITestExtension.class)
 	@DisplayName("once instantiated")
-	class JustInstantiated {		
+	class JustInstantiated extends AssertJSwingJupiterTestCase {		
 		
-		@BeforeEach
-		void instantiator() {
-			
+		private FrameFixture window;
+
+		@Override
+		protected void onSetUp() throws Exception {
 			JFrame frame = GuiActionRunner.execute(() -> {
 				
 				JFrame f = new JFrame("Test Frame");	
@@ -293,8 +298,13 @@ class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 				return f;
 			});
 			
-			window = new FrameFixture(robot, frame);
+			window = new FrameFixture(robot(), frame);
 			window.show();
+		}
+
+		@BeforeEach
+		void instantiator() {
+			
 		}
 
 		@Test
@@ -323,10 +333,10 @@ class SwingStarterLineUpChooserWidgetTest extends AssertJSwingJUnit5TestCase {
 				// GIVEN a mock Controller is set
 				widget.setController(controller);
 				
-				// WHEN the user selects a scheme on the radios
+				// WHEN the user selects a scheme on the radios, and EDT goes idle
 				window.radioButton(withText("1-2-3")).click();
-				robot.waitForIdle();
-				
+				robot().waitForIdle();
+
 				// THEN a corresponding request is sent to the Controller
 				verify(controller).switchToScheme(scheme123);
 			}
