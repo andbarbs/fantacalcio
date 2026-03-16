@@ -8,4 +8,10 @@
 !**/*.gitignore
 !**/*.tex
 !**/*.png
+!**/*.drawio
+
+# re-include PDFs for figures but not main.pdf
+!**/*.pdf
+**/main.pdf
+
 
