@@ -146,7 +146,36 @@ Esempio di query effettuata tramite le \textit{CriteriaQuery}:
     \caption{Model-View-Presenter}
     \label{fig:mvpDiagram}
 \end{figure}
-Il domainn model rappresnta le entità di dominio del sistema e le loro relazioni.
+
+\subsubsection{Model-View-Presenter}
+Il pattern che abbiamo adottato nell'implementazione della GUI è \emph{Model-View-Presenter}, così come trattato in Bettini. 
+L'idea del pattern, come si vede in figura, è quella di organizzare l'interfaccia grafica in \emph{cellule} o \emph{contesti di presentazione}, ovvero aree deputate a, e suddividere le responsabilità all'interno di ciascuna cellula fra due classi, \texttt{Presenter} e \texttt{View}, con questa razionale: 
+
+\begin{itemize}
+	\item il \textbf{Presenter} espone alla \texttt{View} metodi che hanno il compito di raccogliere le volontà dell'utente, e si serve delle primitive di presentazione esposte dalla \texttt{View} per organizzare la presentazione dell'informazione all'interno della cellula grafica
+	\item la \textbf{View} espone al \texttt{Presenter} primitive di presentazione opportunamente implementate nell'ambiente grafico scelto, e inoltra le volontà recepite da parte dell'utente mediante i controlli grafici al \texttt{Presenter} tramite i medodi di ricezione che esso espone 
+\end{itemize}
+
+Appare evidente che - a netto dell'uso di interfacce per evitare l'accoppiamento diretto e favorire la testabilità - \texttt{Presenter} e \texttt{View} sono strettamente interconnesse. In effetti, come abbiamo premesso, esse realizzano congiuntamente una unica cellula di presentazione, ed è quindi particolarmente sensato pensare alla coppia come ad un \emph{duo} indissolubile. 
+Di contro, esistono importanti limiti alla compenetrazione delle due componenti, che stanno alla base della solidità e dell'utilità del pattern:
+\begin{itemize}
+	\item \texttt{Presenter} è un componente \emph{logico} e dunque \emph{headless}, ovvero non è esposto al concetto di interfaccia grafica, né materialmente attraverso tipi del toolkit grafico né concettualmente attraverso le nozioni di \emph{controlli grafici}. Espone metodi di ricezione delle volontà dell'utente che potrebbero essere validi per tipi di interfaccia grafica radicalmente diversi fra loro. Infine, costituisce il ``volto pubblico'' della cellula presentativa verso il resto dell'applicazione 
+	\item \texttt{View} è implementata in termini del toolkit grafico scelto, nel nostro caso \texttt{Swing}, e si fa carico di realizzare le primitive di presentazione e raccogliere le volontà dell'utente mediante i controlli ed i meccanismi offerti dal toolkit. Poiché le restanti cellule e l'applicazione nel suo complesso si rivolgono alla sua cellula mediante il solo \texttt{Presenter}, la \texttt{View} può e deve nascondere completamente i controlli grafici al suo interno
+\end{itemize}
+\texttt{Presenter} è il componente di livello più alto e più riusabile, e quello responsabile delle relazioni della cellula con il resto dell'applicazione. \texttt{View} costituisce semplicemente l'apparenza sensibile della cellula nel contesto del toolkit impiegato, ed ha interazioni soltanto con il suo \texttt{Presenter}.
+
+\medskip
+Al di là del particolare approccio prescritta da MVP, che può risultare spesso astruso e di difficile intuizione in fase di design, l'esperienza di sviluppo di questa GUI ci ha mostrato svariati indubbi vantaggi della scissione delle responsabilità presentative in alto e basso livello e della loro segregazione in tipi distinti. In effetti, anche quando siamo partiti con lo sviluppo di un unico componente ``fat'', col tempo siamo sempre arrivati alla conclusione che la scissione fosse sempre la strada corretta, anche a costo della complessità che introduce nel sistema. Nella nostra esperienza,
+
+\begin{itemize}
+	\item un unico componente ``fat'' è severamente limitato nella class inheritance. In \texttt{Swing}, esso è generalmente costretto ad ereditare da uno dei tipi concreti del toolkit come \texttt{JPanel} o \texttt{JFrame}. Di contro, ci siamo spesso giovati della possibilità di far ereditare al \texttt{Presenter} headless una classe astratta
+	\item in un unico componente ``fat'' è facile cadere nella trappola di esprimere tutto il comportamento di presentazione in termini dei controlli grafici e dei particolari meccanismi ad essi associati nel toolkit. Questo approccio diventa difficile da gestire per qualsiasi comportamento non banale. Invece, la scissione in \texttt{View} e \texttt{Presenter} costringe ad identificare logica presentativa di alto e basso livello, ed implementare in termini del toolkit solo la seconda. In questo modo, le ``routine di presentazione'' nel \texttt{Presenter} sono completamente astratte dal toolkit, ed i meccanismi particolari del toolkit entrano in gioco nella \texttt{View} soltanto in ``primitive'' di presentazione, funzionalmente isolate e di respiro più ristretto
+	\item un unico componente ``fat'' limita la velocità e la profondità dei test unitari. La scissione in \texttt{View} e \texttt{Presenter} permette al componente headless di essere istanziato velocemente. Inoltre, costringe a formulare le interazioni reciproche nel duo in termini di \emph{interfacce}, che assorbono esaustivamente le proprietà di interesse dei due componenti e le rendono perfettamente verificabili in fase di test 
+\end{itemize}
+
+
+
+
 
 \begin{figure}[htbp]
     \centering
