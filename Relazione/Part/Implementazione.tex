@@ -139,6 +139,9 @@ Esempio di query effettuata tramite le \textit{CriteriaQuery}:
 
 
 \subsection{GUI}
+Per l'implementazione della GUI ci siamo rifatti a \cite{bettini2019tdd}, che fornisce indicazioni chiarissime su design, implementazione e testing.
+In particolare, abbiamo adottato il pattern utilizzato da \cite{bettini2019tdd} per lo sviluppo dell'interfaccia grafica, \emph{Model-View-Presenter}.
+
 
 \begin{figure}[htbp]
     \centering
@@ -148,8 +151,7 @@ Esempio di query effettuata tramite le \textit{CriteriaQuery}:
 \end{figure}
 
 \subsubsection{Model-View-Presenter}
-Il pattern che abbiamo adottato nell'implementazione della GUI è \emph{Model-View-Presenter}, così come trattato in Bettini. 
-L'idea del pattern, come si vede in figura, è quella di organizzare l'interfaccia grafica in \emph{cellule} o \emph{contesti di presentazione}, ovvero aree deputate a, e suddividere le responsabilità all'interno di ciascuna cellula fra due classi, \texttt{Presenter} e \texttt{View}, con questa razionale: 
+L'idea fondamentale del pattern (così come trattato in \cite{bettini2019tdd} e mostrato in Figura~\ref{fig:mvpDiagram}) è quella di organizzare l'interfaccia grafica in \emph{cellule} o \emph{contesti di presentazione}, ovvero aree deputate ad assorbire un insieme coesivo di use cases, e suddividere le responsabilità all'interno di ciascuna cellula fra due classi, \texttt{Presenter} e \texttt{View}, con questa razionale: 
 
 \begin{itemize}
 	\item il \textbf{Presenter} espone alla \texttt{View} metodi che hanno il compito di raccogliere le volontà dell'utente, e si serve delle primitive di presentazione esposte dalla \texttt{View} per organizzare la presentazione dell'informazione all'interno della cellula grafica
@@ -173,8 +175,10 @@ Al di là del particolare approccio prescritta da MVP, che può risultare spesso
 	\item un unico componente ``fat'' limita la velocità e la profondità dei test unitari. La scissione in \texttt{View} e \texttt{Presenter} permette al componente headless di essere istanziato velocemente. Inoltre, costringe a formulare le interazioni reciproche nel duo in termini di \emph{interfacce}, che assorbono esaustivamente le proprietà di interesse dei due componenti e le rendono perfettamente verificabili in fase di test 
 \end{itemize}
 
+\subsubsection{Aspetti notevoli dell'implementazione}
+Nel corso della realizzazione della GUI, che si è arrestata al solo pannello di selezione della formazione, abbiamo dovuto adottare scelte specifiche per assorbire la complessità dei pannelli richiesti dall'applicazione. 
+Riassumiamo in questa sezione quelle più significative.
 
-Nel corso
 \begin{description}[style=nextline]
 	\item[Modularità]
 	      Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice.
@@ -200,7 +204,7 @@ Nel corso
 		  Nota alla nomenclatura.
 
 	\item[Uso di WindowBuilder come editor WYSIWYG]
-	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari
+	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari \cite{panda2014ejb3}
 
 	\item[Inizializzazione vs Istanziazione]
 	      Come conseguenza dei punti precedenti, attività come asset e patch management,
@@ -215,5 +219,13 @@ Nel corso
 	      data reporting verso ERP e accesso remoto acquisiscono con
 \end{description}
 
+\subsubsection{Considerazioni finali}
 
+\begin{description}[style=nextline]
+	\item[Uso di un framework per Dependency Injection]
+	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari
 
+	\item[Obsolescenza dello stack]
+	      Come conseguenza dei punti precedenti, attività come asset e patch management,
+	      data reporting verso ERP e accesso remoto acquisiscono con
+\end{description}

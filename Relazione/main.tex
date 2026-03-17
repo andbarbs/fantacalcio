@@ -38,6 +38,9 @@
 \usepackage{enumitem} % for lists with titled items
 \usepackage{caption}
 
+\usepackage[style=numeric,sorting=nty,backend=biber]{biblatex}
+\addbibresource{Part/References.bib} % The name of your bib file
+
 \lstset{
 tabsize = 4, %% set tab space width
 showstringspaces = false, %% prevent space marking in strings, string is defined as the text that is generally printed directly to the console
@@ -86,6 +89,6 @@ numberstyle = \tiny,
 \include{Part/InterazioneLLMS}
 
 \newpage
-\include{Part/Bibl}
+\printbibliography[heading=bibintoc, title={Bibliografia}]
 
 \end{document}
