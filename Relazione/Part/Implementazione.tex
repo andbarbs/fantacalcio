@@ -159,7 +159,7 @@ L'idea del pattern, come si vede in figura, è quella di organizzare l'interfacc
 Appare evidente che - a netto dell'uso di interfacce per evitare l'accoppiamento diretto e favorire la testabilità - \texttt{Presenter} e \texttt{View} sono strettamente interconnesse. In effetti, come abbiamo premesso, esse realizzano congiuntamente una unica cellula di presentazione, ed è quindi particolarmente sensato pensare alla coppia come ad un \emph{duo} indissolubile. 
 Di contro, esistono importanti limiti alla compenetrazione delle due componenti, che stanno alla base della solidità e dell'utilità del pattern:
 \begin{itemize}
-	\item \texttt{Presenter} è un componente \emph{logico} e dunque \emph{headless}, ovvero non è esposto al concetto di interfaccia grafica, né materialmente attraverso tipi del toolkit grafico né concettualmente attraverso le nozioni di \emph{controlli grafici}. Espone metodi di ricezione delle volontà dell'utente che potrebbero essere validi per tipi di interfaccia grafica radicalmente diversi fra loro. Infine, costituisce il ``volto pubblico'' della cellula presentativa verso il resto dell'applicazione 
+	\item \texttt{Presenter} è un componente \emph{logico} e dunque \emph{headless}, ovvero non è esposto alla nozione di interfaccia grafica, né materialmente attraverso tipi del toolkit grafico né concettualmente attraverso le nozioni di \emph{controlli grafici}. Espone metodi di ricezione delle volontà dell'utente che potrebbero essere validi per tipi di interfaccia utente radicalmente diversi fra loro. Infine, costituisce il ``volto pubblico'' della cellula presentativa verso il resto dell'applicazione 
 	\item \texttt{View} è implementata in termini del toolkit grafico scelto, nel nostro caso \texttt{Swing}, e si fa carico di realizzare le primitive di presentazione e raccogliere le volontà dell'utente mediante i controlli ed i meccanismi offerti dal toolkit. Poiché le restanti cellule e l'applicazione nel suo complesso si rivolgono alla sua cellula mediante il solo \texttt{Presenter}, la \texttt{View} può e deve nascondere completamente i controlli grafici al suo interno
 \end{itemize}
 \texttt{Presenter} è il componente di livello più alto e più riusabile, e quello responsabile delle relazioni della cellula con il resto dell'applicazione. \texttt{View} costituisce semplicemente l'apparenza sensibile della cellula nel contesto del toolkit impiegato, ed ha interazioni soltanto con il suo \texttt{Presenter}.
@@ -174,12 +174,40 @@ Al di là del particolare approccio prescritta da MVP, che può risultare spesso
 \end{itemize}
 
 
+Nel corso
+\begin{description}[style=nextline]
+	\item[Modularità]
+	      Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice. 
+	      Tuttavia, una criticità intrinseca dell'impiego del pattern MVP è il fatto che esso scinde \emph{una} unica cellula presentativa in \emph{due} classi. L'idea stessa di \emph{composizione} risulta dunque problematica e va gestita opportunamente.
+
+	      Quello che abbiamo fatto nella nostra implementazione è stato sostanzialmente replicare - in maniera non codificabile nei tipi e dunque dichiaratamente fragile - la composizione in entrambe le dimensioni headless e grafica di MVP, come raffigurato in questo schema:
+
+	      \begin{figure}[htbp]
+		      \centering
+		      \includegraphics[width=1.2\linewidth]{Resources/gui_layers.pdf}
+		      \caption{schema di composizione dei moduli grafici (UML semplificato\\lo schema segue una notazione UML semplificata in cui le interfacce interne al duo MVP sono menzionate sulla freccia di aggregazione, allo scopo di contenere la complessità del diagramma )}
+		      \label{fig:guiLayering}
+	      \end{figure}
+
+	      Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless.
+
+		  .  
+
+	\item[Uso di WindowBuilder come editor WYSIWYG]
+	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari
+
+	\item[Inizializzazione vs Istanziazione]
+	      Come conseguenza dei punti precedenti, attività come asset e patch management,
+	      data reporting verso ERP e accesso remoto acquisiscono con
+
+	\item[Istanziazione pubblica e privata]
+	      Come conseguenza dei punti precedenti, attività come asset e patch management,
+	      data reporting verso ERP e accesso remoto acquisiscono con
+
+	\item[Gestione delle immagini raster]
+	      Come conseguenza dei punti precedenti, attività come asset e patch management,
+	      data reporting verso ERP e accesso remoto acquisiscono con
+\end{description}
 
 
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=1.2\linewidth]{Resources/gui_layers.pdf}
-    \caption{schema di composizione dei moduli grafici}
-    \label{fig:guiLayering}
-\end{figure}
