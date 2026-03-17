@@ -176,48 +176,67 @@ Al di là del particolare approccio prescritta da MVP, che può risultare spesso
 \end{itemize}
 
 \subsubsection{Aspetti notevoli dell'implementazione}
-Nel corso della realizzazione della GUI, che si è arrestata al solo pannello di selezione della formazione, abbiamo dovuto adottare scelte specifiche per assorbire la complessità dei pannelli richiesti dall'applicazione. 
+Nel corso della realizzazione della GUI, che si è arrestata al solo pannello di selezione della formazione, abbiamo dovuto adottare scelte specifiche per assorbire la complessità delle caratteristiche dell'interfaccia grafica che avevamo in mente. 
 Riassumiamo in questa sezione quelle più significative.
 
-\begin{description}[style=nextline]
-	\item[Modularità]
-	      Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice.
-	      Tuttavia, una criticità intrinseca dell'impiego del pattern MVP è il fatto che esso scinde \emph{una} unica cellula presentativa in \emph{due} classi. L'idea stessa di \emph{composizione} risulta dunque problematica e va gestita opportunamente.
+\paragraph{Modularità}
+Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice.
+Tuttavia, una criticità intrinseca dell'impiego del pattern MVP è il fatto che esso scinde \emph{una} unica cellula presentativa in \emph{due} classi. L'idea stessa di \emph{composizione} risulta dunque problematica e va gestita opportunamente.
 
-	      Quello che abbiamo fatto nella nostra implementazione è stato sostanzialmente replicare - in maniera non codificabile nei tipi e dunque dichiaratamente fragile - la composizione in entrambe le dimensioni headless e grafica di MVP, come raffigurato in questo schema:
+Quello che abbiamo fatto nella nostra implementazione è stato sostanzialmente replicare - in maniera non codificabile nei tipi e dunque dichiaratamente fragile - la composizione in entrambe le dimensioni headless e grafica di MVP, come raffigurato in questo schema:
 
-	      % We replace \begin{figure} with \begin{center} to lock placement
-	      \begin{center}
-              % The minipage acts as an unbreakable box to prevent page breaks
-              \begin{minipage}{\linewidth}
-		          \makebox[\linewidth][c]{\includegraphics[width=1.3\linewidth]{Resources/gui_layers.pdf}}
-                  
-                  % Added hypcap=false to silence the hyperref warning
-                  \captionsetup{width=0.85\linewidth, justification=justified, hypcap=false}
-		          \captionof{figure}[Schema di composizione dei moduli grafici]{Schema di composizione dei moduli grafici (UML semplificato) \smallskip \newline Allo scopo di contenere la complessità del diagramma, lo schema segue una notazione UML semplificata in cui le interfacce interne al duo MVP sono menzionate sulla freccia di aggregazione. Inoltre, mostra la composizione come ``catena'' mentre nella realtà essa ha forma di \emph{albero}}
-		          \label{fig:guiComposition}
-              \end{minipage}
-	      \end{center}
+% We replace \begin{figure} with \begin{center} to lock placement
+\begin{center}
+	% The minipage acts as an unbreakable box to prevent page breaks
+	\begin{minipage}{\linewidth}
+		\makebox[\linewidth][c]{\includegraphics[width=1.3\linewidth]{Resources/gui_layers.pdf}}
 
-	      Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless, e si rispettano i principi della Dependency Inversion e della Interface Segregation.
+		% Added hypcap=false to silence the hyperref warning
+		\captionsetup{width=0.85\linewidth, justification=justified, hypcap=false}
+		\captionof{figure}[Schema di composizione dei moduli grafici]{Schema di composizione dei moduli grafici (UML semplificato) \smallskip \newline Allo scopo di contenere la complessità del diagramma, lo schema segue una notazione UML semplificata in cui le interfacce interne al duo MVP sono menzionate sulla freccia di aggregazione. Inoltre, mostra la composizione come ``catena'' mentre nella realtà essa ha forma di \emph{albero}}
+		\label{fig:guiComposition}
+	\end{minipage}
+\end{center}
 
-		  Nota alla nomenclatura.
+Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless, e si rispettano i principi della Dependency Inversion e della Interface Segregation.
 
-	\item[Uso di WindowBuilder come editor WYSIWYG]
-	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari \cite{panda2014ejb3}
+Nota alla nomenclatura.
 
-	\item[Inizializzazione vs Istanziazione]
-	      Come conseguenza dei punti precedenti, attività come asset e patch management,
-	      data reporting verso ERP e accesso remoto acquisiscono con
+\paragraph{Strategie di testing}
+Lo schema di composizione appena esposto va naturalmente nella direzione di facilitare il testing unitario, in quanto mantiene distinte le componenti headless e grafiche e prevede interfacce per ogni interazione.
 
-	\item[Istanziazione pubblica e privata]
-	      Come conseguenza dei punti precedenti, attività come asset e patch management,
-	      data reporting verso ERP e accesso remoto acquisiscono con
+Tuttavia, in questo schema un singolo componente concreto si trova ad implementare molteplici interfacce - nel caso di un componente headless, almeno due: quella ``verticale'' verso il componente grafico e quella ``orizzontale'' verso il componente headless di ordine superiore. Nel nostro codice non è raro che questo numero sia ancora più elevato, a causa di ulteriori collaborazioni che interessano il componente headless.
 
-	\item[Gestione delle immagini raster]
-	      Come conseguenza dei punti precedenti, attività come asset e patch management,
-	      data reporting verso ERP e accesso remoto acquisiscono con
-\end{description}
+In questo contesto ci è sembrata particolarmente adatta la possibilità offerta da \textbf{JUnit 5} di raggruppare i test, grazie alla facility dei \emph{\texttt{@Nested} testcases}. In questo modo, siamo stati in grado di organizzare le asserzioni per ``mandato'' o interfaccia implementata, e rendere perfettamente leggibile questa strutturazione grazie al comportamento di \texttt{@DisplayName} lungo un albero di nesting.
+
+Inoltre, Junit 5 offre una integrazione con \textbf{Mockito} particolarmente espressiva ed efficiente. Ci siamo serviti pesantemente delle primitive di mocking e degli eccellenti strumenti diagnostici di questo framework.
+
+
+\paragraph{Uso di WindowBuilder come editor WYSIWYG}
+Tradizionalmente, gli IACS utilizzavano hardware e software proprietari \cite{panda2014ejb3}
+
+\paragraph{Inizializzazione vs Istanziazione}
+Un paradigma che ci è apparso importante rispettare nello sviluppo di un componente grafico è stato quello di \emph{rimuovere per quanto possibile la configurazione dall'istanziazione}: in quest'ottica, il costruttore si occupa solo di istanziare i sotto-componenti grafici ed assemblarli correttamente, ma non conferisce al componente risultante nessuna \emph{proprietà utile}, come ad esempio uno \emph{``stato iniziale''}. Questa è invece responsabilità di appositi metodi d'istanza che possiamo chiamare di \emph{inizializzazione} o \emph{configurazione}.
+
+Questo semplice principio obbliga i client del componente stesso a dipendere sempre dalle sue API di configurazione, anche in casi in cui si sarebbe preferito sollevarli da tale incombenza assorbendo quanta più configurazione possibile nell'istanziazione.
+Tuttavia, ci siamo sempre convinti che questa limitata pesantezza nei client fosse ampiamente compensata dalla maggior pulizia e velocità che il principio porta nel testing unitario del componente grafico: soltanto quando l'istanziazione è totalmente disaccoppiata dalla configurazione, il componente istanziato è un autentico ``foglio bianco'', ed i metodi di configurazione possono veramente essere testati in isolamento.
+
+\paragraph{Istanziazione di design pubblica e privata}
+Come conseguenza della modularità, si pone il problema se includere o meno i moduli ``figli'' nel rendering in WindowBuilder di un modulo ``padre''. A nostro avviso, questa inclusione permette di aggiustare le caratteristiche visive del modulo padre in maniera consistente con quelle dei moduli figli, e dunque rende ancora più sensato e conveniente l'uso un tool WYSWYG.
+
+A questo punto, una nuova opportunità arriva dal fatto di poter distinguere il rendering che WindowBuilder fa di un modulo quando si fa design del modulo stesso da quello che ne fa nel design di moduli ``padre''. In effetti, nel design di un modulo possono essere utili annotazioni e appunti grafici che però si preferisce omettere nel rendering ``pubblico'' di quel modulo, ovvero quello che viene adottato nel design dei moduli ``padre''.
+
+La nostra soluzione è stata fare overloading di costruttori con diversa visibilità, opportunamente documentato, e cercare di implementare il massimo riuso internamente ai due punti di istanziazione. In questo modo, nel design del modulo stesso WindowBuilder adotta sempre il costruttore privato, mentre nel design di un modulo ``padre'' possiamo dirigerlo verso i costruttori pubblici dei moduli ``figli''.
+
+\paragraph{Gestione delle immagini raster}
+Una caratteristica che abbiamo sempre voluto conferire alla nostra GUI, per definizione del tipo di applicazione che riveste, è la presenza di immagini: ad esempio, nella scelta della formazione ci è sembrato piuttosto obbligato usare una immagine di un campo da calcio come sfondo su cui disporre i selettori dei giocatori secondo gli schemi calcistici.
+
+Una limitazione piuttosto significativa di Swing è il fatto che non si fa carico di gestire il resizing di una risorsa raster: in altri termini, una volta caricata in memoria una immagine \texttt{.png} e passata a Swing per costruire una \texttt{JLabel}, Swing non farà più alcun intervento sulle dimensioni dell'immagine durante il ciclo di vita della \texttt{JLabel}. Questo porta ad una certa problematicità nel trattamento di risorse raster quando Swing gestisce il \emph{sizing} lungo l'albero di composizione grafica ingaggiando i \emph{\texttt{LayoutManager}s}, dal momento che \texttt{LayoutManager}s diversi hanno atteggiamenti completamente opposti verso i requisiti di size dei componenti figli.
+
+La strategia che ci è parsa migliore per risolvere il problema del sizing delle risorse raster, anche se indubbiamente non la più flessibile, è stata quella di consegnare a Swing le immagini nel loro scaling \emph{definitivo} - che quindi deve essere perfettamente armonizzato fra tutti i componenti raster dell'applicazione - e non permettere che le dimensioni della GUI possano cambiare una volta avviata l'applicazione. Quest'ultimo requisito non è, in verità, molto limitante, ed era anzi una proprietà che avremmo comunque trovato utile per il tipo di GUI che avevamo in mente. Il primo requisito chiede invece una collaborazione fra tutti i componenti della GUI per gestire l'istanziazione con scaling armonizzato di tutte le risorse raster. Nella pratica, si è seguito un approccio in cui i componenti di ordine massimo fanno da ``source of truth'' e quelli di ordine inferiore \emph{derivano} le proprie indicazioni di scaling in base a fattori di proporzione, rispettando così la dipendenza logica.
+
+Infine, è stato molto utile centralizzare le responsabilità di istanziazione con scaling delle risorse raster in una unica classe, \texttt{ImageManager}, anche al fine di ottimizzare gli accessi a disco. Con una formulazione assolutamente non standard del pattern Singleton si è miracolosamente riusciti a rendere \texttt{ImageManager} compatibile con WindowBuilder.
+
 
 \subsubsection{Considerazioni finali}
 
