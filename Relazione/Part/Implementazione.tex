@@ -177,21 +177,27 @@ Al di là del particolare approccio prescritta da MVP, che può risultare spesso
 Nel corso
 \begin{description}[style=nextline]
 	\item[Modularità]
-	      Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice. 
+	      Quando ci si trova a gestire contesti di presentazione complessi è intuitivo e, crediamo, corretto cercare di realizzarli mediante \emph{composizione} di \emph{moduli} singolarmente più semplici. Questa modularità ha vantaggi evidenti per la testabilità, leggibilità, manutenibilità del codice.
 	      Tuttavia, una criticità intrinseca dell'impiego del pattern MVP è il fatto che esso scinde \emph{una} unica cellula presentativa in \emph{due} classi. L'idea stessa di \emph{composizione} risulta dunque problematica e va gestita opportunamente.
 
 	      Quello che abbiamo fatto nella nostra implementazione è stato sostanzialmente replicare - in maniera non codificabile nei tipi e dunque dichiaratamente fragile - la composizione in entrambe le dimensioni headless e grafica di MVP, come raffigurato in questo schema:
 
-	      \begin{figure}[htbp]
-		      \centering
-		      \includegraphics[width=1.2\linewidth]{Resources/gui_layers.pdf}
-		      \caption{schema di composizione dei moduli grafici (UML semplificato\\lo schema segue una notazione UML semplificata in cui le interfacce interne al duo MVP sono menzionate sulla freccia di aggregazione, allo scopo di contenere la complessità del diagramma )}
-		      \label{fig:guiLayering}
-	      \end{figure}
+	      % We replace \begin{figure} with \begin{center} to lock placement
+	      \begin{center}
+              % The minipage acts as an unbreakable box to prevent page breaks
+              \begin{minipage}{\linewidth}
+		          \makebox[\linewidth][c]{\includegraphics[width=1.3\linewidth]{Resources/gui_layers.pdf}}
+                  
+                  % Added hypcap=false to silence the hyperref warning
+                  \captionsetup{width=0.85\linewidth, justification=justified, hypcap=false}
+		          \captionof{figure}[Schema di composizione dei moduli grafici]{Schema di composizione dei moduli grafici (UML semplificato) \smallskip \newline Allo scopo di contenere la complessità del diagramma, lo schema segue una notazione UML semplificata in cui le interfacce interne al duo MVP sono menzionate sulla freccia di aggregazione. Inoltre, mostra la composizione come ``catena'' mentre nella realtà essa ha forma di \emph{albero}}
+		          \label{fig:guiComposition}
+              \end{minipage}
+	      \end{center}
 
-	      Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless.
+	      Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless, e si rispettano i principi della Dependency Inversion e della Interface Segregation.
 
-		  .  
+		  Nota alla nomenclatura.
 
 	\item[Uso di WindowBuilder come editor WYSIWYG]
 	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari
