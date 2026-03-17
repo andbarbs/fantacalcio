@@ -202,49 +202,67 @@ Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei
 
 Nota alla nomenclatura.
 
-\paragraph{Strategie di testing}
+\paragraph{Strategie di testing}\label{par:guiTesting}
 Lo schema di composizione appena esposto va naturalmente nella direzione di facilitare il testing unitario, in quanto mantiene distinte le componenti headless e grafiche e prevede interfacce per ogni interazione.
 
 Tuttavia, in questo schema un singolo componente concreto si trova ad implementare molteplici interfacce - nel caso di un componente headless, almeno due: quella ``verticale'' verso il componente grafico e quella ``orizzontale'' verso il componente headless di ordine superiore. Nel nostro codice non è raro che questo numero sia ancora più elevato, a causa di ulteriori collaborazioni che interessano il componente headless.
 
 In questo contesto ci è sembrata particolarmente adatta la possibilità offerta da \textbf{JUnit 5} di raggruppare i test, grazie alla facility dei \emph{\texttt{@Nested} testcases}. In questo modo, siamo stati in grado di organizzare le asserzioni per ``mandato'' o interfaccia implementata, e rendere perfettamente leggibile questa strutturazione grazie al comportamento di \texttt{@DisplayName} lungo un albero di nesting.
-
 Inoltre, Junit 5 offre una integrazione con \textbf{Mockito} particolarmente espressiva ed efficiente. Ci siamo serviti pesantemente delle primitive di mocking e degli eccellenti strumenti diagnostici di questo framework.
 
+Il framework di testing grafico che abbiamo usato, seguendo il suggerimento di \cite{bettini2019tdd}, è \textbf{AssertJ Swing}, che offre semplici ed efficaci API per l'interazione grafica programmatica.
 
-\paragraph{Uso di WindowBuilder come editor WYSIWYG}
-Tradizionalmente, gli IACS utilizzavano hardware e software proprietari \cite{panda2014ejb3}
 
-\paragraph{Inizializzazione vs Istanziazione}
+\paragraph{Inizializzazione vs Istanziazione}\label{par:initVsInst}
 Un paradigma che ci è apparso importante rispettare nello sviluppo di un componente grafico è stato quello di \emph{rimuovere per quanto possibile la configurazione dall'istanziazione}: in quest'ottica, il costruttore si occupa solo di istanziare i sotto-componenti grafici ed assemblarli correttamente, ma non conferisce al componente risultante nessuna \emph{proprietà utile}, come ad esempio uno \emph{``stato iniziale''}. Questa è invece responsabilità di appositi metodi d'istanza che possiamo chiamare di \emph{inizializzazione} o \emph{configurazione}.
 
 Questo semplice principio obbliga i client del componente stesso a dipendere sempre dalle sue API di configurazione, anche in casi in cui si sarebbe preferito sollevarli da tale incombenza assorbendo quanta più configurazione possibile nell'istanziazione.
 Tuttavia, ci siamo sempre convinti che questa limitata pesantezza nei client fosse ampiamente compensata dalla maggior pulizia e velocità che il principio porta nel testing unitario del componente grafico: soltanto quando l'istanziazione è totalmente disaccoppiata dalla configurazione, il componente istanziato è un autentico ``foglio bianco'', ed i metodi di configurazione possono veramente essere testati in isolamento.
 
-\paragraph{Istanziazione di design pubblica e privata}
+
+\paragraph{Uso di WindowBuilder come editor WYSIWYG}
+Al fine di fare design grafico dei componenti GUI più agevolmente, ci siamo serviti dei tool raccomandati da \cite{bettini2019tdd}, ovvero l'editor WYSIWYG WindowBuilder disponibile come plugin di Eclipse. 
+
+Una caratteristica sicuramente ottima di WindowBuilder è il fatto che lavora direttamente sul codice Java, senza bisogno di generare file ``di layout''.
+Tuttavia, WindowBuilder ha la limitazione significativa di non eseguire il codice dei costruttori nativamente nella JVM, ma basare il rendering su un \emph{parsing} del codice stesso. Questo significa che, in pratica, alune istruzioni del corpo del costruttore non saranno eseguite.
+
+La documentazione di WindowBuilder non chiarisce quali sono le tipologie di istruzioni supportate a render-time. Col tempo ci siamo resi conto che il comportamento di WindowBuilder sembra variare a seconda che il costruttore sia quello del tipo renderizzato o di un tipo diverso: per tipi diversi da quello renderizzato, WindowBuilder sembra eseguire tutte le istruzioni. In ogni caso, abbiamo dovuto documentare in ogni tipo grafico le limitazioni del rendering per quel tipo.
+
+In ogni caso, un tool WYSIWYG si limita a fare rendering del costruttore. Ciò significa che qualunque comportamento di configurazione espresso in metodi d'istanza non potrà essere esaminato e validato graficamente - un chiaro svantaggio dell'applicazione del principio \nameref{par:initVsInst}.
+
+
+\paragraph{Istanziazione di design pubblica e privata}\label{par:pubPrivInst}
 Come conseguenza della modularità, si pone il problema se includere o meno i moduli ``figli'' nel rendering in WindowBuilder di un modulo ``padre''. A nostro avviso, questa inclusione permette di aggiustare le caratteristiche visive del modulo padre in maniera consistente con quelle dei moduli figli, e dunque rende ancora più sensato e conveniente l'uso un tool WYSWYG.
 
-A questo punto, una nuova opportunità arriva dal fatto di poter distinguere il rendering che WindowBuilder fa di un modulo quando si fa design del modulo stesso da quello che ne fa nel design di moduli ``padre''. In effetti, nel design di un modulo possono essere utili annotazioni e appunti grafici che però si preferisce omettere nel rendering ``pubblico'' di quel modulo, ovvero quello che viene adottato nel design dei moduli ``padre''.
+A questo punto, una nuova opportunità arriva dal fatto di poter distinguere il rendering che WindowBuilder fa di un modulo quando si fa design del modulo stesso da quello che ne fa nel design di moduli ``padre''. In effetti, nel design di un modulo possono essere utili annotazioni e appunti grafici che però si preferisce omettere nel rendering ``pubblico'' di quel modulo, ovvero quello che viene adottato nel design dei moduli che lo contengono.
 
-La nostra soluzione è stata fare overloading di costruttori con diversa visibilità, opportunamente documentato, e cercare di implementare il massimo riuso internamente ai due punti di istanziazione. In questo modo, nel design del modulo stesso WindowBuilder adotta sempre il costruttore privato, mentre nel design di un modulo ``padre'' possiamo dirigerlo verso i costruttori pubblici dei moduli ``figli''.
+La nostra soluzione è stata fare overloading di costruttori con diversa visibilità, documentando opportunamente, e cercare di implementare il massimo riuso internamente ai due punti di istanziazione. In questo modo, nel design del modulo stesso WindowBuilder adotta sempre il costruttore privato, mentre nel design di un modulo ``padre'' può essere diretto verso i costruttori pubblici dei moduli ``figli''.
 
 \paragraph{Gestione delle immagini raster}
 Una caratteristica che abbiamo sempre voluto conferire alla nostra GUI, per definizione del tipo di applicazione che riveste, è la presenza di immagini: ad esempio, nella scelta della formazione ci è sembrato piuttosto obbligato usare una immagine di un campo da calcio come sfondo su cui disporre i selettori dei giocatori secondo gli schemi calcistici.
 
-Una limitazione piuttosto significativa di Swing è il fatto che non si fa carico di gestire il resizing di una risorsa raster: in altri termini, una volta caricata in memoria una immagine \texttt{.png} e passata a Swing per costruire una \texttt{JLabel}, Swing non farà più alcun intervento sulle dimensioni dell'immagine durante il ciclo di vita della \texttt{JLabel}. Questo porta ad una certa problematicità nel trattamento di risorse raster quando Swing gestisce il \emph{sizing} lungo l'albero di composizione grafica ingaggiando i \emph{\texttt{LayoutManager}s}, dal momento che \texttt{LayoutManager}s diversi hanno atteggiamenti completamente opposti verso i requisiti di size dei componenti figli.
+Una limitazione sicuramente ragionevole ma piuttosto penalizzante di Swing è il fatto che non si fa carico di gestire il resizing dinamico di una risorsa raster: in altri termini, una volta caricata in memoria una immagine \texttt{.png} e passata a Swing per costruire una \texttt{JLabel}, Swing non farà più alcun intervento sulle dimensioni dell'immagine durante il ciclo di vita della \texttt{JLabel}. Questo porta ad una certa problematicità nel trattamento di risorse raster quando Swing gestisce il \emph{sizing} lungo l'albero di composizione grafica ingaggiando i \emph{\texttt{LayoutManager}s}. Il fatto che \texttt{LayoutManager}s diversi abbiano atteggiamenti completamente opposti verso i requisiti di size dei componenti figli non fa che peggiorare il quadro.
 
-La strategia che ci è parsa migliore per risolvere il problema del sizing delle risorse raster, anche se indubbiamente non la più flessibile, è stata quella di consegnare a Swing le immagini nel loro scaling \emph{definitivo} - che quindi deve essere perfettamente armonizzato fra tutti i componenti raster dell'applicazione - e non permettere che le dimensioni della GUI possano cambiare una volta avviata l'applicazione. Quest'ultimo requisito non è, in verità, molto limitante, ed era anzi una proprietà che avremmo comunque trovato utile per il tipo di GUI che avevamo in mente. Il primo requisito chiede invece una collaborazione fra tutti i componenti della GUI per gestire l'istanziazione con scaling armonizzato di tutte le risorse raster. Nella pratica, si è seguito un approccio in cui i componenti di ordine massimo fanno da ``source of truth'' e quelli di ordine inferiore \emph{derivano} le proprie indicazioni di scaling in base a fattori di proporzione, rispettando così la dipendenza logica.
+La strategia che ci è parsa migliore per risolvere il problema del sizing delle risorse raster, anche se indubbiamente non la più flessibile, è stata quella di consegnare a Swing le immagini nel loro scaling \emph{definitivo} - che quindi deve essere attualizzato sulle dimensioni dello schermo e perfettamente armonizzato fra tutti i componenti raster della GUI - e impedire che le dimensioni della GUI stessa possano cambiare una volta avviata l'applicazione. Quest'ultimo requisito non è, in verità, molto limitante, ed era anzi una proprietà che avremmo comunque trovato utile per il tipo di GUI che avevamo in mente. Il primo requisito chiede invece una collaborazione fra tutti i componenti della GUI per gestire l'istanziazione con scaling armonizzato di tutte le risorse raster. Nella pratica, si è seguito un approccio in cui i componenti di ordine massimo fanno da ``source of truth'' e quelli di ordine inferiore \emph{derivano} le proprie indicazioni di scaling in base a fattori di proporzione, rispettando così la dipendenza logica.\footnote{Una diversa soluzione sarebbe stata produrre le risorse raster già nelle opportune proporzioni: a quel punto, si sarebbe soltanto dovuto attualizzarne le dimensioni a quelle dello schermo. Questo approccio ci è sebrato inaccettabile perché volevamo la massima libertà nella produzione delle immagini, in modo da poterci servire dei LLMMs}
 
 Infine, è stato molto utile centralizzare le responsabilità di istanziazione con scaling delle risorse raster in una unica classe, \texttt{ImageManager}, anche al fine di ottimizzare gli accessi a disco. Con una formulazione assolutamente non standard del pattern Singleton si è miracolosamente riusciti a rendere \texttt{ImageManager} compatibile con WindowBuilder.
 
 
 \subsubsection{Considerazioni finali}
 
-\begin{description}[style=nextline]
-	\item[Uso di un framework per Dependency Injection]
-	      Tradizionalmente, gli IACS utilizzavano hardware e software proprietari
+\paragraph{Uso di un framework per Dependency Injection}
+Un design modulare della GUI ha come immediata conseguenza la proliferazione dei tipi. Per onorare il Dependency Inversion Principle, abbiamo adottato \emph{dependency injection} su tutte le collaborazioni, facendo in modo che le collaborazioni vengano sempre istanziate all'esterno e passate ad un tipo tramite costruttore o setter.
 
-	\item[Obsolescenza dello stack]
-	      Come conseguenza dei punti precedenti, attività come asset e patch management,
-	      data reporting verso ERP e accesso remoto acquisiscono con
+Questo non è chiaramente stato possibile nei costruttori grafici design-time, nei quali, come discusso in \nameref{par:pubPrivInst}, è auspicabile una istanziazione ``collassata'' che contenga già istanze delle ``dipendenze'' (ovvero delle apparenze grafiche dei moduli composti).
+
+Per semplificare il codice dei costruttori grafici design-time, nonché quello di lancio dell'applicazione qualora l'avessimo completata, sarebbe stato decisamente utile un framework per automatizzare la dependency injection, come \textbf{Google Guice} suggerito da \cite{bettini2019tdd}.
+Un ambito di assoluto interesse sarebbe stato, a quel punto, la compatibilità fra il framework e WindowBuilder.
+
+\paragraph{Obsolescenza dello stack}
+Lo stack tecnico di cui ci siamo serviti per sviluppare la GUI, ovvero Swing, AssertJ Swing e WindowBuilder, aveva il pregio di essere minuziosamente descritto in \cite{bettini2019tdd}. Tuttavia risulta essere estremamente datato, e non poco tempo ci è costato risolverne gli aspetti di obsolescenza. In particolare
+
+\begin{description}
+	\item[Swing] è stato un tool fondamentale per lo sviluppo di GUI in Java, ma attualmente non gode più di vasta adozione. Ne consegue che per molte delle features introdotte per ultime è disponibile poca documentazione: ad esempio, per il layout manager Spring
+	\item[WindowBuilder] ha le stesse problematiche di adozione di Swing. Inoltre, proprio per le ultime features di Swing il supporto al design è chiaramente incompleto: ad esempio, il layout manager Spring non ha quasi nessun ausilio grafico, a differenza di altri come GridBag, e WindowBuilder non ne supporta altre API all'infuori di \texttt{putConstraint()}
+	\item[AssertJ Swing] non è più mantenuto da qualche anno. Vista l'enorme utilità delle features di JUnit 5 nel nostro testing della GUI, come già detto in \nameref{par:guiTesting}, una caratteristica che abbiamo dovuto necessariamente aggiungere manualmente è stata l'integrazione con JUnit 5, attraverso un nuovo testcase di base che facesse porting verso JUnit 5 del vecchio \texttt{AssertJSwingJUnitTestCase} basato su JUnit 4.    
 \end{description}
