@@ -1,6 +1,6 @@
 \section{Implementazione}
-\todo{Parlare del domain model, delle annotazioni, dei repository, dei service forse è più adatto qui parlare approfonditamente del databse ed in progettazione fare un introduzione}
-\todo[color=blue]{Qui parla di come hai implementato il transaction manager, E Gui approfondita}
+%\todo{Parlare del domain model, delle annotazioni, dei repository, dei service forse è più adatto qui parlare approfonditamente del databse ed in progettazione fare un introduzione}
+%\todo[color=blue]{Qui parla di come hai implementato il transaction manager, E Gui approfondita}
 In questa sezione verrà descritta l'implementazione dell'applicazione analizzandone tutti
 i componenti.
 \subsection{Domain Model}
@@ -198,9 +198,10 @@ Quello che abbiamo fatto nella nostra implementazione è stato sostanzialmente r
 	\end{minipage}
 \end{center}
 
-Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless, e si rispettano i principi della Dependency Inversion e della Interface Segregation.
+Il tipo headless di una cellula si relaziona con il tipo headless del modulo/dei moduli di livello inferiore mediante interfaccia \texttt{Delegate}. Il tipo grafico di una cellula \emph{contiene graficamente} (secondo la semantica del toolkit impiegato) le componenti grafiche del modulo/dei moduli di livello inferiore, ma queste gli sono opache. Dunque, si preserva l'invariante MVP che l'interazione fra componenti applicativi passa esclusivamente dalla componente headless, e si rispettano i principi di Dependency Inversion ed Interface Segregation.
 
-Nota alla nomenclatura.
+\smallskip
+La nomenclatura delle classi differisce leggermente da quanto mostrato in figura. Le diciture \texttt{Presenter} e \texttt{View} sono state riservate alle interfacce dei soli componenti di ordine massimo: per tutti gli altri, le interfacce seguono i suffissi \texttt{-Delegate}, \texttt{-Controller} e \texttt{-Widget} come in figura. Invece, le classi concrete hanno un prefisso \texttt{Swing-} per i componenti grafici e \emph{nessun prefisso o suffisso} per i componenti headless.
 
 \paragraph{Strategie di testing}\label{par:guiTesting}
 Lo schema di composizione appena esposto va naturalmente nella direzione di facilitare il testing unitario, in quanto mantiene distinte le componenti headless e grafiche e prevede interfacce per ogni interazione.
