@@ -263,7 +263,18 @@ Un ambito di assoluto interesse sarebbe stato, a quel punto, la compatibilità f
 Lo stack tecnico di cui ci siamo serviti per sviluppare la GUI, ovvero Swing, AssertJ Swing e WindowBuilder, aveva il pregio di essere minuziosamente descritto in \cite{bettini2019tdd}. Tuttavia risulta essere estremamente datato, e non poco tempo ci è costato risolverne gli aspetti di obsolescenza. In particolare
 
 \begin{description}
-	\item[Swing] è stato un tool fondamentale per lo sviluppo di GUI in Java, ma attualmente non gode più di vasta adozione. Ne consegue che per molte delle features introdotte per ultime è disponibile poca documentazione: ad esempio, per il layout manager Spring
+	\item[Swing] è stato il toolkit di riferimento per lo sviluppo di GUI in Java per molti anni, ma attualmente non gode più di vasta adozione. Ne consegue che per molte delle features introdotte per ultime è disponibile poca documentazione: ad esempio, per il layout manager Spring
 	\item[WindowBuilder] ha le stesse problematiche di adozione di Swing. Inoltre, proprio per le ultime features di Swing il supporto al design è chiaramente incompleto: ad esempio, il layout manager Spring non ha quasi nessun ausilio grafico, a differenza di altri come GridBag, e WindowBuilder non ne supporta altre API all'infuori di \texttt{putConstraint()}
-	\item[AssertJ Swing] non è più mantenuto da qualche anno. Vista l'enorme utilità delle features di JUnit 5 nel nostro testing della GUI, come già detto in \nameref{par:guiTesting}, una caratteristica che abbiamo dovuto necessariamente aggiungere manualmente è stata l'integrazione con JUnit 5, attraverso un nuovo testcase di base che facesse porting verso JUnit 5 del vecchio \texttt{AssertJSwingJUnitTestCase} basato su JUnit 4.    
+	\item[AssertJ Swing] non è più mantenuto da qualche anno. Vista l'enorme utilità delle features di JUnit 5 nel nostro testing della GUI, come già detto in \nameref{par:guiTesting}, una caratteristica che abbiamo dovuto necessariamente aggiungere manualmente è stata l'integrazione con JUnit 5, attraverso principalmente un nuovo testcase di base che facesse porting verso JUnit 5 del vecchio \texttt{AssertJSwingJUnitTestCase} basato su JUnit 4.
+	
+	Un ulteriore problema di obsolescenza per AssertJ Swing deriva dal fatto che, per implementare scheduling programmatico di eventi sullo \texttt{EDT} di Swing in modo da simulare l'interazione grafica con l'utente, si serve di \emph{deep reflection} su classi del pacchetto \texttt{java.util}. Questo comportamento non è compatibile con versioni recenti del JRE, in quanto a partire da Java 9, con l'introduzione del sistema dei Modules o JPMS, si è reso illecito fare reflection su classi appartenenti a packages non esplicitamente \emph{aperti (opened)}: per questa ragione, eseguendo su una JVM moderna accade che i test passino pur stampando una cascata di eccezioni a console, che rendono impossibile servirsi dello standard output in modo diagnostico.
+	
+	Per risolvere questo inconveniente, guidati dai LLMs, ci siamo avvalsi dello strumento dei \texttt{@Tag} JUnit 5 per identificare i testcases affetti dal problema, ed abbiamo definito una esecuzione speciale del \texttt{maven-surefire-plugin} che li lanciasse in una istanza della JVM ``preparata'' con le direttive di apertura dei packages, ovvero
+	\begin{lstlisting}[language=bash]
+			--add-opens java.base/java.util=ALL-UNNAMED
+			--add-opens java.base/java.lang=ALL-UNNAMED
+			--add-opens java.desktop/java.awt=ALL-UNNAMED
+			--add-opens java.desktop/javax.swing=ALL-UNNAMED
+	\end{lstlisting}
+	Questa soluzione, sebbene richieda l'accorgimento manuale dell'inserimento del tag, consente di usare comodamente AssertJ Swing anche su JVM recenti e rispetta il principio di \emph{least privilege}, in quanto circoscrive l'escalation di privilegio ai soli test che ne hanno realmente bisogno.   
 \end{description}
