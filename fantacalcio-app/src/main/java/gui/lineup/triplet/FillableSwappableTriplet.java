@@ -143,6 +143,8 @@ public class FillableSwappableTriplet<Q extends Player>
 			triplet.setWidget(widget);
 			widget.setController(triplet);
 			
+			triplet.initSequence();
+			
 			CompetitiveOptionDealingGroup.initializeDealing(Set.of(selPres1, selPres2, selPres3),
 					List.of(new Defender("Giorgio", "Chiellini", Player.Club.ATALANTA), new Defender("Gerard", "Piqué", Player.Club.ATALANTA),
 							new Defender("Sergio", "Ramos", Player.Club.ATALANTA), new Defender("Thiago", "Silva", Player.Club.ATALANTA),
